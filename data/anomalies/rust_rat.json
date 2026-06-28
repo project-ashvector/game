@@ -1,0 +1,18 @@
+{
+  "id": "rust_rat",
+  "name": "Rust Rat",
+  "classification": "SCRAP VERMIN",
+  "threatLevel": "C",
+  "hp": 32,
+  "atk": 7,
+  "def": 2,
+  "xp": 18,
+  "loot": [
+    "credit_chip"
+  ],
+  "asset": "assets/anomalies/rust_rat/battle.png",
+  "icon": "assets/anomalies/rust_rat/icon.png",
+  "profile": "assets/anomalies/rust_rat/profile.png",
+  "description": "A metal-chewing rat wearing scrap armor like it has a tiny apocalypse appointment.",
+  "battleLine": "A rat wearing scrap metal like it pays rent here."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "fracture001",
+  "name": "F-001 // Toxic Sewers",
+  "tileSize": 42,
+  "rooms": ["Entry Tunnel", "Overflow Pipes", "Broken Pump Room", "Maintenance Station", "Waste Reservoir", "Boss Room"],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "C": "chest",
+    "K": "key",
+    "D": "locked door",
+    "S": "save terminal",
+    "H": "healing station",
+    "L": "lore terminal",
+    "E": "anomaly encounter",
+    "B": "boss encounter",
+    "X": "exit"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "cable_wraith",
+  "name": "Cable Wraith",
+  "classification": "TECHNO-PHANTOM",
+  "threatLevel": "B",
+  "hp": 38,
+  "atk": 8,
+  "def": 3,
+  "xp": 24,
+  "loot": [
+    "stale_energy_drink"
+  ],
+  "asset": "assets/anomalies/cable_wraith/battle.png",
+  "icon": "assets/anomalies/cable_wraith/icon.png",
+  "profile": "assets/anomalies/cable_wraith/profile.png",
+  "description": "A ghost-like knot of cables, static, and bad customer support energy.",
+  "battleLine": "A haunted cable bundle. Somehow still charges microtransactions."
+}

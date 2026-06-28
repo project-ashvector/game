@@ -1,0 +1,16 @@
+{
+  "npc": [
+    "Hey. You are in the sewer. That was not a metaphor until you made it one.",
+    "Find the Rust Key, slap monsters, and try not to lick anything glowing.",
+    "The boss is past the door. He calls himself royalty. His throne is a toilet."
+  ],
+  "battleStart": [
+    "Something gross has chosen violence.",
+    "The smell alone should count as an attack.",
+    "Combat started. HR has been notified."
+  ],
+  "chest": [
+    "You opened a chest. Brave, greedy, same thing.",
+    "Loot acquired. Dopamine released."
+  ]
+}

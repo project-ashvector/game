@@ -1,0 +1,50 @@
+{
+  "characters": [
+    {
+      "id": "vyra",
+      "name": "Vyra",
+      "rarity": "Starter",
+      "element": "Void",
+      "role": "Fast damage dealer",
+      "folder": "assets/characters/vyra/",
+      "portrait": "assets/characters/vyra/portrait.png",
+      "battle": "assets/characters/vyra/battle.png",
+      "spriteSheet": "assets/characters/vyra/sprite_sheet.png",
+      "icon": "assets/characters/vyra/icon.png",
+      "profile": "assets/characters/vyra/profile.png",
+      "baseStats": {
+        "hp": 42,
+        "atk": 9,
+        "def": 4,
+        "spd": 8,
+        "luck": 3
+      },
+      "attacks": [
+        {
+          "name": "Neon Slash",
+          "power": 9,
+          "type": "attack",
+          "line": "Vyra cuts the air so hard the sewer asks for therapy."
+        },
+        {
+          "name": "Trash Talk",
+          "power": 5,
+          "type": "debuff",
+          "line": "Vyra insults the enemy's entire bloodline and questionable smell."
+        },
+        {
+          "name": "Void Kick",
+          "power": 13,
+          "type": "attack",
+          "line": "A kick powered by bad decisions and premium neon."
+        },
+        {
+          "name": "Emergency Flex",
+          "power": 10,
+          "type": "heal",
+          "line": "Vyra heals herself by pretending this was all planned."
+        }
+      ]
+    }
+  ]
+}
