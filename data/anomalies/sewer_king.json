@@ -1,0 +1,18 @@
+{
+  "id": "sewer_king",
+  "name": "The Sewer King",
+  "classification": "BOSS-CLASS ABYSSAL",
+  "threatLevel": "A",
+  "hp": 75,
+  "atk": 10,
+  "def": 4,
+  "xp": 60,
+  "loot": [
+    "toxic_core"
+  ],
+  "asset": "assets/anomalies/sewer_king/battle.png",
+  "icon": "assets/anomalies/sewer_king/icon.png",
+  "profile": "assets/anomalies/sewer_king/profile.png",
+  "description": "A sludge monarch squatting in Sector 001 with a crown, a smell, and absolutely no valid leadership skills.",
+  "battleLine": "He rules a kingdom of sludge. Honestly, still better than some landlords."
+}
