@@ -1,6 +1,0 @@
-[
-  {"id":"EV-FR001-SAVE","tile":"S","type":"save","text":"Recovery Terminal online. Archive updated."},
-  {"id":"EV-FR001-HEAL","tile":"H","type":"heal","text":"Medical station restored HP/EP."},
-  {"id":"EV-FR001-LORE","tile":"L","type":"archive","item":"IT-005","text":"Recovered Archive 001: The First Vector."},
-  {"id":"EV-FR001-EXIT","tile":"X","type":"chapterComplete","requires":"bossDefeated","text":"Chapter 1 route complete."}
-]

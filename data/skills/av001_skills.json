@@ -1,6 +1,0 @@
-[
-  {"id":"SKILL-AV001-001","name":"Neon Slash","type":"attack","epCost":0,"power":12,"accuracy":0.95,"description":"Fast void blade strike."},
-  {"id":"SKILL-AV001-002","name":"Trash Talk","type":"debuff","epCost":3,"power":6,"accuracy":0.9,"status":"Weaken","description":"Psychological damage. Probably illegal."},
-  {"id":"SKILL-AV001-003","name":"Void Kick","type":"attack","epCost":5,"power":18,"accuracy":0.82,"description":"Heavy strike powered by bad decisions."},
-  {"id":"SKILL-AV001-004","name":"Emergency Flex","type":"heal","epCost":7,"power":22,"accuracy":1,"description":"Recovery move caused by weaponized ego."}
-]

@@ -1,9 +1,0 @@
-[
-  {"id":"IT-001","name":"Scrap Metal","category":"Catalyst","description":"Common upgrade junk. Sharp enough to be annoying.","asset":"assets/items/scrap_metal.png"},
-  {"id":"IT-002","name":"Corrupted Catalyst","category":"Catalyst","description":"Unstable material used for future upgrades.","asset":"assets/items/corrupted_catalyst.png"},
-  {"id":"IT-003","name":"Med Patch","category":"Consumable","effect":{"heal":25},"description":"Restores 25 HP. Smells like hospital and panic.","asset":"assets/items/med_patch.png"},
-  {"id":"IT-004","name":"Rust Core","category":"Key Item","description":"Recovered from a boss-class Anomaly.","asset":"assets/items/corrupted_catalyst.png"},
-  {"id":"IT-005","name":"Archive Log 001","category":"Archive","description":"Recovered file: The First Vector.","asset":"assets/items/archive_log_001.png"},
-  {"id":"IT-006","name":"Operator Shard: Vyra","category":"Operator Shard","description":"Future gacha/progression material.","asset":"assets/items/operator_shard_vyra.png"},
-  {"id":"IT-007","name":"LV1 Keycard","category":"Key Item","description":"Opens basic locked ASH VECTOR doors.","asset":"assets/items/keycard_lv1.png"}
-]
