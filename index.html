@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project: ASH VECTOR - Developer Build</title>
+  <link rel="icon" type="image/png" href="assets/logos/favicon.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="bootScreen" class="boot-screen">
+    <div class="boot-terminal avos-crt" id="bootTerminal">
+      <div class="boot-header"><span>ASH VECTOR OPERATING SYSTEM</span><span>v0.2.3 // MINIMAP + LOADOUT</span></div>
+      <div class="boot-lines" id="bootLines"></div>
+      <div class="boot-progress" id="bootProgress"><span></span></div>
+      <div class="boot-logo hidden" id="bootLogo">
+        <img src="assets/ui/game_logo.png" alt="Project: ASH VECTOR logo">
+        <p class="classified">WARNING: Unauthorized access detected.</p>
+        <p>Can you hear me...?</p>
+        <button id="enterBtn">[ PRESS ENTER / TAP TO ACCESS ]</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="mainMenu" class="main-menu hidden">
+    <div class="menu-card avos-crt">
+      <div class="menu-kicker">ASH VECTOR DATABASE // CLEARANCE: CIVILIAN</div>
+      <img src="assets/ui/game_logo.png" alt="Project: ASH VECTOR logo" class="menu-logo">
+      <h1>PROJECT:<br><span>ASH VECTOR</span></h1>
+      <p class="menu-subtitle">Reality integrity compromised. Operator access required.</p>
+      <div class="menu-buttons">
+        <button id="continueBtn">Continue Operation</button>
+        <button id="newGameBtn">Initialize Operator</button>
+        <button id="fractureIndexBtn">Fracture Index</button>
+        <button id="operatorFilesBtn">Operator Files</button>
+        <button id="anomalyIndexBtn">Anomaly Index</button>
+        <button id="inventoryDbBtn">Inventory Database</button>
+        <button id="missionMenuBtn">Mission Briefing</button>
+        <button id="configBtn">Configuration</button>
+      </div>
+      <div id="menuInfo" class="menu-info">Select a database protocol.</div>
+      <div class="ui-kit-note"><b>AVOS UI KIT v0.2.2</b> // Chapter 1 Playtest Sprint online</div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="brand"><img src="assets/ui/game_logo.png" alt="Project: ASH VECTOR logo"><span>PROJECT: ASH VECTOR</span></div>
+      <div class="top-actions">
+        <button id="saveBtn">Archive Save</button><button id="loadBtn">Load Archive</button><button id="missionBtn">Mission Briefing</button><button id="playtestBtn">Playtest Console</button><button id="menuBtn">Database Menu</button><button id="resetBtn">Purge Archive</button>
+      </div>
+    </header>
+    <main class="layout">
+      <section class="game-card">
+        <div class="mission-strip"><b id="sectorName">FRACTURE 001:</b> Toxic Sewers <span id="sectorObjective">// Objective: Complete Chapter 1 — The Awakening.</span></div>
+        <div id="objectiveTracker" class="objective-tracker"></div>
+        <canvas id="game" width="1008" height="546" tabindex="0"></canvas>
+        <div class="mobile-pad">
+          <button data-move="up">▲</button><div><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div>
+        </div>
+      </section>
+      <aside class="panel">
+        <div class="hero-card"><img id="heroPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait"><div><h2 id="heroName">Vyra</h2><p id="heroMeta">Operator Unit 001 • Void Hunter • Starter</p></div></div>
+        <div class="stats" id="stats"></div>
+        <div><h3>Fracture Status</h3><div id="fractureStatus" class="mini-db"></div></div>
+        <div><h3>Tactical Minimap</h3><canvas id="minimap" width="240" height="100" class="minimap"></canvas><div class="mini-hint">Red = Operator • Gold = Caches • White = Exit</div></div>
+        <div><h3>Operator Archive</h3><div id="roster"></div></div>
+        <div><h3>Equipment Database</h3><div id="inventory"></div></div>
+        <div><h3>Mission Progress</h3><div id="missionProgress" class="mini-db"></div></div>
+        <div><h3>Mission Log</h3><div id="log"></div></div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="operatorOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeOperatorDb" class="modal-close">Close File</button><div class="db-header"><div>ASH VECTOR OPERATOR DATABASE</div><div>CLASSIFIED // AVOS v0.0.8</div></div><div class="operator-file"><section class="operator-art"><img src="assets/operators/av001/profile.png" alt="Vyra full profile art"><div class="file-stamp">OPERATOR ID: AV-001 // STATUS: ACTIVE</div></section><section class="operator-data"><div class="record-kicker">ACTIVE OPERATOR FILE</div><h2>VYRA <span>// BLACK NEON</span></h2><p class="operator-quote">“I don't know who designed this sewer, but I hope they got fired twice.”</p><div class="record-grid"><div><b>Class</b><span>Shadow Hunter</span></div><div><b>Element</b><span>Void</span></div><div><b>Rarity</b><span>Starter / 5-Star Prototype</span></div><div><b>Clearance</b><span>Level 5</span></div><div><b>Synchronization</b><span id="operatorSync">0%</span></div><div><b>File Status</b><span>Active</span></div></div><h3>Combat Protocols</h3><div class="protocol-list"><div><b>Neon Slash</b><span>Fast void blade strike.</span></div><div><b>Trash Talk</b><span>Debuff. Psychological damage. Probably illegal.</span></div><div><b>Void Kick</b><span>Heavy strike powered by bad decisions.</span></div><div><b>Emergency Flex</b><span>Recovery move caused by weaponized ego.</span></div></div><h3>Final Replaceable Asset Paths</h3><code class="asset-code">assets/operators/av001/profile.png
+assets/operators/av001/portrait.png
+assets/operators/av001/battle.png
+assets/operators/av001/sprite_sheet.png
+assets/operators/av001/icon.png</code></section></div></div></div>
+
+  <div id="anomalyOverlay" class="overlay hidden"><div class="database-modal anomaly-modal avos-crt"><button id="closeAnomalyDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR ANOMALY INDEX</div><div>THREAT DATABASE // AVOS v0.0.8</div></div><div class="anomaly-layout"><aside class="anomaly-list" id="anomalyList"></aside><section class="anomaly-file" id="anomalyFile"><div class="record-kicker">SELECT ANOMALY RECORD</div><h2>THREAT FILE LOCKED</h2><p>Choose an anomaly from the index. Try not to lick the evidence.</p></section></div></div></div>
+
+  <div id="fractureOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeFractureDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR FRACTURE INDEX</div><div>MAP DATABASE // AVOS v0.0.8</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE FRACTURE</div><h2>F-001 // TOXIC SEWERS</h2><p>Abandoned municipal waste network under a broken neon district. Threats include gel biohazards, scrap vermin, haunted cabling, and one self-appointed sludge monarch.</p><div class="record-grid"><div><b>Status</b><span id="fractureExplore">Explored 0%</span></div><div><b>Threat Level</b><span>LOW → BOSS CLASS</span></div><div><b>Reality Integrity</b><span>81%</span></div><div><b>Archives</b><span>1 / 8 online</span></div></div><h3>Rooms</h3><div class="protocol-list"><div><b>Entry Tunnel</b><span>Spawn / briefing.</span></div><div><b>Overflow Pipes</b><span>Enemy patrols.</span></div><div><b>Maintenance Station</b><span>Save terminal + healing station.</span></div><div><b>Waste Reservoir</b><span>Boss route.</span></div></div></section><section class="fracture-card"><h3>Legend</h3><div class="legend"><span># Wall</span><span>. Floor</span><span>C Chest</span><span>K Key</span><span>D Locked Door</span><span>S Save Terminal</span><span>H Heal Station</span><span>L Lore Terminal</span><span>E Anomaly</span><span>B Boss</span><span>X Exit</span></div><h3>Final Replaceable Asset Paths</h3><code class="asset-code">assets/fractures/fracture001/background.png
+assets/fractures/fracture001/minimap.png
+assets/fractures/fracture001/tileset.png
+data/fractures/fracture001/layout.json
+data/fractures/fracture001/events.json</code></section></div></div></div>
+
+
+  <div id="inventoryOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeInventoryDb" class="modal-close">Close Inventory</button><div class="db-header"><div>ASH VECTOR INVENTORY DATABASE</div><div>LOOT ENGINE // AVOS v0.0.8</div></div><div class="inventory-db-layout"><section class="fracture-card"><div class="record-kicker">RECOVERED ASSETS</div><h2>EQUIPMENT DATABASE</h2><p>Consumables, Catalysts, Key Items, Archives, Credits, and Operator Shards are tracked here. Yes, the database judges your hoarding.</p><div id="inventoryDatabaseList" class="inventory-database-list"></div></section><section class="fracture-card"><h3>Cache Types</h3><div class="protocol-list"><div><b>Standard Cache</b><span>Basic supplies and credits.</span></div><div><b>Military Cache</b><span>Better consumables and catalysts.</span></div><div><b>Locked Cache</b><span>Requires keycards or story flags.</span></div><div><b>Corrupted Cache</b><span>High reward, future risk events.</span></div><div><b>Legendary Vault</b><span>Boss-tier loot and rare shards.</span></div></div><h3>Final Replaceable Item Paths</h3><code class="asset-code">assets/items/med_patch.png
+assets/items/scrap_metal.png
+assets/items/corrupted_catalyst.png
+assets/items/keycard_lv1.png
+assets/items/archive_log_001.png
+assets/items/operator_shard_vyra.png</code></section></div></div></div>
+
+
+
+
+  <div id="configOverlay" class="overlay hidden"><div class="database-modal avos-crt config-modal"><button id="closeConfig" class="modal-close">Close Config</button><div class="db-header"><div>ASH VECTOR CONFIGURATION</div><div>LOCAL SETTINGS // v0.2.3</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACCESSIBILITY / DISPLAY</div><h2>Playtest Settings</h2><p>These settings are local-only and built for testing before GitHub deployment.</p><label class="setting-row"><span>CRT Scanlines</span><input id="settingCrt" type="checkbox" checked></label><label class="setting-row"><span>Reduced Motion</span><input id="settingMotion" type="checkbox"></label><label class="setting-row"><span>Large Text Mode</span><input id="settingLargeText" type="checkbox"></label></section><section class="fracture-card"><h3>Controls</h3><div class="legend"><span>Arrow Keys: Move</span><span>Enter: Boot</span><span>F9: QA Console</span><span>Buttons: Mobile Movement</span></div><h3>Build Note</h3><p class="menu-info">v18 adds minimap rendering, inventory item use, and local display toggles for playtesting.</p></section></div></div></div>
+
+
+
+  <div id="missionOverlay" class="overlay hidden"><div class="database-modal avos-crt mission-modal"><button id="closeMission" class="modal-close">Close Briefing</button><div class="db-header"><div>ASH VECTOR MISSION BRIEFING</div><div>CHAPTER 1 // THE AWAKENING</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE OPERATION</div><h2>Recover the Toxic Core</h2><p>Vyra wakes inside Fracture 001 with corrupted memory, one functional blade, and a sewer full of things that should not legally have teeth.</p><div id="missionChecklist" class="mission-checklist"></div></section><section class="fracture-card"><h3>Rewards</h3><div class="protocol-list"><div><b>Clear Reward</b><span>80 Credits, Corrupted Catalyst, Rust Core</span></div><div><b>Unlock</b><span>Anomaly Index: Rust Mother</span></div><div><b>Archive</b><span>Recovered File 001: The First Vector</span></div></div><h3>Testing Goal</h3><p class="menu-info">Complete boot → new game → recovery terminal → three anomaly fights → boss gate → chapter exit without soft-locks.</p></section></div></div></div>
+
+  <div id="playtestOverlay" class="overlay hidden"><div class="database-modal avos-crt playtest-modal"><button id="closePlaytest" class="modal-close">Close Console</button><div class="db-header"><div>ASH VECTOR PLAYTEST CONSOLE</div><div>LOCAL QA // DO NOT SHIP FINAL</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">SPRINT TEST TOOLS</div><h2>Milestone Bravo QA</h2><p>Use these buttons while testing the Chapter 1 path. They are included so we can test the game locally before GitHub upload.</p><div class="playtest-actions"><button id="qaHeal">Full Heal</button><button id="qaCredits">Add 100 Credits</button><button id="qaClearAnomalies">Mark 3 Anomalies Cleared</button><button id="qaBossReady">Unlock Boss Route</button><button id="qaCompleteChapter">Force Chapter Complete</button><button id="qaResetRun">Reset Current Run</button><button id="qaPath">Show Test Route</button></div></section><section class="fracture-card"><h3>Current QA State</h3><div id="qaState" class="mini-db"></div><h3>Keyboard</h3><div class="legend"><span>Arrow Keys: Move</span><span>Enter: Boot/Menu</span><span>F9: Console</span><span>Save: localStorage</span></div><p class="menu-info">Goal: test boot → menu → new game → terminal → enemy fights → boss → exit → chapter complete.</p></section></div></div></div>
+
+  <div id="battleOverlay" class="overlay hidden"><div class="battle" style="background-image:url('assets/battle_backgrounds/toxic_sewers_battle.png')"><div class="battle-tag">COMBAT PROTOCOL ENGAGED</div><div class="battle-stage"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><img id="battleEnemy" class="battle-sprite enemy" src="" alt="enemy"></div><div class="battle-ui"><div><h2 id="battleTitle">Hostile Entity</h2><p id="battleText">Choose a combat protocol.</p><div id="battleHp"></div></div><div id="attackButtons" class="attacks"></div></div></div></div>
+  <script src="js/game.js"></script>
+</body>
+</html>
