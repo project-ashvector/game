@@ -1,3 +1,10 @@
+
+## v31 — Creature Encounter Art Link
+- Linked Fracture enemy and boss encounters to the imported monster/boss art library.
+- Replaced generic map enemy markers with imported creature icons.
+- Improved Anomaly Index image fallback behavior.
+- Kept Rust Hound / Rust Mother removed from playable code.
+
 # Changelog
 
 ## v26 - Viewport and Controls Fix

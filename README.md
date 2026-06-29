@@ -1,5 +1,7 @@
 # Project: ASH VECTOR
 
+**Current build:** v31 Creature Encounter Art Link
+
 Developer Build v21 — Real Engine Sprint 1
 
 A static browser RPG prototype for GitHub Pages. This build includes a real playable canvas engine: AVOS boot, menu, tile movement, camera follow, collision, interactables, turn-based combat, loot, inventory, minimap, save/load, mission objectives, and QA tools.
