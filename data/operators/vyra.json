@@ -1,0 +1,30 @@
+{
+  "id": "vyra",
+  "name": "Vyra",
+  "title": "Black Neon",
+  "class": "Shadow Hunter",
+  "element": "Void",
+  "rarity": "Starter / 5-Star Prototype",
+  "assets": {
+    "profile": "assets/operators/vyra/profile.png",
+    "portrait": "assets/operators/vyra/portrait.png",
+    "battle": "assets/operators/vyra/battle.png",
+    "spriteSheet": "assets/operators/vyra/sprite_sheet.png",
+    "icon": "assets/operators/vyra/icon.png"
+  },
+  "stats": {
+    "level": 1,
+    "hp": 120,
+    "atk": 28,
+    "def": 18,
+    "mag": 26,
+    "spd": 24,
+    "luck": 12
+  },
+  "protocols": [
+    "Neon Slash",
+    "Trash Talk",
+    "Void Kick",
+    "Emergency Flex"
+  ]
+}

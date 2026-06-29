@@ -1,0 +1,17 @@
+{
+  "credits": {
+    "name": "Credits"
+  },
+  "med_patch": {
+    "name": "Med Patch",
+    "type": "consumable"
+  },
+  "scrap_metal": {
+    "name": "Scrap Metal",
+    "type": "material"
+  },
+  "rust_core": {
+    "name": "Rust Core",
+    "type": "catalyst"
+  }
+}

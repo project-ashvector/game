@@ -1,0 +1,14 @@
+{
+  "id": "fracture001",
+  "name": "Toxic Sewers",
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "C": "cache",
+    "E": "anomaly",
+    "S": "save",
+    "H": "heal",
+    "B": "boss",
+    "X": "exit"
+  }
+}

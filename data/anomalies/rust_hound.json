@@ -1,0 +1,11 @@
+{
+  "id": "rust_hound",
+  "name": "Rust Hound",
+  "level": 6,
+  "hp": 80,
+  "loot": [
+    "scrap_metal",
+    "rust_core"
+  ],
+  "asset": "assets/anomalies/rust_hound/battle.png"
+}
