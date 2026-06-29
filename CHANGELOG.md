@@ -1,5 +1,13 @@
 # Changelog
 
+## v26 - Viewport and Controls Fix
+- Prevented arrow keys from scrolling the browser page during gameplay.
+- Locked the desktop game viewport so the canvas no longer gets cropped by page scroll.
+- Improved responsive text/button wrapping for smaller screens.
+- Added safer canvas focus behavior when starting the game.
+
+# Changelog
+
 ## v21 — Real Engine Sprint 1
 - Added actual `css/style.css` and `js/game.js` files instead of relying on missing references.
 - Implemented playable tile-map renderer on canvas.

@@ -46,3 +46,9 @@ Start testing by opening `index.html` locally in a browser. Final GitHub upload 
 
 ## v25 Asset Note
 This build restores the proper v10 visual assets into the newest playable project. The latest code uses production IDs such as `assets/operators/av001/` and `assets/anomalies/an001_rust_hound/`, but the older v10 folders are also preserved for reference so approved artwork is not lost.
+
+
+## v26 Fix Notes
+- Arrow keys now control the Operator without moving the browser page.
+- Desktop gameplay viewport is locked to the screen to prevent cropping when moving down.
+- UI text now wraps and scales better on smaller displays.

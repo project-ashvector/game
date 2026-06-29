@@ -81,8 +81,8 @@
       if(i<bootLines.length){lines.textContent += '> '+bootLines[i++]+'\n'; prog.style.width=Math.min(100, i/bootLines.length*100)+'%'; setTimeout(step, state.settings.reducedMotion?30:260);} else {$('bootLogo').classList.remove('hidden'); bootDone=true;}}
     step();
   }
-  function showMenu(){hideAll(); $('mainMenu').classList.remove('hidden');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); hideAll(); $('app').classList.remove('hidden'); canvas.focus(); renderAll();}
+  function showMenu(){hideAll(); document.body.classList.remove('game-active'); $('mainMenu').classList.remove('hidden');}
+  function startGame(fresh=false){if(fresh) state=newGameState(); hideAll(); document.body.classList.add('game-active'); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -149,7 +149,19 @@
   function renderInventoryDb(){ $('inventoryDatabaseList').innerHTML=Object.entries(state.inventory).map(([k,v])=>`<div class="invrow"><b>${k}</b><br>Quantity: ${v}</div>`).join('')||'No items.'; }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
   function bind(){
-    $('enterBtn').onclick=showMenu; document.addEventListener('keydown',e=>{ if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')) showMenu(); if(e.key==='F9') openOverlay('playtestOverlay'); if(!$('app').classList.contains('hidden')){ if(e.key==='ArrowUp')tryMove(0,-1); if(e.key==='ArrowDown')tryMove(0,1); if(e.key==='ArrowLeft')tryMove(-1,0); if(e.key==='ArrowRight')tryMove(1,0); }});
+    $('enterBtn').onclick=showMenu; document.addEventListener('keydown',e=>{
+      const gameIsOpen = !$('app').classList.contains('hidden');
+      const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
+      if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
+      if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
+      if(gameIsOpen && !overlayOpen && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)){
+        e.preventDefault();
+        if(e.key==='ArrowUp')tryMove(0,-1);
+        if(e.key==='ArrowDown')tryMove(0,1);
+        if(e.key==='ArrowLeft')tryMove(-1,0);
+        if(e.key==='ArrowRight')tryMove(1,0);
+      }
+    }, {passive:false});
     $('newGameBtn').onclick=()=>startGame(true); $('continueBtn').onclick=()=>{load(); startGame(false)}; $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); toast('Archive purged.');};
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=()=>document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'))));
