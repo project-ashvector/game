@@ -37,3 +37,11 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Restored v10 Operator, Anomaly, Fracture, item, and battle background assets into active v23/v24 paths.
 - Added favicon link to `index.html`.
 - Preserved legacy v10 folders for reference while keeping latest production IDs active.
+
+
+## v27 — Imported Creature Library
+
+- Imported 100 monsters as ASH VECTOR anomaly assets.
+- Imported 53 bosses as ASH VECTOR boss assets.
+- Added registry JSON files for future database/encounter integration.
+- Kept existing Chapter 1 Rust Hound/Rust Mother assets intact.

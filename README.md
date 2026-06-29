@@ -52,3 +52,11 @@ This build restores the proper v10 visual assets into the newest playable projec
 - Arrow keys now control the Operator without moving the browser page.
 - Desktop gameplay viewport is locked to the screen to prevent cropping when moving down.
 - UI text now wraps and scales better on smaller displays.
+
+
+## v27 — Imported Creature Library
+
+- Imported 100 monsters as ASH VECTOR anomaly assets.
+- Imported 53 bosses as ASH VECTOR boss assets.
+- Added registry JSON files for future database/encounter integration.
+- Kept existing Chapter 1 Rust Hound/Rust Mother assets intact.

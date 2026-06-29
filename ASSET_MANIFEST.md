@@ -64,3 +64,9 @@ Example:
 `assets/operators/av001/portrait.png`
 
 Replace that file with the final portrait image using the same filename. The game will load the new version automatically.
+
+
+## v27 Imported Creature Library
+- Imported 100 anomaly assets from `monsters.zip`.
+- Imported 53 boss assets from `bosses.zip`.
+- See `IMPORTED_CREATURE_LIBRARY_V27.md` for ID mapping and paths.

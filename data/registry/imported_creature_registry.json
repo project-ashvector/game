@@ -1,0 +1,2913 @@
+{
+  "anomalies": [
+    {
+      "id": "AN-002",
+      "slug": "ashborn_revenant",
+      "name": "Ashborn Revenant",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an002_ashborn_revenant",
+      "battle": "assets/anomalies/an002_ashborn_revenant/battle.png",
+      "portrait": "assets/anomalies/an002_ashborn_revenant/portrait.png",
+      "icon": "assets/anomalies/an002_ashborn_revenant/icon.png",
+      "hp": 28,
+      "atk": 7,
+      "xp": 14,
+      "credits": 9,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashborn_revenant.png"
+    },
+    {
+      "id": "AN-003",
+      "slug": "ashen_horror",
+      "name": "Ashen Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an003_ashen_horror",
+      "battle": "assets/anomalies/an003_ashen_horror/battle.png",
+      "portrait": "assets/anomalies/an003_ashen_horror/portrait.png",
+      "icon": "assets/anomalies/an003_ashen_horror/icon.png",
+      "hp": 31,
+      "atk": 8,
+      "xp": 15,
+      "credits": 10,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashen_horror.png"
+    },
+    {
+      "id": "AN-004",
+      "slug": "ashen_revenant",
+      "name": "Ashen Revenant",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an004_ashen_revenant",
+      "battle": "assets/anomalies/an004_ashen_revenant/battle.png",
+      "portrait": "assets/anomalies/an004_ashen_revenant/portrait.png",
+      "icon": "assets/anomalies/an004_ashen_revenant/icon.png",
+      "hp": 34,
+      "atk": 9,
+      "xp": 17,
+      "credits": 11,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashen_revenant.png"
+    },
+    {
+      "id": "AN-005",
+      "slug": "ashen_whelp",
+      "name": "Ashen Whelp",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an005_ashen_whelp",
+      "battle": "assets/anomalies/an005_ashen_whelp/battle.png",
+      "portrait": "assets/anomalies/an005_ashen_whelp/portrait.png",
+      "icon": "assets/anomalies/an005_ashen_whelp/icon.png",
+      "hp": 37,
+      "atk": 10,
+      "xp": 18,
+      "credits": 12,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashen_whelp.png"
+    },
+    {
+      "id": "AN-006",
+      "slug": "ashfang_serpent",
+      "name": "Ashfang Serpent",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an006_ashfang_serpent",
+      "battle": "assets/anomalies/an006_ashfang_serpent/battle.png",
+      "portrait": "assets/anomalies/an006_ashfang_serpent/portrait.png",
+      "icon": "assets/anomalies/an006_ashfang_serpent/icon.png",
+      "hp": 40,
+      "atk": 11,
+      "xp": 20,
+      "credits": 13,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashfang_serpent.png"
+    },
+    {
+      "id": "AN-007",
+      "slug": "ashveil_spider",
+      "name": "Ashveil Spider",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an007_ashveil_spider",
+      "battle": "assets/anomalies/an007_ashveil_spider/battle.png",
+      "portrait": "assets/anomalies/an007_ashveil_spider/portrait.png",
+      "icon": "assets/anomalies/an007_ashveil_spider/icon.png",
+      "hp": 43,
+      "atk": 12,
+      "xp": 21,
+      "credits": 14,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ashveil_spider.png"
+    },
+    {
+      "id": "AN-008",
+      "slug": "bilebrood",
+      "name": "Bilebrood",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an008_bilebrood",
+      "battle": "assets/anomalies/an008_bilebrood/battle.png",
+      "portrait": "assets/anomalies/an008_bilebrood/portrait.png",
+      "icon": "assets/anomalies/an008_bilebrood/icon.png",
+      "hp": 46,
+      "atk": 13,
+      "xp": 23,
+      "credits": 15,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/bilebrood.png"
+    },
+    {
+      "id": "AN-009",
+      "slug": "blight_rat",
+      "name": "Blight Rat",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an009_blight_rat",
+      "battle": "assets/anomalies/an009_blight_rat/battle.png",
+      "portrait": "assets/anomalies/an009_blight_rat/portrait.png",
+      "icon": "assets/anomalies/an009_blight_rat/icon.png",
+      "hp": 49,
+      "atk": 14,
+      "xp": 24,
+      "credits": 16,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blight_rat.png"
+    },
+    {
+      "id": "AN-010",
+      "slug": "blight_widow",
+      "name": "Blight Widow",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an010_blight_widow",
+      "battle": "assets/anomalies/an010_blight_widow/battle.png",
+      "portrait": "assets/anomalies/an010_blight_widow/portrait.png",
+      "icon": "assets/anomalies/an010_blight_widow/icon.png",
+      "hp": 52,
+      "atk": 15,
+      "xp": 26,
+      "credits": 17,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blight_widow.png"
+    },
+    {
+      "id": "AN-011",
+      "slug": "blightclaw_ravager",
+      "name": "Blightclaw Ravager",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an011_blightclaw_ravager",
+      "battle": "assets/anomalies/an011_blightclaw_ravager/battle.png",
+      "portrait": "assets/anomalies/an011_blightclaw_ravager/portrait.png",
+      "icon": "assets/anomalies/an011_blightclaw_ravager/icon.png",
+      "hp": 55,
+      "atk": 7,
+      "xp": 27,
+      "credits": 18,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blightclaw_ravager.png"
+    },
+    {
+      "id": "AN-012",
+      "slug": "blightdrake",
+      "name": "Blightdrake",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an012_blightdrake",
+      "battle": "assets/anomalies/an012_blightdrake/battle.png",
+      "portrait": "assets/anomalies/an012_blightdrake/portrait.png",
+      "icon": "assets/anomalies/an012_blightdrake/icon.png",
+      "hp": 58,
+      "atk": 8,
+      "xp": 29,
+      "credits": 19,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blightdrake.png"
+    },
+    {
+      "id": "AN-013",
+      "slug": "blistercoil_drake",
+      "name": "Blistercoil Drake",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an013_blistercoil_drake",
+      "battle": "assets/anomalies/an013_blistercoil_drake/battle.png",
+      "portrait": "assets/anomalies/an013_blistercoil_drake/portrait.png",
+      "icon": "assets/anomalies/an013_blistercoil_drake/icon.png",
+      "hp": 61,
+      "atk": 9,
+      "xp": 30,
+      "credits": 20,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blistercoil_drake.png"
+    },
+    {
+      "id": "AN-014",
+      "slug": "blistergrub",
+      "name": "Blistergrub",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an014_blistergrub",
+      "battle": "assets/anomalies/an014_blistergrub/battle.png",
+      "portrait": "assets/anomalies/an014_blistergrub/portrait.png",
+      "icon": "assets/anomalies/an014_blistergrub/icon.png",
+      "hp": 64,
+      "atk": 10,
+      "xp": 32,
+      "credits": 21,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/blistergrub.png"
+    },
+    {
+      "id": "AN-015",
+      "slug": "bloodreaver_scarab",
+      "name": "Bloodreaver Scarab",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an015_bloodreaver_scarab",
+      "battle": "assets/anomalies/an015_bloodreaver_scarab/battle.png",
+      "portrait": "assets/anomalies/an015_bloodreaver_scarab/portrait.png",
+      "icon": "assets/anomalies/an015_bloodreaver_scarab/icon.png",
+      "hp": 67,
+      "atk": 11,
+      "xp": 33,
+      "credits": 22,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/bloodreaver_scarab.png"
+    },
+    {
+      "id": "AN-016",
+      "slug": "bonegnasher",
+      "name": "Bonegnasher",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an016_bonegnasher",
+      "battle": "assets/anomalies/an016_bonegnasher/battle.png",
+      "portrait": "assets/anomalies/an016_bonegnasher/portrait.png",
+      "icon": "assets/anomalies/an016_bonegnasher/icon.png",
+      "hp": 70,
+      "atk": 12,
+      "xp": 35,
+      "credits": 23,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/bonegnasher.png"
+    },
+    {
+      "id": "AN-017",
+      "slug": "bramblechoke_horror",
+      "name": "Bramblechoke Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an017_bramblechoke_horror",
+      "battle": "assets/anomalies/an017_bramblechoke_horror/battle.png",
+      "portrait": "assets/anomalies/an017_bramblechoke_horror/portrait.png",
+      "icon": "assets/anomalies/an017_bramblechoke_horror/icon.png",
+      "hp": 73,
+      "atk": 13,
+      "xp": 36,
+      "credits": 24,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/bramblechoke_horror.png"
+    },
+    {
+      "id": "AN-018",
+      "slug": "carrion_scarab",
+      "name": "Carrion Scarab",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an018_carrion_scarab",
+      "battle": "assets/anomalies/an018_carrion_scarab/battle.png",
+      "portrait": "assets/anomalies/an018_carrion_scarab/portrait.png",
+      "icon": "assets/anomalies/an018_carrion_scarab/icon.png",
+      "hp": 76,
+      "atk": 14,
+      "xp": 38,
+      "credits": 25,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/carrion_scarab.png"
+    },
+    {
+      "id": "AN-019",
+      "slug": "carrion_weaver",
+      "name": "Carrion Weaver",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an019_carrion_weaver",
+      "battle": "assets/anomalies/an019_carrion_weaver/battle.png",
+      "portrait": "assets/anomalies/an019_carrion_weaver/portrait.png",
+      "icon": "assets/anomalies/an019_carrion_weaver/icon.png",
+      "hp": 79,
+      "atk": 15,
+      "xp": 39,
+      "credits": 26,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/carrion_weaver.png"
+    },
+    {
+      "id": "AN-020",
+      "slug": "charnel_spawn",
+      "name": "Charnel Spawn",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an020_charnel_spawn",
+      "battle": "assets/anomalies/an020_charnel_spawn/battle.png",
+      "portrait": "assets/anomalies/an020_charnel_spawn/portrait.png",
+      "icon": "assets/anomalies/an020_charnel_spawn/icon.png",
+      "hp": 82,
+      "atk": 7,
+      "xp": 41,
+      "credits": 27,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/charnel_spawn.png"
+    },
+    {
+      "id": "AN-021",
+      "slug": "cindershade_horror",
+      "name": "Cindershade Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an021_cindershade_horror",
+      "battle": "assets/anomalies/an021_cindershade_horror/battle.png",
+      "portrait": "assets/anomalies/an021_cindershade_horror/portrait.png",
+      "icon": "assets/anomalies/an021_cindershade_horror/icon.png",
+      "hp": 85,
+      "atk": 8,
+      "xp": 42,
+      "credits": 28,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cindershade_horror.png"
+    },
+    {
+      "id": "AN-022",
+      "slug": "cindershroud_wisp",
+      "name": "Cindershroud Wisp",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an022_cindershroud_wisp",
+      "battle": "assets/anomalies/an022_cindershroud_wisp/battle.png",
+      "portrait": "assets/anomalies/an022_cindershroud_wisp/portrait.png",
+      "icon": "assets/anomalies/an022_cindershroud_wisp/icon.png",
+      "hp": 88,
+      "atk": 9,
+      "xp": 44,
+      "credits": 29,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cindershroud_wisp.png"
+    },
+    {
+      "id": "AN-023",
+      "slug": "cragjaw",
+      "name": "Cragjaw",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an023_cragjaw",
+      "battle": "assets/anomalies/an023_cragjaw/battle.png",
+      "portrait": "assets/anomalies/an023_cragjaw/portrait.png",
+      "icon": "assets/anomalies/an023_cragjaw/icon.png",
+      "hp": 91,
+      "atk": 10,
+      "xp": 45,
+      "credits": 30,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cragjaw.png"
+    },
+    {
+      "id": "AN-024",
+      "slug": "cragrot_shambler",
+      "name": "Cragrot Shambler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an024_cragrot_shambler",
+      "battle": "assets/anomalies/an024_cragrot_shambler/battle.png",
+      "portrait": "assets/anomalies/an024_cragrot_shambler/portrait.png",
+      "icon": "assets/anomalies/an024_cragrot_shambler/icon.png",
+      "hp": 94,
+      "atk": 11,
+      "xp": 47,
+      "credits": 31,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cragrot_shambler.png"
+    },
+    {
+      "id": "AN-025",
+      "slug": "crypt_blight",
+      "name": "Crypt Blight",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an025_crypt_blight",
+      "battle": "assets/anomalies/an025_crypt_blight/battle.png",
+      "portrait": "assets/anomalies/an025_crypt_blight/portrait.png",
+      "icon": "assets/anomalies/an025_crypt_blight/icon.png",
+      "hp": 97,
+      "atk": 12,
+      "xp": 48,
+      "credits": 32,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_blight.png"
+    },
+    {
+      "id": "AN-026",
+      "slug": "crypt_darter",
+      "name": "Crypt Darter",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an026_crypt_darter",
+      "battle": "assets/anomalies/an026_crypt_darter/battle.png",
+      "portrait": "assets/anomalies/an026_crypt_darter/portrait.png",
+      "icon": "assets/anomalies/an026_crypt_darter/icon.png",
+      "hp": 100,
+      "atk": 13,
+      "xp": 50,
+      "credits": 33,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_darter.png"
+    },
+    {
+      "id": "AN-027",
+      "slug": "crypt_ghast",
+      "name": "Crypt Ghast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an027_crypt_ghast",
+      "battle": "assets/anomalies/an027_crypt_ghast/battle.png",
+      "portrait": "assets/anomalies/an027_crypt_ghast/portrait.png",
+      "icon": "assets/anomalies/an027_crypt_ghast/icon.png",
+      "hp": 103,
+      "atk": 14,
+      "xp": 51,
+      "credits": 34,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_ghast.png"
+    },
+    {
+      "id": "AN-028",
+      "slug": "crypt_howler",
+      "name": "Crypt Howler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an028_crypt_howler",
+      "battle": "assets/anomalies/an028_crypt_howler/battle.png",
+      "portrait": "assets/anomalies/an028_crypt_howler/portrait.png",
+      "icon": "assets/anomalies/an028_crypt_howler/icon.png",
+      "hp": 106,
+      "atk": 15,
+      "xp": 53,
+      "credits": 35,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_howler.png"
+    },
+    {
+      "id": "AN-029",
+      "slug": "crypt_ravager",
+      "name": "Crypt Ravager",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an029_crypt_ravager",
+      "battle": "assets/anomalies/an029_crypt_ravager/battle.png",
+      "portrait": "assets/anomalies/an029_crypt_ravager/portrait.png",
+      "icon": "assets/anomalies/an029_crypt_ravager/icon.png",
+      "hp": 109,
+      "atk": 7,
+      "xp": 54,
+      "credits": 36,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_ravager.png"
+    },
+    {
+      "id": "AN-030",
+      "slug": "crypt_serpent",
+      "name": "Crypt Serpent",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an030_crypt_serpent",
+      "battle": "assets/anomalies/an030_crypt_serpent/battle.png",
+      "portrait": "assets/anomalies/an030_crypt_serpent/portrait.png",
+      "icon": "assets/anomalies/an030_crypt_serpent/icon.png",
+      "hp": 112,
+      "atk": 8,
+      "xp": 56,
+      "credits": 37,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_serpent.png"
+    },
+    {
+      "id": "AN-031",
+      "slug": "crypt_widow",
+      "name": "Crypt Widow",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an031_crypt_widow",
+      "battle": "assets/anomalies/an031_crypt_widow/battle.png",
+      "portrait": "assets/anomalies/an031_crypt_widow/portrait.png",
+      "icon": "assets/anomalies/an031_crypt_widow/icon.png",
+      "hp": 115,
+      "atk": 9,
+      "xp": 57,
+      "credits": 38,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/crypt_widow.png"
+    },
+    {
+      "id": "AN-032",
+      "slug": "cryptbane_spider",
+      "name": "Cryptbane Spider",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an032_cryptbane_spider",
+      "battle": "assets/anomalies/an032_cryptbane_spider/battle.png",
+      "portrait": "assets/anomalies/an032_cryptbane_spider/portrait.png",
+      "icon": "assets/anomalies/an032_cryptbane_spider/icon.png",
+      "hp": 118,
+      "atk": 10,
+      "xp": 59,
+      "credits": 39,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cryptbane_spider.png"
+    },
+    {
+      "id": "AN-033",
+      "slug": "cryptmire_beast",
+      "name": "Cryptmire Beast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an033_cryptmire_beast",
+      "battle": "assets/anomalies/an033_cryptmire_beast/battle.png",
+      "portrait": "assets/anomalies/an033_cryptmire_beast/portrait.png",
+      "icon": "assets/anomalies/an033_cryptmire_beast/icon.png",
+      "hp": 121,
+      "atk": 11,
+      "xp": 60,
+      "credits": 40,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/cryptmire_beast.png"
+    },
+    {
+      "id": "AN-034",
+      "slug": "deathrot_spawn",
+      "name": "Deathrot Spawn",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an034_deathrot_spawn",
+      "battle": "assets/anomalies/an034_deathrot_spawn/battle.png",
+      "portrait": "assets/anomalies/an034_deathrot_spawn/portrait.png",
+      "icon": "assets/anomalies/an034_deathrot_spawn/icon.png",
+      "hp": 124,
+      "atk": 12,
+      "xp": 62,
+      "credits": 41,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/deathrot_spawn.png"
+    },
+    {
+      "id": "AN-035",
+      "slug": "dreadthorn_lurker",
+      "name": "Dreadthorn Lurker",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an035_dreadthorn_lurker",
+      "battle": "assets/anomalies/an035_dreadthorn_lurker/battle.png",
+      "portrait": "assets/anomalies/an035_dreadthorn_lurker/portrait.png",
+      "icon": "assets/anomalies/an035_dreadthorn_lurker/icon.png",
+      "hp": 127,
+      "atk": 13,
+      "xp": 63,
+      "credits": 42,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/dreadthorn_lurker.png"
+    },
+    {
+      "id": "AN-036",
+      "slug": "duskgloom_howler",
+      "name": "Duskgloom Howler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an036_duskgloom_howler",
+      "battle": "assets/anomalies/an036_duskgloom_howler/battle.png",
+      "portrait": "assets/anomalies/an036_duskgloom_howler/portrait.png",
+      "icon": "assets/anomalies/an036_duskgloom_howler/icon.png",
+      "hp": 130,
+      "atk": 14,
+      "xp": 65,
+      "credits": 43,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskgloom_howler.png"
+    },
+    {
+      "id": "AN-037",
+      "slug": "duskthorn_beast",
+      "name": "Duskthorn Beast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an037_duskthorn_beast",
+      "battle": "assets/anomalies/an037_duskthorn_beast/battle.png",
+      "portrait": "assets/anomalies/an037_duskthorn_beast/portrait.png",
+      "icon": "assets/anomalies/an037_duskthorn_beast/icon.png",
+      "hp": 133,
+      "atk": 15,
+      "xp": 66,
+      "credits": 44,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskthorn_beast.png"
+    },
+    {
+      "id": "AN-038",
+      "slug": "duskwatch_bettle",
+      "name": "Duskwatch Bettle",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an038_duskwatch_bettle",
+      "battle": "assets/anomalies/an038_duskwatch_bettle/battle.png",
+      "portrait": "assets/anomalies/an038_duskwatch_bettle/portrait.png",
+      "icon": "assets/anomalies/an038_duskwatch_bettle/icon.png",
+      "hp": 136,
+      "atk": 7,
+      "xp": 68,
+      "credits": 45,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskwatch_bettle.png"
+    },
+    {
+      "id": "AN-039",
+      "slug": "duskwither",
+      "name": "Duskwither",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an039_duskwither",
+      "battle": "assets/anomalies/an039_duskwither/battle.png",
+      "portrait": "assets/anomalies/an039_duskwither/portrait.png",
+      "icon": "assets/anomalies/an039_duskwither/icon.png",
+      "hp": 139,
+      "atk": 8,
+      "xp": 69,
+      "credits": 46,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskwither.png"
+    },
+    {
+      "id": "AN-040",
+      "slug": "duskwither_shade",
+      "name": "Duskwither Shade",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an040_duskwither_shade",
+      "battle": "assets/anomalies/an040_duskwither_shade/battle.png",
+      "portrait": "assets/anomalies/an040_duskwither_shade/portrait.png",
+      "icon": "assets/anomalies/an040_duskwither_shade/icon.png",
+      "hp": 142,
+      "atk": 9,
+      "xp": 71,
+      "credits": 47,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskwither_shade.png"
+    },
+    {
+      "id": "AN-041",
+      "slug": "duskworm",
+      "name": "Duskworm",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an041_duskworm",
+      "battle": "assets/anomalies/an041_duskworm/battle.png",
+      "portrait": "assets/anomalies/an041_duskworm/portrait.png",
+      "icon": "assets/anomalies/an041_duskworm/icon.png",
+      "hp": 145,
+      "atk": 10,
+      "xp": 72,
+      "credits": 48,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/duskworm.png"
+    },
+    {
+      "id": "AN-042",
+      "slug": "ember_beetle",
+      "name": "Ember Beetle",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an042_ember_beetle",
+      "battle": "assets/anomalies/an042_ember_beetle/battle.png",
+      "portrait": "assets/anomalies/an042_ember_beetle/portrait.png",
+      "icon": "assets/anomalies/an042_ember_beetle/icon.png",
+      "hp": 148,
+      "atk": 11,
+      "xp": 74,
+      "credits": 49,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/ember_beetle.png"
+    },
+    {
+      "id": "AN-043",
+      "slug": "embergnash_scarab",
+      "name": "Embergnash Scarab",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an043_embergnash_scarab",
+      "battle": "assets/anomalies/an043_embergnash_scarab/battle.png",
+      "portrait": "assets/anomalies/an043_embergnash_scarab/portrait.png",
+      "icon": "assets/anomalies/an043_embergnash_scarab/icon.png",
+      "hp": 151,
+      "atk": 12,
+      "xp": 75,
+      "credits": 50,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/embergnash_scarab.png"
+    },
+    {
+      "id": "AN-044",
+      "slug": "frostgrave_abomination",
+      "name": "Frostgrave Abomination",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an044_frostgrave_abomination",
+      "battle": "assets/anomalies/an044_frostgrave_abomination/battle.png",
+      "portrait": "assets/anomalies/an044_frostgrave_abomination/portrait.png",
+      "icon": "assets/anomalies/an044_frostgrave_abomination/icon.png",
+      "hp": 154,
+      "atk": 13,
+      "xp": 77,
+      "credits": 51,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/frostgrave_abomination.png"
+    },
+    {
+      "id": "AN-045",
+      "slug": "gloomwing",
+      "name": "Gloomwing",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an045_gloomwing",
+      "battle": "assets/anomalies/an045_gloomwing/battle.png",
+      "portrait": "assets/anomalies/an045_gloomwing/portrait.png",
+      "icon": "assets/anomalies/an045_gloomwing/icon.png",
+      "hp": 157,
+      "atk": 14,
+      "xp": 78,
+      "credits": 52,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/gloomwing.png"
+    },
+    {
+      "id": "AN-046",
+      "slug": "grave_vulture",
+      "name": "Grave Vulture",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an046_grave_vulture",
+      "battle": "assets/anomalies/an046_grave_vulture/battle.png",
+      "portrait": "assets/anomalies/an046_grave_vulture/portrait.png",
+      "icon": "assets/anomalies/an046_grave_vulture/icon.png",
+      "hp": 160,
+      "atk": 15,
+      "xp": 80,
+      "credits": 53,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/grave_vulture.png"
+    },
+    {
+      "id": "AN-047",
+      "slug": "graveblade_stalker",
+      "name": "Graveblade Stalker",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an047_graveblade_stalker",
+      "battle": "assets/anomalies/an047_graveblade_stalker/battle.png",
+      "portrait": "assets/anomalies/an047_graveblade_stalker/portrait.png",
+      "icon": "assets/anomalies/an047_graveblade_stalker/icon.png",
+      "hp": 163,
+      "atk": 7,
+      "xp": 81,
+      "credits": 54,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/graveblade_stalker.png"
+    },
+    {
+      "id": "AN-048",
+      "slug": "gravebloom_horror",
+      "name": "Gravebloom Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an048_gravebloom_horror",
+      "battle": "assets/anomalies/an048_gravebloom_horror/battle.png",
+      "portrait": "assets/anomalies/an048_gravebloom_horror/portrait.png",
+      "icon": "assets/anomalies/an048_gravebloom_horror/icon.png",
+      "hp": 166,
+      "atk": 8,
+      "xp": 83,
+      "credits": 55,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/gravebloom_horror.png"
+    },
+    {
+      "id": "AN-049",
+      "slug": "graveborn_wretch",
+      "name": "Graveborn Wretch",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an049_graveborn_wretch",
+      "battle": "assets/anomalies/an049_graveborn_wretch/battle.png",
+      "portrait": "assets/anomalies/an049_graveborn_wretch/portrait.png",
+      "icon": "assets/anomalies/an049_graveborn_wretch/icon.png",
+      "hp": 169,
+      "atk": 9,
+      "xp": 84,
+      "credits": 56,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/graveborn_wretch.png"
+    },
+    {
+      "id": "AN-050",
+      "slug": "gravecoil",
+      "name": "Gravecoil",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an050_gravecoil",
+      "battle": "assets/anomalies/an050_gravecoil/battle.png",
+      "portrait": "assets/anomalies/an050_gravecoil/portrait.png",
+      "icon": "assets/anomalies/an050_gravecoil/icon.png",
+      "hp": 172,
+      "atk": 10,
+      "xp": 86,
+      "credits": 57,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/gravecoil.png"
+    },
+    {
+      "id": "AN-051",
+      "slug": "gravemarrow",
+      "name": "Gravemarrow",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an051_gravemarrow",
+      "battle": "assets/anomalies/an051_gravemarrow/battle.png",
+      "portrait": "assets/anomalies/an051_gravemarrow/portrait.png",
+      "icon": "assets/anomalies/an051_gravemarrow/icon.png",
+      "hp": 175,
+      "atk": 11,
+      "xp": 87,
+      "credits": 58,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/gravemarrow.png"
+    },
+    {
+      "id": "AN-052",
+      "slug": "gravemist_wyrm",
+      "name": "Gravemist Wyrm",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an052_gravemist_wyrm",
+      "battle": "assets/anomalies/an052_gravemist_wyrm/battle.png",
+      "portrait": "assets/anomalies/an052_gravemist_wyrm/portrait.png",
+      "icon": "assets/anomalies/an052_gravemist_wyrm/icon.png",
+      "hp": 178,
+      "atk": 12,
+      "xp": 89,
+      "credits": 59,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/gravemist_wyrm.png"
+    },
+    {
+      "id": "AN-053",
+      "slug": "grime_crawler",
+      "name": "Grime Crawler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an053_grime_crawler",
+      "battle": "assets/anomalies/an053_grime_crawler/battle.png",
+      "portrait": "assets/anomalies/an053_grime_crawler/portrait.png",
+      "icon": "assets/anomalies/an053_grime_crawler/icon.png",
+      "hp": 181,
+      "atk": 13,
+      "xp": 90,
+      "credits": 60,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/grime_crawler.png"
+    },
+    {
+      "id": "AN-054",
+      "slug": "hollow_hound",
+      "name": "Hollow Hound",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an054_hollow_hound",
+      "battle": "assets/anomalies/an054_hollow_hound/battle.png",
+      "portrait": "assets/anomalies/an054_hollow_hound/portrait.png",
+      "icon": "assets/anomalies/an054_hollow_hound/icon.png",
+      "hp": 184,
+      "atk": 14,
+      "xp": 92,
+      "credits": 61,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/hollow_hound.png"
+    },
+    {
+      "id": "AN-055",
+      "slug": "hollow_revenant",
+      "name": "Hollow Revenant",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an055_hollow_revenant",
+      "battle": "assets/anomalies/an055_hollow_revenant/battle.png",
+      "portrait": "assets/anomalies/an055_hollow_revenant/portrait.png",
+      "icon": "assets/anomalies/an055_hollow_revenant/icon.png",
+      "hp": 187,
+      "atk": 15,
+      "xp": 93,
+      "credits": 62,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/hollow_revenant.png"
+    },
+    {
+      "id": "AN-056",
+      "slug": "hollow_scarab",
+      "name": "Hollow Scarab",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an056_hollow_scarab",
+      "battle": "assets/anomalies/an056_hollow_scarab/battle.png",
+      "portrait": "assets/anomalies/an056_hollow_scarab/portrait.png",
+      "icon": "assets/anomalies/an056_hollow_scarab/icon.png",
+      "hp": 190,
+      "atk": 7,
+      "xp": 95,
+      "credits": 63,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/hollow_scarab.png"
+    },
+    {
+      "id": "AN-057",
+      "slug": "hollow_weaver",
+      "name": "Hollow Weaver",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an057_hollow_weaver",
+      "battle": "assets/anomalies/an057_hollow_weaver/battle.png",
+      "portrait": "assets/anomalies/an057_hollow_weaver/portrait.png",
+      "icon": "assets/anomalies/an057_hollow_weaver/icon.png",
+      "hp": 193,
+      "atk": 8,
+      "xp": 96,
+      "credits": 64,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/hollow_weaver.png"
+    },
+    {
+      "id": "AN-058",
+      "slug": "hollowfang",
+      "name": "Hollowfang",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an058_hollowfang",
+      "battle": "assets/anomalies/an058_hollowfang/battle.png",
+      "portrait": "assets/anomalies/an058_hollowfang/portrait.png",
+      "icon": "assets/anomalies/an058_hollowfang/icon.png",
+      "hp": 196,
+      "atk": 9,
+      "xp": 98,
+      "credits": 65,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/hollowfang.png"
+    },
+    {
+      "id": "AN-059",
+      "slug": "mire_thrasher",
+      "name": "Mire Thrasher",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an059_mire_thrasher",
+      "battle": "assets/anomalies/an059_mire_thrasher/battle.png",
+      "portrait": "assets/anomalies/an059_mire_thrasher/portrait.png",
+      "icon": "assets/anomalies/an059_mire_thrasher/icon.png",
+      "hp": 199,
+      "atk": 10,
+      "xp": 99,
+      "credits": 66,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mire_thrasher.png"
+    },
+    {
+      "id": "AN-060",
+      "slug": "mireclaw",
+      "name": "Mireclaw",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an060_mireclaw",
+      "battle": "assets/anomalies/an060_mireclaw/battle.png",
+      "portrait": "assets/anomalies/an060_mireclaw/portrait.png",
+      "icon": "assets/anomalies/an060_mireclaw/icon.png",
+      "hp": 202,
+      "atk": 11,
+      "xp": 101,
+      "credits": 67,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mireclaw.png"
+    },
+    {
+      "id": "AN-061",
+      "slug": "miregulper_beast",
+      "name": "Miregulper Beast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an061_miregulper_beast",
+      "battle": "assets/anomalies/an061_miregulper_beast/battle.png",
+      "portrait": "assets/anomalies/an061_miregulper_beast/portrait.png",
+      "icon": "assets/anomalies/an061_miregulper_beast/icon.png",
+      "hp": 205,
+      "atk": 12,
+      "xp": 102,
+      "credits": 68,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/miregulper_beast.png"
+    },
+    {
+      "id": "AN-062",
+      "slug": "mirehowl",
+      "name": "Mirehowl",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an062_mirehowl",
+      "battle": "assets/anomalies/an062_mirehowl/battle.png",
+      "portrait": "assets/anomalies/an062_mirehowl/portrait.png",
+      "icon": "assets/anomalies/an062_mirehowl/icon.png",
+      "hp": 208,
+      "atk": 13,
+      "xp": 104,
+      "credits": 69,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mirehowl.png"
+    },
+    {
+      "id": "AN-063",
+      "slug": "mireling",
+      "name": "Mireling",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an063_mireling",
+      "battle": "assets/anomalies/an063_mireling/battle.png",
+      "portrait": "assets/anomalies/an063_mireling/portrait.png",
+      "icon": "assets/anomalies/an063_mireling/icon.png",
+      "hp": 211,
+      "atk": 14,
+      "xp": 105,
+      "credits": 70,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mireling.png"
+    },
+    {
+      "id": "AN-064",
+      "slug": "mireling_matron",
+      "name": "Mireling Matron",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an064_mireling_matron",
+      "battle": "assets/anomalies/an064_mireling_matron/battle.png",
+      "portrait": "assets/anomalies/an064_mireling_matron/portrait.png",
+      "icon": "assets/anomalies/an064_mireling_matron/icon.png",
+      "hp": 214,
+      "atk": 15,
+      "xp": 107,
+      "credits": 71,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mireling_matron.png"
+    },
+    {
+      "id": "AN-065",
+      "slug": "mirevenom_brood",
+      "name": "Mirevenom Brood",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an065_mirevenom_brood",
+      "battle": "assets/anomalies/an065_mirevenom_brood/battle.png",
+      "portrait": "assets/anomalies/an065_mirevenom_brood/portrait.png",
+      "icon": "assets/anomalies/an065_mirevenom_brood/icon.png",
+      "hp": 217,
+      "atk": 7,
+      "xp": 108,
+      "credits": 72,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mirevenom_brood.png"
+    },
+    {
+      "id": "AN-066",
+      "slug": "mossvile_serpent",
+      "name": "Mossvile Serpent",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an066_mossvile_serpent",
+      "battle": "assets/anomalies/an066_mossvile_serpent/battle.png",
+      "portrait": "assets/anomalies/an066_mossvile_serpent/portrait.png",
+      "icon": "assets/anomalies/an066_mossvile_serpent/icon.png",
+      "hp": 220,
+      "atk": 8,
+      "xp": 110,
+      "credits": 73,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/mossvile_serpent.png"
+    },
+    {
+      "id": "AN-067",
+      "slug": "murkmaw_drake",
+      "name": "Murkmaw Drake",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an067_murkmaw_drake",
+      "battle": "assets/anomalies/an067_murkmaw_drake/battle.png",
+      "portrait": "assets/anomalies/an067_murkmaw_drake/portrait.png",
+      "icon": "assets/anomalies/an067_murkmaw_drake/icon.png",
+      "hp": 223,
+      "atk": 9,
+      "xp": 111,
+      "credits": 74,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/murkmaw_drake.png"
+    },
+    {
+      "id": "AN-068",
+      "slug": "nightmaw_leech",
+      "name": "Nightmaw Leech",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an068_nightmaw_leech",
+      "battle": "assets/anomalies/an068_nightmaw_leech/battle.png",
+      "portrait": "assets/anomalies/an068_nightmaw_leech/portrait.png",
+      "icon": "assets/anomalies/an068_nightmaw_leech/icon.png",
+      "hp": 226,
+      "atk": 10,
+      "xp": 113,
+      "credits": 75,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/nightmaw_leech.png"
+    },
+    {
+      "id": "AN-069",
+      "slug": "nocturn_husk",
+      "name": "Nocturn Husk",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an069_nocturn_husk",
+      "battle": "assets/anomalies/an069_nocturn_husk/battle.png",
+      "portrait": "assets/anomalies/an069_nocturn_husk/portrait.png",
+      "icon": "assets/anomalies/an069_nocturn_husk/icon.png",
+      "hp": 229,
+      "atk": 11,
+      "xp": 114,
+      "credits": 76,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/nocturn_husk.png"
+    },
+    {
+      "id": "AN-070",
+      "slug": "noxious_bloom",
+      "name": "Noxious Bloom",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an070_noxious_bloom",
+      "battle": "assets/anomalies/an070_noxious_bloom/battle.png",
+      "portrait": "assets/anomalies/an070_noxious_bloom/portrait.png",
+      "icon": "assets/anomalies/an070_noxious_bloom/icon.png",
+      "hp": 232,
+      "atk": 12,
+      "xp": 116,
+      "credits": 77,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/noxious_bloom.png"
+    },
+    {
+      "id": "AN-071",
+      "slug": "noxmire_spawn",
+      "name": "Noxmire Spawn",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an071_noxmire_spawn",
+      "battle": "assets/anomalies/an071_noxmire_spawn/battle.png",
+      "portrait": "assets/anomalies/an071_noxmire_spawn/portrait.png",
+      "icon": "assets/anomalies/an071_noxmire_spawn/icon.png",
+      "hp": 235,
+      "atk": 13,
+      "xp": 117,
+      "credits": 78,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/noxmire_spawn.png"
+    },
+    {
+      "id": "AN-072",
+      "slug": "noxthorn_drake",
+      "name": "Noxthorn Drake",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an072_noxthorn_drake",
+      "battle": "assets/anomalies/an072_noxthorn_drake/battle.png",
+      "portrait": "assets/anomalies/an072_noxthorn_drake/portrait.png",
+      "icon": "assets/anomalies/an072_noxthorn_drake/icon.png",
+      "hp": 238,
+      "atk": 14,
+      "xp": 119,
+      "credits": 79,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/noxthorn_drake.png"
+    },
+    {
+      "id": "AN-073",
+      "slug": "noxvine_horror",
+      "name": "Noxvine Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an073_noxvine_horror",
+      "battle": "assets/anomalies/an073_noxvine_horror/battle.png",
+      "portrait": "assets/anomalies/an073_noxvine_horror/portrait.png",
+      "icon": "assets/anomalies/an073_noxvine_horror/icon.png",
+      "hp": 241,
+      "atk": 15,
+      "xp": 120,
+      "credits": 80,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/noxvine_horror.png"
+    },
+    {
+      "id": "AN-074",
+      "slug": "plague_shambler",
+      "name": "Plague Shambler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an074_plague_shambler",
+      "battle": "assets/anomalies/an074_plague_shambler/battle.png",
+      "portrait": "assets/anomalies/an074_plague_shambler/portrait.png",
+      "icon": "assets/anomalies/an074_plague_shambler/icon.png",
+      "hp": 244,
+      "atk": 7,
+      "xp": 122,
+      "credits": 81,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/plague_shambler.png"
+    },
+    {
+      "id": "AN-075",
+      "slug": "plaguefly",
+      "name": "Plaguefly",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an075_plaguefly",
+      "battle": "assets/anomalies/an075_plaguefly/battle.png",
+      "portrait": "assets/anomalies/an075_plaguefly/portrait.png",
+      "icon": "assets/anomalies/an075_plaguefly/icon.png",
+      "hp": 247,
+      "atk": 8,
+      "xp": 123,
+      "credits": 82,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/plaguefly.png"
+    },
+    {
+      "id": "AN-076",
+      "slug": "rimeclaw_stalker",
+      "name": "Rimeclaw Stalker",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an076_rimeclaw_stalker",
+      "battle": "assets/anomalies/an076_rimeclaw_stalker/battle.png",
+      "portrait": "assets/anomalies/an076_rimeclaw_stalker/portrait.png",
+      "icon": "assets/anomalies/an076_rimeclaw_stalker/icon.png",
+      "hp": 250,
+      "atk": 9,
+      "xp": 125,
+      "credits": 83,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/rimeclaw_stalker.png"
+    },
+    {
+      "id": "AN-077",
+      "slug": "rotfiend",
+      "name": "Rotfiend",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an077_rotfiend",
+      "battle": "assets/anomalies/an077_rotfiend/battle.png",
+      "portrait": "assets/anomalies/an077_rotfiend/portrait.png",
+      "icon": "assets/anomalies/an077_rotfiend/icon.png",
+      "hp": 253,
+      "atk": 10,
+      "xp": 126,
+      "credits": 84,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/rotfiend.png"
+    },
+    {
+      "id": "AN-078",
+      "slug": "rotlash_creeper",
+      "name": "Rotlash Creeper",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an078_rotlash_creeper",
+      "battle": "assets/anomalies/an078_rotlash_creeper/battle.png",
+      "portrait": "assets/anomalies/an078_rotlash_creeper/portrait.png",
+      "icon": "assets/anomalies/an078_rotlash_creeper/icon.png",
+      "hp": 256,
+      "atk": 11,
+      "xp": 128,
+      "credits": 85,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/rotlash_creeper.png"
+    },
+    {
+      "id": "AN-079",
+      "slug": "rotmaw_howler",
+      "name": "Rotmaw Howler",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an079_rotmaw_howler",
+      "battle": "assets/anomalies/an079_rotmaw_howler/battle.png",
+      "portrait": "assets/anomalies/an079_rotmaw_howler/portrait.png",
+      "icon": "assets/anomalies/an079_rotmaw_howler/icon.png",
+      "hp": 259,
+      "atk": 12,
+      "xp": 129,
+      "credits": 86,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/rotmaw_howler.png"
+    },
+    {
+      "id": "AN-080",
+      "slug": "scorchbloom_horror",
+      "name": "Scorchbloom Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an080_scorchbloom_horror",
+      "battle": "assets/anomalies/an080_scorchbloom_horror/battle.png",
+      "portrait": "assets/anomalies/an080_scorchbloom_horror/portrait.png",
+      "icon": "assets/anomalies/an080_scorchbloom_horror/icon.png",
+      "hp": 262,
+      "atk": 13,
+      "xp": 131,
+      "credits": 87,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/scorchbloom_horror.png"
+    },
+    {
+      "id": "AN-081",
+      "slug": "shard_imp",
+      "name": "Shard Imp",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an081_shard_imp",
+      "battle": "assets/anomalies/an081_shard_imp/battle.png",
+      "portrait": "assets/anomalies/an081_shard_imp/portrait.png",
+      "icon": "assets/anomalies/an081_shard_imp/icon.png",
+      "hp": 265,
+      "atk": 14,
+      "xp": 132,
+      "credits": 88,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/shard_imp.png"
+    },
+    {
+      "id": "AN-082",
+      "slug": "shattermaw_beast",
+      "name": "Shattermaw Beast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an082_shattermaw_beast",
+      "battle": "assets/anomalies/an082_shattermaw_beast/battle.png",
+      "portrait": "assets/anomalies/an082_shattermaw_beast/portrait.png",
+      "icon": "assets/anomalies/an082_shattermaw_beast/icon.png",
+      "hp": 268,
+      "atk": 15,
+      "xp": 134,
+      "credits": 89,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/shattermaw_beast.png"
+    },
+    {
+      "id": "AN-083",
+      "slug": "sludgecarver",
+      "name": "Sludgecarver",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an083_sludgecarver",
+      "battle": "assets/anomalies/an083_sludgecarver/battle.png",
+      "portrait": "assets/anomalies/an083_sludgecarver/portrait.png",
+      "icon": "assets/anomalies/an083_sludgecarver/icon.png",
+      "hp": 271,
+      "atk": 7,
+      "xp": 135,
+      "credits": 90,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/sludgecarver.png"
+    },
+    {
+      "id": "AN-084",
+      "slug": "smogjaw_horror",
+      "name": "Smogjaw Horror",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an084_smogjaw_horror",
+      "battle": "assets/anomalies/an084_smogjaw_horror/battle.png",
+      "portrait": "assets/anomalies/an084_smogjaw_horror/portrait.png",
+      "icon": "assets/anomalies/an084_smogjaw_horror/icon.png",
+      "hp": 274,
+      "atk": 8,
+      "xp": 137,
+      "credits": 91,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/smogjaw_horror.png"
+    },
+    {
+      "id": "AN-085",
+      "slug": "smolderfang",
+      "name": "Smolderfang",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an085_smolderfang",
+      "battle": "assets/anomalies/an085_smolderfang/battle.png",
+      "portrait": "assets/anomalies/an085_smolderfang/portrait.png",
+      "icon": "assets/anomalies/an085_smolderfang/icon.png",
+      "hp": 277,
+      "atk": 9,
+      "xp": 138,
+      "credits": 92,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/smolderfang.png"
+    },
+    {
+      "id": "AN-086",
+      "slug": "smolderstalk",
+      "name": "Smolderstalk",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an086_smolderstalk",
+      "battle": "assets/anomalies/an086_smolderstalk/battle.png",
+      "portrait": "assets/anomalies/an086_smolderstalk/portrait.png",
+      "icon": "assets/anomalies/an086_smolderstalk/icon.png",
+      "hp": 280,
+      "atk": 10,
+      "xp": 140,
+      "credits": 93,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/smolderstalk.png"
+    },
+    {
+      "id": "AN-087",
+      "slug": "sootfang_revenant",
+      "name": "Sootfang Revenant",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an087_sootfang_revenant",
+      "battle": "assets/anomalies/an087_sootfang_revenant/battle.png",
+      "portrait": "assets/anomalies/an087_sootfang_revenant/portrait.png",
+      "icon": "assets/anomalies/an087_sootfang_revenant/icon.png",
+      "hp": 283,
+      "atk": 11,
+      "xp": 141,
+      "credits": 94,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/sootfang_revenant.png"
+    },
+    {
+      "id": "AN-088",
+      "slug": "soul_leech",
+      "name": "Soul Leech",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an088_soul_leech",
+      "battle": "assets/anomalies/an088_soul_leech/battle.png",
+      "portrait": "assets/anomalies/an088_soul_leech/portrait.png",
+      "icon": "assets/anomalies/an088_soul_leech/icon.png",
+      "hp": 286,
+      "atk": 12,
+      "xp": 143,
+      "credits": 95,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/soul_leech.png"
+    },
+    {
+      "id": "AN-089",
+      "slug": "spitewing",
+      "name": "Spitewing",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an089_spitewing",
+      "battle": "assets/anomalies/an089_spitewing/battle.png",
+      "portrait": "assets/anomalies/an089_spitewing/portrait.png",
+      "icon": "assets/anomalies/an089_spitewing/icon.png",
+      "hp": 289,
+      "atk": 13,
+      "xp": 144,
+      "credits": 96,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/spitewing.png"
+    },
+    {
+      "id": "AN-090",
+      "slug": "thornhide_behemoth",
+      "name": "Thornhide Behemoth",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an090_thornhide_behemoth",
+      "battle": "assets/anomalies/an090_thornhide_behemoth/battle.png",
+      "portrait": "assets/anomalies/an090_thornhide_behemoth/portrait.png",
+      "icon": "assets/anomalies/an090_thornhide_behemoth/icon.png",
+      "hp": 292,
+      "atk": 14,
+      "xp": 146,
+      "credits": 97,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/thornhide_behemoth.png"
+    },
+    {
+      "id": "AN-091",
+      "slug": "thornlash_revenant",
+      "name": "Thornlash Revenant",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an091_thornlash_revenant",
+      "battle": "assets/anomalies/an091_thornlash_revenant/battle.png",
+      "portrait": "assets/anomalies/an091_thornlash_revenant/portrait.png",
+      "icon": "assets/anomalies/an091_thornlash_revenant/icon.png",
+      "hp": 295,
+      "atk": 15,
+      "xp": 147,
+      "credits": 98,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/thornlash_revenant.png"
+    },
+    {
+      "id": "AN-092",
+      "slug": "thornmaw",
+      "name": "Thornmaw",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an092_thornmaw",
+      "battle": "assets/anomalies/an092_thornmaw/battle.png",
+      "portrait": "assets/anomalies/an092_thornmaw/portrait.png",
+      "icon": "assets/anomalies/an092_thornmaw/icon.png",
+      "hp": 298,
+      "atk": 7,
+      "xp": 149,
+      "credits": 99,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/thornmaw.png"
+    },
+    {
+      "id": "AN-093",
+      "slug": "tomb_viper",
+      "name": "Tomb Viper",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an093_tomb_viper",
+      "battle": "assets/anomalies/an093_tomb_viper/battle.png",
+      "portrait": "assets/anomalies/an093_tomb_viper/portrait.png",
+      "icon": "assets/anomalies/an093_tomb_viper/icon.png",
+      "hp": 301,
+      "atk": 8,
+      "xp": 150,
+      "credits": 100,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/tomb_viper.png"
+    },
+    {
+      "id": "AN-094",
+      "slug": "tomb_widow",
+      "name": "Tomb Widow",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an094_tomb_widow",
+      "battle": "assets/anomalies/an094_tomb_widow/battle.png",
+      "portrait": "assets/anomalies/an094_tomb_widow/portrait.png",
+      "icon": "assets/anomalies/an094_tomb_widow/icon.png",
+      "hp": 304,
+      "atk": 9,
+      "xp": 152,
+      "credits": 101,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/tomb_widow.png"
+    },
+    {
+      "id": "AN-095",
+      "slug": "venom_mite",
+      "name": "Venom Mite",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an095_venom_mite",
+      "battle": "assets/anomalies/an095_venom_mite/battle.png",
+      "portrait": "assets/anomalies/an095_venom_mite/portrait.png",
+      "icon": "assets/anomalies/an095_venom_mite/icon.png",
+      "hp": 307,
+      "atk": 10,
+      "xp": 153,
+      "credits": 102,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/venom_mite.png"
+    },
+    {
+      "id": "AN-096",
+      "slug": "venomspire_widow",
+      "name": "Venomspire Widow",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an096_venomspire_widow",
+      "battle": "assets/anomalies/an096_venomspire_widow/battle.png",
+      "portrait": "assets/anomalies/an096_venomspire_widow/portrait.png",
+      "icon": "assets/anomalies/an096_venomspire_widow/icon.png",
+      "hp": 310,
+      "atk": 11,
+      "xp": 155,
+      "credits": 103,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/venomspire_widow.png"
+    },
+    {
+      "id": "AN-097",
+      "slug": "vilethorn_beast",
+      "name": "Vilethorn Beast",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an097_vilethorn_beast",
+      "battle": "assets/anomalies/an097_vilethorn_beast/battle.png",
+      "portrait": "assets/anomalies/an097_vilethorn_beast/portrait.png",
+      "icon": "assets/anomalies/an097_vilethorn_beast/icon.png",
+      "hp": 313,
+      "atk": 12,
+      "xp": 156,
+      "credits": 104,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/vilethorn_beast.png"
+    },
+    {
+      "id": "AN-098",
+      "slug": "vilethorn_matron",
+      "name": "Vilethorn Matron",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an098_vilethorn_matron",
+      "battle": "assets/anomalies/an098_vilethorn_matron/battle.png",
+      "portrait": "assets/anomalies/an098_vilethorn_matron/portrait.png",
+      "icon": "assets/anomalies/an098_vilethorn_matron/icon.png",
+      "hp": 316,
+      "atk": 13,
+      "xp": 158,
+      "credits": 105,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/vilethorn_matron.png"
+    },
+    {
+      "id": "AN-099",
+      "slug": "witherling",
+      "name": "Witherling",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an099_witherling",
+      "battle": "assets/anomalies/an099_witherling/battle.png",
+      "portrait": "assets/anomalies/an099_witherling/portrait.png",
+      "icon": "assets/anomalies/an099_witherling/icon.png",
+      "hp": 319,
+      "atk": 14,
+      "xp": 159,
+      "credits": 106,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/witherling.png"
+    },
+    {
+      "id": "AN-100",
+      "slug": "wraithfang",
+      "name": "Wraithfang",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an100_wraithfang",
+      "battle": "assets/anomalies/an100_wraithfang/battle.png",
+      "portrait": "assets/anomalies/an100_wraithfang/portrait.png",
+      "icon": "assets/anomalies/an100_wraithfang/icon.png",
+      "hp": 322,
+      "atk": 15,
+      "xp": 161,
+      "credits": 107,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/wraithfang.png"
+    },
+    {
+      "id": "AN-101",
+      "slug": "wretchbane",
+      "name": "Wretchbane",
+      "type": "anomaly",
+      "assetFolder": "assets/anomalies/an101_wretchbane",
+      "battle": "assets/anomalies/an101_wretchbane/battle.png",
+      "portrait": "assets/anomalies/an101_wretchbane/portrait.png",
+      "icon": "assets/anomalies/an101_wretchbane/icon.png",
+      "hp": 325,
+      "atk": 7,
+      "xp": 162,
+      "credits": 108,
+      "loot": [
+        "Scrap Metal",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "monsters/wretchbane.png"
+    }
+  ],
+  "bosses": [
+    {
+      "id": "BOSS-002",
+      "slug": "ashborn_revenant_lord",
+      "name": "Ashborn Revenant Lord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss002_ashborn_revenant_lord",
+      "battle": "assets/bosses/boss002_ashborn_revenant_lord/battle.png",
+      "portrait": "assets/bosses/boss002_ashborn_revenant_lord/portrait.png",
+      "icon": "assets/bosses/boss002_ashborn_revenant_lord/icon.png",
+      "hp": 120,
+      "atk": 16,
+      "xp": 60,
+      "credits": 40,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashborn_revenant_lord.png"
+    },
+    {
+      "id": "BOSS-003",
+      "slug": "ashen_horror_overlord",
+      "name": "Ashen Horror Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss003_ashen_horror_overlord",
+      "battle": "assets/bosses/boss003_ashen_horror_overlord/battle.png",
+      "portrait": "assets/bosses/boss003_ashen_horror_overlord/portrait.png",
+      "icon": "assets/bosses/boss003_ashen_horror_overlord/icon.png",
+      "hp": 138,
+      "atk": 17,
+      "xp": 69,
+      "credits": 46,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashen_horror_overlord.png"
+    },
+    {
+      "id": "BOSS-004",
+      "slug": "ashen_revenant_titan",
+      "name": "Ashen Revenant Titan",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss004_ashen_revenant_titan",
+      "battle": "assets/bosses/boss004_ashen_revenant_titan/battle.png",
+      "portrait": "assets/bosses/boss004_ashen_revenant_titan/portrait.png",
+      "icon": "assets/bosses/boss004_ashen_revenant_titan/icon.png",
+      "hp": 156,
+      "atk": 18,
+      "xp": 78,
+      "credits": 52,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashen_revenant_titan.png"
+    },
+    {
+      "id": "BOSS-005",
+      "slug": "ashen_whelp_matriarch",
+      "name": "Ashen Whelp Matriarch",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss005_ashen_whelp_matriarch",
+      "battle": "assets/bosses/boss005_ashen_whelp_matriarch/battle.png",
+      "portrait": "assets/bosses/boss005_ashen_whelp_matriarch/portrait.png",
+      "icon": "assets/bosses/boss005_ashen_whelp_matriarch/icon.png",
+      "hp": 174,
+      "atk": 19,
+      "xp": 87,
+      "credits": 58,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashen_whelp_matriarch.png"
+    },
+    {
+      "id": "BOSS-006",
+      "slug": "ashfang_serpent_alpha",
+      "name": "Ashfang Serpent Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss006_ashfang_serpent_alpha",
+      "battle": "assets/bosses/boss006_ashfang_serpent_alpha/battle.png",
+      "portrait": "assets/bosses/boss006_ashfang_serpent_alpha/portrait.png",
+      "icon": "assets/bosses/boss006_ashfang_serpent_alpha/icon.png",
+      "hp": 192,
+      "atk": 20,
+      "xp": 96,
+      "credits": 64,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashfang_serpent_alpha.png"
+    },
+    {
+      "id": "BOSS-007",
+      "slug": "ashveil_spider_mother",
+      "name": "Ashveil Spider Mother",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss007_ashveil_spider_mother",
+      "battle": "assets/bosses/boss007_ashveil_spider_mother/battle.png",
+      "portrait": "assets/bosses/boss007_ashveil_spider_mother/portrait.png",
+      "icon": "assets/bosses/boss007_ashveil_spider_mother/icon.png",
+      "hp": 210,
+      "atk": 21,
+      "xp": 105,
+      "credits": 70,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/ashveil_spider_mother.png"
+    },
+    {
+      "id": "BOSS-008",
+      "slug": "bilebrood_overfiend",
+      "name": "Bilebrood Overfiend",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss008_bilebrood_overfiend",
+      "battle": "assets/bosses/boss008_bilebrood_overfiend/battle.png",
+      "portrait": "assets/bosses/boss008_bilebrood_overfiend/portrait.png",
+      "icon": "assets/bosses/boss008_bilebrood_overfiend/icon.png",
+      "hp": 228,
+      "atk": 22,
+      "xp": 114,
+      "credits": 76,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/bilebrood_overfiend.png"
+    },
+    {
+      "id": "BOSS-009",
+      "slug": "blight_widow_queen",
+      "name": "Blight Widow Queen",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss009_blight_widow_queen",
+      "battle": "assets/bosses/boss009_blight_widow_queen/battle.png",
+      "portrait": "assets/bosses/boss009_blight_widow_queen/portrait.png",
+      "icon": "assets/bosses/boss009_blight_widow_queen/icon.png",
+      "hp": 246,
+      "atk": 23,
+      "xp": 123,
+      "credits": 82,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/blight_widow_queen.png"
+    },
+    {
+      "id": "BOSS-010",
+      "slug": "blightclaw_ravager_alpha",
+      "name": "Blightclaw Ravager Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss010_blightclaw_ravager_alpha",
+      "battle": "assets/bosses/boss010_blightclaw_ravager_alpha/battle.png",
+      "portrait": "assets/bosses/boss010_blightclaw_ravager_alpha/portrait.png",
+      "icon": "assets/bosses/boss010_blightclaw_ravager_alpha/icon.png",
+      "hp": 264,
+      "atk": 24,
+      "xp": 132,
+      "credits": 88,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/blightclaw_ravager_alpha.png"
+    },
+    {
+      "id": "BOSS-011",
+      "slug": "blightdrake_abomination",
+      "name": "Blightdrake Abomination",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss011_blightdrake_abomination",
+      "battle": "assets/bosses/boss011_blightdrake_abomination/battle.png",
+      "portrait": "assets/bosses/boss011_blightdrake_abomination/portrait.png",
+      "icon": "assets/bosses/boss011_blightdrake_abomination/icon.png",
+      "hp": 282,
+      "atk": 25,
+      "xp": 141,
+      "credits": 94,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/blightdrake_abomination.png"
+    },
+    {
+      "id": "BOSS-012",
+      "slug": "cindershade_horror_king",
+      "name": "Cindershade Horror King",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss012_cindershade_horror_king",
+      "battle": "assets/bosses/boss012_cindershade_horror_king/battle.png",
+      "portrait": "assets/bosses/boss012_cindershade_horror_king/portrait.png",
+      "icon": "assets/bosses/boss012_cindershade_horror_king/icon.png",
+      "hp": 300,
+      "atk": 26,
+      "xp": 150,
+      "credits": 100,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/cindershade_horror_king.png"
+    },
+    {
+      "id": "BOSS-013",
+      "slug": "crypt_blight_overlord",
+      "name": "Crypt Blight Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss013_crypt_blight_overlord",
+      "battle": "assets/bosses/boss013_crypt_blight_overlord/battle.png",
+      "portrait": "assets/bosses/boss013_crypt_blight_overlord/portrait.png",
+      "icon": "assets/bosses/boss013_crypt_blight_overlord/icon.png",
+      "hp": 318,
+      "atk": 27,
+      "xp": 159,
+      "credits": 106,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/crypt_blight_overlord.png"
+    },
+    {
+      "id": "BOSS-014",
+      "slug": "crypt_ghast_lord",
+      "name": "Crypt Ghast Lord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss014_crypt_ghast_lord",
+      "battle": "assets/bosses/boss014_crypt_ghast_lord/battle.png",
+      "portrait": "assets/bosses/boss014_crypt_ghast_lord/portrait.png",
+      "icon": "assets/bosses/boss014_crypt_ghast_lord/icon.png",
+      "hp": 336,
+      "atk": 16,
+      "xp": 168,
+      "credits": 112,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/crypt_ghast_lord.png"
+    },
+    {
+      "id": "BOSS-015",
+      "slug": "crypt_ravager_dreadknight",
+      "name": "Crypt Ravager Dreadknight",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss015_crypt_ravager_dreadknight",
+      "battle": "assets/bosses/boss015_crypt_ravager_dreadknight/battle.png",
+      "portrait": "assets/bosses/boss015_crypt_ravager_dreadknight/portrait.png",
+      "icon": "assets/bosses/boss015_crypt_ravager_dreadknight/icon.png",
+      "hp": 354,
+      "atk": 17,
+      "xp": 177,
+      "credits": 118,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/crypt_ravager_dreadknight.png"
+    },
+    {
+      "id": "BOSS-016",
+      "slug": "cryptmire_beast_alpha",
+      "name": "Cryptmire Beast Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss016_cryptmire_beast_alpha",
+      "battle": "assets/bosses/boss016_cryptmire_beast_alpha/battle.png",
+      "portrait": "assets/bosses/boss016_cryptmire_beast_alpha/portrait.png",
+      "icon": "assets/bosses/boss016_cryptmire_beast_alpha/icon.png",
+      "hp": 372,
+      "atk": 18,
+      "xp": 186,
+      "credits": 124,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/cryptmire_beast_alpha.png"
+    },
+    {
+      "id": "BOSS-017",
+      "slug": "deathrot_spawn_colossus",
+      "name": "Deathrot Spawn Colossus",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss017_deathrot_spawn_colossus",
+      "battle": "assets/bosses/boss017_deathrot_spawn_colossus/battle.png",
+      "portrait": "assets/bosses/boss017_deathrot_spawn_colossus/portrait.png",
+      "icon": "assets/bosses/boss017_deathrot_spawn_colossus/icon.png",
+      "hp": 390,
+      "atk": 19,
+      "xp": 195,
+      "credits": 130,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/deathrot_spawn_colossus.png"
+    },
+    {
+      "id": "BOSS-018",
+      "slug": "dreadthorn_lurker_alpha",
+      "name": "Dreadthorn Lurker Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss018_dreadthorn_lurker_alpha",
+      "battle": "assets/bosses/boss018_dreadthorn_lurker_alpha/battle.png",
+      "portrait": "assets/bosses/boss018_dreadthorn_lurker_alpha/portrait.png",
+      "icon": "assets/bosses/boss018_dreadthorn_lurker_alpha/icon.png",
+      "hp": 408,
+      "atk": 20,
+      "xp": 204,
+      "credits": 136,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/dreadthorn_lurker_alpha.png"
+    },
+    {
+      "id": "BOSS-019",
+      "slug": "duskgloom_howler_alpha",
+      "name": "Duskgloom Howler Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss019_duskgloom_howler_alpha",
+      "battle": "assets/bosses/boss019_duskgloom_howler_alpha/battle.png",
+      "portrait": "assets/bosses/boss019_duskgloom_howler_alpha/portrait.png",
+      "icon": "assets/bosses/boss019_duskgloom_howler_alpha/icon.png",
+      "hp": 426,
+      "atk": 21,
+      "xp": 213,
+      "credits": 142,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/duskgloom_howler_alpha.png"
+    },
+    {
+      "id": "BOSS-020",
+      "slug": "duskwither_shade_wraith",
+      "name": "Duskwither Shade Wraith",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss020_duskwither_shade_wraith",
+      "battle": "assets/bosses/boss020_duskwither_shade_wraith/battle.png",
+      "portrait": "assets/bosses/boss020_duskwither_shade_wraith/portrait.png",
+      "icon": "assets/bosses/boss020_duskwither_shade_wraith/icon.png",
+      "hp": 444,
+      "atk": 22,
+      "xp": 222,
+      "credits": 148,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/duskwither_shade_wraith.png"
+    },
+    {
+      "id": "BOSS-021",
+      "slug": "eldrith_oracle_of_the_end",
+      "name": "Eldrith Oracle Of The End",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss021_eldrith_oracle_of_the_end",
+      "battle": "assets/bosses/boss021_eldrith_oracle_of_the_end/battle.png",
+      "portrait": "assets/bosses/boss021_eldrith_oracle_of_the_end/portrait.png",
+      "icon": "assets/bosses/boss021_eldrith_oracle_of_the_end/icon.png",
+      "hp": 462,
+      "atk": 23,
+      "xp": 231,
+      "credits": 154,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/eldrith_oracle_of_the_end.png"
+    },
+    {
+      "id": "BOSS-022",
+      "slug": "frostgrave_abomination_titan",
+      "name": "Frostgrave Abomination Titan",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss022_frostgrave_abomination_titan",
+      "battle": "assets/bosses/boss022_frostgrave_abomination_titan/battle.png",
+      "portrait": "assets/bosses/boss022_frostgrave_abomination_titan/portrait.png",
+      "icon": "assets/bosses/boss022_frostgrave_abomination_titan/icon.png",
+      "hp": 480,
+      "atk": 24,
+      "xp": 240,
+      "credits": 160,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/frostgrave_abomination_titan.png"
+    },
+    {
+      "id": "BOSS-023",
+      "slug": "gloomwing_tyrant",
+      "name": "Gloomwing Tyrant",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss023_gloomwing_tyrant",
+      "battle": "assets/bosses/boss023_gloomwing_tyrant/battle.png",
+      "portrait": "assets/bosses/boss023_gloomwing_tyrant/portrait.png",
+      "icon": "assets/bosses/boss023_gloomwing_tyrant/icon.png",
+      "hp": 498,
+      "atk": 25,
+      "xp": 249,
+      "credits": 166,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/gloomwing_tyrant.png"
+    },
+    {
+      "id": "BOSS-024",
+      "slug": "gravecoil_overlord",
+      "name": "Gravecoil Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss024_gravecoil_overlord",
+      "battle": "assets/bosses/boss024_gravecoil_overlord/battle.png",
+      "portrait": "assets/bosses/boss024_gravecoil_overlord/portrait.png",
+      "icon": "assets/bosses/boss024_gravecoil_overlord/icon.png",
+      "hp": 516,
+      "atk": 26,
+      "xp": 258,
+      "credits": 172,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/gravecoil_overlord.png"
+    },
+    {
+      "id": "BOSS-025",
+      "slug": "gravemarrow_ancient",
+      "name": "Gravemarrow Ancient",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss025_gravemarrow_ancient",
+      "battle": "assets/bosses/boss025_gravemarrow_ancient/battle.png",
+      "portrait": "assets/bosses/boss025_gravemarrow_ancient/portrait.png",
+      "icon": "assets/bosses/boss025_gravemarrow_ancient/icon.png",
+      "hp": 534,
+      "atk": 27,
+      "xp": 267,
+      "credits": 178,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/gravemarrow_ancient.png"
+    },
+    {
+      "id": "BOSS-026",
+      "slug": "gravemist_wyrm_overlord",
+      "name": "Gravemist Wyrm Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss026_gravemist_wyrm_overlord",
+      "battle": "assets/bosses/boss026_gravemist_wyrm_overlord/battle.png",
+      "portrait": "assets/bosses/boss026_gravemist_wyrm_overlord/portrait.png",
+      "icon": "assets/bosses/boss026_gravemist_wyrm_overlord/icon.png",
+      "hp": 552,
+      "atk": 16,
+      "xp": 276,
+      "credits": 184,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/gravemist_wyrm_overlord.png"
+    },
+    {
+      "id": "BOSS-027",
+      "slug": "korr_magoth_world_butcher",
+      "name": "Korr Magoth World Butcher",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss027_korr_magoth_world_butcher",
+      "battle": "assets/bosses/boss027_korr_magoth_world_butcher/battle.png",
+      "portrait": "assets/bosses/boss027_korr_magoth_world_butcher/portrait.png",
+      "icon": "assets/bosses/boss027_korr_magoth_world_butcher/icon.png",
+      "hp": 570,
+      "atk": 17,
+      "xp": 285,
+      "credits": 190,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/korr'magoth_world_butcher.png"
+    },
+    {
+      "id": "BOSS-028",
+      "slug": "mirevenom_broodmother",
+      "name": "Mirevenom Broodmother",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss028_mirevenom_broodmother",
+      "battle": "assets/bosses/boss028_mirevenom_broodmother/battle.png",
+      "portrait": "assets/bosses/boss028_mirevenom_broodmother/portrait.png",
+      "icon": "assets/bosses/boss028_mirevenom_broodmother/icon.png",
+      "hp": 588,
+      "atk": 18,
+      "xp": 294,
+      "credits": 196,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/mirevenom_broodmother.png"
+    },
+    {
+      "id": "BOSS-029",
+      "slug": "mol_gorath_the_searing_maw",
+      "name": "Mol Gorath The Searing Maw",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss029_mol_gorath_the_searing_maw",
+      "battle": "assets/bosses/boss029_mol_gorath_the_searing_maw/battle.png",
+      "portrait": "assets/bosses/boss029_mol_gorath_the_searing_maw/portrait.png",
+      "icon": "assets/bosses/boss029_mol_gorath_the_searing_maw/icon.png",
+      "hp": 606,
+      "atk": 19,
+      "xp": 303,
+      "credits": 202,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/mol'gorath_the_searing_maw.png"
+    },
+    {
+      "id": "BOSS-030",
+      "slug": "nocturn_husk_alpha",
+      "name": "Nocturn Husk Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss030_nocturn_husk_alpha",
+      "battle": "assets/bosses/boss030_nocturn_husk_alpha/battle.png",
+      "portrait": "assets/bosses/boss030_nocturn_husk_alpha/portrait.png",
+      "icon": "assets/bosses/boss030_nocturn_husk_alpha/icon.png",
+      "hp": 624,
+      "atk": 20,
+      "xp": 312,
+      "credits": 208,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/nocturn_husk_alpha.png"
+    },
+    {
+      "id": "BOSS-031",
+      "slug": "noxious_bloom_ancient",
+      "name": "Noxious Bloom Ancient",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss031_noxious_bloom_ancient",
+      "battle": "assets/bosses/boss031_noxious_bloom_ancient/battle.png",
+      "portrait": "assets/bosses/boss031_noxious_bloom_ancient/portrait.png",
+      "icon": "assets/bosses/boss031_noxious_bloom_ancient/icon.png",
+      "hp": 642,
+      "atk": 21,
+      "xp": 321,
+      "credits": 214,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/noxious_bloom_ancient.png"
+    },
+    {
+      "id": "BOSS-032",
+      "slug": "noxmire_spawn_broodking",
+      "name": "Noxmire Spawn Broodking",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss032_noxmire_spawn_broodking",
+      "battle": "assets/bosses/boss032_noxmire_spawn_broodking/battle.png",
+      "portrait": "assets/bosses/boss032_noxmire_spawn_broodking/portrait.png",
+      "icon": "assets/bosses/boss032_noxmire_spawn_broodking/icon.png",
+      "hp": 660,
+      "atk": 22,
+      "xp": 330,
+      "credits": 220,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/noxmire_spawn_broodking.png"
+    },
+    {
+      "id": "BOSS-033",
+      "slug": "nyxaris_shadowed_crown",
+      "name": "Nyxaris Shadowed Crown",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss033_nyxaris_shadowed_crown",
+      "battle": "assets/bosses/boss033_nyxaris_shadowed_crown/battle.png",
+      "portrait": "assets/bosses/boss033_nyxaris_shadowed_crown/portrait.png",
+      "icon": "assets/bosses/boss033_nyxaris_shadowed_crown/icon.png",
+      "hp": 678,
+      "atk": 23,
+      "xp": 339,
+      "credits": 226,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/nyxaris_shadowed_crown.png"
+    },
+    {
+      "id": "BOSS-034",
+      "slug": "rimeclaw_stalker_alpha",
+      "name": "Rimeclaw Stalker Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss034_rimeclaw_stalker_alpha",
+      "battle": "assets/bosses/boss034_rimeclaw_stalker_alpha/battle.png",
+      "portrait": "assets/bosses/boss034_rimeclaw_stalker_alpha/portrait.png",
+      "icon": "assets/bosses/boss034_rimeclaw_stalker_alpha/icon.png",
+      "hp": 696,
+      "atk": 24,
+      "xp": 348,
+      "credits": 232,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/rimeclaw_stalker_alpha.png"
+    },
+    {
+      "id": "BOSS-035",
+      "slug": "rotlash_creeper_warlord",
+      "name": "Rotlash Creeper Warlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss035_rotlash_creeper_warlord",
+      "battle": "assets/bosses/boss035_rotlash_creeper_warlord/battle.png",
+      "portrait": "assets/bosses/boss035_rotlash_creeper_warlord/portrait.png",
+      "icon": "assets/bosses/boss035_rotlash_creeper_warlord/icon.png",
+      "hp": 714,
+      "atk": 25,
+      "xp": 357,
+      "credits": 238,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/rotlash_creeper_warlord.png"
+    },
+    {
+      "id": "BOSS-036",
+      "slug": "scorchbloom_horror_overlord",
+      "name": "Scorchbloom Horror Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss036_scorchbloom_horror_overlord",
+      "battle": "assets/bosses/boss036_scorchbloom_horror_overlord/battle.png",
+      "portrait": "assets/bosses/boss036_scorchbloom_horror_overlord/portrait.png",
+      "icon": "assets/bosses/boss036_scorchbloom_horror_overlord/icon.png",
+      "hp": 732,
+      "atk": 26,
+      "xp": 366,
+      "credits": 244,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/scorchbloom_horror_overlord.png"
+    },
+    {
+      "id": "BOSS-037",
+      "slug": "seraphaine_the_last_light",
+      "name": "Seraphaine The Last Light",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss037_seraphaine_the_last_light",
+      "battle": "assets/bosses/boss037_seraphaine_the_last_light/battle.png",
+      "portrait": "assets/bosses/boss037_seraphaine_the_last_light/portrait.png",
+      "icon": "assets/bosses/boss037_seraphaine_the_last_light/icon.png",
+      "hp": 750,
+      "atk": 27,
+      "xp": 375,
+      "credits": 250,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/seraphaine_the_last_light.png"
+    },
+    {
+      "id": "BOSS-038",
+      "slug": "shard_imp_tyrant",
+      "name": "Shard Imp Tyrant",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss038_shard_imp_tyrant",
+      "battle": "assets/bosses/boss038_shard_imp_tyrant/battle.png",
+      "portrait": "assets/bosses/boss038_shard_imp_tyrant/portrait.png",
+      "icon": "assets/bosses/boss038_shard_imp_tyrant/icon.png",
+      "hp": 768,
+      "atk": 16,
+      "xp": 384,
+      "credits": 256,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/shard_imp_tyrant.png"
+    },
+    {
+      "id": "BOSS-039",
+      "slug": "shattermaw_beast_overlord",
+      "name": "Shattermaw Beast Overlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss039_shattermaw_beast_overlord",
+      "battle": "assets/bosses/boss039_shattermaw_beast_overlord/battle.png",
+      "portrait": "assets/bosses/boss039_shattermaw_beast_overlord/portrait.png",
+      "icon": "assets/bosses/boss039_shattermaw_beast_overlord/icon.png",
+      "hp": 786,
+      "atk": 17,
+      "xp": 393,
+      "credits": 262,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/shattermaw_beast_overlord.png"
+    },
+    {
+      "id": "BOSS-040",
+      "slug": "smogjaw_horror_colossus",
+      "name": "Smogjaw Horror Colossus",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss040_smogjaw_horror_colossus",
+      "battle": "assets/bosses/boss040_smogjaw_horror_colossus/battle.png",
+      "portrait": "assets/bosses/boss040_smogjaw_horror_colossus/portrait.png",
+      "icon": "assets/bosses/boss040_smogjaw_horror_colossus/icon.png",
+      "hp": 804,
+      "atk": 18,
+      "xp": 402,
+      "credits": 268,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/smogjaw_horror_colossus.png"
+    },
+    {
+      "id": "BOSS-041",
+      "slug": "smolderfang_alpha",
+      "name": "Smolderfang Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss041_smolderfang_alpha",
+      "battle": "assets/bosses/boss041_smolderfang_alpha/battle.png",
+      "portrait": "assets/bosses/boss041_smolderfang_alpha/portrait.png",
+      "icon": "assets/bosses/boss041_smolderfang_alpha/icon.png",
+      "hp": 822,
+      "atk": 19,
+      "xp": 411,
+      "credits": 274,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/smolderfang_alpha.png"
+    },
+    {
+      "id": "BOSS-042",
+      "slug": "smolderstalk_warlord",
+      "name": "Smolderstalk Warlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss042_smolderstalk_warlord",
+      "battle": "assets/bosses/boss042_smolderstalk_warlord/battle.png",
+      "portrait": "assets/bosses/boss042_smolderstalk_warlord/portrait.png",
+      "icon": "assets/bosses/boss042_smolderstalk_warlord/icon.png",
+      "hp": 840,
+      "atk": 20,
+      "xp": 420,
+      "credits": 280,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/smolderstalk_warlord.png"
+    },
+    {
+      "id": "BOSS-043",
+      "slug": "sootfang_revenant_king",
+      "name": "Sootfang Revenant King",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss043_sootfang_revenant_king",
+      "battle": "assets/bosses/boss043_sootfang_revenant_king/battle.png",
+      "portrait": "assets/bosses/boss043_sootfang_revenant_king/portrait.png",
+      "icon": "assets/bosses/boss043_sootfang_revenant_king/icon.png",
+      "hp": 858,
+      "atk": 21,
+      "xp": 429,
+      "credits": 286,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/sootfang_revenant_king.png"
+    },
+    {
+      "id": "BOSS-044",
+      "slug": "soul_leech_king",
+      "name": "Soul Leech King",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss044_soul_leech_king",
+      "battle": "assets/bosses/boss044_soul_leech_king/battle.png",
+      "portrait": "assets/bosses/boss044_soul_leech_king/portrait.png",
+      "icon": "assets/bosses/boss044_soul_leech_king/icon.png",
+      "hp": 876,
+      "atk": 22,
+      "xp": 438,
+      "credits": 292,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/soul_leech_king.png"
+    },
+    {
+      "id": "BOSS-045",
+      "slug": "thornhide_behemoth_alpha",
+      "name": "Thornhide Behemoth Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss045_thornhide_behemoth_alpha",
+      "battle": "assets/bosses/boss045_thornhide_behemoth_alpha/battle.png",
+      "portrait": "assets/bosses/boss045_thornhide_behemoth_alpha/portrait.png",
+      "icon": "assets/bosses/boss045_thornhide_behemoth_alpha/icon.png",
+      "hp": 894,
+      "atk": 23,
+      "xp": 447,
+      "credits": 298,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/thornhide_behemoth_alpha.png"
+    },
+    {
+      "id": "BOSS-046",
+      "slug": "thornlash_revenant_warlord",
+      "name": "Thornlash Revenant Warlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss046_thornlash_revenant_warlord",
+      "battle": "assets/bosses/boss046_thornlash_revenant_warlord/battle.png",
+      "portrait": "assets/bosses/boss046_thornlash_revenant_warlord/portrait.png",
+      "icon": "assets/bosses/boss046_thornlash_revenant_warlord/icon.png",
+      "hp": 912,
+      "atk": 24,
+      "xp": 456,
+      "credits": 304,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/thornlash_revenant_warlord.png"
+    },
+    {
+      "id": "BOSS-047",
+      "slug": "thryxxis_weaver_of_stars",
+      "name": "Thryxxis Weaver Of Stars",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss047_thryxxis_weaver_of_stars",
+      "battle": "assets/bosses/boss047_thryxxis_weaver_of_stars/battle.png",
+      "portrait": "assets/bosses/boss047_thryxxis_weaver_of_stars/portrait.png",
+      "icon": "assets/bosses/boss047_thryxxis_weaver_of_stars/icon.png",
+      "hp": 930,
+      "atk": 25,
+      "xp": 465,
+      "credits": 310,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/thryxxis_weaver_of_stars.png"
+    },
+    {
+      "id": "BOSS-048",
+      "slug": "vaelyn_warden_of_echoes",
+      "name": "Vaelyn Warden Of Echoes",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss048_vaelyn_warden_of_echoes",
+      "battle": "assets/bosses/boss048_vaelyn_warden_of_echoes/battle.png",
+      "portrait": "assets/bosses/boss048_vaelyn_warden_of_echoes/portrait.png",
+      "icon": "assets/bosses/boss048_vaelyn_warden_of_echoes/icon.png",
+      "hp": 948,
+      "atk": 26,
+      "xp": 474,
+      "credits": 316,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/vaelyn_warden_of_echoes.png"
+    },
+    {
+      "id": "BOSS-049",
+      "slug": "vilethorn_beast_alpha",
+      "name": "Vilethorn Beast Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss049_vilethorn_beast_alpha",
+      "battle": "assets/bosses/boss049_vilethorn_beast_alpha/battle.png",
+      "portrait": "assets/bosses/boss049_vilethorn_beast_alpha/portrait.png",
+      "icon": "assets/bosses/boss049_vilethorn_beast_alpha/icon.png",
+      "hp": 966,
+      "atk": 27,
+      "xp": 483,
+      "credits": 322,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/vilethorn_beast_alpha.png"
+    },
+    {
+      "id": "BOSS-050",
+      "slug": "vilethorn_matron_dreadqueen",
+      "name": "Vilethorn Matron Dreadqueen",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss050_vilethorn_matron_dreadqueen",
+      "battle": "assets/bosses/boss050_vilethorn_matron_dreadqueen/battle.png",
+      "portrait": "assets/bosses/boss050_vilethorn_matron_dreadqueen/portrait.png",
+      "icon": "assets/bosses/boss050_vilethorn_matron_dreadqueen/icon.png",
+      "hp": 984,
+      "atk": 16,
+      "xp": 492,
+      "credits": 328,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/vilethorn_matron_dreadqueen.png"
+    },
+    {
+      "id": "BOSS-051",
+      "slug": "wraithfang_alpha",
+      "name": "Wraithfang Alpha",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss051_wraithfang_alpha",
+      "battle": "assets/bosses/boss051_wraithfang_alpha/battle.png",
+      "portrait": "assets/bosses/boss051_wraithfang_alpha/portrait.png",
+      "icon": "assets/bosses/boss051_wraithfang_alpha/icon.png",
+      "hp": 1002,
+      "atk": 17,
+      "xp": 501,
+      "credits": 334,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/wraithfang_alpha.png"
+    },
+    {
+      "id": "BOSS-052",
+      "slug": "wretchbane_warlord",
+      "name": "Wretchbane Warlord",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss052_wretchbane_warlord",
+      "battle": "assets/bosses/boss052_wretchbane_warlord/battle.png",
+      "portrait": "assets/bosses/boss052_wretchbane_warlord/portrait.png",
+      "icon": "assets/bosses/boss052_wretchbane_warlord/icon.png",
+      "hp": 1020,
+      "atk": 18,
+      "xp": 510,
+      "credits": 340,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/wretchbane_warlord.png"
+    },
+    {
+      "id": "BOSS-053",
+      "slug": "xal_zurath_shattered_god",
+      "name": "Xal Zurath Shattered God",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss053_xal_zurath_shattered_god",
+      "battle": "assets/bosses/boss053_xal_zurath_shattered_god/battle.png",
+      "portrait": "assets/bosses/boss053_xal_zurath_shattered_god/portrait.png",
+      "icon": "assets/bosses/boss053_xal_zurath_shattered_god/icon.png",
+      "hp": 1038,
+      "atk": 19,
+      "xp": 519,
+      "credits": 346,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/xal'zurath_shattered_god.png"
+    },
+    {
+      "id": "BOSS-054",
+      "slug": "yyr_zhul_harbinger_of_the_rift",
+      "name": "Yyr Zhul Harbinger Of The Rift",
+      "type": "boss",
+      "assetFolder": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift",
+      "battle": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/battle.png",
+      "portrait": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/portrait.png",
+      "icon": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/icon.png",
+      "hp": 1056,
+      "atk": 20,
+      "xp": 528,
+      "credits": 352,
+      "loot": [
+        "Rust Core",
+        "Corrupted Catalyst"
+      ],
+      "sourceFile": "bosses/yyr'zhul, harbinger_of_the_rift.png"
+    }
+  ]
+}

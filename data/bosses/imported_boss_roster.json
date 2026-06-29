@@ -1,0 +1,1009 @@
+[
+  {
+    "id": "BOSS-002",
+    "slug": "ashborn_revenant_lord",
+    "name": "Ashborn Revenant Lord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss002_ashborn_revenant_lord",
+    "battle": "assets/bosses/boss002_ashborn_revenant_lord/battle.png",
+    "portrait": "assets/bosses/boss002_ashborn_revenant_lord/portrait.png",
+    "icon": "assets/bosses/boss002_ashborn_revenant_lord/icon.png",
+    "hp": 120,
+    "atk": 16,
+    "xp": 60,
+    "credits": 40,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashborn_revenant_lord.png"
+  },
+  {
+    "id": "BOSS-003",
+    "slug": "ashen_horror_overlord",
+    "name": "Ashen Horror Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss003_ashen_horror_overlord",
+    "battle": "assets/bosses/boss003_ashen_horror_overlord/battle.png",
+    "portrait": "assets/bosses/boss003_ashen_horror_overlord/portrait.png",
+    "icon": "assets/bosses/boss003_ashen_horror_overlord/icon.png",
+    "hp": 138,
+    "atk": 17,
+    "xp": 69,
+    "credits": 46,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashen_horror_overlord.png"
+  },
+  {
+    "id": "BOSS-004",
+    "slug": "ashen_revenant_titan",
+    "name": "Ashen Revenant Titan",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss004_ashen_revenant_titan",
+    "battle": "assets/bosses/boss004_ashen_revenant_titan/battle.png",
+    "portrait": "assets/bosses/boss004_ashen_revenant_titan/portrait.png",
+    "icon": "assets/bosses/boss004_ashen_revenant_titan/icon.png",
+    "hp": 156,
+    "atk": 18,
+    "xp": 78,
+    "credits": 52,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashen_revenant_titan.png"
+  },
+  {
+    "id": "BOSS-005",
+    "slug": "ashen_whelp_matriarch",
+    "name": "Ashen Whelp Matriarch",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss005_ashen_whelp_matriarch",
+    "battle": "assets/bosses/boss005_ashen_whelp_matriarch/battle.png",
+    "portrait": "assets/bosses/boss005_ashen_whelp_matriarch/portrait.png",
+    "icon": "assets/bosses/boss005_ashen_whelp_matriarch/icon.png",
+    "hp": 174,
+    "atk": 19,
+    "xp": 87,
+    "credits": 58,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashen_whelp_matriarch.png"
+  },
+  {
+    "id": "BOSS-006",
+    "slug": "ashfang_serpent_alpha",
+    "name": "Ashfang Serpent Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss006_ashfang_serpent_alpha",
+    "battle": "assets/bosses/boss006_ashfang_serpent_alpha/battle.png",
+    "portrait": "assets/bosses/boss006_ashfang_serpent_alpha/portrait.png",
+    "icon": "assets/bosses/boss006_ashfang_serpent_alpha/icon.png",
+    "hp": 192,
+    "atk": 20,
+    "xp": 96,
+    "credits": 64,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashfang_serpent_alpha.png"
+  },
+  {
+    "id": "BOSS-007",
+    "slug": "ashveil_spider_mother",
+    "name": "Ashveil Spider Mother",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss007_ashveil_spider_mother",
+    "battle": "assets/bosses/boss007_ashveil_spider_mother/battle.png",
+    "portrait": "assets/bosses/boss007_ashveil_spider_mother/portrait.png",
+    "icon": "assets/bosses/boss007_ashveil_spider_mother/icon.png",
+    "hp": 210,
+    "atk": 21,
+    "xp": 105,
+    "credits": 70,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/ashveil_spider_mother.png"
+  },
+  {
+    "id": "BOSS-008",
+    "slug": "bilebrood_overfiend",
+    "name": "Bilebrood Overfiend",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss008_bilebrood_overfiend",
+    "battle": "assets/bosses/boss008_bilebrood_overfiend/battle.png",
+    "portrait": "assets/bosses/boss008_bilebrood_overfiend/portrait.png",
+    "icon": "assets/bosses/boss008_bilebrood_overfiend/icon.png",
+    "hp": 228,
+    "atk": 22,
+    "xp": 114,
+    "credits": 76,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/bilebrood_overfiend.png"
+  },
+  {
+    "id": "BOSS-009",
+    "slug": "blight_widow_queen",
+    "name": "Blight Widow Queen",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss009_blight_widow_queen",
+    "battle": "assets/bosses/boss009_blight_widow_queen/battle.png",
+    "portrait": "assets/bosses/boss009_blight_widow_queen/portrait.png",
+    "icon": "assets/bosses/boss009_blight_widow_queen/icon.png",
+    "hp": 246,
+    "atk": 23,
+    "xp": 123,
+    "credits": 82,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/blight_widow_queen.png"
+  },
+  {
+    "id": "BOSS-010",
+    "slug": "blightclaw_ravager_alpha",
+    "name": "Blightclaw Ravager Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss010_blightclaw_ravager_alpha",
+    "battle": "assets/bosses/boss010_blightclaw_ravager_alpha/battle.png",
+    "portrait": "assets/bosses/boss010_blightclaw_ravager_alpha/portrait.png",
+    "icon": "assets/bosses/boss010_blightclaw_ravager_alpha/icon.png",
+    "hp": 264,
+    "atk": 24,
+    "xp": 132,
+    "credits": 88,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/blightclaw_ravager_alpha.png"
+  },
+  {
+    "id": "BOSS-011",
+    "slug": "blightdrake_abomination",
+    "name": "Blightdrake Abomination",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss011_blightdrake_abomination",
+    "battle": "assets/bosses/boss011_blightdrake_abomination/battle.png",
+    "portrait": "assets/bosses/boss011_blightdrake_abomination/portrait.png",
+    "icon": "assets/bosses/boss011_blightdrake_abomination/icon.png",
+    "hp": 282,
+    "atk": 25,
+    "xp": 141,
+    "credits": 94,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/blightdrake_abomination.png"
+  },
+  {
+    "id": "BOSS-012",
+    "slug": "cindershade_horror_king",
+    "name": "Cindershade Horror King",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss012_cindershade_horror_king",
+    "battle": "assets/bosses/boss012_cindershade_horror_king/battle.png",
+    "portrait": "assets/bosses/boss012_cindershade_horror_king/portrait.png",
+    "icon": "assets/bosses/boss012_cindershade_horror_king/icon.png",
+    "hp": 300,
+    "atk": 26,
+    "xp": 150,
+    "credits": 100,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/cindershade_horror_king.png"
+  },
+  {
+    "id": "BOSS-013",
+    "slug": "crypt_blight_overlord",
+    "name": "Crypt Blight Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss013_crypt_blight_overlord",
+    "battle": "assets/bosses/boss013_crypt_blight_overlord/battle.png",
+    "portrait": "assets/bosses/boss013_crypt_blight_overlord/portrait.png",
+    "icon": "assets/bosses/boss013_crypt_blight_overlord/icon.png",
+    "hp": 318,
+    "atk": 27,
+    "xp": 159,
+    "credits": 106,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/crypt_blight_overlord.png"
+  },
+  {
+    "id": "BOSS-014",
+    "slug": "crypt_ghast_lord",
+    "name": "Crypt Ghast Lord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss014_crypt_ghast_lord",
+    "battle": "assets/bosses/boss014_crypt_ghast_lord/battle.png",
+    "portrait": "assets/bosses/boss014_crypt_ghast_lord/portrait.png",
+    "icon": "assets/bosses/boss014_crypt_ghast_lord/icon.png",
+    "hp": 336,
+    "atk": 16,
+    "xp": 168,
+    "credits": 112,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/crypt_ghast_lord.png"
+  },
+  {
+    "id": "BOSS-015",
+    "slug": "crypt_ravager_dreadknight",
+    "name": "Crypt Ravager Dreadknight",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss015_crypt_ravager_dreadknight",
+    "battle": "assets/bosses/boss015_crypt_ravager_dreadknight/battle.png",
+    "portrait": "assets/bosses/boss015_crypt_ravager_dreadknight/portrait.png",
+    "icon": "assets/bosses/boss015_crypt_ravager_dreadknight/icon.png",
+    "hp": 354,
+    "atk": 17,
+    "xp": 177,
+    "credits": 118,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/crypt_ravager_dreadknight.png"
+  },
+  {
+    "id": "BOSS-016",
+    "slug": "cryptmire_beast_alpha",
+    "name": "Cryptmire Beast Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss016_cryptmire_beast_alpha",
+    "battle": "assets/bosses/boss016_cryptmire_beast_alpha/battle.png",
+    "portrait": "assets/bosses/boss016_cryptmire_beast_alpha/portrait.png",
+    "icon": "assets/bosses/boss016_cryptmire_beast_alpha/icon.png",
+    "hp": 372,
+    "atk": 18,
+    "xp": 186,
+    "credits": 124,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/cryptmire_beast_alpha.png"
+  },
+  {
+    "id": "BOSS-017",
+    "slug": "deathrot_spawn_colossus",
+    "name": "Deathrot Spawn Colossus",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss017_deathrot_spawn_colossus",
+    "battle": "assets/bosses/boss017_deathrot_spawn_colossus/battle.png",
+    "portrait": "assets/bosses/boss017_deathrot_spawn_colossus/portrait.png",
+    "icon": "assets/bosses/boss017_deathrot_spawn_colossus/icon.png",
+    "hp": 390,
+    "atk": 19,
+    "xp": 195,
+    "credits": 130,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/deathrot_spawn_colossus.png"
+  },
+  {
+    "id": "BOSS-018",
+    "slug": "dreadthorn_lurker_alpha",
+    "name": "Dreadthorn Lurker Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss018_dreadthorn_lurker_alpha",
+    "battle": "assets/bosses/boss018_dreadthorn_lurker_alpha/battle.png",
+    "portrait": "assets/bosses/boss018_dreadthorn_lurker_alpha/portrait.png",
+    "icon": "assets/bosses/boss018_dreadthorn_lurker_alpha/icon.png",
+    "hp": 408,
+    "atk": 20,
+    "xp": 204,
+    "credits": 136,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/dreadthorn_lurker_alpha.png"
+  },
+  {
+    "id": "BOSS-019",
+    "slug": "duskgloom_howler_alpha",
+    "name": "Duskgloom Howler Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss019_duskgloom_howler_alpha",
+    "battle": "assets/bosses/boss019_duskgloom_howler_alpha/battle.png",
+    "portrait": "assets/bosses/boss019_duskgloom_howler_alpha/portrait.png",
+    "icon": "assets/bosses/boss019_duskgloom_howler_alpha/icon.png",
+    "hp": 426,
+    "atk": 21,
+    "xp": 213,
+    "credits": 142,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/duskgloom_howler_alpha.png"
+  },
+  {
+    "id": "BOSS-020",
+    "slug": "duskwither_shade_wraith",
+    "name": "Duskwither Shade Wraith",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss020_duskwither_shade_wraith",
+    "battle": "assets/bosses/boss020_duskwither_shade_wraith/battle.png",
+    "portrait": "assets/bosses/boss020_duskwither_shade_wraith/portrait.png",
+    "icon": "assets/bosses/boss020_duskwither_shade_wraith/icon.png",
+    "hp": 444,
+    "atk": 22,
+    "xp": 222,
+    "credits": 148,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/duskwither_shade_wraith.png"
+  },
+  {
+    "id": "BOSS-021",
+    "slug": "eldrith_oracle_of_the_end",
+    "name": "Eldrith Oracle Of The End",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss021_eldrith_oracle_of_the_end",
+    "battle": "assets/bosses/boss021_eldrith_oracle_of_the_end/battle.png",
+    "portrait": "assets/bosses/boss021_eldrith_oracle_of_the_end/portrait.png",
+    "icon": "assets/bosses/boss021_eldrith_oracle_of_the_end/icon.png",
+    "hp": 462,
+    "atk": 23,
+    "xp": 231,
+    "credits": 154,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/eldrith_oracle_of_the_end.png"
+  },
+  {
+    "id": "BOSS-022",
+    "slug": "frostgrave_abomination_titan",
+    "name": "Frostgrave Abomination Titan",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss022_frostgrave_abomination_titan",
+    "battle": "assets/bosses/boss022_frostgrave_abomination_titan/battle.png",
+    "portrait": "assets/bosses/boss022_frostgrave_abomination_titan/portrait.png",
+    "icon": "assets/bosses/boss022_frostgrave_abomination_titan/icon.png",
+    "hp": 480,
+    "atk": 24,
+    "xp": 240,
+    "credits": 160,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/frostgrave_abomination_titan.png"
+  },
+  {
+    "id": "BOSS-023",
+    "slug": "gloomwing_tyrant",
+    "name": "Gloomwing Tyrant",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss023_gloomwing_tyrant",
+    "battle": "assets/bosses/boss023_gloomwing_tyrant/battle.png",
+    "portrait": "assets/bosses/boss023_gloomwing_tyrant/portrait.png",
+    "icon": "assets/bosses/boss023_gloomwing_tyrant/icon.png",
+    "hp": 498,
+    "atk": 25,
+    "xp": 249,
+    "credits": 166,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/gloomwing_tyrant.png"
+  },
+  {
+    "id": "BOSS-024",
+    "slug": "gravecoil_overlord",
+    "name": "Gravecoil Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss024_gravecoil_overlord",
+    "battle": "assets/bosses/boss024_gravecoil_overlord/battle.png",
+    "portrait": "assets/bosses/boss024_gravecoil_overlord/portrait.png",
+    "icon": "assets/bosses/boss024_gravecoil_overlord/icon.png",
+    "hp": 516,
+    "atk": 26,
+    "xp": 258,
+    "credits": 172,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/gravecoil_overlord.png"
+  },
+  {
+    "id": "BOSS-025",
+    "slug": "gravemarrow_ancient",
+    "name": "Gravemarrow Ancient",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss025_gravemarrow_ancient",
+    "battle": "assets/bosses/boss025_gravemarrow_ancient/battle.png",
+    "portrait": "assets/bosses/boss025_gravemarrow_ancient/portrait.png",
+    "icon": "assets/bosses/boss025_gravemarrow_ancient/icon.png",
+    "hp": 534,
+    "atk": 27,
+    "xp": 267,
+    "credits": 178,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/gravemarrow_ancient.png"
+  },
+  {
+    "id": "BOSS-026",
+    "slug": "gravemist_wyrm_overlord",
+    "name": "Gravemist Wyrm Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss026_gravemist_wyrm_overlord",
+    "battle": "assets/bosses/boss026_gravemist_wyrm_overlord/battle.png",
+    "portrait": "assets/bosses/boss026_gravemist_wyrm_overlord/portrait.png",
+    "icon": "assets/bosses/boss026_gravemist_wyrm_overlord/icon.png",
+    "hp": 552,
+    "atk": 16,
+    "xp": 276,
+    "credits": 184,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/gravemist_wyrm_overlord.png"
+  },
+  {
+    "id": "BOSS-027",
+    "slug": "korr_magoth_world_butcher",
+    "name": "Korr Magoth World Butcher",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss027_korr_magoth_world_butcher",
+    "battle": "assets/bosses/boss027_korr_magoth_world_butcher/battle.png",
+    "portrait": "assets/bosses/boss027_korr_magoth_world_butcher/portrait.png",
+    "icon": "assets/bosses/boss027_korr_magoth_world_butcher/icon.png",
+    "hp": 570,
+    "atk": 17,
+    "xp": 285,
+    "credits": 190,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/korr'magoth_world_butcher.png"
+  },
+  {
+    "id": "BOSS-028",
+    "slug": "mirevenom_broodmother",
+    "name": "Mirevenom Broodmother",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss028_mirevenom_broodmother",
+    "battle": "assets/bosses/boss028_mirevenom_broodmother/battle.png",
+    "portrait": "assets/bosses/boss028_mirevenom_broodmother/portrait.png",
+    "icon": "assets/bosses/boss028_mirevenom_broodmother/icon.png",
+    "hp": 588,
+    "atk": 18,
+    "xp": 294,
+    "credits": 196,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/mirevenom_broodmother.png"
+  },
+  {
+    "id": "BOSS-029",
+    "slug": "mol_gorath_the_searing_maw",
+    "name": "Mol Gorath The Searing Maw",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss029_mol_gorath_the_searing_maw",
+    "battle": "assets/bosses/boss029_mol_gorath_the_searing_maw/battle.png",
+    "portrait": "assets/bosses/boss029_mol_gorath_the_searing_maw/portrait.png",
+    "icon": "assets/bosses/boss029_mol_gorath_the_searing_maw/icon.png",
+    "hp": 606,
+    "atk": 19,
+    "xp": 303,
+    "credits": 202,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/mol'gorath_the_searing_maw.png"
+  },
+  {
+    "id": "BOSS-030",
+    "slug": "nocturn_husk_alpha",
+    "name": "Nocturn Husk Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss030_nocturn_husk_alpha",
+    "battle": "assets/bosses/boss030_nocturn_husk_alpha/battle.png",
+    "portrait": "assets/bosses/boss030_nocturn_husk_alpha/portrait.png",
+    "icon": "assets/bosses/boss030_nocturn_husk_alpha/icon.png",
+    "hp": 624,
+    "atk": 20,
+    "xp": 312,
+    "credits": 208,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/nocturn_husk_alpha.png"
+  },
+  {
+    "id": "BOSS-031",
+    "slug": "noxious_bloom_ancient",
+    "name": "Noxious Bloom Ancient",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss031_noxious_bloom_ancient",
+    "battle": "assets/bosses/boss031_noxious_bloom_ancient/battle.png",
+    "portrait": "assets/bosses/boss031_noxious_bloom_ancient/portrait.png",
+    "icon": "assets/bosses/boss031_noxious_bloom_ancient/icon.png",
+    "hp": 642,
+    "atk": 21,
+    "xp": 321,
+    "credits": 214,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/noxious_bloom_ancient.png"
+  },
+  {
+    "id": "BOSS-032",
+    "slug": "noxmire_spawn_broodking",
+    "name": "Noxmire Spawn Broodking",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss032_noxmire_spawn_broodking",
+    "battle": "assets/bosses/boss032_noxmire_spawn_broodking/battle.png",
+    "portrait": "assets/bosses/boss032_noxmire_spawn_broodking/portrait.png",
+    "icon": "assets/bosses/boss032_noxmire_spawn_broodking/icon.png",
+    "hp": 660,
+    "atk": 22,
+    "xp": 330,
+    "credits": 220,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/noxmire_spawn_broodking.png"
+  },
+  {
+    "id": "BOSS-033",
+    "slug": "nyxaris_shadowed_crown",
+    "name": "Nyxaris Shadowed Crown",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss033_nyxaris_shadowed_crown",
+    "battle": "assets/bosses/boss033_nyxaris_shadowed_crown/battle.png",
+    "portrait": "assets/bosses/boss033_nyxaris_shadowed_crown/portrait.png",
+    "icon": "assets/bosses/boss033_nyxaris_shadowed_crown/icon.png",
+    "hp": 678,
+    "atk": 23,
+    "xp": 339,
+    "credits": 226,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/nyxaris_shadowed_crown.png"
+  },
+  {
+    "id": "BOSS-034",
+    "slug": "rimeclaw_stalker_alpha",
+    "name": "Rimeclaw Stalker Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss034_rimeclaw_stalker_alpha",
+    "battle": "assets/bosses/boss034_rimeclaw_stalker_alpha/battle.png",
+    "portrait": "assets/bosses/boss034_rimeclaw_stalker_alpha/portrait.png",
+    "icon": "assets/bosses/boss034_rimeclaw_stalker_alpha/icon.png",
+    "hp": 696,
+    "atk": 24,
+    "xp": 348,
+    "credits": 232,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/rimeclaw_stalker_alpha.png"
+  },
+  {
+    "id": "BOSS-035",
+    "slug": "rotlash_creeper_warlord",
+    "name": "Rotlash Creeper Warlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss035_rotlash_creeper_warlord",
+    "battle": "assets/bosses/boss035_rotlash_creeper_warlord/battle.png",
+    "portrait": "assets/bosses/boss035_rotlash_creeper_warlord/portrait.png",
+    "icon": "assets/bosses/boss035_rotlash_creeper_warlord/icon.png",
+    "hp": 714,
+    "atk": 25,
+    "xp": 357,
+    "credits": 238,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/rotlash_creeper_warlord.png"
+  },
+  {
+    "id": "BOSS-036",
+    "slug": "scorchbloom_horror_overlord",
+    "name": "Scorchbloom Horror Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss036_scorchbloom_horror_overlord",
+    "battle": "assets/bosses/boss036_scorchbloom_horror_overlord/battle.png",
+    "portrait": "assets/bosses/boss036_scorchbloom_horror_overlord/portrait.png",
+    "icon": "assets/bosses/boss036_scorchbloom_horror_overlord/icon.png",
+    "hp": 732,
+    "atk": 26,
+    "xp": 366,
+    "credits": 244,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/scorchbloom_horror_overlord.png"
+  },
+  {
+    "id": "BOSS-037",
+    "slug": "seraphaine_the_last_light",
+    "name": "Seraphaine The Last Light",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss037_seraphaine_the_last_light",
+    "battle": "assets/bosses/boss037_seraphaine_the_last_light/battle.png",
+    "portrait": "assets/bosses/boss037_seraphaine_the_last_light/portrait.png",
+    "icon": "assets/bosses/boss037_seraphaine_the_last_light/icon.png",
+    "hp": 750,
+    "atk": 27,
+    "xp": 375,
+    "credits": 250,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/seraphaine_the_last_light.png"
+  },
+  {
+    "id": "BOSS-038",
+    "slug": "shard_imp_tyrant",
+    "name": "Shard Imp Tyrant",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss038_shard_imp_tyrant",
+    "battle": "assets/bosses/boss038_shard_imp_tyrant/battle.png",
+    "portrait": "assets/bosses/boss038_shard_imp_tyrant/portrait.png",
+    "icon": "assets/bosses/boss038_shard_imp_tyrant/icon.png",
+    "hp": 768,
+    "atk": 16,
+    "xp": 384,
+    "credits": 256,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/shard_imp_tyrant.png"
+  },
+  {
+    "id": "BOSS-039",
+    "slug": "shattermaw_beast_overlord",
+    "name": "Shattermaw Beast Overlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss039_shattermaw_beast_overlord",
+    "battle": "assets/bosses/boss039_shattermaw_beast_overlord/battle.png",
+    "portrait": "assets/bosses/boss039_shattermaw_beast_overlord/portrait.png",
+    "icon": "assets/bosses/boss039_shattermaw_beast_overlord/icon.png",
+    "hp": 786,
+    "atk": 17,
+    "xp": 393,
+    "credits": 262,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/shattermaw_beast_overlord.png"
+  },
+  {
+    "id": "BOSS-040",
+    "slug": "smogjaw_horror_colossus",
+    "name": "Smogjaw Horror Colossus",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss040_smogjaw_horror_colossus",
+    "battle": "assets/bosses/boss040_smogjaw_horror_colossus/battle.png",
+    "portrait": "assets/bosses/boss040_smogjaw_horror_colossus/portrait.png",
+    "icon": "assets/bosses/boss040_smogjaw_horror_colossus/icon.png",
+    "hp": 804,
+    "atk": 18,
+    "xp": 402,
+    "credits": 268,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/smogjaw_horror_colossus.png"
+  },
+  {
+    "id": "BOSS-041",
+    "slug": "smolderfang_alpha",
+    "name": "Smolderfang Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss041_smolderfang_alpha",
+    "battle": "assets/bosses/boss041_smolderfang_alpha/battle.png",
+    "portrait": "assets/bosses/boss041_smolderfang_alpha/portrait.png",
+    "icon": "assets/bosses/boss041_smolderfang_alpha/icon.png",
+    "hp": 822,
+    "atk": 19,
+    "xp": 411,
+    "credits": 274,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/smolderfang_alpha.png"
+  },
+  {
+    "id": "BOSS-042",
+    "slug": "smolderstalk_warlord",
+    "name": "Smolderstalk Warlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss042_smolderstalk_warlord",
+    "battle": "assets/bosses/boss042_smolderstalk_warlord/battle.png",
+    "portrait": "assets/bosses/boss042_smolderstalk_warlord/portrait.png",
+    "icon": "assets/bosses/boss042_smolderstalk_warlord/icon.png",
+    "hp": 840,
+    "atk": 20,
+    "xp": 420,
+    "credits": 280,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/smolderstalk_warlord.png"
+  },
+  {
+    "id": "BOSS-043",
+    "slug": "sootfang_revenant_king",
+    "name": "Sootfang Revenant King",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss043_sootfang_revenant_king",
+    "battle": "assets/bosses/boss043_sootfang_revenant_king/battle.png",
+    "portrait": "assets/bosses/boss043_sootfang_revenant_king/portrait.png",
+    "icon": "assets/bosses/boss043_sootfang_revenant_king/icon.png",
+    "hp": 858,
+    "atk": 21,
+    "xp": 429,
+    "credits": 286,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/sootfang_revenant_king.png"
+  },
+  {
+    "id": "BOSS-044",
+    "slug": "soul_leech_king",
+    "name": "Soul Leech King",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss044_soul_leech_king",
+    "battle": "assets/bosses/boss044_soul_leech_king/battle.png",
+    "portrait": "assets/bosses/boss044_soul_leech_king/portrait.png",
+    "icon": "assets/bosses/boss044_soul_leech_king/icon.png",
+    "hp": 876,
+    "atk": 22,
+    "xp": 438,
+    "credits": 292,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/soul_leech_king.png"
+  },
+  {
+    "id": "BOSS-045",
+    "slug": "thornhide_behemoth_alpha",
+    "name": "Thornhide Behemoth Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss045_thornhide_behemoth_alpha",
+    "battle": "assets/bosses/boss045_thornhide_behemoth_alpha/battle.png",
+    "portrait": "assets/bosses/boss045_thornhide_behemoth_alpha/portrait.png",
+    "icon": "assets/bosses/boss045_thornhide_behemoth_alpha/icon.png",
+    "hp": 894,
+    "atk": 23,
+    "xp": 447,
+    "credits": 298,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/thornhide_behemoth_alpha.png"
+  },
+  {
+    "id": "BOSS-046",
+    "slug": "thornlash_revenant_warlord",
+    "name": "Thornlash Revenant Warlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss046_thornlash_revenant_warlord",
+    "battle": "assets/bosses/boss046_thornlash_revenant_warlord/battle.png",
+    "portrait": "assets/bosses/boss046_thornlash_revenant_warlord/portrait.png",
+    "icon": "assets/bosses/boss046_thornlash_revenant_warlord/icon.png",
+    "hp": 912,
+    "atk": 24,
+    "xp": 456,
+    "credits": 304,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/thornlash_revenant_warlord.png"
+  },
+  {
+    "id": "BOSS-047",
+    "slug": "thryxxis_weaver_of_stars",
+    "name": "Thryxxis Weaver Of Stars",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss047_thryxxis_weaver_of_stars",
+    "battle": "assets/bosses/boss047_thryxxis_weaver_of_stars/battle.png",
+    "portrait": "assets/bosses/boss047_thryxxis_weaver_of_stars/portrait.png",
+    "icon": "assets/bosses/boss047_thryxxis_weaver_of_stars/icon.png",
+    "hp": 930,
+    "atk": 25,
+    "xp": 465,
+    "credits": 310,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/thryxxis_weaver_of_stars.png"
+  },
+  {
+    "id": "BOSS-048",
+    "slug": "vaelyn_warden_of_echoes",
+    "name": "Vaelyn Warden Of Echoes",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss048_vaelyn_warden_of_echoes",
+    "battle": "assets/bosses/boss048_vaelyn_warden_of_echoes/battle.png",
+    "portrait": "assets/bosses/boss048_vaelyn_warden_of_echoes/portrait.png",
+    "icon": "assets/bosses/boss048_vaelyn_warden_of_echoes/icon.png",
+    "hp": 948,
+    "atk": 26,
+    "xp": 474,
+    "credits": 316,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/vaelyn_warden_of_echoes.png"
+  },
+  {
+    "id": "BOSS-049",
+    "slug": "vilethorn_beast_alpha",
+    "name": "Vilethorn Beast Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss049_vilethorn_beast_alpha",
+    "battle": "assets/bosses/boss049_vilethorn_beast_alpha/battle.png",
+    "portrait": "assets/bosses/boss049_vilethorn_beast_alpha/portrait.png",
+    "icon": "assets/bosses/boss049_vilethorn_beast_alpha/icon.png",
+    "hp": 966,
+    "atk": 27,
+    "xp": 483,
+    "credits": 322,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/vilethorn_beast_alpha.png"
+  },
+  {
+    "id": "BOSS-050",
+    "slug": "vilethorn_matron_dreadqueen",
+    "name": "Vilethorn Matron Dreadqueen",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss050_vilethorn_matron_dreadqueen",
+    "battle": "assets/bosses/boss050_vilethorn_matron_dreadqueen/battle.png",
+    "portrait": "assets/bosses/boss050_vilethorn_matron_dreadqueen/portrait.png",
+    "icon": "assets/bosses/boss050_vilethorn_matron_dreadqueen/icon.png",
+    "hp": 984,
+    "atk": 16,
+    "xp": 492,
+    "credits": 328,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/vilethorn_matron_dreadqueen.png"
+  },
+  {
+    "id": "BOSS-051",
+    "slug": "wraithfang_alpha",
+    "name": "Wraithfang Alpha",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss051_wraithfang_alpha",
+    "battle": "assets/bosses/boss051_wraithfang_alpha/battle.png",
+    "portrait": "assets/bosses/boss051_wraithfang_alpha/portrait.png",
+    "icon": "assets/bosses/boss051_wraithfang_alpha/icon.png",
+    "hp": 1002,
+    "atk": 17,
+    "xp": 501,
+    "credits": 334,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/wraithfang_alpha.png"
+  },
+  {
+    "id": "BOSS-052",
+    "slug": "wretchbane_warlord",
+    "name": "Wretchbane Warlord",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss052_wretchbane_warlord",
+    "battle": "assets/bosses/boss052_wretchbane_warlord/battle.png",
+    "portrait": "assets/bosses/boss052_wretchbane_warlord/portrait.png",
+    "icon": "assets/bosses/boss052_wretchbane_warlord/icon.png",
+    "hp": 1020,
+    "atk": 18,
+    "xp": 510,
+    "credits": 340,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/wretchbane_warlord.png"
+  },
+  {
+    "id": "BOSS-053",
+    "slug": "xal_zurath_shattered_god",
+    "name": "Xal Zurath Shattered God",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss053_xal_zurath_shattered_god",
+    "battle": "assets/bosses/boss053_xal_zurath_shattered_god/battle.png",
+    "portrait": "assets/bosses/boss053_xal_zurath_shattered_god/portrait.png",
+    "icon": "assets/bosses/boss053_xal_zurath_shattered_god/icon.png",
+    "hp": 1038,
+    "atk": 19,
+    "xp": 519,
+    "credits": 346,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/xal'zurath_shattered_god.png"
+  },
+  {
+    "id": "BOSS-054",
+    "slug": "yyr_zhul_harbinger_of_the_rift",
+    "name": "Yyr Zhul Harbinger Of The Rift",
+    "type": "boss",
+    "assetFolder": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift",
+    "battle": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/battle.png",
+    "portrait": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/portrait.png",
+    "icon": "assets/bosses/boss054_yyr_zhul_harbinger_of_the_rift/icon.png",
+    "hp": 1056,
+    "atk": 20,
+    "xp": 528,
+    "credits": 352,
+    "loot": [
+      "Rust Core",
+      "Corrupted Catalyst"
+    ],
+    "sourceFile": "bosses/yyr'zhul, harbinger_of_the_rift.png"
+  }
+]
