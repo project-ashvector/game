@@ -16,8 +16,8 @@ This build begins separating game content into stable JSON-style data files. The
 
 - Operator: `data/operators/av001.json`
 - Skills: `data/skills/av001_skills.json`
-- Anomaly: `data/anomalies/an001_rust_hound.json`
-- Boss: `data/bosses/boss001_rust_mother.json`
+- Anomaly: `data/anomalies/an001_ashborn_revenant.json`
+- Boss: `data/bosses/boss001_ashborn_revenant_lord.json`
 - Items: `data/items/items.json`
 - Fracture layout: `data/fractures/fracture001/layout.json`
 - Fracture events: `data/fractures/fracture001/events.json`

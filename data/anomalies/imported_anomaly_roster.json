@@ -1,6 +1,6 @@
 [
   {
-    "id": "AN-002",
+    "id": "AN-001",
     "slug": "ashborn_revenant",
     "name": "Ashborn Revenant",
     "type": "anomaly",
@@ -19,7 +19,7 @@
     "sourceFile": "monsters/ashborn_revenant.png"
   },
   {
-    "id": "AN-003",
+    "id": "AN-002",
     "slug": "ashen_horror",
     "name": "Ashen Horror",
     "type": "anomaly",
@@ -38,7 +38,7 @@
     "sourceFile": "monsters/ashen_horror.png"
   },
   {
-    "id": "AN-004",
+    "id": "AN-003",
     "slug": "ashen_revenant",
     "name": "Ashen Revenant",
     "type": "anomaly",
@@ -57,7 +57,7 @@
     "sourceFile": "monsters/ashen_revenant.png"
   },
   {
-    "id": "AN-005",
+    "id": "AN-004",
     "slug": "ashen_whelp",
     "name": "Ashen Whelp",
     "type": "anomaly",
@@ -76,7 +76,7 @@
     "sourceFile": "monsters/ashen_whelp.png"
   },
   {
-    "id": "AN-006",
+    "id": "AN-005",
     "slug": "ashfang_serpent",
     "name": "Ashfang Serpent",
     "type": "anomaly",
@@ -95,7 +95,7 @@
     "sourceFile": "monsters/ashfang_serpent.png"
   },
   {
-    "id": "AN-007",
+    "id": "AN-006",
     "slug": "ashveil_spider",
     "name": "Ashveil Spider",
     "type": "anomaly",
@@ -114,7 +114,7 @@
     "sourceFile": "monsters/ashveil_spider.png"
   },
   {
-    "id": "AN-008",
+    "id": "AN-007",
     "slug": "bilebrood",
     "name": "Bilebrood",
     "type": "anomaly",
@@ -133,7 +133,7 @@
     "sourceFile": "monsters/bilebrood.png"
   },
   {
-    "id": "AN-009",
+    "id": "AN-008",
     "slug": "blight_rat",
     "name": "Blight Rat",
     "type": "anomaly",
@@ -152,7 +152,7 @@
     "sourceFile": "monsters/blight_rat.png"
   },
   {
-    "id": "AN-010",
+    "id": "AN-009",
     "slug": "blight_widow",
     "name": "Blight Widow",
     "type": "anomaly",
@@ -171,7 +171,7 @@
     "sourceFile": "monsters/blight_widow.png"
   },
   {
-    "id": "AN-011",
+    "id": "AN-010",
     "slug": "blightclaw_ravager",
     "name": "Blightclaw Ravager",
     "type": "anomaly",
@@ -190,7 +190,7 @@
     "sourceFile": "monsters/blightclaw_ravager.png"
   },
   {
-    "id": "AN-012",
+    "id": "AN-011",
     "slug": "blightdrake",
     "name": "Blightdrake",
     "type": "anomaly",
@@ -209,7 +209,7 @@
     "sourceFile": "monsters/blightdrake.png"
   },
   {
-    "id": "AN-013",
+    "id": "AN-012",
     "slug": "blistercoil_drake",
     "name": "Blistercoil Drake",
     "type": "anomaly",
@@ -228,7 +228,7 @@
     "sourceFile": "monsters/blistercoil_drake.png"
   },
   {
-    "id": "AN-014",
+    "id": "AN-013",
     "slug": "blistergrub",
     "name": "Blistergrub",
     "type": "anomaly",
@@ -247,7 +247,7 @@
     "sourceFile": "monsters/blistergrub.png"
   },
   {
-    "id": "AN-015",
+    "id": "AN-014",
     "slug": "bloodreaver_scarab",
     "name": "Bloodreaver Scarab",
     "type": "anomaly",
@@ -266,7 +266,7 @@
     "sourceFile": "monsters/bloodreaver_scarab.png"
   },
   {
-    "id": "AN-016",
+    "id": "AN-015",
     "slug": "bonegnasher",
     "name": "Bonegnasher",
     "type": "anomaly",
@@ -285,7 +285,7 @@
     "sourceFile": "monsters/bonegnasher.png"
   },
   {
-    "id": "AN-017",
+    "id": "AN-016",
     "slug": "bramblechoke_horror",
     "name": "Bramblechoke Horror",
     "type": "anomaly",
@@ -304,7 +304,7 @@
     "sourceFile": "monsters/bramblechoke_horror.png"
   },
   {
-    "id": "AN-018",
+    "id": "AN-017",
     "slug": "carrion_scarab",
     "name": "Carrion Scarab",
     "type": "anomaly",
@@ -323,7 +323,7 @@
     "sourceFile": "monsters/carrion_scarab.png"
   },
   {
-    "id": "AN-019",
+    "id": "AN-018",
     "slug": "carrion_weaver",
     "name": "Carrion Weaver",
     "type": "anomaly",
@@ -342,7 +342,7 @@
     "sourceFile": "monsters/carrion_weaver.png"
   },
   {
-    "id": "AN-020",
+    "id": "AN-019",
     "slug": "charnel_spawn",
     "name": "Charnel Spawn",
     "type": "anomaly",
@@ -361,7 +361,7 @@
     "sourceFile": "monsters/charnel_spawn.png"
   },
   {
-    "id": "AN-021",
+    "id": "AN-020",
     "slug": "cindershade_horror",
     "name": "Cindershade Horror",
     "type": "anomaly",
@@ -380,7 +380,7 @@
     "sourceFile": "monsters/cindershade_horror.png"
   },
   {
-    "id": "AN-022",
+    "id": "AN-021",
     "slug": "cindershroud_wisp",
     "name": "Cindershroud Wisp",
     "type": "anomaly",
@@ -399,7 +399,7 @@
     "sourceFile": "monsters/cindershroud_wisp.png"
   },
   {
-    "id": "AN-023",
+    "id": "AN-022",
     "slug": "cragjaw",
     "name": "Cragjaw",
     "type": "anomaly",
@@ -418,7 +418,7 @@
     "sourceFile": "monsters/cragjaw.png"
   },
   {
-    "id": "AN-024",
+    "id": "AN-023",
     "slug": "cragrot_shambler",
     "name": "Cragrot Shambler",
     "type": "anomaly",
@@ -437,7 +437,7 @@
     "sourceFile": "monsters/cragrot_shambler.png"
   },
   {
-    "id": "AN-025",
+    "id": "AN-024",
     "slug": "crypt_blight",
     "name": "Crypt Blight",
     "type": "anomaly",
@@ -456,7 +456,7 @@
     "sourceFile": "monsters/crypt_blight.png"
   },
   {
-    "id": "AN-026",
+    "id": "AN-025",
     "slug": "crypt_darter",
     "name": "Crypt Darter",
     "type": "anomaly",
@@ -475,7 +475,7 @@
     "sourceFile": "monsters/crypt_darter.png"
   },
   {
-    "id": "AN-027",
+    "id": "AN-026",
     "slug": "crypt_ghast",
     "name": "Crypt Ghast",
     "type": "anomaly",
@@ -494,7 +494,7 @@
     "sourceFile": "monsters/crypt_ghast.png"
   },
   {
-    "id": "AN-028",
+    "id": "AN-027",
     "slug": "crypt_howler",
     "name": "Crypt Howler",
     "type": "anomaly",
@@ -513,7 +513,7 @@
     "sourceFile": "monsters/crypt_howler.png"
   },
   {
-    "id": "AN-029",
+    "id": "AN-028",
     "slug": "crypt_ravager",
     "name": "Crypt Ravager",
     "type": "anomaly",
@@ -532,7 +532,7 @@
     "sourceFile": "monsters/crypt_ravager.png"
   },
   {
-    "id": "AN-030",
+    "id": "AN-029",
     "slug": "crypt_serpent",
     "name": "Crypt Serpent",
     "type": "anomaly",
@@ -551,7 +551,7 @@
     "sourceFile": "monsters/crypt_serpent.png"
   },
   {
-    "id": "AN-031",
+    "id": "AN-030",
     "slug": "crypt_widow",
     "name": "Crypt Widow",
     "type": "anomaly",
@@ -570,7 +570,7 @@
     "sourceFile": "monsters/crypt_widow.png"
   },
   {
-    "id": "AN-032",
+    "id": "AN-031",
     "slug": "cryptbane_spider",
     "name": "Cryptbane Spider",
     "type": "anomaly",
@@ -589,7 +589,7 @@
     "sourceFile": "monsters/cryptbane_spider.png"
   },
   {
-    "id": "AN-033",
+    "id": "AN-032",
     "slug": "cryptmire_beast",
     "name": "Cryptmire Beast",
     "type": "anomaly",
@@ -608,7 +608,7 @@
     "sourceFile": "monsters/cryptmire_beast.png"
   },
   {
-    "id": "AN-034",
+    "id": "AN-033",
     "slug": "deathrot_spawn",
     "name": "Deathrot Spawn",
     "type": "anomaly",
@@ -627,7 +627,7 @@
     "sourceFile": "monsters/deathrot_spawn.png"
   },
   {
-    "id": "AN-035",
+    "id": "AN-034",
     "slug": "dreadthorn_lurker",
     "name": "Dreadthorn Lurker",
     "type": "anomaly",
@@ -646,7 +646,7 @@
     "sourceFile": "monsters/dreadthorn_lurker.png"
   },
   {
-    "id": "AN-036",
+    "id": "AN-035",
     "slug": "duskgloom_howler",
     "name": "Duskgloom Howler",
     "type": "anomaly",
@@ -665,7 +665,7 @@
     "sourceFile": "monsters/duskgloom_howler.png"
   },
   {
-    "id": "AN-037",
+    "id": "AN-036",
     "slug": "duskthorn_beast",
     "name": "Duskthorn Beast",
     "type": "anomaly",
@@ -684,7 +684,7 @@
     "sourceFile": "monsters/duskthorn_beast.png"
   },
   {
-    "id": "AN-038",
+    "id": "AN-037",
     "slug": "duskwatch_bettle",
     "name": "Duskwatch Bettle",
     "type": "anomaly",
@@ -703,7 +703,7 @@
     "sourceFile": "monsters/duskwatch_bettle.png"
   },
   {
-    "id": "AN-039",
+    "id": "AN-038",
     "slug": "duskwither",
     "name": "Duskwither",
     "type": "anomaly",
@@ -722,7 +722,7 @@
     "sourceFile": "monsters/duskwither.png"
   },
   {
-    "id": "AN-040",
+    "id": "AN-039",
     "slug": "duskwither_shade",
     "name": "Duskwither Shade",
     "type": "anomaly",
@@ -741,7 +741,7 @@
     "sourceFile": "monsters/duskwither_shade.png"
   },
   {
-    "id": "AN-041",
+    "id": "AN-040",
     "slug": "duskworm",
     "name": "Duskworm",
     "type": "anomaly",
@@ -760,7 +760,7 @@
     "sourceFile": "monsters/duskworm.png"
   },
   {
-    "id": "AN-042",
+    "id": "AN-041",
     "slug": "ember_beetle",
     "name": "Ember Beetle",
     "type": "anomaly",
@@ -779,7 +779,7 @@
     "sourceFile": "monsters/ember_beetle.png"
   },
   {
-    "id": "AN-043",
+    "id": "AN-042",
     "slug": "embergnash_scarab",
     "name": "Embergnash Scarab",
     "type": "anomaly",
@@ -798,7 +798,7 @@
     "sourceFile": "monsters/embergnash_scarab.png"
   },
   {
-    "id": "AN-044",
+    "id": "AN-043",
     "slug": "frostgrave_abomination",
     "name": "Frostgrave Abomination",
     "type": "anomaly",
@@ -817,7 +817,7 @@
     "sourceFile": "monsters/frostgrave_abomination.png"
   },
   {
-    "id": "AN-045",
+    "id": "AN-044",
     "slug": "gloomwing",
     "name": "Gloomwing",
     "type": "anomaly",
@@ -836,7 +836,7 @@
     "sourceFile": "monsters/gloomwing.png"
   },
   {
-    "id": "AN-046",
+    "id": "AN-045",
     "slug": "grave_vulture",
     "name": "Grave Vulture",
     "type": "anomaly",
@@ -855,7 +855,7 @@
     "sourceFile": "monsters/grave_vulture.png"
   },
   {
-    "id": "AN-047",
+    "id": "AN-046",
     "slug": "graveblade_stalker",
     "name": "Graveblade Stalker",
     "type": "anomaly",
@@ -874,7 +874,7 @@
     "sourceFile": "monsters/graveblade_stalker.png"
   },
   {
-    "id": "AN-048",
+    "id": "AN-047",
     "slug": "gravebloom_horror",
     "name": "Gravebloom Horror",
     "type": "anomaly",
@@ -893,7 +893,7 @@
     "sourceFile": "monsters/gravebloom_horror.png"
   },
   {
-    "id": "AN-049",
+    "id": "AN-048",
     "slug": "graveborn_wretch",
     "name": "Graveborn Wretch",
     "type": "anomaly",
@@ -912,7 +912,7 @@
     "sourceFile": "monsters/graveborn_wretch.png"
   },
   {
-    "id": "AN-050",
+    "id": "AN-049",
     "slug": "gravecoil",
     "name": "Gravecoil",
     "type": "anomaly",
@@ -931,7 +931,7 @@
     "sourceFile": "monsters/gravecoil.png"
   },
   {
-    "id": "AN-051",
+    "id": "AN-050",
     "slug": "gravemarrow",
     "name": "Gravemarrow",
     "type": "anomaly",
@@ -950,7 +950,7 @@
     "sourceFile": "monsters/gravemarrow.png"
   },
   {
-    "id": "AN-052",
+    "id": "AN-051",
     "slug": "gravemist_wyrm",
     "name": "Gravemist Wyrm",
     "type": "anomaly",
@@ -969,7 +969,7 @@
     "sourceFile": "monsters/gravemist_wyrm.png"
   },
   {
-    "id": "AN-053",
+    "id": "AN-052",
     "slug": "grime_crawler",
     "name": "Grime Crawler",
     "type": "anomaly",
@@ -988,7 +988,7 @@
     "sourceFile": "monsters/grime_crawler.png"
   },
   {
-    "id": "AN-054",
+    "id": "AN-053",
     "slug": "hollow_hound",
     "name": "Hollow Hound",
     "type": "anomaly",
@@ -1007,7 +1007,7 @@
     "sourceFile": "monsters/hollow_hound.png"
   },
   {
-    "id": "AN-055",
+    "id": "AN-054",
     "slug": "hollow_revenant",
     "name": "Hollow Revenant",
     "type": "anomaly",
@@ -1026,7 +1026,7 @@
     "sourceFile": "monsters/hollow_revenant.png"
   },
   {
-    "id": "AN-056",
+    "id": "AN-055",
     "slug": "hollow_scarab",
     "name": "Hollow Scarab",
     "type": "anomaly",
@@ -1045,7 +1045,7 @@
     "sourceFile": "monsters/hollow_scarab.png"
   },
   {
-    "id": "AN-057",
+    "id": "AN-056",
     "slug": "hollow_weaver",
     "name": "Hollow Weaver",
     "type": "anomaly",
@@ -1064,7 +1064,7 @@
     "sourceFile": "monsters/hollow_weaver.png"
   },
   {
-    "id": "AN-058",
+    "id": "AN-057",
     "slug": "hollowfang",
     "name": "Hollowfang",
     "type": "anomaly",
@@ -1083,7 +1083,7 @@
     "sourceFile": "monsters/hollowfang.png"
   },
   {
-    "id": "AN-059",
+    "id": "AN-058",
     "slug": "mire_thrasher",
     "name": "Mire Thrasher",
     "type": "anomaly",
@@ -1102,7 +1102,7 @@
     "sourceFile": "monsters/mire_thrasher.png"
   },
   {
-    "id": "AN-060",
+    "id": "AN-059",
     "slug": "mireclaw",
     "name": "Mireclaw",
     "type": "anomaly",
@@ -1121,7 +1121,7 @@
     "sourceFile": "monsters/mireclaw.png"
   },
   {
-    "id": "AN-061",
+    "id": "AN-060",
     "slug": "miregulper_beast",
     "name": "Miregulper Beast",
     "type": "anomaly",
@@ -1140,7 +1140,7 @@
     "sourceFile": "monsters/miregulper_beast.png"
   },
   {
-    "id": "AN-062",
+    "id": "AN-061",
     "slug": "mirehowl",
     "name": "Mirehowl",
     "type": "anomaly",
@@ -1159,7 +1159,7 @@
     "sourceFile": "monsters/mirehowl.png"
   },
   {
-    "id": "AN-063",
+    "id": "AN-062",
     "slug": "mireling",
     "name": "Mireling",
     "type": "anomaly",
@@ -1178,7 +1178,7 @@
     "sourceFile": "monsters/mireling.png"
   },
   {
-    "id": "AN-064",
+    "id": "AN-063",
     "slug": "mireling_matron",
     "name": "Mireling Matron",
     "type": "anomaly",
@@ -1197,7 +1197,7 @@
     "sourceFile": "monsters/mireling_matron.png"
   },
   {
-    "id": "AN-065",
+    "id": "AN-064",
     "slug": "mirevenom_brood",
     "name": "Mirevenom Brood",
     "type": "anomaly",
@@ -1216,7 +1216,7 @@
     "sourceFile": "monsters/mirevenom_brood.png"
   },
   {
-    "id": "AN-066",
+    "id": "AN-065",
     "slug": "mossvile_serpent",
     "name": "Mossvile Serpent",
     "type": "anomaly",
@@ -1235,7 +1235,7 @@
     "sourceFile": "monsters/mossvile_serpent.png"
   },
   {
-    "id": "AN-067",
+    "id": "AN-066",
     "slug": "murkmaw_drake",
     "name": "Murkmaw Drake",
     "type": "anomaly",
@@ -1254,7 +1254,7 @@
     "sourceFile": "monsters/murkmaw_drake.png"
   },
   {
-    "id": "AN-068",
+    "id": "AN-067",
     "slug": "nightmaw_leech",
     "name": "Nightmaw Leech",
     "type": "anomaly",
@@ -1273,7 +1273,7 @@
     "sourceFile": "monsters/nightmaw_leech.png"
   },
   {
-    "id": "AN-069",
+    "id": "AN-068",
     "slug": "nocturn_husk",
     "name": "Nocturn Husk",
     "type": "anomaly",
@@ -1292,7 +1292,7 @@
     "sourceFile": "monsters/nocturn_husk.png"
   },
   {
-    "id": "AN-070",
+    "id": "AN-069",
     "slug": "noxious_bloom",
     "name": "Noxious Bloom",
     "type": "anomaly",
@@ -1311,7 +1311,7 @@
     "sourceFile": "monsters/noxious_bloom.png"
   },
   {
-    "id": "AN-071",
+    "id": "AN-070",
     "slug": "noxmire_spawn",
     "name": "Noxmire Spawn",
     "type": "anomaly",
@@ -1330,7 +1330,7 @@
     "sourceFile": "monsters/noxmire_spawn.png"
   },
   {
-    "id": "AN-072",
+    "id": "AN-071",
     "slug": "noxthorn_drake",
     "name": "Noxthorn Drake",
     "type": "anomaly",
@@ -1349,7 +1349,7 @@
     "sourceFile": "monsters/noxthorn_drake.png"
   },
   {
-    "id": "AN-073",
+    "id": "AN-072",
     "slug": "noxvine_horror",
     "name": "Noxvine Horror",
     "type": "anomaly",
@@ -1368,7 +1368,7 @@
     "sourceFile": "monsters/noxvine_horror.png"
   },
   {
-    "id": "AN-074",
+    "id": "AN-073",
     "slug": "plague_shambler",
     "name": "Plague Shambler",
     "type": "anomaly",
@@ -1387,7 +1387,7 @@
     "sourceFile": "monsters/plague_shambler.png"
   },
   {
-    "id": "AN-075",
+    "id": "AN-074",
     "slug": "plaguefly",
     "name": "Plaguefly",
     "type": "anomaly",
@@ -1406,7 +1406,7 @@
     "sourceFile": "monsters/plaguefly.png"
   },
   {
-    "id": "AN-076",
+    "id": "AN-075",
     "slug": "rimeclaw_stalker",
     "name": "Rimeclaw Stalker",
     "type": "anomaly",
@@ -1425,7 +1425,7 @@
     "sourceFile": "monsters/rimeclaw_stalker.png"
   },
   {
-    "id": "AN-077",
+    "id": "AN-076",
     "slug": "rotfiend",
     "name": "Rotfiend",
     "type": "anomaly",
@@ -1444,7 +1444,7 @@
     "sourceFile": "monsters/rotfiend.png"
   },
   {
-    "id": "AN-078",
+    "id": "AN-077",
     "slug": "rotlash_creeper",
     "name": "Rotlash Creeper",
     "type": "anomaly",
@@ -1463,7 +1463,7 @@
     "sourceFile": "monsters/rotlash_creeper.png"
   },
   {
-    "id": "AN-079",
+    "id": "AN-078",
     "slug": "rotmaw_howler",
     "name": "Rotmaw Howler",
     "type": "anomaly",
@@ -1482,7 +1482,7 @@
     "sourceFile": "monsters/rotmaw_howler.png"
   },
   {
-    "id": "AN-080",
+    "id": "AN-079",
     "slug": "scorchbloom_horror",
     "name": "Scorchbloom Horror",
     "type": "anomaly",
@@ -1501,7 +1501,7 @@
     "sourceFile": "monsters/scorchbloom_horror.png"
   },
   {
-    "id": "AN-081",
+    "id": "AN-080",
     "slug": "shard_imp",
     "name": "Shard Imp",
     "type": "anomaly",
@@ -1520,7 +1520,7 @@
     "sourceFile": "monsters/shard_imp.png"
   },
   {
-    "id": "AN-082",
+    "id": "AN-081",
     "slug": "shattermaw_beast",
     "name": "Shattermaw Beast",
     "type": "anomaly",
@@ -1539,7 +1539,7 @@
     "sourceFile": "monsters/shattermaw_beast.png"
   },
   {
-    "id": "AN-083",
+    "id": "AN-082",
     "slug": "sludgecarver",
     "name": "Sludgecarver",
     "type": "anomaly",
@@ -1558,7 +1558,7 @@
     "sourceFile": "monsters/sludgecarver.png"
   },
   {
-    "id": "AN-084",
+    "id": "AN-083",
     "slug": "smogjaw_horror",
     "name": "Smogjaw Horror",
     "type": "anomaly",
@@ -1577,7 +1577,7 @@
     "sourceFile": "monsters/smogjaw_horror.png"
   },
   {
-    "id": "AN-085",
+    "id": "AN-084",
     "slug": "smolderfang",
     "name": "Smolderfang",
     "type": "anomaly",
@@ -1596,7 +1596,7 @@
     "sourceFile": "monsters/smolderfang.png"
   },
   {
-    "id": "AN-086",
+    "id": "AN-085",
     "slug": "smolderstalk",
     "name": "Smolderstalk",
     "type": "anomaly",
@@ -1615,7 +1615,7 @@
     "sourceFile": "monsters/smolderstalk.png"
   },
   {
-    "id": "AN-087",
+    "id": "AN-086",
     "slug": "sootfang_revenant",
     "name": "Sootfang Revenant",
     "type": "anomaly",
@@ -1634,7 +1634,7 @@
     "sourceFile": "monsters/sootfang_revenant.png"
   },
   {
-    "id": "AN-088",
+    "id": "AN-087",
     "slug": "soul_leech",
     "name": "Soul Leech",
     "type": "anomaly",
@@ -1653,7 +1653,7 @@
     "sourceFile": "monsters/soul_leech.png"
   },
   {
-    "id": "AN-089",
+    "id": "AN-088",
     "slug": "spitewing",
     "name": "Spitewing",
     "type": "anomaly",
@@ -1672,7 +1672,7 @@
     "sourceFile": "monsters/spitewing.png"
   },
   {
-    "id": "AN-090",
+    "id": "AN-089",
     "slug": "thornhide_behemoth",
     "name": "Thornhide Behemoth",
     "type": "anomaly",
@@ -1691,7 +1691,7 @@
     "sourceFile": "monsters/thornhide_behemoth.png"
   },
   {
-    "id": "AN-091",
+    "id": "AN-090",
     "slug": "thornlash_revenant",
     "name": "Thornlash Revenant",
     "type": "anomaly",
@@ -1710,7 +1710,7 @@
     "sourceFile": "monsters/thornlash_revenant.png"
   },
   {
-    "id": "AN-092",
+    "id": "AN-091",
     "slug": "thornmaw",
     "name": "Thornmaw",
     "type": "anomaly",
@@ -1729,7 +1729,7 @@
     "sourceFile": "monsters/thornmaw.png"
   },
   {
-    "id": "AN-093",
+    "id": "AN-092",
     "slug": "tomb_viper",
     "name": "Tomb Viper",
     "type": "anomaly",
@@ -1748,7 +1748,7 @@
     "sourceFile": "monsters/tomb_viper.png"
   },
   {
-    "id": "AN-094",
+    "id": "AN-093",
     "slug": "tomb_widow",
     "name": "Tomb Widow",
     "type": "anomaly",
@@ -1767,7 +1767,7 @@
     "sourceFile": "monsters/tomb_widow.png"
   },
   {
-    "id": "AN-095",
+    "id": "AN-094",
     "slug": "venom_mite",
     "name": "Venom Mite",
     "type": "anomaly",
@@ -1786,7 +1786,7 @@
     "sourceFile": "monsters/venom_mite.png"
   },
   {
-    "id": "AN-096",
+    "id": "AN-095",
     "slug": "venomspire_widow",
     "name": "Venomspire Widow",
     "type": "anomaly",
@@ -1805,7 +1805,7 @@
     "sourceFile": "monsters/venomspire_widow.png"
   },
   {
-    "id": "AN-097",
+    "id": "AN-096",
     "slug": "vilethorn_beast",
     "name": "Vilethorn Beast",
     "type": "anomaly",
@@ -1824,7 +1824,7 @@
     "sourceFile": "monsters/vilethorn_beast.png"
   },
   {
-    "id": "AN-098",
+    "id": "AN-097",
     "slug": "vilethorn_matron",
     "name": "Vilethorn Matron",
     "type": "anomaly",
@@ -1843,7 +1843,7 @@
     "sourceFile": "monsters/vilethorn_matron.png"
   },
   {
-    "id": "AN-099",
+    "id": "AN-098",
     "slug": "witherling",
     "name": "Witherling",
     "type": "anomaly",
@@ -1862,7 +1862,7 @@
     "sourceFile": "monsters/witherling.png"
   },
   {
-    "id": "AN-100",
+    "id": "AN-099",
     "slug": "wraithfang",
     "name": "Wraithfang",
     "type": "anomaly",
@@ -1881,7 +1881,7 @@
     "sourceFile": "monsters/wraithfang.png"
   },
   {
-    "id": "AN-101",
+    "id": "AN-100",
     "slug": "wretchbane",
     "name": "Wretchbane",
     "type": "anomaly",

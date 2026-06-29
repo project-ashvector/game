@@ -16,7 +16,7 @@ Mission clarity and Chapter 1 tracking before GitHub upload.
 4. Recover Archive Log 001 from the purple terminal.
 5. Link Recovery Terminal.
 6. Clear 3 Anomalies.
-7. Defeat Rust Mother.
+7. Defeat Ashborn Revenant Lord.
 8. Exit Fracture 001.
 
 ## Pass Criteria

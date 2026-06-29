@@ -14,7 +14,7 @@ Master sheet and cropped UI references are under `assets/ui/source/` and `assets
 ### Pack 004 — Fracture 001: Toxic Sewers
 Game-ready visual references are under `assets/fractures/fracture001/`.
 
-### Pack 005 — Anomaly AN-001: Rust Hound
+### Pack 005 — Anomaly AN-001: Ashborn Revenant
 Game-ready files are under `assets/anomalies/an001/` and mirrored to `assets/anomalies/rust_hound/`.
 
 ## Rule

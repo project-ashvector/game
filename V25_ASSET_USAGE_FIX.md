@@ -11,7 +11,7 @@ This build uses v23 as the gameplay/code base and restores the proper v10 produc
 - `assets/logos/*` — full v10 logo pack restored.
 - `favicon.png` and `assets/logos/favicon.png` — restored from v10 and linked in `index.html`.
 - `assets/operators/av001/*` — v10 Vyra art copied into the active AV-001 paths used by the latest code.
-- `assets/anomalies/an001_rust_hound/*` — v10 Rust Hound art copied into the active AN-001 paths.
+- `assets/anomalies/an001_ashborn_revenant/*` — v10 Ashborn Revenant art copied into the active AN-001 paths.
 - `assets/battle_backgrounds/toxic_sewers_battle.png` — v10 battle background restored.
 - `assets/fractures/fracture001/*` — v10 Fracture 001 art restored.
 - `assets/items/*` — v10 item icons restored.
@@ -25,4 +25,4 @@ The original v10 naming folders are also preserved where useful, such as:
 - `assets/anomalies/toxic_slime/`
 - `assets/anomalies/scrap_crawler/`
 
-The latest code still uses the cleaner production IDs like `av001` and `an001_rust_hound`, but the legacy folders are kept so no approved art is lost.
+The latest code still uses the cleaner production IDs like `av001` and `an001_ashborn_revenant`, but the legacy folders are kept so no approved art is lost.

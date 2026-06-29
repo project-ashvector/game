@@ -1,6 +1,6 @@
 [
   {
-    "id": "BOSS-002",
+    "id": "BOSS-001",
     "slug": "ashborn_revenant_lord",
     "name": "Ashborn Revenant Lord",
     "type": "boss",
@@ -19,7 +19,7 @@
     "sourceFile": "bosses/ashborn_revenant_lord.png"
   },
   {
-    "id": "BOSS-003",
+    "id": "BOSS-002",
     "slug": "ashen_horror_overlord",
     "name": "Ashen Horror Overlord",
     "type": "boss",
@@ -38,7 +38,7 @@
     "sourceFile": "bosses/ashen_horror_overlord.png"
   },
   {
-    "id": "BOSS-004",
+    "id": "BOSS-003",
     "slug": "ashen_revenant_titan",
     "name": "Ashen Revenant Titan",
     "type": "boss",
@@ -57,7 +57,7 @@
     "sourceFile": "bosses/ashen_revenant_titan.png"
   },
   {
-    "id": "BOSS-005",
+    "id": "BOSS-004",
     "slug": "ashen_whelp_matriarch",
     "name": "Ashen Whelp Matriarch",
     "type": "boss",
@@ -76,7 +76,7 @@
     "sourceFile": "bosses/ashen_whelp_matriarch.png"
   },
   {
-    "id": "BOSS-006",
+    "id": "BOSS-005",
     "slug": "ashfang_serpent_alpha",
     "name": "Ashfang Serpent Alpha",
     "type": "boss",
@@ -95,7 +95,7 @@
     "sourceFile": "bosses/ashfang_serpent_alpha.png"
   },
   {
-    "id": "BOSS-007",
+    "id": "BOSS-006",
     "slug": "ashveil_spider_mother",
     "name": "Ashveil Spider Mother",
     "type": "boss",
@@ -114,7 +114,7 @@
     "sourceFile": "bosses/ashveil_spider_mother.png"
   },
   {
-    "id": "BOSS-008",
+    "id": "BOSS-007",
     "slug": "bilebrood_overfiend",
     "name": "Bilebrood Overfiend",
     "type": "boss",
@@ -133,7 +133,7 @@
     "sourceFile": "bosses/bilebrood_overfiend.png"
   },
   {
-    "id": "BOSS-009",
+    "id": "BOSS-008",
     "slug": "blight_widow_queen",
     "name": "Blight Widow Queen",
     "type": "boss",
@@ -152,7 +152,7 @@
     "sourceFile": "bosses/blight_widow_queen.png"
   },
   {
-    "id": "BOSS-010",
+    "id": "BOSS-009",
     "slug": "blightclaw_ravager_alpha",
     "name": "Blightclaw Ravager Alpha",
     "type": "boss",
@@ -171,7 +171,7 @@
     "sourceFile": "bosses/blightclaw_ravager_alpha.png"
   },
   {
-    "id": "BOSS-011",
+    "id": "BOSS-010",
     "slug": "blightdrake_abomination",
     "name": "Blightdrake Abomination",
     "type": "boss",
@@ -190,7 +190,7 @@
     "sourceFile": "bosses/blightdrake_abomination.png"
   },
   {
-    "id": "BOSS-012",
+    "id": "BOSS-011",
     "slug": "cindershade_horror_king",
     "name": "Cindershade Horror King",
     "type": "boss",
@@ -209,7 +209,7 @@
     "sourceFile": "bosses/cindershade_horror_king.png"
   },
   {
-    "id": "BOSS-013",
+    "id": "BOSS-012",
     "slug": "crypt_blight_overlord",
     "name": "Crypt Blight Overlord",
     "type": "boss",
@@ -228,7 +228,7 @@
     "sourceFile": "bosses/crypt_blight_overlord.png"
   },
   {
-    "id": "BOSS-014",
+    "id": "BOSS-013",
     "slug": "crypt_ghast_lord",
     "name": "Crypt Ghast Lord",
     "type": "boss",
@@ -247,7 +247,7 @@
     "sourceFile": "bosses/crypt_ghast_lord.png"
   },
   {
-    "id": "BOSS-015",
+    "id": "BOSS-014",
     "slug": "crypt_ravager_dreadknight",
     "name": "Crypt Ravager Dreadknight",
     "type": "boss",
@@ -266,7 +266,7 @@
     "sourceFile": "bosses/crypt_ravager_dreadknight.png"
   },
   {
-    "id": "BOSS-016",
+    "id": "BOSS-015",
     "slug": "cryptmire_beast_alpha",
     "name": "Cryptmire Beast Alpha",
     "type": "boss",
@@ -285,7 +285,7 @@
     "sourceFile": "bosses/cryptmire_beast_alpha.png"
   },
   {
-    "id": "BOSS-017",
+    "id": "BOSS-016",
     "slug": "deathrot_spawn_colossus",
     "name": "Deathrot Spawn Colossus",
     "type": "boss",
@@ -304,7 +304,7 @@
     "sourceFile": "bosses/deathrot_spawn_colossus.png"
   },
   {
-    "id": "BOSS-018",
+    "id": "BOSS-017",
     "slug": "dreadthorn_lurker_alpha",
     "name": "Dreadthorn Lurker Alpha",
     "type": "boss",
@@ -323,7 +323,7 @@
     "sourceFile": "bosses/dreadthorn_lurker_alpha.png"
   },
   {
-    "id": "BOSS-019",
+    "id": "BOSS-018",
     "slug": "duskgloom_howler_alpha",
     "name": "Duskgloom Howler Alpha",
     "type": "boss",
@@ -342,7 +342,7 @@
     "sourceFile": "bosses/duskgloom_howler_alpha.png"
   },
   {
-    "id": "BOSS-020",
+    "id": "BOSS-019",
     "slug": "duskwither_shade_wraith",
     "name": "Duskwither Shade Wraith",
     "type": "boss",
@@ -361,7 +361,7 @@
     "sourceFile": "bosses/duskwither_shade_wraith.png"
   },
   {
-    "id": "BOSS-021",
+    "id": "BOSS-020",
     "slug": "eldrith_oracle_of_the_end",
     "name": "Eldrith Oracle Of The End",
     "type": "boss",
@@ -380,7 +380,7 @@
     "sourceFile": "bosses/eldrith_oracle_of_the_end.png"
   },
   {
-    "id": "BOSS-022",
+    "id": "BOSS-021",
     "slug": "frostgrave_abomination_titan",
     "name": "Frostgrave Abomination Titan",
     "type": "boss",
@@ -399,7 +399,7 @@
     "sourceFile": "bosses/frostgrave_abomination_titan.png"
   },
   {
-    "id": "BOSS-023",
+    "id": "BOSS-022",
     "slug": "gloomwing_tyrant",
     "name": "Gloomwing Tyrant",
     "type": "boss",
@@ -418,7 +418,7 @@
     "sourceFile": "bosses/gloomwing_tyrant.png"
   },
   {
-    "id": "BOSS-024",
+    "id": "BOSS-023",
     "slug": "gravecoil_overlord",
     "name": "Gravecoil Overlord",
     "type": "boss",
@@ -437,7 +437,7 @@
     "sourceFile": "bosses/gravecoil_overlord.png"
   },
   {
-    "id": "BOSS-025",
+    "id": "BOSS-024",
     "slug": "gravemarrow_ancient",
     "name": "Gravemarrow Ancient",
     "type": "boss",
@@ -456,7 +456,7 @@
     "sourceFile": "bosses/gravemarrow_ancient.png"
   },
   {
-    "id": "BOSS-026",
+    "id": "BOSS-025",
     "slug": "gravemist_wyrm_overlord",
     "name": "Gravemist Wyrm Overlord",
     "type": "boss",
@@ -475,7 +475,7 @@
     "sourceFile": "bosses/gravemist_wyrm_overlord.png"
   },
   {
-    "id": "BOSS-027",
+    "id": "BOSS-026",
     "slug": "korr_magoth_world_butcher",
     "name": "Korr Magoth World Butcher",
     "type": "boss",
@@ -494,7 +494,7 @@
     "sourceFile": "bosses/korr'magoth_world_butcher.png"
   },
   {
-    "id": "BOSS-028",
+    "id": "BOSS-027",
     "slug": "mirevenom_broodmother",
     "name": "Mirevenom Broodmother",
     "type": "boss",
@@ -513,7 +513,7 @@
     "sourceFile": "bosses/mirevenom_broodmother.png"
   },
   {
-    "id": "BOSS-029",
+    "id": "BOSS-028",
     "slug": "mol_gorath_the_searing_maw",
     "name": "Mol Gorath The Searing Maw",
     "type": "boss",
@@ -532,7 +532,7 @@
     "sourceFile": "bosses/mol'gorath_the_searing_maw.png"
   },
   {
-    "id": "BOSS-030",
+    "id": "BOSS-029",
     "slug": "nocturn_husk_alpha",
     "name": "Nocturn Husk Alpha",
     "type": "boss",
@@ -551,7 +551,7 @@
     "sourceFile": "bosses/nocturn_husk_alpha.png"
   },
   {
-    "id": "BOSS-031",
+    "id": "BOSS-030",
     "slug": "noxious_bloom_ancient",
     "name": "Noxious Bloom Ancient",
     "type": "boss",
@@ -570,7 +570,7 @@
     "sourceFile": "bosses/noxious_bloom_ancient.png"
   },
   {
-    "id": "BOSS-032",
+    "id": "BOSS-031",
     "slug": "noxmire_spawn_broodking",
     "name": "Noxmire Spawn Broodking",
     "type": "boss",
@@ -589,7 +589,7 @@
     "sourceFile": "bosses/noxmire_spawn_broodking.png"
   },
   {
-    "id": "BOSS-033",
+    "id": "BOSS-032",
     "slug": "nyxaris_shadowed_crown",
     "name": "Nyxaris Shadowed Crown",
     "type": "boss",
@@ -608,7 +608,7 @@
     "sourceFile": "bosses/nyxaris_shadowed_crown.png"
   },
   {
-    "id": "BOSS-034",
+    "id": "BOSS-033",
     "slug": "rimeclaw_stalker_alpha",
     "name": "Rimeclaw Stalker Alpha",
     "type": "boss",
@@ -627,7 +627,7 @@
     "sourceFile": "bosses/rimeclaw_stalker_alpha.png"
   },
   {
-    "id": "BOSS-035",
+    "id": "BOSS-034",
     "slug": "rotlash_creeper_warlord",
     "name": "Rotlash Creeper Warlord",
     "type": "boss",
@@ -646,7 +646,7 @@
     "sourceFile": "bosses/rotlash_creeper_warlord.png"
   },
   {
-    "id": "BOSS-036",
+    "id": "BOSS-035",
     "slug": "scorchbloom_horror_overlord",
     "name": "Scorchbloom Horror Overlord",
     "type": "boss",
@@ -665,7 +665,7 @@
     "sourceFile": "bosses/scorchbloom_horror_overlord.png"
   },
   {
-    "id": "BOSS-037",
+    "id": "BOSS-036",
     "slug": "seraphaine_the_last_light",
     "name": "Seraphaine The Last Light",
     "type": "boss",
@@ -684,7 +684,7 @@
     "sourceFile": "bosses/seraphaine_the_last_light.png"
   },
   {
-    "id": "BOSS-038",
+    "id": "BOSS-037",
     "slug": "shard_imp_tyrant",
     "name": "Shard Imp Tyrant",
     "type": "boss",
@@ -703,7 +703,7 @@
     "sourceFile": "bosses/shard_imp_tyrant.png"
   },
   {
-    "id": "BOSS-039",
+    "id": "BOSS-038",
     "slug": "shattermaw_beast_overlord",
     "name": "Shattermaw Beast Overlord",
     "type": "boss",
@@ -722,7 +722,7 @@
     "sourceFile": "bosses/shattermaw_beast_overlord.png"
   },
   {
-    "id": "BOSS-040",
+    "id": "BOSS-039",
     "slug": "smogjaw_horror_colossus",
     "name": "Smogjaw Horror Colossus",
     "type": "boss",
@@ -741,7 +741,7 @@
     "sourceFile": "bosses/smogjaw_horror_colossus.png"
   },
   {
-    "id": "BOSS-041",
+    "id": "BOSS-040",
     "slug": "smolderfang_alpha",
     "name": "Smolderfang Alpha",
     "type": "boss",
@@ -760,7 +760,7 @@
     "sourceFile": "bosses/smolderfang_alpha.png"
   },
   {
-    "id": "BOSS-042",
+    "id": "BOSS-041",
     "slug": "smolderstalk_warlord",
     "name": "Smolderstalk Warlord",
     "type": "boss",
@@ -779,7 +779,7 @@
     "sourceFile": "bosses/smolderstalk_warlord.png"
   },
   {
-    "id": "BOSS-043",
+    "id": "BOSS-042",
     "slug": "sootfang_revenant_king",
     "name": "Sootfang Revenant King",
     "type": "boss",
@@ -798,7 +798,7 @@
     "sourceFile": "bosses/sootfang_revenant_king.png"
   },
   {
-    "id": "BOSS-044",
+    "id": "BOSS-043",
     "slug": "soul_leech_king",
     "name": "Soul Leech King",
     "type": "boss",
@@ -817,7 +817,7 @@
     "sourceFile": "bosses/soul_leech_king.png"
   },
   {
-    "id": "BOSS-045",
+    "id": "BOSS-044",
     "slug": "thornhide_behemoth_alpha",
     "name": "Thornhide Behemoth Alpha",
     "type": "boss",
@@ -836,7 +836,7 @@
     "sourceFile": "bosses/thornhide_behemoth_alpha.png"
   },
   {
-    "id": "BOSS-046",
+    "id": "BOSS-045",
     "slug": "thornlash_revenant_warlord",
     "name": "Thornlash Revenant Warlord",
     "type": "boss",
@@ -855,7 +855,7 @@
     "sourceFile": "bosses/thornlash_revenant_warlord.png"
   },
   {
-    "id": "BOSS-047",
+    "id": "BOSS-046",
     "slug": "thryxxis_weaver_of_stars",
     "name": "Thryxxis Weaver Of Stars",
     "type": "boss",
@@ -874,7 +874,7 @@
     "sourceFile": "bosses/thryxxis_weaver_of_stars.png"
   },
   {
-    "id": "BOSS-048",
+    "id": "BOSS-047",
     "slug": "vaelyn_warden_of_echoes",
     "name": "Vaelyn Warden Of Echoes",
     "type": "boss",
@@ -893,7 +893,7 @@
     "sourceFile": "bosses/vaelyn_warden_of_echoes.png"
   },
   {
-    "id": "BOSS-049",
+    "id": "BOSS-048",
     "slug": "vilethorn_beast_alpha",
     "name": "Vilethorn Beast Alpha",
     "type": "boss",
@@ -912,7 +912,7 @@
     "sourceFile": "bosses/vilethorn_beast_alpha.png"
   },
   {
-    "id": "BOSS-050",
+    "id": "BOSS-049",
     "slug": "vilethorn_matron_dreadqueen",
     "name": "Vilethorn Matron Dreadqueen",
     "type": "boss",
@@ -931,7 +931,7 @@
     "sourceFile": "bosses/vilethorn_matron_dreadqueen.png"
   },
   {
-    "id": "BOSS-051",
+    "id": "BOSS-050",
     "slug": "wraithfang_alpha",
     "name": "Wraithfang Alpha",
     "type": "boss",
@@ -950,7 +950,7 @@
     "sourceFile": "bosses/wraithfang_alpha.png"
   },
   {
-    "id": "BOSS-052",
+    "id": "BOSS-051",
     "slug": "wretchbane_warlord",
     "name": "Wretchbane Warlord",
     "type": "boss",
@@ -969,7 +969,7 @@
     "sourceFile": "bosses/wretchbane_warlord.png"
   },
   {
-    "id": "BOSS-053",
+    "id": "BOSS-052",
     "slug": "xal_zurath_shattered_god",
     "name": "Xal Zurath Shattered God",
     "type": "boss",
@@ -988,7 +988,7 @@
     "sourceFile": "bosses/xal'zurath_shattered_god.png"
   },
   {
-    "id": "BOSS-054",
+    "id": "BOSS-053",
     "slug": "yyr_zhul_harbinger_of_the_rift",
     "name": "Yyr Zhul Harbinger Of The Rift",
     "type": "boss",

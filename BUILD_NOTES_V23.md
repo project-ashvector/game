@@ -4,7 +4,7 @@
 Preserve the approved assets and begin converting the project into a data-driven RPG structure.
 
 ## What changed
-- Added canonical JSON records for AV-001, Rust Hound, Rust Mother, skills, items, Fracture 001 layout/events, and intro dialogue.
+- Added canonical JSON records for AV-001, Ashborn Revenant, Ashborn Revenant Lord, skills, items, Fracture 001 layout/events, and intro dialogue.
 - Added `DATA_REGISTRY.md` explaining where future character/enemy/map data belongs.
 - Kept all v22 master assets and source concept sheets intact.
 - Kept the current browser prototype intact.

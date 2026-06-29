@@ -23,12 +23,12 @@ Examples:
 - `assets/operators/av001/portrait.png`
 - `assets/operators/av001/battle.png`
 - `assets/operators/av001/sprite_sheet.png`
-- `assets/anomalies/an001_rust_hound/battle.png`
+- `assets/anomalies/an001_ashborn_revenant/battle.png`
 - `assets/fractures/fracture001/tileset.png`
 - `assets/battle_backgrounds/toxic_sewers_battle.png`
 
 ## Current chapter path
-AVOS Boot → Main Menu → Fracture 001 Toxic Sewers → Terminal → 3 Rust Hounds → Boss Gate → Rust Mother → Exit.
+AVOS Boot → Main Menu → Fracture 001 Toxic Sewers → Terminal → 3 anomalies → Boss Gate → Ashborn Revenant Lord → Exit.
 
 
 ## v22 Asset Consolidation
@@ -45,7 +45,7 @@ Start testing by opening `index.html` locally in a browser. Final GitHub upload 
 
 
 ## v25 Asset Note
-This build restores the proper v10 visual assets into the newest playable project. The latest code uses production IDs such as `assets/operators/av001/` and `assets/anomalies/an001_rust_hound/`, but the older v10 folders are also preserved for reference so approved artwork is not lost.
+This build restores the proper v10 visual assets into the newest playable project. The latest code uses production IDs such as `assets/operators/av001/` and `assets/anomalies/an001_ashborn_revenant/`, but the older v10 folders are also preserved for reference so approved artwork is not lost.
 
 
 ## v26 Fix Notes
@@ -59,4 +59,19 @@ This build restores the proper v10 visual assets into the newest playable projec
 - Imported 100 monsters as ASH VECTOR anomaly assets.
 - Imported 53 bosses as ASH VECTOR boss assets.
 - Added registry JSON files for future database/encounter integration.
-- Kept existing Chapter 1 Rust Hound/Rust Mother assets intact.
+- Kept existing Chapter 1 Ashborn Revenant/Ashborn Revenant Lord assets intact.
+
+
+## Latest Build Notes — v28
+Battle UI polish and searchable creature database are now included. Start from `index.html`, open Anomaly Index, and test battle readability at different browser sizes.
+
+
+## v29 Item Library Import
+
+This build imports the uploaded item pack into the master project:
+
+- 143 item PNGs added under `assets/items/imported/`
+- Permanent `IT-####` IDs assigned
+- `data/items/imported_item_registry.json` added
+- Inventory Database now includes search/filter for imported weapons, equipment, consumables, and materials
+- Placeholder item art is preserved in the correct paths so it can be replaced later without breaking code

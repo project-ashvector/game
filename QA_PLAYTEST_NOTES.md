@@ -15,7 +15,7 @@ Test the first playable Chapter 1 path locally before anything is uploaded to Gi
 6. Move with arrow keys.
 7. Find the recovery terminal.
 8. Fight three anomalies.
-9. Defeat the Rust Mother boss.
+9. Defeat the Ashborn Revenant Lord boss.
 10. Reach the exit tile.
 11. Confirm the Chapter Complete screen appears.
 

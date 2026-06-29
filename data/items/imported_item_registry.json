@@ -1,57 +1,5 @@
 [
   {
-    "id": "IT-001",
-    "name": "Scrap Metal",
-    "category": "Catalyst",
-    "description": "Common upgrade junk. Sharp enough to be annoying.",
-    "asset": "assets/items/scrap_metal.png"
-  },
-  {
-    "id": "IT-002",
-    "name": "Corrupted Catalyst",
-    "category": "Catalyst",
-    "description": "Unstable material used for future upgrades.",
-    "asset": "assets/items/corrupted_catalyst.png"
-  },
-  {
-    "id": "IT-003",
-    "name": "Med Patch",
-    "category": "Consumable",
-    "effect": {
-      "heal": 25
-    },
-    "description": "Restores 25 HP. Smells like hospital and panic.",
-    "asset": "assets/items/med_patch.png"
-  },
-  {
-    "id": "IT-004",
-    "name": "Rust Core",
-    "category": "Key Item",
-    "description": "Recovered from a boss-class Anomaly.",
-    "asset": "assets/items/corrupted_catalyst.png"
-  },
-  {
-    "id": "IT-005",
-    "name": "Archive Log 001",
-    "category": "Archive",
-    "description": "Recovered file: The First Vector.",
-    "asset": "assets/items/archive_log_001.png"
-  },
-  {
-    "id": "IT-006",
-    "name": "Operator Shard: Vyra",
-    "category": "Operator Shard",
-    "description": "Future gacha/progression material.",
-    "asset": "assets/items/operator_shard_vyra.png"
-  },
-  {
-    "id": "IT-007",
-    "name": "LV1 Keycard",
-    "category": "Key Item",
-    "description": "Opens basic locked ASH VECTOR doors.",
-    "asset": "assets/items/keycard_lv1.png"
-  },
-  {
     "id": "IT-1001",
     "name": "Common Cape",
     "type": "Equipment",
@@ -61,6 +9,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/cape/common/it-1001_cape_common.png",
+    "sourcePath": "armor/cape/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -73,6 +23,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/cape/epic/it-1002_cape_epic.png",
+    "sourcePath": "armor/cape/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -85,6 +37,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/cape/legendary/it-1003_cape_legendary.png",
+    "sourcePath": "armor/cape/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -97,6 +51,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/cape/mythic/it-1004_cape_mythic.png",
+    "sourcePath": "armor/cape/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -109,6 +65,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/cape/rare/it-1005_cape_rare.png",
+    "sourcePath": "armor/cape/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -121,6 +79,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/cape/uncommon/it-1006_cape_uncommon.png",
+    "sourcePath": "armor/cape/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -133,6 +93,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/chest/common/it-1007_chest_common.png",
+    "sourcePath": "armor/chest/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -145,6 +107,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/chest/epic/it-1008_chest_epic.png",
+    "sourcePath": "armor/chest/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -157,6 +121,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/chest/legendary/it-1009_chest_legendary.png",
+    "sourcePath": "armor/chest/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -169,6 +135,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/chest/mythic/it-1010_chest_mythic.png",
+    "sourcePath": "armor/chest/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -181,6 +149,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/chest/rare/it-1011_chest_rare.png",
+    "sourcePath": "armor/chest/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -193,6 +163,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/chest/uncommon/it-1012_chest_uncommon.png",
+    "sourcePath": "armor/chest/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -205,6 +177,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/gloves/common/it-1013_gloves_common.png",
+    "sourcePath": "armor/gloves/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -217,6 +191,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/gloves/epic/it-1014_gloves_epic.png",
+    "sourcePath": "armor/gloves/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -229,6 +205,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/gloves/legendary/it-1015_gloves_legendary.png",
+    "sourcePath": "armor/gloves/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -241,6 +219,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/gloves/mythic/it-1016_gloves_mythic.png",
+    "sourcePath": "armor/gloves/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -253,6 +233,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/gloves/rare/it-1017_gloves_rare.png",
+    "sourcePath": "armor/gloves/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -265,6 +247,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/gloves/uncommon/it-1018_gloves_uncommon.png",
+    "sourcePath": "armor/gloves/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -277,6 +261,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/helm/common/it-1019_helm_common.png",
+    "sourcePath": "armor/helm/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -289,6 +275,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/helm/epic/it-1020_helm_epic.png",
+    "sourcePath": "armor/helm/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -301,6 +289,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/helm/legendary/it-1021_helm_legendary.png",
+    "sourcePath": "armor/helm/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -313,6 +303,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/helm/mythic/it-1022_helm_mythic.png",
+    "sourcePath": "armor/helm/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -325,6 +317,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/helm/rare/it-1023_helm_rare.png",
+    "sourcePath": "armor/helm/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -337,6 +331,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/helm/uncommon/it-1024_helm_uncommon.png",
+    "sourcePath": "armor/helm/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -349,6 +345,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/legs/common/it-1025_legs_common.png",
+    "sourcePath": "armor/legs/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -361,6 +359,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/legs/epic/it-1026_legs_epic.png",
+    "sourcePath": "armor/legs/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -373,6 +373,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/legs/legendary/it-1027_legs_legendary.png",
+    "sourcePath": "armor/legs/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -385,6 +387,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/legs/mythic/it-1028_legs_mythic.png",
+    "sourcePath": "armor/legs/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -397,6 +401,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/legs/rare/it-1029_legs_rare.png",
+    "sourcePath": "armor/legs/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -409,6 +415,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/legs/uncommon/it-1030_legs_uncommon.png",
+    "sourcePath": "armor/legs/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -421,6 +429,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/neckless/common/it-1031_neckless_common.png",
+    "sourcePath": "armor/neckless/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -433,6 +443,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/neckless/epic/it-1032_neckless_epic.png",
+    "sourcePath": "armor/neckless/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -445,6 +457,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/neckless/legendary/it-1033_neckless_legendary.png",
+    "sourcePath": "armor/neckless/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -457,6 +471,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/neckless/mythic/it-1034_neckless_mythic.png",
+    "sourcePath": "armor/neckless/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -469,6 +485,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/neckless/rare/it-1035_neckless_rare.png",
+    "sourcePath": "armor/neckless/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -481,6 +499,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/neckless/uncommon/it-1036_neckless_uncommon.png",
+    "sourcePath": "armor/neckless/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -493,6 +513,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/armor/ring/common/it-1037_ring_common.png",
+    "sourcePath": "armor/ring/common/placeholder.png",
+    "status": "placeholder-art",
     "description": "Common Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -505,6 +527,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/armor/ring/epic/it-1038_ring_epic.png",
+    "sourcePath": "armor/ring/epic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Epic Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -517,6 +541,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/armor/ring/legendary/it-1039_ring_legendary.png",
+    "sourcePath": "armor/ring/legendary/placeholder.png",
+    "status": "placeholder-art",
     "description": "Legendary Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -529,6 +555,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/armor/ring/mythic/it-1040_ring_mythic.png",
+    "sourcePath": "armor/ring/mythic/placeholder.png",
+    "status": "placeholder-art",
     "description": "Mythic Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -541,6 +569,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/armor/ring/rare/it-1041_ring_rare.png",
+    "sourcePath": "armor/ring/rare/placeholder.png",
+    "status": "placeholder-art",
     "description": "Rare Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -553,6 +583,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/armor/ring/uncommon/it-1042_ring_uncommon.png",
+    "sourcePath": "armor/ring/uncommon/placeholder.png",
+    "status": "placeholder-art",
     "description": "Uncommon Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -565,6 +597,8 @@
     "stackSize": 999,
     "sellPrice": 5,
     "asset": "assets/items/imported/consumables/consumables/common/it-1043_bread.png",
+    "sourcePath": "consumables/bread.png",
+    "status": "production-art",
     "description": "Bread recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -577,6 +611,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1044_ashthorn_dagger.png",
+    "sourcePath": "weapons/common/ashthorn_dagger.png",
+    "status": "production-art",
     "description": "Ashthorn Dagger recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -589,6 +625,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1045_blightweave_staff.png",
+    "sourcePath": "weapons/common/blightweave_staff.png",
+    "status": "production-art",
     "description": "Blightweave Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -601,6 +639,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1046_bloodrot_sword.png",
+    "sourcePath": "weapons/common/bloodrot_sword.png",
+    "status": "production-art",
     "description": "Bloodrot Sword recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -613,6 +653,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1047_cinderbite_dagger.png",
+    "sourcePath": "weapons/common/cinderbite_dagger.png",
+    "status": "production-art",
     "description": "Cinderbite Dagger recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -625,6 +667,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1048_deathbloom_staff.png",
+    "sourcePath": "weapons/common/deathbloom_staff.png",
+    "status": "production-art",
     "description": "Deathbloom Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -637,6 +681,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1049_duskbranch_staff.png",
+    "sourcePath": "weapons/common/duskbranch_staff.png",
+    "status": "production-art",
     "description": "Duskbranch Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -649,6 +695,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1050_duskfang_blade.png",
+    "sourcePath": "weapons/common/duskfang_blade.png",
+    "status": "production-art",
     "description": "Duskfang Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -661,6 +709,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1051_embercrack_axe.png",
+    "sourcePath": "weapons/common/embercrack_axe.png",
+    "status": "production-art",
     "description": "Embercrack Axe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -673,6 +723,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1052_frostbite_blade.png",
+    "sourcePath": "weapons/common/frostbite_blade.png",
+    "status": "production-art",
     "description": "Frostbite Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -685,6 +737,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1053_gloomroot_bow.png",
+    "sourcePath": "weapons/common/gloomroot_bow.png",
+    "status": "production-art",
     "description": "Gloomroot Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -697,6 +751,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1054_gloomspire_scepter.png",
+    "sourcePath": "weapons/common/gloomspire_scepter.png",
+    "status": "production-art",
     "description": "Gloomspire Scepter recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -709,6 +765,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1055_gravemarrow_spear.png",
+    "sourcePath": "weapons/common/gravemarrow_spear.png",
+    "status": "production-art",
     "description": "Gravemarrow Spear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -721,6 +779,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1056_gravethorn_warblade.png",
+    "sourcePath": "weapons/common/gravethorn_warblade.png",
+    "status": "production-art",
     "description": "Gravethorn Warblade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -733,6 +793,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1057_marshfang_dagger.png",
+    "sourcePath": "weapons/common/marshfang_dagger.png",
+    "status": "production-art",
     "description": "Marshfang Dagger recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -745,6 +807,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1058_mirefang_spear.png",
+    "sourcePath": "weapons/common/mirefang_spear.png",
+    "status": "production-art",
     "description": "Mirefang Spear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -757,6 +821,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1059_mirewood_staff.png",
+    "sourcePath": "weapons/common/mirewood_staff.png",
+    "status": "production-art",
     "description": "Mirewood Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -769,6 +835,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1060_nightthorn_bow.png",
+    "sourcePath": "weapons/common/nightthorn_bow.png",
+    "status": "production-art",
     "description": "Nightthorn Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -781,6 +849,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1061_plaguefang_claw.png",
+    "sourcePath": "weapons/common/plaguefang_claw.png",
+    "status": "production-art",
     "description": "Plaguefang Claw recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -793,6 +863,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1062_shardstone_mace.png",
+    "sourcePath": "weapons/common/shardstone_mace.png",
+    "status": "production-art",
     "description": "Shardstone Mace recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -805,6 +877,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1063_smogcoil_whip.png",
+    "sourcePath": "weapons/common/smogcoil_whip.png",
+    "status": "production-art",
     "description": "Smogcoil Whip recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -817,6 +891,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1064_sootveil_blade.png",
+    "sourcePath": "weapons/common/sootveil_blade.png",
+    "status": "production-art",
     "description": "Sootveil Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -829,6 +905,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1065_soulshard_wand.png",
+    "sourcePath": "weapons/common/soulshard_wand.png",
+    "status": "production-art",
     "description": "Soulshard Wand recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -841,6 +919,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1066_soulspike_dagger.png",
+    "sourcePath": "weapons/common/soulspike_dagger.png",
+    "status": "production-art",
     "description": "Soulspike Dagger recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -853,6 +933,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1067_thornrend_axe.png",
+    "sourcePath": "weapons/common/thornrend_axe.png",
+    "status": "production-art",
     "description": "Thornrend Axe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -865,6 +947,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1068_thornslicer_saber.png",
+    "sourcePath": "weapons/common/thornslicer_saber.png",
+    "status": "production-art",
     "description": "Thornslicer Saber recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -877,6 +961,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1069_bloodshard_warhammer.png",
+    "sourcePath": "weapons/epic/bloodshard_warhammer.png",
+    "status": "production-art",
     "description": "Bloodshard Warhammer recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -889,6 +975,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1070_duskdrift_longbow.png",
+    "sourcePath": "weapons/epic/duskdrift_longbow.png",
+    "status": "production-art",
     "description": "Duskdrift Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -901,6 +989,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1071_duskspire_catalyst.png",
+    "sourcePath": "weapons/epic/duskspire_catalyst.png",
+    "status": "production-art",
     "description": "Duskspire Catalyst recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -913,6 +1003,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1072_emberwrath_crossbow.png",
+    "sourcePath": "weapons/epic/emberwrath_crossbow.png",
+    "status": "production-art",
     "description": "Emberwrath Crossbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -925,6 +1017,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1073_gloomthorn_warblade.png",
+    "sourcePath": "weapons/epic/gloomthorn_warblade.png",
+    "status": "production-art",
     "description": "Gloomthorn Warblade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -937,6 +1031,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1074_gravetide_pike.png",
+    "sourcePath": "weapons/epic/gravetide_pike.png",
+    "status": "production-art",
     "description": "Gravetide Pike recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -949,6 +1045,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1075_mirethorn_greatblade.png",
+    "sourcePath": "weapons/epic/mirethorn_greatblade.png",
+    "status": "production-art",
     "description": "Mirethorn Greatblade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -961,6 +1059,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1076_plaguewrought_glaive.png",
+    "sourcePath": "weapons/epic/plaguewrought_glaive.png",
+    "status": "production-art",
     "description": "Plaguewrought Glaive recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -973,6 +1073,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1077_shardrift_longspear.png",
+    "sourcePath": "weapons/epic/shardrift_longspear.png",
+    "status": "production-art",
     "description": "Shardrift Longspear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -985,6 +1087,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1078_soulflare_bow.png",
+    "sourcePath": "weapons/epic/soulflare_bow.png",
+    "status": "production-art",
     "description": "Soulflare Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -997,6 +1101,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1079_soulreaver_scythe.png",
+    "sourcePath": "weapons/epic/soulreaver_scythe.png",
+    "status": "production-art",
     "description": "Soulreaver Scythe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1009,6 +1115,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1080_soulshatter_claws.png",
+    "sourcePath": "weapons/epic/soulshatter_claws.png",
+    "status": "production-art",
     "description": "Soulshatter Claws recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1021,6 +1129,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1081_venomspire_spear.png",
+    "sourcePath": "weapons/epic/venomspire_spear.png",
+    "status": "production-art",
     "description": "Venomspire Spear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1033,6 +1143,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1082_voidcarver_blade.png",
+    "sourcePath": "weapons/epic/voidcarver_blade.png",
+    "status": "production-art",
     "description": "Voidcarver Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1045,6 +1157,8 @@
     "stackSize": 1,
     "sellPrice": 40,
     "asset": "assets/items/imported/weapons/weapons/epic/it-1083_wraithvine_staff.png",
+    "sourcePath": "weapons/epic/wraithvine_staff.png",
+    "status": "production-art",
     "description": "Wraithvine Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1057,6 +1171,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1084_ashvenom_saber.png",
+    "sourcePath": "weapons/legendary/ashvenom_saber.png",
+    "status": "production-art",
     "description": "Ashvenom Saber recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1069,6 +1185,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1085_bloodspire_blade.png",
+    "sourcePath": "weapons/legendary/bloodspire_blade.png",
+    "status": "production-art",
     "description": "Bloodspire Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1081,6 +1199,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1086_duskfang_scythe.png",
+    "sourcePath": "weapons/legendary/duskfang_scythe.png",
+    "status": "production-art",
     "description": "Duskfang Scythe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1093,6 +1213,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1087_duskthorn_pike.png",
+    "sourcePath": "weapons/legendary/duskthorn_pike.png",
+    "status": "production-art",
     "description": "Duskthorn Pike recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1105,6 +1227,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1088_gravemarrow_halberd.png",
+    "sourcePath": "weapons/legendary/gravemarrow_halberd.png",
+    "status": "production-art",
     "description": "Gravemarrow Halberd recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1117,6 +1241,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1089_soulforge_staff.png",
+    "sourcePath": "weapons/legendary/soulforge_staff.png",
+    "status": "production-art",
     "description": "Soulforge Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1129,6 +1255,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1090_soulrend_longbow.png",
+    "sourcePath": "weapons/legendary/soulrend_longbow.png",
+    "status": "production-art",
     "description": "Soulrend Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1141,6 +1269,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1091_voidheart_greataxe.png",
+    "sourcePath": "weapons/legendary/voidheart_greataxe.png",
+    "status": "production-art",
     "description": "Voidheart Greataxe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1153,6 +1283,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1092_voidlash_crossbow.png",
+    "sourcePath": "weapons/legendary/voidlash_crossbow.png",
+    "status": "production-art",
     "description": "Voidlash Crossbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1165,6 +1297,8 @@
     "stackSize": 1,
     "sellPrice": 80,
     "asset": "assets/items/imported/weapons/weapons/legendary/it-1093_wraithbound_blades.png",
+    "sourcePath": "weapons/legendary/wraithbound_blades.png",
+    "status": "production-art",
     "description": "Wraithbound Blades recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1177,6 +1311,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1094_ashbreaker_pike.png",
+    "sourcePath": "weapons/mythic/ashbreaker_pike.png",
+    "status": "production-art",
     "description": "Ashbreaker Pike recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1189,6 +1325,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1095_duskveil_longbow.png",
+    "sourcePath": "weapons/mythic/duskveil_longbow.png",
+    "status": "production-art",
     "description": "Duskveil Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1201,6 +1339,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1096_gravemind_scepter.png",
+    "sourcePath": "weapons/mythic/gravemind_scepter.png",
+    "status": "production-art",
     "description": "Gravemind Scepter recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1213,6 +1353,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1097_shardking_blade.png",
+    "sourcePath": "weapons/mythic/shardking_blade.png",
+    "status": "production-art",
     "description": "Shardking Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1225,6 +1367,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1098_smolderthorn_glaive.png",
+    "sourcePath": "weapons/mythic/smolderthorn_glaive.png",
+    "status": "production-art",
     "description": "Smolderthorn Glaive recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1237,6 +1381,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1099_soulreign_bow.png",
+    "sourcePath": "weapons/mythic/soulreign_bow.png",
+    "status": "production-art",
     "description": "Soulreign Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1249,6 +1395,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1100_soulshatter_greatblade.png",
+    "sourcePath": "weapons/mythic/soulshatter_greatblade.png",
+    "status": "production-art",
     "description": "Soulshatter Greatblade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1261,6 +1409,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1101_voidborne_scythe.png",
+    "sourcePath": "weapons/mythic/voidborne_scythe.png",
+    "status": "production-art",
     "description": "Voidborne Scythe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1273,6 +1423,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1102_voidrend_warhammer.png",
+    "sourcePath": "weapons/mythic/voidrend_warhammer.png",
+    "status": "production-art",
     "description": "Voidrend Warhammer recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1285,6 +1437,8 @@
     "stackSize": 1,
     "sellPrice": 160,
     "asset": "assets/items/imported/weapons/weapons/mythic/it-1103_wraithforged_twinblades.png",
+    "sourcePath": "weapons/mythic/wraithforged_twinblades.png",
+    "status": "production-art",
     "description": "Wraithforged Twinblades recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1297,6 +1451,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1104_ashdrift_longspear.png",
+    "sourcePath": "weapons/rare/ashdrift_longspear.png",
+    "status": "production-art",
     "description": "Ashdrift Longspear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1309,6 +1465,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1105_ashgloom_warblade.png",
+    "sourcePath": "weapons/rare/ashgloom_warblade.png",
+    "status": "production-art",
     "description": "Ashgloom Warblade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1321,6 +1479,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1106_bloodcurse_wand.png",
+    "sourcePath": "weapons/rare/bloodcurse_wand.png",
+    "status": "production-art",
     "description": "Bloodcurse Wand recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1333,6 +1493,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1107_bloodveil_greataxe.png",
+    "sourcePath": "weapons/rare/bloodveil_greataxe.png",
+    "status": "production-art",
     "description": "Bloodveil Greataxe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1345,6 +1507,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1108_duskhowl_blade.png",
+    "sourcePath": "weapons/rare/duskhowl_blade.png",
+    "status": "production-art",
     "description": "Duskhowl Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1357,6 +1521,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1109_duskshard_glaive.png",
+    "sourcePath": "weapons/rare/duskshard_glaive.png",
+    "status": "production-art",
     "description": "Duskshard Glaive recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1369,6 +1535,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1110_duskthorn_longbow.png",
+    "sourcePath": "weapons/rare/duskthorn_longbow.png",
+    "status": "production-art",
     "description": "Duskthorn Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1381,6 +1549,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1111_embershard_crossbow.png",
+    "sourcePath": "weapons/rare/embershard_crossbow.png",
+    "status": "production-art",
     "description": "Embershard Crossbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1393,6 +1563,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1112_gravemist_scythe.png",
+    "sourcePath": "weapons/rare/gravemist_scythe.png",
+    "status": "production-art",
     "description": "Gravemist Scythe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1405,6 +1577,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1113_gravethorn_cleaver.png",
+    "sourcePath": "weapons/rare/gravethorn_cleaver.png",
+    "status": "production-art",
     "description": "Gravethorn Cleaver recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1417,6 +1591,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1114_mirefang_longsword.png",
+    "sourcePath": "weapons/rare/mirefang_longsword.png",
+    "status": "production-art",
     "description": "Mirefang Longsword recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1429,6 +1605,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1115_rotfang_claws.png",
+    "sourcePath": "weapons/rare/rotfang_claws.png",
+    "status": "production-art",
     "description": "Rotfang Claws recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1441,6 +1619,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1116_shatterspike_blade.png",
+    "sourcePath": "weapons/rare/shatterspike_blade.png",
+    "status": "production-art",
     "description": "Shatterspike Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1453,6 +1633,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1117_soulbind_bow.png",
+    "sourcePath": "weapons/rare/soulbind_bow.png",
+    "status": "production-art",
     "description": "Soulbind Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1465,6 +1647,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1118_soulpiercer_longbow.png",
+    "sourcePath": "weapons/rare/soulpiercer_longbow.png",
+    "status": "production-art",
     "description": "Soulpiercer Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1477,6 +1661,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1119_soulshard_catalyst.png",
+    "sourcePath": "weapons/rare/soulshard_catalyst.png",
+    "status": "production-art",
     "description": "Soulshard Catalyst recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1489,6 +1675,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1120_venomspire_pike.png",
+    "sourcePath": "weapons/rare/venomspire_pike.png",
+    "status": "production-art",
     "description": "Venomspire Pike recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1501,6 +1689,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1121_venomthorn_saber.png",
+    "sourcePath": "weapons/rare/venomthorn_saber.png",
+    "status": "production-art",
     "description": "Venomthorn Saber recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1513,6 +1703,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1122_voidreaver_blade.png",
+    "sourcePath": "weapons/rare/voidreaver_blade.png",
+    "status": "production-art",
     "description": "Voidreaver Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1525,6 +1717,8 @@
     "stackSize": 1,
     "sellPrice": 20,
     "asset": "assets/items/imported/weapons/weapons/rare/it-1123_wraithbone_staff.png",
+    "sourcePath": "weapons/rare/wraithbone_staff.png",
+    "status": "production-art",
     "description": "Wraithbone Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1537,6 +1731,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1124_ashwrought_greataxe.png",
+    "sourcePath": "weapons/uncommon/ashwrought_greataxe.png",
+    "status": "production-art",
     "description": "Ashwrought Greataxe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1549,6 +1745,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1125_blightthorn_bow.png",
+    "sourcePath": "weapons/uncommon/blightthorn_bow.png",
+    "status": "production-art",
     "description": "Blightthorn Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1561,6 +1759,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1126_bloodthorn_longbow.png",
+    "sourcePath": "weapons/uncommon/bloodthorn_longbow.png",
+    "status": "production-art",
     "description": "Bloodthorn Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1573,6 +1773,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1127_cinderspine_crossbow.png",
+    "sourcePath": "weapons/uncommon/cinderspine_crossbow.png",
+    "status": "production-art",
     "description": "Cinderspine Crossbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1585,6 +1787,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1128_cryptvine_bow.png",
+    "sourcePath": "weapons/uncommon/cryptvine_bow.png",
+    "status": "production-art",
     "description": "Cryptvine Bow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1597,6 +1801,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1129_duskchill_knife.png",
+    "sourcePath": "weapons/uncommon/duskchill_knife.png",
+    "status": "production-art",
     "description": "Duskchill Knife recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1609,6 +1815,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1130_duskroot_wand.png",
+    "sourcePath": "weapons/uncommon/duskroot_wand.png",
+    "status": "production-art",
     "description": "Duskroot Wand recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1621,6 +1829,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1131_duskveil_glaive.png",
+    "sourcePath": "weapons/uncommon/duskveil_glaive.png",
+    "status": "production-art",
     "description": "Duskveil Glaive recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1633,6 +1843,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png",
+    "sourcePath": "weapons/uncommon/emberfang_dagger.png",
+    "status": "production-art",
     "description": "Emberfang Dagger recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1645,6 +1857,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1133_gravemind_flail.png",
+    "sourcePath": "weapons/uncommon/gravemind_flail.png",
+    "status": "production-art",
     "description": "Gravemind Flail recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1657,6 +1871,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1134_gravetide_mace.png",
+    "sourcePath": "weapons/uncommon/gravetide_mace.png",
+    "status": "production-art",
     "description": "Gravetide Mace recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1669,6 +1885,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1135_marrowshard_blade.png",
+    "sourcePath": "weapons/uncommon/marrowshard_blade.png",
+    "status": "production-art",
     "description": "Marrowshard Blade recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1681,6 +1899,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1136_mirethorn_longbow.png",
+    "sourcePath": "weapons/uncommon/mirethorn_longbow.png",
+    "status": "production-art",
     "description": "Mirethorn Longbow recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1693,6 +1913,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1137_mireweaver_staff.png",
+    "sourcePath": "weapons/uncommon/mireweaver_staff.png",
+    "status": "production-art",
     "description": "Mireweaver Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1705,6 +1927,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1138_plaguebite_axe.png",
+    "sourcePath": "weapons/uncommon/plaguebite_axe.png",
+    "status": "production-art",
     "description": "Plaguebite Axe recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1717,6 +1941,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1139_shardfang_rapier.png",
+    "sourcePath": "weapons/uncommon/shardfang_rapier.png",
+    "status": "production-art",
     "description": "Shardfang Rapier recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1729,6 +1955,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1140_sootcrack_warhammer.png",
+    "sourcePath": "weapons/uncommon/sootcrack_warhammer.png",
+    "status": "production-art",
     "description": "Sootcrack Warhammer recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1741,6 +1969,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1141_thornpierce_lance.png",
+    "sourcePath": "weapons/uncommon/thornpierce_lance.png",
+    "status": "production-art",
     "description": "Thornpierce Lance recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1753,6 +1983,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1142_voidpiercer_spear.png",
+    "sourcePath": "weapons/uncommon/voidpiercer_spear.png",
+    "status": "production-art",
     "description": "Voidpiercer Spear recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   },
   {
@@ -1765,6 +1997,8 @@
     "stackSize": 1,
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1143_voidwhisper_staff.png",
+    "sourcePath": "weapons/uncommon/voidwhisper_staff.png",
+    "status": "production-art",
     "description": "Voidwhisper Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
   }
 ]

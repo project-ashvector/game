@@ -1,4 +1,4 @@
-# Production Pack 005 — AN-001 Rust Hound
+# Production Pack 005 — AN-001 Ashborn Revenant
 
 ## Status
 Integrated in Developer Build v13.
@@ -15,7 +15,7 @@ assets/anomalies/an001/portrait.png
 assets/anomalies/an001/icon.png
 assets/anomalies/an001/sprite_sheet.png
 assets/anomalies/an001/death.png
-assets/anomalies/an001/source/an001_rust_hound_master_sheet.png
+assets/anomalies/an001/source/an001_ashborn_revenant_master_sheet.png
 ```
 
 ## Data Paths

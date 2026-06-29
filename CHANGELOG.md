@@ -26,7 +26,7 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Kept playable build files intact while preserving production art references.
 
 ## v23 — Data Registry Sprint
-- Added stable JSON-style content records for Operator AV-001, AN-001 Rust Hound, BOSS-001 Rust Mother, items, skills, Fracture 001 layout/events, and intro dialogue.
+- Added stable JSON-style content records for Operator AV-001, AN-001 Ashborn Revenant, BOSS-001 Ashborn Revenant Lord, items, skills, Fracture 001 layout/events, and intro dialogue.
 - Added DATA_REGISTRY.md and BUILD_NOTES_V23.md.
 - Preserved all consolidated master assets from v22.
 
@@ -44,4 +44,29 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Imported 100 monsters as ASH VECTOR anomaly assets.
 - Imported 53 bosses as ASH VECTOR boss assets.
 - Added registry JSON files for future database/encounter integration.
-- Kept existing Chapter 1 Rust Hound/Rust Mother assets intact.
+- Kept existing Chapter 1 Ashborn Revenant/Ashborn Revenant Lord assets intact.
+
+
+## v28 — Battle UI + Creature Database Polish
+- Rebuilt battle overlay CSS for a cleaner 16:9 combat frame.
+- Reduced text overlap in combat.
+- Added searchable/filterable creature database for imported monsters and bosses.
+- Added `PLAYTEST_SPRINT_V28.md`.
+
+
+## v29 - Imported Item Library
+
+- Imported uploaded item ZIP into `assets/items/imported/`.
+- Added 143 permanent item IDs starting at `IT-1001`.
+- Added `data/items/imported_item_registry.json`.
+- Expanded `data/items/items.json` with imported records.
+- Upgraded Inventory Database screen with search/filter item library view.
+- Added `IMPORTED_ITEM_LIBRARY_V29.md` with counts and replacement rules.
+
+
+## v30 — Placeholder Removal + Fixed Viewport
+- Removed legacy AN-001 Rust Hound and BOSS-001 Rust Mother from active gameplay/code.
+- Promoted imported creature library records to start at AN-001/BOSS-001.
+- Chapter 1 now uses Ashborn Revenant and Ashborn Revenant Lord.
+- Locked gameplay/overlays into a fixed viewport to stop page scrolling and cropping.
+- Added contained dark scrollbars inside database panels.

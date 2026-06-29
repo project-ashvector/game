@@ -21,9 +21,9 @@ This build consolidates the approved generated concept art and the playable game
 - `assets/operators/av001/icon.png`
 
 ### Anomalies
-- `assets/anomalies/an001_rust_hound/battle.png`
-- `assets/anomalies/an001_rust_hound/icon.png`
-- `assets/anomalies/boss001_rust_mother/battle.png`
+- `assets/anomalies/an001_ashborn_revenant/battle.png`
+- `assets/anomalies/an001_ashborn_revenant/icon.png`
+- `assets/anomalies/boss001_ashborn_revenant_lord/battle.png`
 
 ### Fracture 001
 - `assets/fractures/fracture001/background.png`

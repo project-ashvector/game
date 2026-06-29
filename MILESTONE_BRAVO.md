@@ -17,7 +17,7 @@ This build focuses on making the first chapter playable before GitHub deployment
 1. Start new operation.
 2. Read opening AVOS transmission.
 3. Reach Recovery Terminal.
-4. Clear three Rust Hound anomalies.
-5. Defeat Rust Mother.
+4. Clear three Ashborn Revenant anomalies.
+5. Defeat Ashborn Revenant Lord.
 6. Reach exit tile.
 7. Trigger Chapter Complete screen.

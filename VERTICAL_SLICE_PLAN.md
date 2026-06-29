@@ -26,11 +26,11 @@ Build one complete playable chapter that proves the final game loop.
 
 ### Anomalies
 - `AN-001` — Toxic Slime
-- `AN-002` — Rust Hound
+- `AN-002` — Ashborn Revenant
 - `AN-003` — Scrap Crawler
 
 ### Bosses
-- `BOSS-001` — The Rust Mother
+- `BOSS-001` — The Ashborn Revenant Lord
 
 ### Fractures
 - `FR-001` — Toxic Sewers
