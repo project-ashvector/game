@@ -224,7 +224,7 @@
     }catch(err){}
   }
   function showMenu(){hideAll(); document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); requestNativeFullscreen();}
-  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active','fullscreen-mode'); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
+  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -439,7 +439,7 @@
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${p.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
   }
-  function renderAll(){render(); renderMini(); renderUI();}
+  function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
   function openOverlay(id){document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $(id).classList.remove('hidden'); if(id==='anomalyOverlay') renderAnomalyDb(); if(id==='inventoryOverlay') renderInventoryDb(); if(id==='missionOverlay') renderUI(); if(id==='playtestOverlay') renderUI(); if(id==='progressionOverlay') renderProgressionDb();}
   function getCreatureLibrary(){
     const anomalies = importedAnomalyRoster.map((x,i)=>({...x,id:displayId('AN', i),type:'Anomaly', icon:iconPathFor(x)}));
@@ -565,6 +565,59 @@
     else { showFullscreenHint('Fullscreen mode off'); }
     setTimeout(()=>{ try{ canvas.focus({preventScroll:true}); }catch(e){} renderAll(); },80);
   }
+
+  function ensureFullscreenUi(){
+    if(!document.getElementById('fsQuickbar')){
+      const q=document.createElement('div');
+      q.id='fsQuickbar';
+      q.className='fullscreen-quickbar';
+      q.innerHTML=`
+        <button data-hot="map"><b>M</b>Map</button>
+        <button data-hot="inv"><b>I</b>Inventory</button>
+        <button data-hot="db"><b>D</b>Anomalies</button>
+        <button data-hot="op"><b>O</b>Operator</button>
+        <button data-hot="prog"><b>P</b>Progress</button>
+        <button data-hot="brief"><b>B</b>Briefing</button>
+        <button data-hot="help"><b>H</b>Help</button>`;
+      document.body.appendChild(q);
+      q.querySelector('[data-hot="map"]').onclick=toggleSideHud;
+      q.querySelector('[data-hot="inv"]').onclick=()=>openOverlay('inventoryOverlay');
+      q.querySelector('[data-hot="db"]').onclick=()=>openOverlay('anomalyOverlay');
+      q.querySelector('[data-hot="op"]').onclick=()=>openOverlay('operatorOverlay');
+      q.querySelector('[data-hot="prog"]').onclick=()=>openOverlay('progressionOverlay');
+      q.querySelector('[data-hot="brief"]').onclick=()=>openOverlay('missionOverlay');
+      q.querySelector('[data-hot="help"]').onclick=toggleFullscreenHelp;
+    }
+    if(!document.getElementById('fsSidehud')){
+      const h=document.createElement('div');
+      h.id='fsSidehud';
+      h.className='fullscreen-sidehud hidden';
+      h.innerHTML=`<h3>Field HUD</h3><div id="fsHudStats" class="fs-mini-section"></div><canvas id="fsMinimap" width="300" height="120" class="minimap"></canvas><div class="mini-hint">M hides this panel. I opens inventory. D opens database.</div>`;
+      document.body.appendChild(h);
+    }
+    if(!document.getElementById('fsHelp')){
+      const help=document.createElement('div');
+      help.id='fsHelp';
+      help.className='fullscreen-help hidden';
+      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>D</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Esc</kbd> Close panels`;
+      document.body.appendChild(help);
+    }
+  }
+  function toggleSideHud(){ ensureFullscreenUi(); const el=$('fsSidehud'); el.classList.toggle('hidden'); renderFullscreenHud(); }
+  function toggleFullscreenHelp(){ ensureFullscreenUi(); $('fsHelp').classList.toggle('hidden'); }
+  function renderFullscreenHud(){
+    const hud=$('fsSidehud'); if(!hud || hud.classList.contains('hidden')) return;
+    const p=state.player;
+    $('fsHudStats').innerHTML=`
+      <div class="fs-row"><b>Vyra</b><br>Lv ${p.level} // Credits ${p.credits}</div>
+      <div class="fs-row">HP ${p.hp}/${p.maxHp}<div class="bar"><span style="width:${100*p.hp/p.maxHp}%"></span></div></div>
+      <div class="fs-row">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div>
+      <div class="fs-row">Anomalies Cleared: ${state.flags.anomaliesCleared}/3<br>Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div>`;
+    const c=$('fsMinimap'); if(!c) return;
+    const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
+    for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
+    x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
+  }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
   function startAutosave(){ setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000); setInterval(()=>renderUI(), 1000); }
   function bind(){
@@ -575,7 +628,18 @@
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
       if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
+      if(gameIsOpen && e.key==='Escape' && overlayOpen){ e.preventDefault(); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); return; }
       if((e.key==='f'||e.key==='F') && gameIsOpen){ e.preventDefault(); toggleFullscreenMode(); return; }
+      if(gameIsOpen && !overlayOpen){
+        const k=e.key.toLowerCase();
+        if(k==='m'){ e.preventDefault(); toggleSideHud(); return; }
+        if(k==='i'){ e.preventDefault(); openOverlay('inventoryOverlay'); return; }
+        if(k==='d'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
+        if(k==='o'){ e.preventDefault(); openOverlay('operatorOverlay'); return; }
+        if(k==='p'){ e.preventDefault(); openOverlay('progressionOverlay'); return; }
+        if(k==='b'){ e.preventDefault(); openOverlay('missionOverlay'); return; }
+        if(k==='h'){ e.preventDefault(); toggleFullscreenHelp(); return; }
+      }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
       if(gameIsOpen && !overlayOpen && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)){
         e.preventDefault();
@@ -590,6 +654,7 @@
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
+    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',()=>{ const info=$('menuInfo'); if(info) info.textContent='Protocol opened. Press Esc or Close to return.'; }); });
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=()=>document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'))));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};

@@ -150,3 +150,9 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added damage numbers, hit flashes, battle shake, and dodge/heal popups.
 - Added victory loot screen using the new item icon pipeline.
 
+
+## v45 — Fullscreen HUD + Hotkeys
+- Added fullscreen quickbar and hotkeys for map/inventory/database/operator/progression/mission/help.
+- Added fullscreen field HUD so sidebar data is accessible while the normal sidebar is hidden.
+- Esc now closes open panels before exiting fullscreen layout.
+- Main menu protocol buttons now provide feedback and remain accessible.

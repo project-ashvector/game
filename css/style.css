@@ -402,3 +402,74 @@ body.fullscreen-mode canvas#game{touch-action:none;}
   overflow: visible !important;
   max-height: none !important;
 }
+
+/* v45: fullscreen hotkey HUD and fixed in-game database access */
+.fullscreen-quickbar{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  z-index:65;
+  display:flex;
+  gap:8px;
+  padding:8px;
+  background:rgba(5,7,10,.72);
+  border:1px solid rgba(112,215,255,.28);
+  border-radius:10px;
+  backdrop-filter:blur(8px);
+  box-shadow:0 0 28px rgba(0,217,255,.12);
+  opacity:.32;
+  transition:opacity .15s ease;
+}
+body:not(.fullscreen-mode) .fullscreen-quickbar{display:none!important;}
+.fullscreen-quickbar:hover{opacity:1;}
+.fullscreen-quickbar button{
+  min-width:54px;
+  padding:8px 10px;
+  font-size:12px;
+  border-color:rgba(112,215,255,.35);
+  background:rgba(12,17,24,.92);
+}
+.fullscreen-quickbar button b{display:block;color:#70d7ff;font-size:14px;}
+.fullscreen-sidehud{
+  position:fixed;
+  right:14px;
+  top:74px;
+  width:min(340px,calc(100vw - 28px));
+  max-height:calc(100dvh - 110px);
+  overflow:auto;
+  z-index:64;
+  padding:12px;
+  background:linear-gradient(180deg,rgba(9,12,18,.92),rgba(4,6,10,.86));
+  border:1px solid rgba(112,215,255,.28);
+  border-left:3px solid rgba(112,215,255,.65);
+  border-radius:8px;
+  box-shadow:0 0 36px rgba(0,0,0,.55);
+  backdrop-filter:blur(8px);
+}
+body:not(.fullscreen-mode) .fullscreen-sidehud{display:none!important;}
+.fullscreen-sidehud.hidden{display:none!important;}
+.fullscreen-sidehud h3{margin:.35rem 0 .55rem;color:#fff;}
+.fullscreen-sidehud .mini-db,.fullscreen-sidehud .fs-mini-section{display:grid;gap:7px;margin-bottom:10px;}
+.fullscreen-sidehud .fs-row{background:rgba(0,0,0,.36);border:1px solid rgba(255,255,255,.1);padding:8px;font-size:12px;}
+.fullscreen-sidehud .minimap{height:110px;}
+.fullscreen-help{
+  position:fixed;
+  left:14px;
+  top:74px;
+  z-index:64;
+  width:min(360px,calc(100vw - 28px));
+  background:rgba(5,7,10,.82);
+  border:1px solid rgba(255,255,255,.16);
+  border-left:3px solid var(--red2);
+  padding:12px;
+  border-radius:8px;
+  color:#dce7f0;
+  backdrop-filter:blur(8px);
+}
+body:not(.fullscreen-mode) .fullscreen-help{display:none!important;}
+.fullscreen-help.hidden{display:none!important;}
+.fullscreen-help kbd{display:inline-block;min-width:24px;text-align:center;background:#151922;border:1px solid #3b444e;padding:2px 5px;margin:2px;color:#fff;}
+body.fullscreen-mode .database-modal{width:min(1180px,calc(100vw - 24px));height:min(820px,calc(100dvh - 24px));}
+body.fullscreen-mode .overlay{z-index:90!important;}
+@media(max-width:980px){.fullscreen-quickbar{left:8px;right:8px;transform:none;overflow-x:auto;justify-content:flex-start}.fullscreen-sidehud{left:8px;right:8px;top:58px;width:auto}.fullscreen-help{left:8px;right:8px;top:58px;width:auto}}
