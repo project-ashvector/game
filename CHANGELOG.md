@@ -1,4 +1,11 @@
 
+## v43 - Main Menu Recovery Fix
+- Fixed a launch blocker where the main menu buttons could be clipped off-screen.
+- Added Enter-to-start from the main menu.
+- Added responsive menu sizing for shorter screens.
+- Added BUILD_NOTES_V43.md.
+
+
 ## v42 — Fullscreen Launch Fix
 - Starts the app in a fixed fullscreen-style viewport.
 - Automatically applies fullscreen layout when entering menu/game.

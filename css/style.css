@@ -323,3 +323,46 @@ body.fullscreen-mode .main-menu, body.fullscreen-mode .boot-screen{background-co
 body.fullscreen-mode .menu-card, body.fullscreen-mode .boot-terminal{width:min(1180px,calc(100vw - 24px));height:min(760px,calc(100dvh - 24px));}
 body.fullscreen-mode #app:not(.hidden){display:flex!important;}
 body.fullscreen-mode canvas#game{touch-action:none;}
+
+/* v43 menu recovery / launch fix */
+.main-menu .menu-card{
+  overflow:auto !important;
+  justify-content:flex-start !important;
+  gap:10px;
+}
+.main-menu .menu-logo{
+  max-height:36vh;
+  object-fit:contain;
+}
+.main-menu .menu-card h1{
+  font-size:clamp(32px,6vw,66px) !important;
+  line-height:1 !important;
+  margin:10px 0 !important;
+}
+.main-menu .menu-buttons{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important;
+  gap:10px !important;
+  max-height:none !important;
+  overflow:visible !important;
+  width:min(820px,100%);
+  margin:12px auto !important;
+  flex:0 0 auto;
+}
+.main-menu .menu-buttons button{
+  min-height:44px;
+}
+.quick-start-hint{
+  color:#70d7ff;
+  border:1px solid rgba(112,215,255,.35);
+  background:rgba(112,215,255,.08);
+  padding:8px 10px;
+  margin:8px auto;
+  width:min(820px,100%);
+  text-align:center;
+}
+@media(max-height:760px){
+  .main-menu .menu-logo{max-height:28vh;}
+  .main-menu .menu-card h1{font-size:clamp(28px,5vw,52px)!important;}
+  .main-menu .menu-subtitle{margin:4px 0!important;}
+}
