@@ -311,3 +311,15 @@ body.fullscreen-mode .mobile-pad:hover{opacity:1;}
 body.fullscreen-mode .overlay{position:fixed!important;inset:0!important;}
 body.fullscreen-mode .battle{width:100vw!important;height:100dvh!important;max-height:none!important;border-radius:0!important;border:0!important;}
 @media(max-width:980px){body.fullscreen-mode .topbar{display:none!important}body.fullscreen-mode .mission-strip,body.fullscreen-mode .objective-tracker{display:none!important}body.fullscreen-mode .mobile-pad{display:block!important;opacity:.42}}
+
+/* v42: launch directly into fullscreen-style app layout */
+html, body { width:100%; height:100%; overflow:hidden !important; }
+body { background:#000 !important; }
+.boot-screen,.main-menu{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0!important;overflow:hidden!important;padding:clamp(10px,2vw,20px)!important;}
+.boot-terminal,.menu-card{height:min(760px,calc(100dvh - 28px));max-height:calc(100dvh - 28px);overflow:hidden;display:flex;flex-direction:column;}
+.boot-lines{flex:1;min-height:0;overflow:hidden;}
+.menu-buttons{overflow:auto;min-height:0;padding-right:4px;}
+body.fullscreen-mode .main-menu, body.fullscreen-mode .boot-screen{background-color:#000;}
+body.fullscreen-mode .menu-card, body.fullscreen-mode .boot-terminal{width:min(1180px,calc(100vw - 24px));height:min(760px,calc(100dvh - 24px));}
+body.fullscreen-mode #app:not(.hidden){display:flex!important;}
+body.fullscreen-mode canvas#game{touch-action:none;}

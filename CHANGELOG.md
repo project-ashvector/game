@@ -1,4 +1,11 @@
 
+## v42 — Fullscreen Launch Fix
+- Starts the app in a fixed fullscreen-style viewport.
+- Automatically applies fullscreen layout when entering menu/game.
+- Requests browser native fullscreen on first click/Enter where browser security allows it.
+- Prevents boot/menu/game screens from scrolling like a webpage.
+
+
 ## v39 — Inventory UI Polish
 - Polished inventory/database item slots with icon frames, rarity borders, and stack counts.
 - Added item detail panel and filters for category/rarity.
@@ -130,10 +137,3 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added damage numbers, hit flashes, battle shake, and dodge/heal popups.
 - Added victory loot screen using the new item icon pipeline.
 
-
-
-## v41 - Fullscreen Game Presentation
-- Added true fullscreen toggle and CSS fullscreen fallback.
-- Added fixed no-scroll gameplay viewport.
-- Hid side panel in fullscreen for a cleaner native-game feel.
-- Added F key shortcut and ESC fullscreen exit.

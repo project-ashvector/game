@@ -110,3 +110,7 @@ The battle screen now uses a fixed RPG-style presentation with improved operator
 - `F` or the **Full Screen** button toggles fullscreen gameplay.
 - `ESC` exits fullscreen mode.
 - Arrow keys move Vyra without scrolling the browser page.
+
+
+### Fullscreen behavior
+The game starts in a fixed full-window layout. Browsers block true native fullscreen until the player clicks or presses a key, so ASH VECTOR requests native fullscreen on Enter, tap, Continue, or New Game.

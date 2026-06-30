@@ -213,8 +213,18 @@
       if(i<bootLines.length){lines.textContent += '> '+bootLines[i++]+'\n'; prog.style.width=Math.min(100, i/bootLines.length*100)+'%'; setTimeout(step, state.settings.reducedMotion?30:260);} else {$('bootLogo').classList.remove('hidden'); bootDone=true;}}
     step();
   }
-  function showMenu(){hideAll(); document.body.classList.remove('game-active'); $('mainMenu').classList.remove('hidden');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active'); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
+  function requestNativeFullscreen(){
+    // Browsers only allow true fullscreen after a click/key press.
+    // We still force CSS fullscreen immediately, then request native fullscreen when allowed.
+    document.body.classList.add('fullscreen-mode');
+    try{
+      if(!document.fullscreenElement && document.documentElement.requestFullscreen){
+        document.documentElement.requestFullscreen().catch(()=>{});
+      }
+    }catch(err){}
+  }
+  function showMenu(){hideAll(); document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); requestNativeFullscreen();}
+  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active','fullscreen-mode'); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -551,14 +561,14 @@
       if(wantFs && !document.fullscreenElement && document.documentElement.requestFullscreen){ await document.documentElement.requestFullscreen(); }
       if(!wantFs && document.fullscreenElement && document.exitFullscreen){ await document.exitFullscreen(); }
     }catch(err){ /* Browser may block fullscreen unless user clicked. CSS mode still works. */ }
-    if(wantFs){ showFullscreenHint('Fullscreen mode on • Press F or ESC to exit'); }
+    if(wantFs){ showFullscreenHint('Fullscreen layout on • browser fullscreen starts after click/Enter'); }
     else { showFullscreenHint('Fullscreen mode off'); }
     setTimeout(()=>{ try{ canvas.focus({preventScroll:true}); }catch(e){} renderAll(); },80);
   }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
   function startAutosave(){ setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000); setInterval(()=>renderUI(), 1000); }
   function bind(){
-    $('enterBtn').onclick=showMenu; document.addEventListener('keydown',e=>{
+    $('enterBtn').onclick=()=>{requestNativeFullscreen(); showMenu();}; document.addEventListener('keydown',e=>{
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
