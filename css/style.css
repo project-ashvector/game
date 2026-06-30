@@ -366,3 +366,39 @@ body.fullscreen-mode canvas#game{touch-action:none;}
   .main-menu .menu-card h1{font-size:clamp(28px,5vw,52px)!important;}
   .main-menu .menu-subtitle{margin:4px 0!important;}
 }
+
+/* v44 emergency menu launch recovery */
+#mainMenu:not(.hidden) {
+  pointer-events: auto !important;
+  z-index: 999 !important;
+}
+#mainMenu:not(.hidden) .menu-card {
+  overflow: auto !important;
+  padding-bottom: 96px !important;
+}
+#mainMenu:not(.hidden) #newGameBtn {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 28px !important;
+  transform: translateX(-50%) !important;
+  z-index: 2000 !important;
+  min-width: min(420px, calc(100vw - 36px)) !important;
+  min-height: 56px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  background: linear-gradient(90deg, #7a1019, #bd1f2d) !important;
+  border: 1px solid #ff3048 !important;
+  box-shadow: 0 0 24px rgba(255,48,72,.45) !important;
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+#mainMenu:not(.hidden) #newGameBtn::after {
+  content: '  // PRESS ENTER';
+  color: #70d7ff;
+  font-weight: 400;
+}
+#mainMenu:not(.hidden) .menu-buttons {
+  overflow: visible !important;
+  max-height: none !important;
+}

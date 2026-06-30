@@ -1,4 +1,10 @@
 
+## v44 — Menu Launch Recovery
+- Fixed menu soft-lock where Enter/click could fail to start the game.
+- Added always-visible fixed Initialize Operator button.
+- Added Enter/Space hard-start fallback on the main menu.
+
+
 ## v43 - Main Menu Recovery Fix
 - Fixed a launch blocker where the main menu buttons could be clipped off-screen.
 - Added Enter-to-start from the main menu.
