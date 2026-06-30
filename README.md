@@ -92,3 +92,10 @@ This build keeps the useful Cryptic Idle Worlds code ideas but ignores its old a
 
 ## v34 Update
 AV-001 Vyra now uses the approved hooded cyan dual-blade artwork as the canonical production asset. See `VYRA_ASSET_UPDATE_V34.md`.
+
+
+## v38 — Production Item Icon Pipeline
+- Stored uploaded 1024×1024 item icons in `assets/source/items/`.
+- Generated optimized 128×128 game icons and 64×64 compact icons.
+- Added core item records to the Inventory Database.
+- Upgraded inventory cards with icons, rarity borders, and hover polish.

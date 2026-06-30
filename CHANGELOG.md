@@ -1,4 +1,10 @@
 
+## v39 — Inventory UI Polish
+- Polished inventory/database item slots with icon frames, rarity borders, and stack counts.
+- Added item detail panel and filters for category/rarity.
+- Improved side inventory display so item artwork is visible during gameplay.
+
+
 ## v31 — Creature Encounter Art Link
 - Linked Fracture enemy and boss encounters to the imported monster/boss art library.
 - Replaced generic map enemy markers with imported creature icons.
@@ -110,3 +116,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Replaced the green debug Toxic Sewers battle background with a cinematic sewer battle backdrop.
 - Kept the battle scene using the imported anomaly artwork and official Vyra battle asset.
 - Added a clearer production note for the battle UI polish pass.
+
+
+## v38 — Production Item Icon Pipeline
+- Stored uploaded 1024×1024 item icons in `assets/source/items/`.
+- Generated optimized 128×128 game icons and 64×64 compact icons.
+- Added core item records to the Inventory Database.
+- Upgraded inventory cards with icons, rarity borders, and hover polish.

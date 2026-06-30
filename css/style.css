@@ -226,3 +226,40 @@ canvas#game {
   margin-right:10px;
 }
 .style-card .skill-glyph{margin-right:8px;}
+
+/* v38: production item icon pipeline + polished inventory slots */
+.owned-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}.owned-item{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;background:linear-gradient(135deg,rgba(13,17,24,.96),rgba(5,7,10,.92));border:1px solid #343c46;padding:8px;position:relative;overflow:hidden}.owned-item:before,.item-card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.05),transparent);opacity:0;transition:.18s}.owned-item:hover:before,.item-card:hover:before{opacity:1}.owned-item img{width:48px;height:48px;object-fit:contain;background:radial-gradient(circle,rgba(255,255,255,.08),rgba(0,0,0,.45));border:1px solid rgba(255,255,255,.15);padding:4px}.owned-item b{display:block}.owned-item span,.owned-item small{display:block;color:var(--muted);font-size:.78rem}.owned-item button{padding:.35rem .5rem;font-size:.75rem}.item-card{position:relative;overflow:hidden;background:linear-gradient(160deg,#111722,#080a0f);border:1px solid #39414a;transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease}.item-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.35)}.item-card img{width:76px;height:76px;border-radius:8px;padding:6px;background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.08),rgba(0,0,0,.55));box-shadow:inset 0 0 18px rgba(0,0,0,.8)}.rarity-common{border-color:#646b73!important}.rarity-uncommon{border-color:#42c978!important}.rarity-rare{border-color:#4aa3ff!important}.rarity-epic{border-color:#aa62ff!important}.rarity-legendary{border-color:#ff9b2f!important}.rarity-mythic{border-color:#ff3048!important}.rarity-relic{border-color:#ffd166!important}.rarity-singularity{border-color:#ff3048!important;box-shadow:0 0 14px rgba(255,48,72,.25)}
+
+/* v39: polished inventory/database icon UI */
+.invrow-polished{
+  display:grid;
+  grid-template-columns:48px 1fr auto;
+  gap:10px;
+  align-items:center;
+  min-height:60px;
+  background:linear-gradient(135deg,rgba(17,23,32,.92),rgba(5,7,10,.86));
+  border-left-width:3px;
+}
+.invrow-polished small{display:block;color:var(--muted);font-size:.72rem;margin-top:2px;line-height:1.15}
+.item-icon-shell{
+  width:54px;height:54px;display:grid;place-items:center;position:relative;flex:0 0 auto;
+  border:1px solid #3a4350;border-radius:10px;
+  background:radial-gradient(circle at 50% 35%,rgba(255,255,255,.10),rgba(0,0,0,.55) 62%),linear-gradient(145deg,#151a22,#06080d);
+  box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 12px rgba(0,0,0,.25);
+  overflow:hidden;
+}
+.item-icon-shell:after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent 28%,transparent 70%,rgba(255,255,255,.04));pointer-events:none}
+.item-icon-shell img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 4px 5px rgba(0,0,0,.65));background:transparent!important;border:0!important;padding:0!important;border-radius:0!important;box-shadow:none!important}
+.item-qty{position:absolute;right:3px;bottom:2px;min-width:20px;text-align:center;background:rgba(0,0,0,.78);border:1px solid rgba(255,255,255,.18);padding:1px 4px;font-size:.68rem;color:#fff;font-weight:bold}
+.item-filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.inventory-layout-pro{display:grid;grid-template-columns:minmax(280px,.9fr) minmax(300px,1.1fr);gap:14px;margin-bottom:14px}
+.owned-items{background:rgba(6,8,12,.42);border:1px solid rgba(255,255,255,.08);padding:10px;max-height:34vh;overflow:auto}
+.owned-grid{grid-template-columns:1fr!important}
+.owned-item{width:100%;text-align:left;border-left-width:3px!important;border-radius:6px;grid-template-columns:60px 1fr 68px!important;min-height:72px}
+.owned-item em{font-style:normal;color:var(--gold);font-size:.72rem;text-align:right;position:relative;z-index:1}
+.owned-item small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.item-detail-panel{background:linear-gradient(145deg,rgba(12,16,22,.96),rgba(4,6,10,.92));border:1px solid #39414a;padding:14px;min-height:260px;position:sticky;top:70px;align-self:start;box-shadow:inset 0 0 30px rgba(0,0,0,.35)}
+.item-detail-top{display:flex;align-items:center;gap:14px;margin:10px 0 12px}.item-detail-top .item-icon-shell{width:84px;height:84px}.item-detail-top .item-icon-shell img{width:70px;height:70px}.item-detail-top h2{margin:.1rem 0;color:#fff}.item-detail-top p{margin:.2rem 0;color:var(--muted)}
+.item-grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))!important;gap:12px!important;max-height:48vh!important}.item-card{min-height:212px!important;align-content:start;border-left-width:3px!important;border-radius:6px}.item-card .item-icon-shell{width:86px;height:86px;margin-bottom:6px}.item-card .item-icon-shell img{width:72px;height:72px}.item-card span{letter-spacing:.04em}.item-card b{font-size:.94rem!important}.item-card em,.item-card small{line-height:1.25}
+.rarity-common .item-icon-shell,.item-icon-shell.rarity-common{border-color:#646b73}.rarity-uncommon .item-icon-shell,.item-icon-shell.rarity-uncommon{border-color:#42c978;box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 12px rgba(66,201,120,.16)}.rarity-rare .item-icon-shell,.item-icon-shell.rarity-rare{border-color:#4aa3ff;box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 12px rgba(74,163,255,.16)}.rarity-epic .item-icon-shell,.item-icon-shell.rarity-epic{border-color:#aa62ff;box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 12px rgba(170,98,255,.18)}.rarity-legendary .item-icon-shell,.item-icon-shell.rarity-legendary{border-color:#ff9b2f;box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 12px rgba(255,155,47,.20)}.rarity-mythic .item-icon-shell,.item-icon-shell.rarity-mythic{border-color:#ff3048;box-shadow:inset 0 0 18px rgba(0,0,0,.72),0 0 14px rgba(255,48,72,.22)}
+@media(max-width:980px){.inventory-layout-pro{grid-template-columns:1fr}.item-detail-panel{position:static}.item-filter-row{grid-template-columns:1fr}.owned-grid{grid-template-columns:1fr!important}}
