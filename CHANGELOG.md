@@ -168,3 +168,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Fixed main-menu protocol buttons by hiding the menu layer while modals are open.
 - Added inline fallback handlers and window.AV_MENU helpers.
 - Escape/Close now returns to the main menu when opening from menu.
+
+
+## v49 - Menu Recovery and Cache Bust
+- Fixed stale version labels.
+- Added cache-busting query strings to CSS/JS.
+- Added independent recovery router for menu/database buttons.
+- Added boot failsafe and direct Enter/Space handling.

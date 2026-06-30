@@ -497,3 +497,14 @@ body.menu-protocol-open .protocol-quick-panel{filter:none!important;pointer-even
 .overlay:not(.hidden){display:grid!important;z-index:9000!important;pointer-events:auto!important;}
 body.menu-protocol-open #mainMenu.hidden + #app.hidden{display:none!important;}
 .database-modal{position:relative;z-index:9001!important;}
+
+
+/* v49 menu recovery / cache-bust patch */
+#mainMenu:not(.hidden), #bootScreen:not(.hidden){z-index:9500!important;pointer-events:auto!important;}
+#mainMenu button, #launchStart, .top-actions button{pointer-events:auto!important;position:relative!important;z-index:9600!important;}
+.overlay:not(.hidden){z-index:9800!important;display:grid!important;pointer-events:auto!important;}
+.database-modal{z-index:9801!important;}
+.menu-card{overflow:auto!important;}
+.menu-buttons button{min-height:44px;}
+.boot-logo button{position:relative!important;z-index:9600!important;}
+body.fullscreen-mode #app:not(.hidden){display:flex!important;}

@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.3.4 // VYRA CANON ASSET',
+    'Version 0.4.9 // MENU RECOVERY',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -223,7 +223,7 @@
       }
     }catch(err){}
   }
-  function showMenu(){hideAll(); document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); requestNativeFullscreen();}
+  function showMenu(){hideAll(); document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden');}
   function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
@@ -752,7 +752,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
@@ -760,5 +760,5 @@
     open:(id)=>openOverlay(id),
     fullscreen:()=>toggleFullscreenMode()
   };
-  loadImages(); bind(); applySettings(); boot(); renderAll();
+  loadImages(); bind(); applySettings(); boot(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
 })();
