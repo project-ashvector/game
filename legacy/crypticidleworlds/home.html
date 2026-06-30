@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cryptic Idle Worlds - Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body {
+      font-family: 'Share Tech Mono', monospace !important;
+      margin: 0 !important;
+      background: url('assets/backgrounds/home2.png') no-repeat center center fixed !important;
+      background-size: cover !important;
+      color: #00ff99 !important;
+    }
+    #content-area, #top-menu, #skills-tab, .skill-row, #terminal-log, #inventory, #save-bar, #main-panel {
+      background-color: rgba(0, 0, 0, 0.55) !important;
+    }
+    .bank-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .bank-slot {
+      width: 64px;
+      height: 64px;
+      background-color: rgba(0, 0, 0, 0.3);
+      border: 1px solid #00ff99;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .bank-slot img {
+      width: 48px;
+      height: auto;
+    }
+    .level-up-message {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      background: #00ff99;
+      color: #000;
+      padding: 10px 20px;
+      border: 2px solid #00ff99;
+      z-index: 9999;
+      opacity: 0;
+      animation: flashFade 2s ease-out;
+    }
+    @keyframes flashFade {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div style="background:#000;padding:10px;border-bottom:2px solid #00ff99;">
+    <span id="last-save-time">Time since last save: 0s</span>
+    <button onclick="saveProgress()" style="float:right;">💾 Save</button>
+  </div>
+
+  <div id="game-container">
+    <aside id="skills-tab">
+      <h2>Welcome, <span id="user-name"></span></h2>
+      <h3>Skills</h3>
+      <div class="skill-section">
+        <h4>Combat</h4>
+        <ul id="combat-skills"></ul>
+      </div>
+      <div class="skill-section">
+        <h4>Non-Combat</h4>
+        <ul id="noncombat-skills"></ul>
+      </div>
+    </aside>
+
+    <main id="main-panel">
+      <nav id="top-menu">
+        <button onclick="togglePanel('bank')">Bank</button>
+        <button onclick="togglePanel('skills')">Skills</button>
+        <button onclick="togglePanel('inventory')">Inventory</button>
+      </nav>
+
+      <section id="content-area">
+        <div id="bank" class="panel">
+          <h2>🏦 Bank</h2>
+          <p>Your stored items will appear here.</p>
+          <div class="bank-grid">
+            <div class="bank-slot"><img src="assets/items/consumables/bread.png" alt="Bread"></div>
+            <div class="bank-slot"></div>
+            <div class="bank-slot"></div>
+            <div class="bank-slot"></div>
+            <div class="bank-slot"></div>
+            <div class="bank-slot"></div>
+          </div>
+        </div>
+
+        <div id="skills" class="panel hidden">
+          <h2>Train Your Skills</h2>
+          <p>Select a skill below to begin training:</p>
+          <button onclick="location.href='skills/skillhacking.html'">System Hacking</button>
+          <button onclick="location.href='skills/skillwoodcutting.html'">Datafishing</button>
+        </div>
+
+        <div id="inventory" class="panel hidden">
+          <h2>Inventory</h2>
+          <p>Your gear and items will be displayed here.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="terminal-log" style="padding:10px;background:#000;border-top:2px solid #00ff99;height:120px;overflow-y:auto;font-size:12px;">
+    [LOG] Welcome to Cryptic Idle Worlds.<br />
+  </div>
+  <div id="level-up-popup" class="level-up-message"></div>
+
+  <script src="js/skills.js"></script>
+  <script src="js/skills.js"></script>
+<script>
+  const defaultSkills = {
+    attack: { xp: 0, level: 1 },
+    strength: { xp: 0, level: 1 },
+    defense: { xp: 0, level: 1 },
+    magic: { xp: 0, level: 1 },
+    ranged: { xp: 0, level: 1 },
+    slayer: { xp: 0, level: 1 },
+    cryptomining: { xp: 0, level: 1 },
+    datafishing: { xp: 0, level: 1 },
+    codecraft: { xp: 0, level: 1 },
+    forgenetics: { xp: 0, level: 1 },
+    system_hacking: { xp: 0, level: 1 }
+  };
+
+  const skillData = JSON.parse(localStorage.getItem("skillData")) || defaultSkills;
+  const xpTable = Array(100).fill(0).map((_, level) => {
+    let xp = 0;
+    for (let i = 1; i < level; i++) xp += Math.floor(i + 300 * Math.pow(2, i / 7));
+    return Math.floor(xp / 4);
+  });
+
+  let lastSaveTimestamp = parseInt(localStorage.getItem("lastSave")) || Date.now();
+
+  function togglePanel(id) {
+    document.querySelectorAll(".panel").forEach(p => p.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+  }
+
+  function loadUserName() {
+    const name = localStorage.getItem("displayName") || "Player";
+    document.getElementById("user-name").textContent = name;
+  }
+
+  function restoreOfflineXP() {
+    const lastLogin = localStorage.getItem("lastLogin");
+    const now = Date.now();
+    if (lastLogin) {
+      const minutes = Math.floor((now - parseInt(lastLogin)) / 60000);
+      if (minutes > 0) {
+        skillData.system_hacking.xp += minutes;
+        for (let i = 1; i <= 99; i++) {
+          if (skillData.system_hacking.xp >= xpTable[i] && skillData.system_hacking.level < i) {
+            skillData.system_hacking.level = i;
+            triggerLevelUpMessage("system hacking", i);
+          }
+        }
+        localStorage.setItem("skillData", JSON.stringify(skillData));
+      }
+    }
+    localStorage.setItem("lastLogin", now);
+  }
+
+  function triggerLevelUpMessage(skill, level) {
+    const msg = document.getElementById("level-up-popup");
+    msg.innerText = `You are now level ${level} in ${skill.replace('_', ' ')}!`;
+    msg.style.animation = 'none';
+    msg.offsetHeight;
+    msg.style.animation = null;
+  }
+
+  function saveProgress() {
+    localStorage.setItem("skillData", JSON.stringify(skillData));
+    localStorage.setItem("lastSave", Date.now());
+    lastSaveTimestamp = Date.now();
+    log("[SAVE] Progress saved.");
+  }
+
+  function updateSaveTimer() {
+    const now = Date.now();
+    const elapsed = Math.floor((now - lastSaveTimestamp) / 1000);
+    document.getElementById("last-save-time").innerText = `Time since last save: ${elapsed}s`;
+  }
+
+  function log(msg) {
+    const box = document.getElementById("terminal-log");
+    box.innerHTML += msg + "<br>";
+    box.scrollTop = box.scrollHeight;
+  }
+
+  window.onload = () => {
+    loadUserName();
+    restoreOfflineXP();
+    renderSkillUI(skillData, "combat-skills");
+    renderSkillUI(skillData, "noncombat-skills");
+    setInterval(updateSaveTimer, 1000);
+  };
+</script>
+
+</body>
+</html>

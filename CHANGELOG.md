@@ -77,3 +77,26 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Chapter 1 now uses Ashborn Revenant and Ashborn Revenant Lord.
 - Locked gameplay/overlays into a fixed viewport to stop page scrolling and cropping.
 - Added contained dark scrollbars inside database panels.
+
+
+## v32 — Cryptic Idle Worlds Reuse
+- Added Progression Matrix using adapted CIW skill/XP systems.
+- Imported legacy skill icons and region backgrounds.
+- Preserved reusable legacy code under `legacy/crypticidleworlds/`.
+- Battles now grant style XP based on selected combat focus.
+
+
+## v33 — Code-Only CIW Reuse
+
+- Ignored legacy art/assets and focused on reusable old-game code.
+- Removed legacy asset folders from this build.
+- Replaced legacy skill image dependencies with CSS glyph badges.
+- Expanded the CIW-inspired XP/skill matrix so combat focus now affects damage, crits, EP cost, dodge, and damage reduction.
+- Added silent local autosave every 30 seconds while active.
+- Preserved old JS code samples under `legacy/crypticidleworlds/code/` for reference.
+
+
+## v34 — AV-001 Vyra Canon Asset Integration
+- Replaced AV-001 visual assets with the approved hooded cyan dual-blade Vyra artwork.
+- Added profile, battle, portrait, icon, avatar, operator card, weapon, expression, skill icon, and sprite sheet paths.
+- Updated operator data to match the new official design.

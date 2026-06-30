@@ -197,3 +197,32 @@ canvas#game {
   .mobile-pad { flex: 0 0 auto; display: block; }
   canvas#game { min-height: 0; }
 }
+
+
+/* v32 legacy systems integration */
+.progression-layout{display:grid;grid-template-columns:0.85fr 1.15fr;gap:14px;flex:1;min-height:0;overflow:hidden}
+.style-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.style-card{display:flex;align-items:center;gap:10px;min-height:54px;text-align:left}
+.style-card.active{border-color:#ff3048;background:linear-gradient(90deg,rgba(189,31,45,.25),rgba(255,48,72,.04))}
+.style-card img,.skill-row img{width:32px;height:32px;image-rendering:auto;object-fit:contain}
+.progression-list{display:grid;gap:8px;min-height:0;overflow-y:auto;padding-right:8px}
+.skill-row{display:grid;grid-template-columns:42px 1fr;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.12);background:rgba(12,15,20,.72);padding:8px}
+.skill-row b{display:block;color:#fff}.skill-row span{display:block;color:#aeb6c2;font-size:12px;margin:2px 0 4px}.skill-row.noncombat{opacity:.82}
+@media(max-width:900px){.progression-layout{grid-template-columns:1fr}.style-picker{grid-template-columns:1fr}}
+
+/* v33 code-only CIW reuse: CSS badge replaces legacy skill image dependencies */
+.skill-glyph{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:34px;
+  height:34px;
+  min-width:34px;
+  border:1px solid rgba(255,48,72,.65);
+  background:linear-gradient(145deg, rgba(255,48,72,.18), rgba(10,14,20,.88));
+  color:#ff3048;
+  box-shadow:0 0 12px rgba(255,48,72,.18);
+  font-weight:900;
+  margin-right:10px;
+}
+.style-card .skill-glyph{margin-right:8px;}

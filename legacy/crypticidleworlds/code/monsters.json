@@ -1,0 +1,2603 @@
+{
+  "ashborn_revenant": {
+    "name": "Ashborn Revenant",
+    "type": "monster",
+    "image": "assets/monsters/ashborn_revenant.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.5,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_horror": {
+    "name": "Ashen Horror",
+    "type": "monster",
+    "image": "assets/monsters/ashen_horror.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.5,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_revenant": {
+    "name": "Ashen Revenant",
+    "type": "monster",
+    "image": "assets/monsters/ashen_revenant.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.5,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_whelp": {
+    "name": "Ashen Whelp",
+    "type": "monster",
+    "image": "assets/monsters/ashen_whelp.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.5,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashfang_serpent": {
+    "name": "Ashfang Serpent",
+    "type": "monster",
+    "image": "assets/monsters/ashfang_serpent.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.52,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashveil_spider": {
+    "name": "Ashveil Spider",
+    "type": "monster",
+    "image": "assets/monsters/ashveil_spider.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.52,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "bilebrood": {
+    "name": "Bilebrood",
+    "type": "monster",
+    "image": "assets/monsters/bilebrood.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.52,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "blightclaw_ravager": {
+    "name": "Blightclaw Ravager",
+    "type": "monster",
+    "image": "assets/monsters/blightclaw_ravager.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.52,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blightdrake": {
+    "name": "Blightdrake",
+    "type": "monster",
+    "image": "assets/monsters/blightdrake.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.54,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blight_rat": {
+    "name": "Blight Rat",
+    "type": "monster",
+    "image": "assets/monsters/blight_rat.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.54,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blight_widow": {
+    "name": "Blight Widow",
+    "type": "monster",
+    "image": "assets/monsters/blight_widow.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.54,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blistercoil_drake": {
+    "name": "Blistercoil Drake",
+    "type": "monster",
+    "image": "assets/monsters/blistercoil_drake.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.54,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "blistergrub": {
+    "name": "Blistergrub",
+    "type": "monster",
+    "image": "assets/monsters/blistergrub.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.56,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "bloodreaver_scarab": {
+    "name": "Bloodreaver Scarab",
+    "type": "monster",
+    "image": "assets/monsters/bloodreaver_scarab.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.56,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "bonegnasher": {
+    "name": "Bonegnasher",
+    "type": "monster",
+    "image": "assets/monsters/bonegnasher.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.56,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "bramblechoke_horror": {
+    "name": "Bramblechoke Horror",
+    "type": "monster",
+    "image": "assets/monsters/bramblechoke_horror.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.56,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "carrion_scarab": {
+    "name": "Carrion Scarab",
+    "type": "monster",
+    "image": "assets/monsters/carrion_scarab.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.58,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "carrion_weaver": {
+    "name": "Carrion Weaver",
+    "type": "monster",
+    "image": "assets/monsters/carrion_weaver.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.58,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "charnel_spawn": {
+    "name": "Charnel Spawn",
+    "type": "monster",
+    "image": "assets/monsters/charnel_spawn.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.58,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cindershade_horror": {
+    "name": "Cindershade Horror",
+    "type": "monster",
+    "image": "assets/monsters/cindershade_horror.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.58,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cindershroud_wisp": {
+    "name": "Cindershroud Wisp",
+    "type": "monster",
+    "image": "assets/monsters/cindershroud_wisp.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.6,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cragjaw": {
+    "name": "Cragjaw",
+    "type": "monster",
+    "image": "assets/monsters/cragjaw.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.6,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cragrot_shambler": {
+    "name": "Cragrot Shambler",
+    "type": "monster",
+    "image": "assets/monsters/cragrot_shambler.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.6,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cryptbane_spider": {
+    "name": "Cryptbane Spider",
+    "type": "monster",
+    "image": "assets/monsters/cryptbane_spider.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.6,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "cryptmire_beast": {
+    "name": "Cryptmire Beast",
+    "type": "monster",
+    "image": "assets/monsters/cryptmire_beast.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.62,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_blight": {
+    "name": "Crypt Blight",
+    "type": "monster",
+    "image": "assets/monsters/crypt_blight.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.62,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_darter": {
+    "name": "Crypt Darter",
+    "type": "monster",
+    "image": "assets/monsters/crypt_darter.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.62,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_ghast": {
+    "name": "Crypt Ghast",
+    "type": "monster",
+    "image": "assets/monsters/crypt_ghast.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.62,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_howler": {
+    "name": "Crypt Howler",
+    "type": "monster",
+    "image": "assets/monsters/crypt_howler.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.64,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_ravager": {
+    "name": "Crypt Ravager",
+    "type": "monster",
+    "image": "assets/monsters/crypt_ravager.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.64,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_serpent": {
+    "name": "Crypt Serpent",
+    "type": "monster",
+    "image": "assets/monsters/crypt_serpent.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.64,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_widow": {
+    "name": "Crypt Widow",
+    "type": "monster",
+    "image": "assets/monsters/crypt_widow.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.64,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "deathrot_spawn": {
+    "name": "Deathrot Spawn",
+    "type": "monster",
+    "image": "assets/monsters/deathrot_spawn.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.66,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "dreadthorn_lurker": {
+    "name": "Dreadthorn Lurker",
+    "type": "monster",
+    "image": "assets/monsters/dreadthorn_lurker.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.66,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "duskgloom_howler": {
+    "name": "Duskgloom Howler",
+    "type": "monster",
+    "image": "assets/monsters/duskgloom_howler.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.66,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskthorn_beast": {
+    "name": "Duskthorn Beast",
+    "type": "monster",
+    "image": "assets/monsters/duskthorn_beast.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.66,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskwatch_bettle": {
+    "name": "Duskwatch Bettle",
+    "type": "monster",
+    "image": "assets/monsters/duskwatch_bettle.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.68,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskwither": {
+    "name": "Duskwither",
+    "type": "monster",
+    "image": "assets/monsters/duskwither.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.68,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskwither_shade": {
+    "name": "Duskwither Shade",
+    "type": "monster",
+    "image": "assets/monsters/duskwither_shade.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.68,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskworm": {
+    "name": "Duskworm",
+    "type": "monster",
+    "image": "assets/monsters/duskworm.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.68,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "embergnash_scarab": {
+    "name": "Embergnash Scarab",
+    "type": "monster",
+    "image": "assets/monsters/embergnash_scarab.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.7,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ember_beetle": {
+    "name": "Ember Beetle",
+    "type": "monster",
+    "image": "assets/monsters/ember_beetle.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.7,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "frostgrave_abomination": {
+    "name": "Frostgrave Abomination",
+    "type": "monster",
+    "image": "assets/monsters/frostgrave_abomination.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.7,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gloomwing": {
+    "name": "Gloomwing",
+    "type": "monster",
+    "image": "assets/monsters/gloomwing.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.7,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "graveblade_stalker": {
+    "name": "Graveblade Stalker",
+    "type": "monster",
+    "image": "assets/monsters/graveblade_stalker.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.72,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravebloom_horror": {
+    "name": "Gravebloom Horror",
+    "type": "monster",
+    "image": "assets/monsters/gravebloom_horror.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.72,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "graveborn_wretch": {
+    "name": "Graveborn Wretch",
+    "type": "monster",
+    "image": "assets/monsters/graveborn_wretch.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.72,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravecoil": {
+    "name": "Gravecoil",
+    "type": "monster",
+    "image": "assets/monsters/gravecoil.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.72,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravemarrow": {
+    "name": "Gravemarrow",
+    "type": "monster",
+    "image": "assets/monsters/gravemarrow.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.74,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravemist_wyrm": {
+    "name": "Gravemist Wyrm",
+    "type": "monster",
+    "image": "assets/monsters/gravemist_wyrm.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.74,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "grave_vulture": {
+    "name": "Grave Vulture",
+    "type": "monster",
+    "image": "assets/monsters/grave_vulture.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.74,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "grime_crawler": {
+    "name": "Grime Crawler",
+    "type": "monster",
+    "image": "assets/monsters/grime_crawler.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.74,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "hollowfang": {
+    "name": "Hollowfang",
+    "type": "monster",
+    "image": "assets/monsters/hollowfang.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.76,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "hollow_hound": {
+    "name": "Hollow Hound",
+    "type": "monster",
+    "image": "assets/monsters/hollow_hound.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.76,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "hollow_revenant": {
+    "name": "Hollow Revenant",
+    "type": "monster",
+    "image": "assets/monsters/hollow_revenant.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.76,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "hollow_scarab": {
+    "name": "Hollow Scarab",
+    "type": "monster",
+    "image": "assets/monsters/hollow_scarab.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.76,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "hollow_weaver": {
+    "name": "Hollow Weaver",
+    "type": "monster",
+    "image": "assets/monsters/hollow_weaver.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.78,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mireclaw": {
+    "name": "Mireclaw",
+    "type": "monster",
+    "image": "assets/monsters/mireclaw.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.78,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "miregulper_beast": {
+    "name": "Miregulper Beast",
+    "type": "monster",
+    "image": "assets/monsters/miregulper_beast.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.78,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mirehowl": {
+    "name": "Mirehowl",
+    "type": "monster",
+    "image": "assets/monsters/mirehowl.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.78,
+    "attackSpeed": 4,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mireling": {
+    "name": "Mireling",
+    "type": "monster",
+    "image": "assets/monsters/mireling.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.8,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mireling_matron": {
+    "name": "Mireling Matron",
+    "type": "monster",
+    "image": "assets/monsters/mireling_matron.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.8,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mirevenom_brood": {
+    "name": "Mirevenom Brood",
+    "type": "monster",
+    "image": "assets/monsters/mirevenom_brood.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.8,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mire_thrasher": {
+    "name": "Mire Thrasher",
+    "type": "monster",
+    "image": "assets/monsters/mire_thrasher.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.8,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "mossvile_serpent": {
+    "name": "Mossvile Serpent",
+    "type": "monster",
+    "image": "assets/monsters/mossvile_serpent.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.82,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "murkmaw_drake": {
+    "name": "Murkmaw Drake",
+    "type": "monster",
+    "image": "assets/monsters/murkmaw_drake.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.82,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "nightmaw_leech": {
+    "name": "Nightmaw Leech",
+    "type": "monster",
+    "image": "assets/monsters/nightmaw_leech.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.82,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "nocturn_husk": {
+    "name": "Nocturn Husk",
+    "type": "monster",
+    "image": "assets/monsters/nocturn_husk.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.82,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxious_bloom": {
+    "name": "Noxious Bloom",
+    "type": "monster",
+    "image": "assets/monsters/noxious_bloom.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.84,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxmire_spawn": {
+    "name": "Noxmire Spawn",
+    "type": "monster",
+    "image": "assets/monsters/noxmire_spawn.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.84,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxthorn_drake": {
+    "name": "Noxthorn Drake",
+    "type": "monster",
+    "image": "assets/monsters/noxthorn_drake.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.84,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxvine_horror": {
+    "name": "Noxvine Horror",
+    "type": "monster",
+    "image": "assets/monsters/noxvine_horror.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.84,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "plaguefly": {
+    "name": "Plaguefly",
+    "type": "monster",
+    "image": "assets/monsters/plaguefly.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.86,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "plague_shambler": {
+    "name": "Plague Shambler",
+    "type": "monster",
+    "image": "assets/monsters/plague_shambler.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.86,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "rimeclaw_stalker": {
+    "name": "Rimeclaw Stalker",
+    "type": "monster",
+    "image": "assets/monsters/rimeclaw_stalker.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.86,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "rotfiend": {
+    "name": "Rotfiend",
+    "type": "monster",
+    "image": "assets/monsters/rotfiend.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.86,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "rotlash_creeper": {
+    "name": "Rotlash Creeper",
+    "type": "monster",
+    "image": "assets/monsters/rotlash_creeper.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.88,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "rotmaw_howler": {
+    "name": "Rotmaw Howler",
+    "type": "monster",
+    "image": "assets/monsters/rotmaw_howler.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.88,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "scorchbloom_horror": {
+    "name": "Scorchbloom Horror",
+    "type": "monster",
+    "image": "assets/monsters/scorchbloom_horror.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.88,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "shard_imp": {
+    "name": "Shard Imp",
+    "type": "monster",
+    "image": "assets/monsters/shard_imp.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.88,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "shattermaw_beast": {
+    "name": "Shattermaw Beast",
+    "type": "monster",
+    "image": "assets/monsters/shattermaw_beast.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.9,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "sludgecarver": {
+    "name": "Sludgecarver",
+    "type": "monster",
+    "image": "assets/monsters/sludgecarver.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.9,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smogjaw_horror": {
+    "name": "Smogjaw Horror",
+    "type": "monster",
+    "image": "assets/monsters/smogjaw_horror.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.9,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smolderfang": {
+    "name": "Smolderfang",
+    "type": "monster",
+    "image": "assets/monsters/smolderfang.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.9,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smolderstalk": {
+    "name": "Smolderstalk",
+    "type": "monster",
+    "image": "assets/monsters/smolderstalk.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.92,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "sootfang_revenant": {
+    "name": "Sootfang Revenant",
+    "type": "monster",
+    "image": "assets/monsters/sootfang_revenant.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.92,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "soul_leech": {
+    "name": "Soul Leech",
+    "type": "monster",
+    "image": "assets/monsters/soul_leech.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.92,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "spitewing": {
+    "name": "Spitewing",
+    "type": "monster",
+    "image": "assets/monsters/spitewing.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.92,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "thornhide_behemoth": {
+    "name": "Thornhide Behemoth",
+    "type": "monster",
+    "image": "assets/monsters/thornhide_behemoth.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.94,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "thornlash_revenant": {
+    "name": "Thornlash Revenant",
+    "type": "monster",
+    "image": "assets/monsters/thornlash_revenant.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.94,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "thornmaw": {
+    "name": "Thornmaw",
+    "type": "monster",
+    "image": "assets/monsters/thornmaw.png",
+    "hp": 30,
+    "maxHit": 3,
+    "accuracy": 0.94,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 5,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "tomb_viper": {
+    "name": "Tomb Viper",
+    "type": "monster",
+    "image": "assets/monsters/tomb_viper.png",
+    "hp": 35,
+    "maxHit": 3,
+    "accuracy": 0.94,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 6,
+      "strength": 3,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "tomb_widow": {
+    "name": "Tomb Widow",
+    "type": "monster",
+    "image": "assets/monsters/tomb_widow.png",
+    "hp": 40,
+    "maxHit": 4,
+    "accuracy": 0.96,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 7,
+      "strength": 4,
+      "defense": 2,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "venomspire_widow": {
+    "name": "Venomspire Widow",
+    "type": "monster",
+    "image": "assets/monsters/venomspire_widow.png",
+    "hp": 45,
+    "maxHit": 4,
+    "accuracy": 0.96,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 8,
+      "strength": 4,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "venom_mite": {
+    "name": "Venom Mite",
+    "type": "monster",
+    "image": "assets/monsters/venom_mite.png",
+    "hp": 50,
+    "maxHit": 5,
+    "accuracy": 0.96,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 9,
+      "strength": 5,
+      "defense": 3,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "vilethorn_beast": {
+    "name": "Vilethorn Beast",
+    "type": "monster",
+    "image": "assets/monsters/vilethorn_beast.png",
+    "hp": 55,
+    "maxHit": 5,
+    "accuracy": 0.96,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 10,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "vilethorn_matron": {
+    "name": "Vilethorn Matron",
+    "type": "monster",
+    "image": "assets/monsters/vilethorn_matron.png",
+    "hp": 60,
+    "maxHit": 6,
+    "accuracy": 0.98,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 11,
+      "strength": 6,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "witherling": {
+    "name": "Witherling",
+    "type": "monster",
+    "image": "assets/monsters/witherling.png",
+    "hp": 65,
+    "maxHit": 6,
+    "accuracy": 0.98,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 12,
+      "strength": 7,
+      "defense": 4,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "wraithfang": {
+    "name": "Wraithfang",
+    "type": "monster",
+    "image": "assets/monsters/wraithfang.png",
+    "hp": 70,
+    "maxHit": 7,
+    "accuracy": 0.98,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 13,
+      "strength": 7,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "wretchbane": {
+    "name": "Wretchbane",
+    "type": "monster",
+    "image": "assets/monsters/wretchbane.png",
+    "hp": 75,
+    "maxHit": 7,
+    "accuracy": 0.98,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 14,
+      "strength": 8,
+      "defense": 5,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "ashborn_revenant_lord": {
+    "name": "Ashborn Revenant Lord",
+    "type": "boss",
+    "image": "assets/bosses/ashborn_revenant_lord.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_horror_overlord": {
+    "name": "Ashen Horror Overlord",
+    "type": "boss",
+    "image": "assets/bosses/ashen_horror_overlord.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_revenant_titan": {
+    "name": "Ashen Revenant Titan",
+    "type": "boss",
+    "image": "assets/bosses/ashen_revenant_titan.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashen_whelp_matriarch": {
+    "name": "Ashen Whelp Matriarch",
+    "type": "boss",
+    "image": "assets/bosses/ashen_whelp_matriarch.png",
+    "hp": 165,
+    "maxHit": 16,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 32,
+      "strength": 19,
+      "defense": 13,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashfang_serpent_alpha": {
+    "name": "Ashfang Serpent Alpha",
+    "type": "boss",
+    "image": "assets/bosses/ashfang_serpent_alpha.png",
+    "hp": 180,
+    "maxHit": 18,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 35,
+      "strength": 21,
+      "defense": 14,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "ashveil_spider_mother": {
+    "name": "Ashveil Spider Mother",
+    "type": "boss",
+    "image": "assets/bosses/ashveil_spider_mother.png",
+    "hp": 195,
+    "maxHit": 19,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 37,
+      "strength": 22,
+      "defense": 15,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "bilebrood_overfiend": {
+    "name": "Bilebrood Overfiend",
+    "type": "boss",
+    "image": "assets/bosses/bilebrood_overfiend.png",
+    "hp": 210,
+    "maxHit": 21,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 40,
+      "strength": 24,
+      "defense": 16,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "blightclaw_ravager_alpha": {
+    "name": "Blightclaw Ravager Alpha",
+    "type": "boss",
+    "image": "assets/bosses/blightclaw_ravager_alpha.png",
+    "hp": 225,
+    "maxHit": 22,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 42,
+      "strength": 25,
+      "defense": 17,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blightdrake_abomination": {
+    "name": "Blightdrake Abomination",
+    "type": "boss",
+    "image": "assets/bosses/blightdrake_abomination.png",
+    "hp": 240,
+    "maxHit": 24,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 45,
+      "strength": 27,
+      "defense": 18,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "blight_widow_queen": {
+    "name": "Blight Widow Queen",
+    "type": "boss",
+    "image": "assets/bosses/blight_widow_queen.png",
+    "hp": 255,
+    "maxHit": 25,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 47,
+      "strength": 28,
+      "defense": 19,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Cyberspire"
+  },
+  "cindershade_horror_king": {
+    "name": "Cindershade Horror King",
+    "type": "boss",
+    "image": "assets/bosses/cindershade_horror_king.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "cryptmire_beast_alpha": {
+    "name": "Cryptmire Beast Alpha",
+    "type": "boss",
+    "image": "assets/bosses/cryptmire_beast_alpha.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_blight_overlord": {
+    "name": "Crypt Blight Overlord",
+    "type": "boss",
+    "image": "assets/bosses/crypt_blight_overlord.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_ghast_lord": {
+    "name": "Crypt Ghast Lord",
+    "type": "boss",
+    "image": "assets/bosses/crypt_ghast_lord.png",
+    "hp": 165,
+    "maxHit": 16,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 32,
+      "strength": 19,
+      "defense": 13,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "crypt_ravager_dreadknight": {
+    "name": "Crypt Ravager Dreadknight",
+    "type": "boss",
+    "image": "assets/bosses/crypt_ravager_dreadknight.png",
+    "hp": 180,
+    "maxHit": 18,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 35,
+      "strength": 21,
+      "defense": 14,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Wraithmarsh"
+  },
+  "deathrot_spawn_colossus": {
+    "name": "Deathrot Spawn Colossus",
+    "type": "boss",
+    "image": "assets/bosses/deathrot_spawn_colossus.png",
+    "hp": 195,
+    "maxHit": 19,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 37,
+      "strength": 22,
+      "defense": 15,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "dreadthorn_lurker_alpha": {
+    "name": "Dreadthorn Lurker Alpha",
+    "type": "boss",
+    "image": "assets/bosses/dreadthorn_lurker_alpha.png",
+    "hp": 210,
+    "maxHit": 21,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 40,
+      "strength": 24,
+      "defense": 16,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "duskgloom_howler_alpha": {
+    "name": "Duskgloom Howler Alpha",
+    "type": "boss",
+    "image": "assets/bosses/duskgloom_howler_alpha.png",
+    "hp": 225,
+    "maxHit": 22,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 42,
+      "strength": 25,
+      "defense": 17,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "duskwither_shade_wraith": {
+    "name": "Duskwither Shade Wraith",
+    "type": "boss",
+    "image": "assets/bosses/duskwither_shade_wraith.png",
+    "hp": 240,
+    "maxHit": 24,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 45,
+      "strength": 27,
+      "defense": 18,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "eldrith_oracle_of_the_end": {
+    "name": "Eldrith Oracle Of The End",
+    "type": "boss",
+    "image": "assets/bosses/eldrith_oracle_of_the_end.png",
+    "hp": 255,
+    "maxHit": 25,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 47,
+      "strength": 28,
+      "defense": 19,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "frostgrave_abomination_titan": {
+    "name": "Frostgrave Abomination Titan",
+    "type": "boss",
+    "image": "assets/bosses/frostgrave_abomination_titan.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gloomwing_tyrant": {
+    "name": "Gloomwing Tyrant",
+    "type": "boss",
+    "image": "assets/bosses/gloomwing_tyrant.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "gravecoil_overlord": {
+    "name": "Gravecoil Overlord",
+    "type": "boss",
+    "image": "assets/bosses/gravecoil_overlord.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravemarrow_ancient": {
+    "name": "Gravemarrow Ancient",
+    "type": "boss",
+    "image": "assets/bosses/gravemarrow_ancient.png",
+    "hp": 165,
+    "maxHit": 16,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 32,
+      "strength": 19,
+      "defense": 13,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "gravemist_wyrm_overlord": {
+    "name": "Gravemist Wyrm Overlord",
+    "type": "boss",
+    "image": "assets/bosses/gravemist_wyrm_overlord.png",
+    "hp": 180,
+    "maxHit": 18,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 35,
+      "strength": 21,
+      "defense": 14,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Zerocrypt"
+  },
+  "korr'magoth_world_butcher": {
+    "name": "Korr'Magoth World Butcher",
+    "type": "boss",
+    "image": "assets/bosses/korr'magoth_world_butcher.png",
+    "hp": 195,
+    "maxHit": 19,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 37,
+      "strength": 22,
+      "defense": 15,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mirevenom_broodmother": {
+    "name": "Mirevenom Broodmother",
+    "type": "boss",
+    "image": "assets/bosses/mirevenom_broodmother.png",
+    "hp": 210,
+    "maxHit": 21,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 40,
+      "strength": 24,
+      "defense": 16,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "mol'gorath_the_searing_maw": {
+    "name": "Mol'Gorath The Searing Maw",
+    "type": "boss",
+    "image": "assets/bosses/mol'gorath_the_searing_maw.png",
+    "hp": 225,
+    "maxHit": 22,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 42,
+      "strength": 25,
+      "defense": 17,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "nocturn_husk_alpha": {
+    "name": "Nocturn Husk Alpha",
+    "type": "boss",
+    "image": "assets/bosses/nocturn_husk_alpha.png",
+    "hp": 240,
+    "maxHit": 24,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 45,
+      "strength": 27,
+      "defense": 18,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxious_bloom_ancient": {
+    "name": "Noxious Bloom Ancient",
+    "type": "boss",
+    "image": "assets/bosses/noxious_bloom_ancient.png",
+    "hp": 255,
+    "maxHit": 25,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 47,
+      "strength": 28,
+      "defense": 19,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "noxmire_spawn_broodking": {
+    "name": "Noxmire Spawn Broodking",
+    "type": "boss",
+    "image": "assets/bosses/noxmire_spawn_broodking.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "nyxaris_shadowed_crown": {
+    "name": "Nyxaris Shadowed Crown",
+    "type": "boss",
+    "image": "assets/bosses/nyxaris_shadowed_crown.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "rimeclaw_stalker_alpha": {
+    "name": "Rimeclaw Stalker Alpha",
+    "type": "boss",
+    "image": "assets/bosses/rimeclaw_stalker_alpha.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "rotlash_creeper_warlord": {
+    "name": "Rotlash Creeper Warlord",
+    "type": "boss",
+    "image": "assets/bosses/rotlash_creeper_warlord.png",
+    "hp": 165,
+    "maxHit": 16,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 32,
+      "strength": 19,
+      "defense": 13,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "scorchbloom_horror_overlord": {
+    "name": "Scorchbloom Horror Overlord",
+    "type": "boss",
+    "image": "assets/bosses/scorchbloom_horror_overlord.png",
+    "hp": 180,
+    "maxHit": 18,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 35,
+      "strength": 21,
+      "defense": 14,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "seraphaine_the_last_light": {
+    "name": "Seraphaine The Last Light",
+    "type": "boss",
+    "image": "assets/bosses/seraphaine_the_last_light.png",
+    "hp": 195,
+    "maxHit": 19,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 37,
+      "strength": 22,
+      "defense": 15,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "shard_imp_tyrant": {
+    "name": "Shard Imp Tyrant",
+    "type": "boss",
+    "image": "assets/bosses/shard_imp_tyrant.png",
+    "hp": 210,
+    "maxHit": 21,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 40,
+      "strength": 24,
+      "defense": 16,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "shattermaw_beast_overlord": {
+    "name": "Shattermaw Beast Overlord",
+    "type": "boss",
+    "image": "assets/bosses/shattermaw_beast_overlord.png",
+    "hp": 225,
+    "maxHit": 22,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 42,
+      "strength": 25,
+      "defense": 17,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smogjaw_horror_colossus": {
+    "name": "Smogjaw Horror Colossus",
+    "type": "boss",
+    "image": "assets/bosses/smogjaw_horror_colossus.png",
+    "hp": 240,
+    "maxHit": 24,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 45,
+      "strength": 27,
+      "defense": 18,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smolderfang_alpha": {
+    "name": "Smolderfang Alpha",
+    "type": "boss",
+    "image": "assets/bosses/smolderfang_alpha.png",
+    "hp": 255,
+    "maxHit": 25,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 47,
+      "strength": 28,
+      "defense": 19,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "smolderstalk_warlord": {
+    "name": "Smolderstalk Warlord",
+    "type": "boss",
+    "image": "assets/bosses/smolderstalk_warlord.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "sootfang_revenant_king": {
+    "name": "Sootfang Revenant King",
+    "type": "boss",
+    "image": "assets/bosses/sootfang_revenant_king.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "soul_leech_king": {
+    "name": "Soul Leech King",
+    "type": "boss",
+    "image": "assets/bosses/soul_leech_king.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "thornhide_behemoth_alpha": {
+    "name": "Thornhide Behemoth Alpha",
+    "type": "boss",
+    "image": "assets/bosses/thornhide_behemoth_alpha.png",
+    "hp": 165,
+    "maxHit": 16,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 32,
+      "strength": 19,
+      "defense": 13,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "thornlash_revenant_warlord": {
+    "name": "Thornlash Revenant Warlord",
+    "type": "boss",
+    "image": "assets/bosses/thornlash_revenant_warlord.png",
+    "hp": 180,
+    "maxHit": 18,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 35,
+      "strength": 21,
+      "defense": 14,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Ashlands"
+  },
+  "thryxxis_weaver_of_stars": {
+    "name": "Thryxxis Weaver Of Stars",
+    "type": "boss",
+    "image": "assets/bosses/thryxxis_weaver_of_stars.png",
+    "hp": 195,
+    "maxHit": 19,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 37,
+      "strength": 22,
+      "defense": 15,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "vaelyn_warden_of_echoes": {
+    "name": "Vaelyn Warden Of Echoes",
+    "type": "boss",
+    "image": "assets/bosses/vaelyn_warden_of_echoes.png",
+    "hp": 210,
+    "maxHit": 21,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 40,
+      "strength": 24,
+      "defense": 16,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "vilethorn_beast_alpha": {
+    "name": "Vilethorn Beast Alpha",
+    "type": "boss",
+    "image": "assets/bosses/vilethorn_beast_alpha.png",
+    "hp": 225,
+    "maxHit": 22,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 42,
+      "strength": 25,
+      "defense": 17,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "vilethorn_matron_dreadqueen": {
+    "name": "Vilethorn Matron Dreadqueen",
+    "type": "boss",
+    "image": "assets/bosses/vilethorn_matron_dreadqueen.png",
+    "hp": 240,
+    "maxHit": 24,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 45,
+      "strength": 27,
+      "defense": 18,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "wraithfang_alpha": {
+    "name": "Wraithfang Alpha",
+    "type": "boss",
+    "image": "assets/bosses/wraithfang_alpha.png",
+    "hp": 255,
+    "maxHit": 25,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 47,
+      "strength": 28,
+      "defense": 19,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "wretchbane_warlord": {
+    "name": "Wretchbane Warlord",
+    "type": "boss",
+    "image": "assets/bosses/wretchbane_warlord.png",
+    "hp": 120,
+    "maxHit": 12,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 25,
+      "strength": 15,
+      "defense": 10,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "xal'zurath_shattered_god": {
+    "name": "Xal'Zurath Shattered God",
+    "type": "boss",
+    "image": "assets/bosses/xal'zurath_shattered_god.png",
+    "hp": 135,
+    "maxHit": 13,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 27,
+      "strength": 16,
+      "defense": 11,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  },
+  "yyr'zhul, harbinger_of_the_rift": {
+    "name": "Yyr'Zhul, Harbinger Of The Rift",
+    "type": "boss",
+    "image": "assets/bosses/yyr'zhul, harbinger_of_the_rift.png",
+    "hp": 150,
+    "maxHit": 15,
+    "accuracy": 1.0,
+    "attackSpeed": 5,
+    "xpDrop": {
+      "attack": 30,
+      "strength": 18,
+      "defense": 12,
+      "magic": 0,
+      "ranged": 0
+    },
+    "region": "Unknown"
+  }
+}

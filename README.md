@@ -77,3 +77,18 @@ This build imports the uploaded item pack into the master project:
 - `data/items/imported_item_registry.json` added
 - Inventory Database now includes search/filter for imported weapons, equipment, consumables, and materials
 - Placeholder item art is preserved in the correct paths so it can be replaced later without breaking code
+
+
+## v32 — Cryptic Idle Worlds Reuse
+- Added Progression Matrix using adapted CIW skill/XP systems.
+- Imported legacy skill icons and region backgrounds.
+- Preserved reusable legacy code under `legacy/crypticidleworlds/`.
+- Battles now grant style XP based on selected combat focus.
+
+## v33 — Code-Only Legacy Reuse
+
+This build keeps the useful Cryptic Idle Worlds code ideas but ignores its old assets. The reused systems are the XP curve, skill matrix, combat progression hooks, local save/autosave behavior, and enemy data patterns. Skill icons are now CSS glyphs, so the game no longer depends on legacy skill images. See `CODE_REUSE_V33.md`.
+
+
+## v34 Update
+AV-001 Vyra now uses the approved hooded cyan dual-blade artwork as the canonical production asset. See `VYRA_ASSET_UPDATE_V34.md`.

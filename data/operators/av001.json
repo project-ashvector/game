@@ -2,22 +2,52 @@
   "id": "AV-001",
   "slug": "av001",
   "name": "Vyra",
-  "callsign": "Black Neon",
+  "callsign": "Shadowblade",
   "status": "ACTIVE",
   "rarity": "Starter / 5-Star Prototype",
-  "class": "Shadow Hunter",
-  "element": "Void",
-  "role": "Fast damage dealer",
-  "bio": "The first active Operator recovered by AVOS. Sarcastic, violent, and somehow still the most stable thing in the sewer.",
-  "quote": "I don't know who designed this sewer, but I hope they got fired twice.",
-  "stats": {"level": 1, "hp": 95, "ep": 30, "atk": 15, "def": 6, "spd": 12, "luck": 4},
-  "growth": {"hp": 10, "ep": 4, "atk": 2, "def": 1, "spd": 1},
+  "class": "Vector Assassin",
+  "element": "Cyan Vector",
+  "role": "Dual-blade assassin / burst damage",
+  "bio": "AV-001 is the first active Operator recovered by AVOS: a hooded cybernetic assassin with twin cyan Vector Blades, unstable memory, and zero patience for corrupted anomalies.",
+  "quote": "In the dark, we are the vector.",
+  "stats": {
+    "level": 1,
+    "hp": 110,
+    "ep": 34,
+    "atk": 18,
+    "def": 8,
+    "spd": 15,
+    "luck": 5
+  },
+  "growth": {
+    "hp": 10,
+    "ep": 4,
+    "atk": 2,
+    "def": 1,
+    "spd": 1
+  },
   "assets": {
     "profile": "assets/operators/av001/profile.png",
     "portrait": "assets/operators/av001/portrait.png",
     "battle": "assets/operators/av001/battle.png",
     "spriteSheet": "assets/operators/av001/sprite_sheet.png",
-    "icon": "assets/operators/av001/icon.png"
+    "icon": "assets/operators/av001/icon.png",
+    "avatar": "assets/operators/av001/avatar.png",
+    "operatorCard": "assets/operators/av001/operator_card.png",
+    "weapon": "assets/operators/av001/weapon.png"
   },
-  "skills": ["SKILL-AV001-001", "SKILL-AV001-002", "SKILL-AV001-003", "SKILL-AV001-004"]
+  "skills": [
+    "SKILL-AV001-001",
+    "SKILL-AV001-002",
+    "SKILL-AV001-003",
+    "SKILL-AV001-004"
+  ],
+  "visualIdentity": [
+    "black tactical armor",
+    "cyan energy accents",
+    "hooded cloak",
+    "masked face",
+    "twin energy blades",
+    "glowing cyan eyes"
+  ]
 }

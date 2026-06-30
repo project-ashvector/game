@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Combat - Cryptic Idle Worlds</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* same CSS as before, keep it unchanged */
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background: url('assets/backgrounds/battle2.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #00ff99;
+      padding: 20px;
+    }
+    #save-bar {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      border-bottom: 2px solid #00ff99;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+    #combat-area {
+      display: flex;
+      margin-top: 80px;
+      gap: 20px;
+    }
+    #combat-style-panel {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border: 2px solid #00ff99;
+      width: 250px;
+    }
+    .style-group {
+      margin-bottom: 20px;
+    }
+    .style-group strong img {
+      width: 20px;
+      vertical-align: middle;
+    }
+    #combat-display {
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+      width: 100%;
+    }
+    #enemy-box, #player-box {
+      background-color: rgba(0, 0, 0, 0.6);
+      border: 2px solid #00ff99;
+      padding: 20px;
+      width: 50%;
+      text-align: center;
+    }
+    #enemy-image {
+      width: 120px;
+      margin: 10px 0;
+    }
+    .btn {
+      background-color: rgba(0,0,0,0.8);
+      color: #00ff99;
+      border: 1px solid #00ff99;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    #food-box img {
+      width: 40px;
+      border: 1px solid #00ff99;
+      cursor: pointer;
+    }
+    #skills-tab {
+      background-color: rgba(0,0,0,0.6);
+      border: 2px solid #00ff99;
+      padding: 16px;
+      margin-top: 30px;
+    }
+    #combat-log {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-top: 2px solid #00ff99;
+      font-size: 12px;
+      height: 120px;
+      overflow-y: auto;
+    }
+    .level-up-message {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      background: #00ff99;
+      color: #000;
+      padding: 10px 20px;
+      border: 2px solid #00ff99;
+      z-index: 9999;
+      opacity: 0;
+      animation: flashFade 2s ease-out;
+    }
+    @keyframes flashFade {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="save-bar">
+    <span id="last-save-time">Time since last save: 0s</span>
+    <button onclick="saveProgress()">💾 Cloud Save</button>
+  </div>
+
+  <h1>⚔️ Combat Mode <button onclick="window.location.href='home.html'" class="btn" style="float:right">🛑 Escape</button></h1>
+
+  <div id="combat-area">
+    <div id="combat-style-panel">
+      <h3>Choose Combat Style</h3>
+      <div class="style-group">
+        <strong>Melee <img src="assets/skills/strength.png" alt="melee"></strong><br>
+        <label><input type="radio" name="combatStyle" value="attack"> Stab</label><br>
+        <label><input type="radio" name="combatStyle" value="strength"> Slash</label><br>
+        <label><input type="radio" name="combatStyle" value="defense"> Block</label>
+      </div>
+      <div class="style-group">
+        <strong>Ranged <img src="assets/skills/ranged.png" alt="ranged"></strong><br>
+        <label><input type="radio" name="combatStyle" value="ranged"> Rapid Fire</label><br>
+        <label><input type="radio" name="combatStyle" value="ranged"> Long Range</label><br>
+        <label><input type="radio" name="combatStyle" value="ranged_defense"> Controlled</label>
+      </div>
+      <div class="style-group">
+        <strong>Magic <img src="assets/skills/magic.png" alt="magic"></strong><br>
+        <label><input type="radio" name="combatStyle" value="magic"> Aggressive Cast</label><br>
+        <label><input type="radio" name="combatStyle" value="magic_defense"> Defensive Cast</label>
+      </div>
+    </div>
+
+    <div id="combat-display">
+      <div id="enemy-box">
+        <h2 id="enemy-name">Enemy</h2>
+        <img id="enemy-image" src="" alt="Enemy" />
+        <p>HP: <span id="enemy-hp">0</span></p>
+      </div>
+      <div id="player-box">
+        <h2>You</h2>
+        <p>HP: <span id="player-hp">100</span></p>
+        <button class="btn" onclick="startBattle()">Battle</button>
+        <div id="food-box">
+          <p>Food:</p>
+          <img src="assets/items/consumables/bread.png" alt="Bread" onclick="eatFood()" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="skills-tab">
+    <h3>🧠 Skill Levels</h3>
+    <ul id="combat-skill-tracker" style="list-style: none; padding: 0;"></ul>
+  </div>
+
+  <div id="combat-log">[LOG] Combat initialized.<br /></div>
+  <div id="level-up-popup" class="level-up-message"></div>
+
+  <!-- ✅ Cleaned up script tags -->
+  <!-- ❌ <script src="js/enemy-data.js"></script> REMOVED because we use monsters.json -->
+  <script src="js/skills.js"></script>
+  <script src="js/combat.js"></script>
+  
+</body>
+</html>
