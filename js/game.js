@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.4.9 // MENU RECOVERY',
+    'Version 0.5.0 // ASSET IMPORT',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -48,6 +48,63 @@
     '#....#.......#.................B.......X#',
     '########################################'
   ];
+
+  const mapArt = {
+    ground: [
+      'assets/imported/environment/ground/ground_01.png',
+      'assets/imported/environment/ground/ground_02.png',
+      'assets/imported/environment/ground/ground_03.png',
+      'assets/imported/environment/ground/ground_04.png',
+      'assets/imported/environment/ground/ground_05.png',
+      'assets/imported/environment/ground/ground_06.png'
+    ],
+    blocked: [
+      'assets/imported/environment/rocks/rock_01.png',
+      'assets/imported/environment/rocks/rock_02.png',
+      'assets/imported/environment/rocks/rock_03.png',
+      'assets/imported/environment/trees/tree_small.png',
+      'assets/imported/environment/trees/tree_medium.png',
+      'assets/imported/environment/bushes/bushes_large.png'
+    ],
+    chest: 'assets/imported/props/loot/treasure_chest.png',
+    med: 'assets/imported/items/medicine/medicine_1.png',
+    lore: 'assets/imported/props/signage/blue_banner.png',
+    terminal: 'assets/imported/props/buildings/magic_stone_tower.png',
+    door: 'assets/imported/environment/fences/wooden_fence_horizontal.png',
+    exit: 'assets/imported/props/signage/flag.png',
+    props: [
+      {x:2,y:2,img:'assets/imported/props/tents/tent.png',w:84,h:78},
+      {x:6,y:1,img:'assets/imported/props/barrels/wooden_barrel.png',w:36,h:42},
+      {x:13,y:1,img:'assets/imported/environment/bushes/bushes_medium.png',w:62,h:48},
+      {x:19,y:2,img:'assets/imported/props/campfires/campfire.png',w:58,h:46},
+      {x:32,y:2,img:'assets/imported/environment/trees/tree_small.png',w:78,h:90},
+      {x:1,y:8,img:'assets/imported/environment/trees/tree_medium.png',w:92,h:104},
+      {x:7,y:7,img:'assets/imported/environment/rocks/rock_05.png',w:28,h:28},
+      {x:12,y:10,img:'assets/imported/props/carts/wooden_cart.png',w:86,h:44},
+      {x:17,y:9,img:'assets/imported/environment/bushes/bushes_small.png',w:46,h:40},
+      {x:25,y:8,img:'assets/imported/environment/bridges/wooden_bridge_horizontal.png',w:126,h:74},
+      {x:34,y:10,img:'assets/imported/props/buildings/watchtower_short.png',w:72,h:78},
+      {x:4,y:16,img:'assets/custom/environment/fallen_log_01.png',w:90,h:56},
+      {x:11,y:17,img:'assets/imported/environment/trees/tree_stump_tall.png',w:44,h:38},
+      {x:16,y:18,img:'assets/custom/foliage/dead_tree_01.png',w:86,h:104},
+      {x:24,y:19,img:'assets/imported/props/barrels/wooden_barrel.png',w:36,h:42},
+      {x:30,y:20,img:'assets/imported/environment/fences/wooden_fence_vertical.png',w:30,h:82},
+      {x:36,y:22,img:'assets/imported/props/signage/red_banner.png',w:44,h:66}
+    ]
+  };
+  function imgFor(path){ return images[path]; }
+  function drawAsset(path,x,y,w,h,anchorBottom=false){
+    const im=imgFor(path);
+    if(im && im.complete && im.naturalWidth){
+      const dx = anchorBottom ? x + (TILE-w)/2 : x + (TILE-w)/2;
+      const dy = anchorBottom ? y + TILE - h + 5 : y + (TILE-h)/2;
+      ctx.drawImage(im, dx, dy, w, h);
+      return true;
+    }
+    return false;
+  }
+  function pickAsset(list,tx,ty){ return list[Math.abs((tx*13 + ty*7) % list.length)]; }
+
   const encounterSlots = {
     '19,3': {type:'anomaly', index:0},
     '29,11': {type:'anomaly', index:6},
@@ -192,6 +249,10 @@
       'assets/operators/av001/portrait.png',
       'assets/operators/av001/battle.png',
       'assets/operators/av001/sprites/map_sprite.png',
+      ...mapArt.ground,
+      ...mapArt.blocked,
+      mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit,
+      ...mapArt.props.map(p => p.img),
       ...importedAnomalyRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(0,10).flatMap(c => [c.battle, iconPathFor(c)])
     ];
@@ -360,6 +421,7 @@
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
     for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
+    drawMapProps();
     // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
     ctx.restore();
@@ -395,13 +457,40 @@
     ctx.restore();
   }
 
+
+  function drawMapProps(){
+    mapArt.props.forEach(p=>{
+      const tile = tileAt(p.x,p.y);
+      if(tile === '#' || tile === 'E' || tile === 'B') return;
+      drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true);
+    });
+  }
+
   function drawTile(c,x,y,tx,ty){
-    const floor=((tx+ty)%2)?'#20252b':'#242a31'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE); ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.strokeRect(x,y,TILE,TILE);
-    if(c==='#'){ctx.fillStyle='#101318';ctx.fillRect(x,y,TILE,TILE);ctx.fillStyle='#2d333b';ctx.fillRect(x+4,y+4,TILE-8,TILE-8)}
-    if(c==='C'){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
-    if(c==='S'){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
-    if(c==='H'){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
-    if(c==='L'){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+    const g = pickAsset(mapArt.ground,tx,ty);
+    if(!drawAsset(g,x,y,TILE+1,TILE+1,false)){
+      const floor=((tx+ty)%2)?'#263421':'#304028'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE);
+    }
+    ctx.strokeStyle='rgba(0,0,0,.16)'; ctx.strokeRect(x,y,TILE,TILE);
+    if(c==='#'){
+      ctx.fillStyle='rgba(4,7,8,.35)'; ctx.fillRect(x,y,TILE,TILE);
+      const block = pickAsset(mapArt.blocked,tx,ty);
+      const big = block.includes('tree');
+      drawAsset(block,x,y,big?70:44,big?82:38,true) || (ctx.fillStyle='#222',ctx.fillRect(x+4,y+4,TILE-8,TILE-8));
+    }
+    if(c==='C'){
+      if(!drawAsset(mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
+    }
+    if(c==='S'){
+      if(!drawAsset(mapArt.terminal,x,y,46,64,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
+      ctx.fillStyle='rgba(112,215,255,.85)'; ctx.fillRect(x+15,y+31,12,3);
+    }
+    if(c==='H'){
+      if(!drawAsset(mapArt.med,x,y,34,34,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
+    }
+    if(c==='L'){
+      if(!drawAsset(mapArt.lore,x,y,34,52,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+    }
     if(c==='E'||c==='B'){
       const im = getMapCreatureImage(c,tx,ty);
       if(im && im.complete && im.naturalWidth){
@@ -417,8 +506,12 @@
         ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+21,y+21,c==='B'?18:14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
       }
     }
-    if(c==='D'){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
-    if(c==='X'){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+    if(c==='D'){
+      if(!drawAsset(mapArt.door,x,y,52,24,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
+    }
+    if(c==='X'){
+      if(!drawAsset(mapArt.exit,x,y,34,54,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+    }
   }
   function renderMini(){
     const w=state.map[0].length,h=state.map.length; mctx.clearRect(0,0,mini.width,mini.height); const sx=mini.width/w, sy=mini.height/h;

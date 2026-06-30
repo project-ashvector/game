@@ -1,0 +1,2204 @@
+{
+  "environment": {
+    "ground_01": {
+      "path": "assets/imported/environment/ground/ground_01.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 01.png"
+    },
+    "ground_02": {
+      "path": "assets/imported/environment/ground/ground_02.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 02.png"
+    },
+    "ground_03": {
+      "path": "assets/imported/environment/ground/ground_03.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 03.png"
+    },
+    "ground_04": {
+      "path": "assets/imported/environment/ground/ground_04.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 04.png"
+    },
+    "ground_05": {
+      "path": "assets/imported/environment/ground/ground_05.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 05.png"
+    },
+    "ground_06": {
+      "path": "assets/imported/environment/ground/ground_06.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 06.png"
+    },
+    "ground_07": {
+      "path": "assets/imported/environment/ground/ground_07.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 07.png"
+    },
+    "ground_08": {
+      "path": "assets/imported/environment/ground/ground_08.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 08.png"
+    },
+    "ground_09": {
+      "path": "assets/imported/environment/ground/ground_09.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 09.png"
+    },
+    "ground_10": {
+      "path": "assets/imported/environment/ground/ground_10.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 10.png"
+    },
+    "ground_11": {
+      "path": "assets/imported/environment/ground/ground_11.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 11.png"
+    },
+    "ground_12": {
+      "path": "assets/imported/environment/ground/ground_12.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 12.png"
+    },
+    "ground_13": {
+      "path": "assets/imported/environment/ground/ground_13.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 13.png"
+    },
+    "ground_14": {
+      "path": "assets/imported/environment/ground/ground_14.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 14.png"
+    },
+    "ground_15": {
+      "path": "assets/imported/environment/ground/ground_15.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 15.png"
+    },
+    "ground_16": {
+      "path": "assets/imported/environment/ground/ground_16.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 16.png"
+    },
+    "ground_17": {
+      "path": "assets/imported/environment/ground/ground_17.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 17.png"
+    },
+    "ground_18": {
+      "path": "assets/imported/environment/ground/ground_18.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 18.png"
+    },
+    "ground_19": {
+      "path": "assets/imported/environment/ground/ground_19.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 19.png"
+    },
+    "ground_20": {
+      "path": "assets/imported/environment/ground/ground_20.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 20.png"
+    },
+    "ground_21": {
+      "path": "assets/imported/environment/ground/ground_21.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 21.png"
+    },
+    "ground_22": {
+      "path": "assets/imported/environment/ground/ground_22.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 22.png"
+    },
+    "ground_23": {
+      "path": "assets/imported/environment/ground/ground_23.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 23.png"
+    },
+    "ground_24": {
+      "path": "assets/imported/environment/ground/ground_24.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 24.png"
+    },
+    "ground_25": {
+      "path": "assets/imported/environment/ground/ground_25.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 25.png"
+    },
+    "ground_26": {
+      "path": "assets/imported/environment/ground/ground_26.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 26.png"
+    },
+    "ground_27": {
+      "path": "assets/imported/environment/ground/ground_27.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 27.png"
+    },
+    "ground_28": {
+      "path": "assets/imported/environment/ground/ground_28.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 28.png"
+    },
+    "ground_29": {
+      "path": "assets/imported/environment/ground/ground_29.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 29.png"
+    },
+    "ground_30": {
+      "path": "assets/imported/environment/ground/ground_30.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 30.png"
+    },
+    "ground_31": {
+      "path": "assets/imported/environment/ground/ground_31.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 31.png"
+    },
+    "ground_32": {
+      "path": "assets/imported/environment/ground/ground_32.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 32.png"
+    },
+    "ground_33": {
+      "path": "assets/imported/environment/ground/ground_33.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 33.png"
+    },
+    "ground_34": {
+      "path": "assets/imported/environment/ground/ground_34.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 34.png"
+    },
+    "ground_35": {
+      "path": "assets/imported/environment/ground/ground_35.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 35.png"
+    },
+    "ground_36": {
+      "path": "assets/imported/environment/ground/ground_36.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 36.png"
+    },
+    "ground_37": {
+      "path": "assets/imported/environment/ground/ground_37.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 37.png"
+    },
+    "ground_38": {
+      "path": "assets/imported/environment/ground/ground_38.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 38.png"
+    },
+    "ground_39": {
+      "path": "assets/imported/environment/ground/ground_39.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 39.png"
+    },
+    "ground_40": {
+      "path": "assets/imported/environment/ground/ground_40.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 40.png"
+    },
+    "ground_41": {
+      "path": "assets/imported/environment/ground/ground_41.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 41.png"
+    },
+    "ground_42": {
+      "path": "assets/imported/environment/ground/ground_42.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 42.png"
+    },
+    "ground_43": {
+      "path": "assets/imported/environment/ground/ground_43.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 43.png"
+    },
+    "ground_44": {
+      "path": "assets/imported/environment/ground/ground_44.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 44.png"
+    },
+    "ground_45": {
+      "path": "assets/imported/environment/ground/ground_45.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 45.png"
+    },
+    "ground_46": {
+      "path": "assets/imported/environment/ground/ground_46.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 46.png"
+    },
+    "ground_47": {
+      "path": "assets/imported/environment/ground/ground_47.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 47.png"
+    },
+    "ground_48": {
+      "path": "assets/imported/environment/ground/ground_48.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 48.png"
+    },
+    "ground_49": {
+      "path": "assets/imported/environment/ground/ground_49.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 49.png"
+    },
+    "ground_50": {
+      "path": "assets/imported/environment/ground/ground_50.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 50.png"
+    },
+    "ground_51": {
+      "path": "assets/imported/environment/ground/ground_51.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 51.png"
+    },
+    "ground_52": {
+      "path": "assets/imported/environment/ground/ground_52.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 52.png"
+    },
+    "ground_53": {
+      "path": "assets/imported/environment/ground/ground_53.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 53.png"
+    },
+    "ground_54": {
+      "path": "assets/imported/environment/ground/ground_54.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 54.png"
+    },
+    "ground_55": {
+      "path": "assets/imported/environment/ground/ground_55.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 55.png"
+    },
+    "ground_56": {
+      "path": "assets/imported/environment/ground/ground_56.png",
+      "size": [
+        256,
+        256
+      ],
+      "source": "Top-Down Simple Summer_Ground 56.png"
+    }
+  },
+  "props": {
+    "blue_banner": {
+      "path": "assets/imported/props/signage/blue_banner.png",
+      "size": [
+        160,
+        240
+      ],
+      "source": "Top-Down Simple Summer_Prop - Blue Banner.png"
+    },
+    "bushes_large": {
+      "path": "assets/imported/environment/bushes/bushes_large.png",
+      "size": [
+        240,
+        140
+      ],
+      "source": "Top-Down Simple Summer_Prop - Bushes Large.png"
+    },
+    "bushes_medium": {
+      "path": "assets/imported/environment/bushes/bushes_medium.png",
+      "size": [
+        180,
+        140
+      ],
+      "source": "Top-Down Simple Summer_Prop - Bushes Medium.png"
+    },
+    "bushes_small": {
+      "path": "assets/imported/environment/bushes/bushes_small.png",
+      "size": [
+        140,
+        120
+      ],
+      "source": "Top-Down Simple Summer_Prop - Bushes Small.png"
+    },
+    "campfire": {
+      "path": "assets/imported/props/campfires/campfire.png",
+      "size": [
+        200,
+        160
+      ],
+      "source": "Top-Down Simple Summer_Prop - Campfire.png"
+    },
+    "castle_round": {
+      "path": "assets/imported/props/buildings/castle_round.png",
+      "size": [
+        320,
+        480
+      ],
+      "source": "Top-Down Simple Summer_Prop - Castle Round.png"
+    },
+    "castle_square": {
+      "path": "assets/imported/props/buildings/castle_square.png",
+      "size": [
+        360,
+        400
+      ],
+      "source": "Top-Down Simple Summer_Prop - Castle Square.png"
+    },
+    "flag": {
+      "path": "assets/imported/props/signage/flag.png",
+      "size": [
+        100,
+        160
+      ],
+      "source": "Top-Down Simple Summer_Prop - Flag.png"
+    },
+    "house": {
+      "path": "assets/imported/props/buildings/house.png",
+      "size": [
+        384,
+        512
+      ],
+      "source": "Top-Down Simple Summer_Prop - House.png"
+    },
+    "magic_stone_tower": {
+      "path": "assets/imported/props/buildings/magic_stone_tower.png",
+      "size": [
+        240,
+        400
+      ],
+      "source": "Top-Down Simple Summer_Prop - Magic Stone Tower.png"
+    },
+    "red_banner": {
+      "path": "assets/imported/props/signage/red_banner.png",
+      "size": [
+        160,
+        240
+      ],
+      "source": "Top-Down Simple Summer_Prop - Red Banner.png"
+    },
+    "rock_01": {
+      "path": "assets/imported/environment/rocks/rock_01.png",
+      "size": [
+        120,
+        100
+      ],
+      "source": "Top-Down Simple Summer_Prop - Rock 01.png"
+    },
+    "rock_02": {
+      "path": "assets/imported/environment/rocks/rock_02.png",
+      "size": [
+        100,
+        60
+      ],
+      "source": "Top-Down Simple Summer_Prop - Rock 02.png"
+    },
+    "rock_03": {
+      "path": "assets/imported/environment/rocks/rock_03.png",
+      "size": [
+        100,
+        60
+      ],
+      "source": "Top-Down Simple Summer_Prop - Rock 03.png"
+    },
+    "rock_04": {
+      "path": "assets/imported/environment/rocks/rock_04.png",
+      "size": [
+        60,
+        60
+      ],
+      "source": "Top-Down Simple Summer_Prop - Rock 04.png"
+    },
+    "rock_05": {
+      "path": "assets/imported/environment/rocks/rock_05.png",
+      "size": [
+        60,
+        60
+      ],
+      "source": "Top-Down Simple Summer_Prop - Rock 05.png"
+    },
+    "tent": {
+      "path": "assets/imported/props/tents/tent.png",
+      "size": [
+        300,
+        280
+      ],
+      "source": "Top-Down Simple Summer_Prop - Tent.png"
+    },
+    "treasure_chest": {
+      "path": "assets/imported/props/loot/treasure_chest.png",
+      "size": [
+        200,
+        160
+      ],
+      "source": "Top-Down Simple Summer_Prop - Treasure Chest.png"
+    },
+    "tree_medium": {
+      "path": "assets/imported/environment/trees/tree_medium.png",
+      "size": [
+        360,
+        400
+      ],
+      "source": "Top-Down Simple Summer_Prop - Tree Medium.png"
+    },
+    "tree_small": {
+      "path": "assets/imported/environment/trees/tree_small.png",
+      "size": [
+        240,
+        280
+      ],
+      "source": "Top-Down Simple Summer_Prop - Tree Small.png"
+    },
+    "tree_stump_short": {
+      "path": "assets/imported/environment/trees/tree_stump_short.png",
+      "size": [
+        120,
+        100
+      ],
+      "source": "Top-Down Simple Summer_Prop - Tree Stump Short.png"
+    },
+    "tree_stump_tall": {
+      "path": "assets/imported/environment/trees/tree_stump_tall.png",
+      "size": [
+        160,
+        140
+      ],
+      "source": "Top-Down Simple Summer_Prop - Tree Stump Tall.png"
+    },
+    "watchtower_short": {
+      "path": "assets/imported/props/buildings/watchtower_short.png",
+      "size": [
+        240,
+        260
+      ],
+      "source": "Top-Down Simple Summer_Prop - Watchtower Short.png"
+    },
+    "watchtower_tall": {
+      "path": "assets/imported/props/buildings/watchtower_tall.png",
+      "size": [
+        260,
+        340
+      ],
+      "source": "Top-Down Simple Summer_Prop - Watchtower Tall.png"
+    },
+    "well": {
+      "path": "assets/imported/props/buildings/well.png",
+      "size": [
+        200,
+        200
+      ],
+      "source": "Top-Down Simple Summer_Prop - Well.png"
+    },
+    "windmill": {
+      "path": "assets/imported/props/buildings/windmill.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Top-Down Simple Summer_Prop - Windmill.png"
+    },
+    "wooden_barrel": {
+      "path": "assets/imported/props/barrels/wooden_barrel.png",
+      "size": [
+        120,
+        140
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Barrel.png"
+    },
+    "wooden_bridge_horizontal": {
+      "path": "assets/imported/environment/bridges/wooden_bridge_horizontal.png",
+      "size": [
+        480,
+        320
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Bridge Horizontal.png"
+    },
+    "wooden_bridge_vertical": {
+      "path": "assets/imported/environment/bridges/wooden_bridge_vertical.png",
+      "size": [
+        240,
+        320
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Bridge Vertical.png"
+    },
+    "wooden_cart": {
+      "path": "assets/imported/props/carts/wooden_cart.png",
+      "size": [
+        320,
+        160
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Cart.png"
+    },
+    "wooden_fence_horizontal": {
+      "path": "assets/imported/environment/fences/wooden_fence_horizontal.png",
+      "size": [
+        220,
+        80
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Fence Horizontal.png"
+    },
+    "wooden_fence_vertical": {
+      "path": "assets/imported/environment/fences/wooden_fence_vertical.png",
+      "size": [
+        80,
+        220
+      ],
+      "source": "Top-Down Simple Summer_Prop - Wooden Fence Vertical.png"
+    },
+    "tree_large": {
+      "path": "assets/imported/environment/trees/tree_large.png",
+      "size": [
+        400,
+        480
+      ],
+      "source": "Top-Down Simple Summer_prop - Tree Large.png"
+    }
+  },
+  "items": {
+    "medicine_1": {
+      "path": "assets/imported/items/medicine/medicine_1.png",
+      "size": [
+        256,
+        206
+      ],
+      "source": "Post-Med1.png"
+    },
+    "medicine_10": {
+      "path": "assets/imported/items/medicine/medicine_10.png",
+      "size": [
+        252,
+        256
+      ],
+      "source": "Post-Med10.png"
+    },
+    "medicine_11": {
+      "path": "assets/imported/items/medicine/medicine_11.png",
+      "size": [
+        245,
+        256
+      ],
+      "source": "Post-Med11.png"
+    },
+    "medicine_12": {
+      "path": "assets/imported/items/medicine/medicine_12.png",
+      "size": [
+        145,
+        256
+      ],
+      "source": "Post-Med12.png"
+    },
+    "medicine_13": {
+      "path": "assets/imported/items/medicine/medicine_13.png",
+      "size": [
+        219,
+        256
+      ],
+      "source": "Post-Med13.png"
+    },
+    "medicine_14": {
+      "path": "assets/imported/items/medicine/medicine_14.png",
+      "size": [
+        256,
+        184
+      ],
+      "source": "Post-Med14.png"
+    },
+    "medicine_15": {
+      "path": "assets/imported/items/medicine/medicine_15.png",
+      "size": [
+        202,
+        256
+      ],
+      "source": "Post-Med15.png"
+    },
+    "medicine_16": {
+      "path": "assets/imported/items/medicine/medicine_16.png",
+      "size": [
+        256,
+        187
+      ],
+      "source": "Post-Med16.png"
+    },
+    "medicine_17": {
+      "path": "assets/imported/items/medicine/medicine_17.png",
+      "size": [
+        256,
+        195
+      ],
+      "source": "Post-Med17.png"
+    },
+    "medicine_18": {
+      "path": "assets/imported/items/medicine/medicine_18.png",
+      "size": [
+        121,
+        256
+      ],
+      "source": "Post-Med18.png"
+    },
+    "medicine_19": {
+      "path": "assets/imported/items/medicine/medicine_19.png",
+      "size": [
+        256,
+        242
+      ],
+      "source": "Post-Med19.png"
+    },
+    "medicine_2": {
+      "path": "assets/imported/items/medicine/medicine_2.png",
+      "size": [
+        251,
+        256
+      ],
+      "source": "Post-Med2.png"
+    },
+    "medicine_20": {
+      "path": "assets/imported/items/medicine/medicine_20.png",
+      "size": [
+        249,
+        256
+      ],
+      "source": "Post-Med20.png"
+    },
+    "medicine_21": {
+      "path": "assets/imported/items/medicine/medicine_21.png",
+      "size": [
+        237,
+        256
+      ],
+      "source": "Post-Med21.png"
+    },
+    "medicine_22": {
+      "path": "assets/imported/items/medicine/medicine_22.png",
+      "size": [
+        246,
+        256
+      ],
+      "source": "Post-Med22.png"
+    },
+    "medicine_23": {
+      "path": "assets/imported/items/medicine/medicine_23.png",
+      "size": [
+        254,
+        256
+      ],
+      "source": "Post-Med23.png"
+    },
+    "medicine_24": {
+      "path": "assets/imported/items/medicine/medicine_24.png",
+      "size": [
+        256,
+        181
+      ],
+      "source": "Post-Med24.png"
+    },
+    "medicine_25": {
+      "path": "assets/imported/items/medicine/medicine_25.png",
+      "size": [
+        256,
+        162
+      ],
+      "source": "Post-Med25.png"
+    },
+    "medicine_26": {
+      "path": "assets/imported/items/medicine/medicine_26.png",
+      "size": [
+        256,
+        244
+      ],
+      "source": "Post-Med26.png"
+    },
+    "medicine_27": {
+      "path": "assets/imported/items/medicine/medicine_27.png",
+      "size": [
+        212,
+        256
+      ],
+      "source": "Post-Med27.png"
+    },
+    "medicine_28": {
+      "path": "assets/imported/items/medicine/medicine_28.png",
+      "size": [
+        120,
+        256
+      ],
+      "source": "Post-Med28.png"
+    },
+    "medicine_29": {
+      "path": "assets/imported/items/medicine/medicine_29.png",
+      "size": [
+        256,
+        215
+      ],
+      "source": "Post-Med29.png"
+    },
+    "medicine_3": {
+      "path": "assets/imported/items/medicine/medicine_3.png",
+      "size": [
+        256,
+        249
+      ],
+      "source": "Post-Med3.png"
+    },
+    "medicine_30": {
+      "path": "assets/imported/items/medicine/medicine_30.png",
+      "size": [
+        249,
+        256
+      ],
+      "source": "Post-Med30.png"
+    },
+    "medicine_31": {
+      "path": "assets/imported/items/medicine/medicine_31.png",
+      "size": [
+        256,
+        238
+      ],
+      "source": "Post-Med31.png"
+    },
+    "medicine_32": {
+      "path": "assets/imported/items/medicine/medicine_32.png",
+      "size": [
+        254,
+        256
+      ],
+      "source": "Post-Med32.png"
+    },
+    "medicine_33": {
+      "path": "assets/imported/items/medicine/medicine_33.png",
+      "size": [
+        256,
+        246
+      ],
+      "source": "Post-Med33.png"
+    },
+    "medicine_34": {
+      "path": "assets/imported/items/medicine/medicine_34.png",
+      "size": [
+        252,
+        256
+      ],
+      "source": "Post-Med34.png"
+    },
+    "medicine_35": {
+      "path": "assets/imported/items/medicine/medicine_35.png",
+      "size": [
+        256,
+        197
+      ],
+      "source": "Post-Med35.png"
+    },
+    "medicine_36": {
+      "path": "assets/imported/items/medicine/medicine_36.png",
+      "size": [
+        251,
+        256
+      ],
+      "source": "Post-Med36.png"
+    },
+    "medicine_37": {
+      "path": "assets/imported/items/medicine/medicine_37.png",
+      "size": [
+        124,
+        256
+      ],
+      "source": "Post-Med37.png"
+    },
+    "medicine_38": {
+      "path": "assets/imported/items/medicine/medicine_38.png",
+      "size": [
+        246,
+        256
+      ],
+      "source": "Post-Med38.png"
+    },
+    "medicine_39": {
+      "path": "assets/imported/items/medicine/medicine_39.png",
+      "size": [
+        256,
+        233
+      ],
+      "source": "Post-Med39.png"
+    },
+    "medicine_4": {
+      "path": "assets/imported/items/medicine/medicine_4.png",
+      "size": [
+        239,
+        256
+      ],
+      "source": "Post-Med4.png"
+    },
+    "medicine_40": {
+      "path": "assets/imported/items/medicine/medicine_40.png",
+      "size": [
+        256,
+        226
+      ],
+      "source": "Post-Med40.png"
+    },
+    "medicine_41": {
+      "path": "assets/imported/items/medicine/medicine_41.png",
+      "size": [
+        249,
+        256
+      ],
+      "source": "Post-Med41.png"
+    },
+    "medicine_42": {
+      "path": "assets/imported/items/medicine/medicine_42.png",
+      "size": [
+        202,
+        256
+      ],
+      "source": "Post-Med42.png"
+    },
+    "medicine_43": {
+      "path": "assets/imported/items/medicine/medicine_43.png",
+      "size": [
+        256,
+        197
+      ],
+      "source": "Post-Med43.png"
+    },
+    "medicine_44": {
+      "path": "assets/imported/items/medicine/medicine_44.png",
+      "size": [
+        244,
+        256
+      ],
+      "source": "Post-Med44.png"
+    },
+    "medicine_45": {
+      "path": "assets/imported/items/medicine/medicine_45.png",
+      "size": [
+        251,
+        256
+      ],
+      "source": "Post-Med45.png"
+    },
+    "medicine_46": {
+      "path": "assets/imported/items/medicine/medicine_46.png",
+      "size": [
+        253,
+        256
+      ],
+      "source": "Post-Med46.png"
+    },
+    "medicine_47": {
+      "path": "assets/imported/items/medicine/medicine_47.png",
+      "size": [
+        219,
+        256
+      ],
+      "source": "Post-Med47.png"
+    },
+    "medicine_48": {
+      "path": "assets/imported/items/medicine/medicine_48.png",
+      "size": [
+        220,
+        256
+      ],
+      "source": "Post-Med48.png"
+    },
+    "medicine_49": {
+      "path": "assets/imported/items/medicine/medicine_49.png",
+      "size": [
+        229,
+        256
+      ],
+      "source": "Post-Med49.png"
+    },
+    "medicine_5": {
+      "path": "assets/imported/items/medicine/medicine_5.png",
+      "size": [
+        256,
+        242
+      ],
+      "source": "Post-Med5.png"
+    },
+    "medicine_50": {
+      "path": "assets/imported/items/medicine/medicine_50.png",
+      "size": [
+        256,
+        225
+      ],
+      "source": "Post-Med50.png"
+    },
+    "medicine_6": {
+      "path": "assets/imported/items/medicine/medicine_6.png",
+      "size": [
+        123,
+        256
+      ],
+      "source": "Post-Med6.png"
+    },
+    "medicine_7": {
+      "path": "assets/imported/items/medicine/medicine_7.png",
+      "size": [
+        255,
+        256
+      ],
+      "source": "Post-Med7.png"
+    },
+    "medicine_8": {
+      "path": "assets/imported/items/medicine/medicine_8.png",
+      "size": [
+        256,
+        203
+      ],
+      "source": "Post-Med8.png"
+    },
+    "medicine_9": {
+      "path": "assets/imported/items/medicine/medicine_9.png",
+      "size": [
+        211,
+        256
+      ],
+      "source": "Post-Med9.png"
+    },
+    "crafting_1": {
+      "path": "assets/imported/items/crafting/crafting_1.png",
+      "size": [
+        233,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R1.png"
+    },
+    "crafting_10": {
+      "path": "assets/imported/items/crafting/crafting_10.png",
+      "size": [
+        251,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R10.png"
+    },
+    "crafting_11": {
+      "path": "assets/imported/items/crafting/crafting_11.png",
+      "size": [
+        256,
+        243
+      ],
+      "source": "Post-Apocalypse-C-and-R11.png"
+    },
+    "crafting_12": {
+      "path": "assets/imported/items/crafting/crafting_12.png",
+      "size": [
+        256,
+        248
+      ],
+      "source": "Post-Apocalypse-C-and-R12.png"
+    },
+    "crafting_13": {
+      "path": "assets/imported/items/crafting/crafting_13.png",
+      "size": [
+        256,
+        213
+      ],
+      "source": "Post-Apocalypse-C-and-R13.png"
+    },
+    "crafting_14": {
+      "path": "assets/imported/items/crafting/crafting_14.png",
+      "size": [
+        202,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R14.png"
+    },
+    "crafting_15": {
+      "path": "assets/imported/items/crafting/crafting_15.png",
+      "size": [
+        256,
+        166
+      ],
+      "source": "Post-Apocalypse-C-and-R15.png"
+    },
+    "crafting_16": {
+      "path": "assets/imported/items/crafting/crafting_16.png",
+      "size": [
+        239,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R16.png"
+    },
+    "crafting_17": {
+      "path": "assets/imported/items/crafting/crafting_17.png",
+      "size": [
+        256,
+        245
+      ],
+      "source": "Post-Apocalypse-C-and-R17.png"
+    },
+    "crafting_18": {
+      "path": "assets/imported/items/crafting/crafting_18.png",
+      "size": [
+        256,
+        205
+      ],
+      "source": "Post-Apocalypse-C-and-R18.png"
+    },
+    "crafting_19": {
+      "path": "assets/imported/items/crafting/crafting_19.png",
+      "size": [
+        256,
+        236
+      ],
+      "source": "Post-Apocalypse-C-and-R19.png"
+    },
+    "crafting_2": {
+      "path": "assets/imported/items/crafting/crafting_2.png",
+      "size": [
+        256,
+        245
+      ],
+      "source": "Post-Apocalypse-C-and-R2.png"
+    },
+    "crafting_20": {
+      "path": "assets/imported/items/crafting/crafting_20.png",
+      "size": [
+        256,
+        214
+      ],
+      "source": "Post-Apocalypse-C-and-R20.png"
+    },
+    "crafting_21": {
+      "path": "assets/imported/items/crafting/crafting_21.png",
+      "size": [
+        256,
+        206
+      ],
+      "source": "Post-Apocalypse-C-and-R21.png"
+    },
+    "crafting_22": {
+      "path": "assets/imported/items/crafting/crafting_22.png",
+      "size": [
+        256,
+        211
+      ],
+      "source": "Post-Apocalypse-C-and-R22.png"
+    },
+    "crafting_23": {
+      "path": "assets/imported/items/crafting/crafting_23.png",
+      "size": [
+        256,
+        233
+      ],
+      "source": "Post-Apocalypse-C-and-R23.png"
+    },
+    "crafting_24": {
+      "path": "assets/imported/items/crafting/crafting_24.png",
+      "size": [
+        256,
+        157
+      ],
+      "source": "Post-Apocalypse-C-and-R24.png"
+    },
+    "crafting_25": {
+      "path": "assets/imported/items/crafting/crafting_25.png",
+      "size": [
+        256,
+        194
+      ],
+      "source": "Post-Apocalypse-C-and-R25.png"
+    },
+    "crafting_26": {
+      "path": "assets/imported/items/crafting/crafting_26.png",
+      "size": [
+        237,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R26.png"
+    },
+    "crafting_27": {
+      "path": "assets/imported/items/crafting/crafting_27.png",
+      "size": [
+        254,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R27.png"
+    },
+    "crafting_28": {
+      "path": "assets/imported/items/crafting/crafting_28.png",
+      "size": [
+        253,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R28.png"
+    },
+    "crafting_29": {
+      "path": "assets/imported/items/crafting/crafting_29.png",
+      "size": [
+        256,
+        241
+      ],
+      "source": "Post-Apocalypse-C-and-R29.png"
+    },
+    "crafting_3": {
+      "path": "assets/imported/items/crafting/crafting_3.png",
+      "size": [
+        229,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R3.png"
+    },
+    "crafting_30": {
+      "path": "assets/imported/items/crafting/crafting_30.png",
+      "size": [
+        256,
+        237
+      ],
+      "source": "Post-Apocalypse-C-and-R30.png"
+    },
+    "crafting_31": {
+      "path": "assets/imported/items/crafting/crafting_31.png",
+      "size": [
+        256,
+        242
+      ],
+      "source": "Post-Apocalypse-C-and-R31.png"
+    },
+    "crafting_32": {
+      "path": "assets/imported/items/crafting/crafting_32.png",
+      "size": [
+        256,
+        225
+      ],
+      "source": "Post-Apocalypse-C-and-R32.png"
+    },
+    "crafting_33": {
+      "path": "assets/imported/items/crafting/crafting_33.png",
+      "size": [
+        256,
+        246
+      ],
+      "source": "Post-Apocalypse-C-and-R33.png"
+    },
+    "crafting_34": {
+      "path": "assets/imported/items/crafting/crafting_34.png",
+      "size": [
+        256,
+        201
+      ],
+      "source": "Post-Apocalypse-C-and-R34.png"
+    },
+    "crafting_35": {
+      "path": "assets/imported/items/crafting/crafting_35.png",
+      "size": [
+        256,
+        235
+      ],
+      "source": "Post-Apocalypse-C-and-R35.png"
+    },
+    "crafting_36": {
+      "path": "assets/imported/items/crafting/crafting_36.png",
+      "size": [
+        256,
+        182
+      ],
+      "source": "Post-Apocalypse-C-and-R36.png"
+    },
+    "crafting_37": {
+      "path": "assets/imported/items/crafting/crafting_37.png",
+      "size": [
+        256,
+        211
+      ],
+      "source": "Post-Apocalypse-C-and-R37.png"
+    },
+    "crafting_38": {
+      "path": "assets/imported/items/crafting/crafting_38.png",
+      "size": [
+        256,
+        228
+      ],
+      "source": "Post-Apocalypse-C-and-R38.png"
+    },
+    "crafting_39": {
+      "path": "assets/imported/items/crafting/crafting_39.png",
+      "size": [
+        155,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R39.png"
+    },
+    "crafting_4": {
+      "path": "assets/imported/items/crafting/crafting_4.png",
+      "size": [
+        240,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R4.png"
+    },
+    "crafting_40": {
+      "path": "assets/imported/items/crafting/crafting_40.png",
+      "size": [
+        256,
+        255
+      ],
+      "source": "Post-Apocalypse-C-and-R40.png"
+    },
+    "crafting_41": {
+      "path": "assets/imported/items/crafting/crafting_41.png",
+      "size": [
+        190,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R41.png"
+    },
+    "crafting_42": {
+      "path": "assets/imported/items/crafting/crafting_42.png",
+      "size": [
+        256,
+        246
+      ],
+      "source": "Post-Apocalypse-C-and-R42.png"
+    },
+    "crafting_43": {
+      "path": "assets/imported/items/crafting/crafting_43.png",
+      "size": [
+        256,
+        245
+      ],
+      "source": "Post-Apocalypse-C-and-R43.png"
+    },
+    "crafting_44": {
+      "path": "assets/imported/items/crafting/crafting_44.png",
+      "size": [
+        214,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R44.png"
+    },
+    "crafting_45": {
+      "path": "assets/imported/items/crafting/crafting_45.png",
+      "size": [
+        242,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R45.png"
+    },
+    "crafting_46": {
+      "path": "assets/imported/items/crafting/crafting_46.png",
+      "size": [
+        256,
+        231
+      ],
+      "source": "Post-Apocalypse-C-and-R46.png"
+    },
+    "crafting_47": {
+      "path": "assets/imported/items/crafting/crafting_47.png",
+      "size": [
+        191,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R47.png"
+    },
+    "crafting_48": {
+      "path": "assets/imported/items/crafting/crafting_48.png",
+      "size": [
+        245,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R48.png"
+    },
+    "crafting_49": {
+      "path": "assets/imported/items/crafting/crafting_49.png",
+      "size": [
+        188,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R49.png"
+    },
+    "crafting_5": {
+      "path": "assets/imported/items/crafting/crafting_5.png",
+      "size": [
+        223,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R5.png"
+    },
+    "crafting_50": {
+      "path": "assets/imported/items/crafting/crafting_50.png",
+      "size": [
+        256,
+        243
+      ],
+      "source": "Post-Apocalypse-C-and-R50.png"
+    },
+    "crafting_6": {
+      "path": "assets/imported/items/crafting/crafting_6.png",
+      "size": [
+        247,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R6.png"
+    },
+    "crafting_7": {
+      "path": "assets/imported/items/crafting/crafting_7.png",
+      "size": [
+        254,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R7.png"
+    },
+    "crafting_8": {
+      "path": "assets/imported/items/crafting/crafting_8.png",
+      "size": [
+        256,
+        252
+      ],
+      "source": "Post-Apocalypse-C-and-R8.png"
+    },
+    "crafting_9": {
+      "path": "assets/imported/items/crafting/crafting_9.png",
+      "size": [
+        247,
+        256
+      ],
+      "source": "Post-Apocalypse-C-and-R9.png"
+    }
+  },
+  "effects": {
+    "chemical_smoke_chemical_smoke_frame_01": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_01.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_01.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_02": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_02.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_02.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_03": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_03.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_03.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_04": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_04.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_04.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_05": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_05.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_05.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_06": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_06.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_06.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_07": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_07.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_07.png"
+    },
+    "chemical_smoke_chemical_smoke_frame_08": {
+      "path": "assets/imported/effects/chemical_smoke/chemical_smoke_frame_08.png",
+      "size": [
+        512,
+        288
+      ],
+      "source": "Chemical Smoke_Frame_08.png"
+    },
+    "icons_icons_chemical_smoke": {
+      "path": "assets/imported/effects/icons/icons_chemical_smoke.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Chemical Smoke.png"
+    },
+    "icons_icons_poisonous_smoke": {
+      "path": "assets/imported/effects/icons/icons_poisonous_smoke.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Poisonous Smoke.png"
+    },
+    "icons_icons_smoke_blow": {
+      "path": "assets/imported/effects/icons/icons_smoke_blow.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Smoke Blow.png"
+    },
+    "icons_icons_smoke_explosion": {
+      "path": "assets/imported/effects/icons/icons_smoke_explosion.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Smoke Explosion.png"
+    },
+    "icons_icons_smoke_spell": {
+      "path": "assets/imported/effects/icons/icons_smoke_spell.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Smoke Spell.png"
+    },
+    "icons_icons_smoke": {
+      "path": "assets/imported/effects/icons/icons_smoke.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Icons_Smoke.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_01": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_01.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_01.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_02": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_02.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_02.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_03": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_03.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_03.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_04": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_04.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_04.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_05": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_05.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_05.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_06": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_06.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_06.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_07": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_07.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_07.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_08": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_08.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_08.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_09": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_09.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_09.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_10": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_10.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_10.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_11": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_11.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_11.png"
+    },
+    "poisonous_smoke_posionous_smoke_frame_12": {
+      "path": "assets/imported/effects/poisonous_smoke/posionous_smoke_frame_12.png",
+      "size": [
+        512,
+        384
+      ],
+      "source": "Posionous Smoke_Frame_12.png"
+    },
+    "smoke_smoke_frame_01": {
+      "path": "assets/imported/effects/smoke/smoke_frame_01.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_01.png"
+    },
+    "smoke_smoke_frame_02": {
+      "path": "assets/imported/effects/smoke/smoke_frame_02.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_02.png"
+    },
+    "smoke_smoke_frame_03": {
+      "path": "assets/imported/effects/smoke/smoke_frame_03.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_03.png"
+    },
+    "smoke_smoke_frame_04": {
+      "path": "assets/imported/effects/smoke/smoke_frame_04.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_04.png"
+    },
+    "smoke_smoke_frame_05": {
+      "path": "assets/imported/effects/smoke/smoke_frame_05.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_05.png"
+    },
+    "smoke_smoke_frame_06": {
+      "path": "assets/imported/effects/smoke/smoke_frame_06.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_06.png"
+    },
+    "smoke_smoke_frame_07": {
+      "path": "assets/imported/effects/smoke/smoke_frame_07.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_07.png"
+    },
+    "smoke_smoke_frame_08": {
+      "path": "assets/imported/effects/smoke/smoke_frame_08.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_08.png"
+    },
+    "smoke_smoke_frame_09": {
+      "path": "assets/imported/effects/smoke/smoke_frame_09.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_09.png"
+    },
+    "smoke_smoke_frame_10": {
+      "path": "assets/imported/effects/smoke/smoke_frame_10.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke_Frame_10.png"
+    },
+    "smoke_blow_smoke_blow_frame_01": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_01.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_01.png"
+    },
+    "smoke_blow_smoke_blow_frame_02": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_02.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_02.png"
+    },
+    "smoke_blow_smoke_blow_frame_03": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_03.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_03.png"
+    },
+    "smoke_blow_smoke_blow_frame_04": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_04.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_04.png"
+    },
+    "smoke_blow_smoke_blow_frame_05": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_05.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_05.png"
+    },
+    "smoke_blow_smoke_blow_frame_06": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_06.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_06.png"
+    },
+    "smoke_blow_smoke_blow_frame_07": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_07.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_07.png"
+    },
+    "smoke_blow_smoke_blow_frame_08": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_08.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_08.png"
+    },
+    "smoke_blow_smoke_blow_frame_09": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_09.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_09.png"
+    },
+    "smoke_blow_smoke_blow_frame_10": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_10.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_10.png"
+    },
+    "smoke_blow_smoke_blow_frame_11": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_11.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_11.png"
+    },
+    "smoke_blow_smoke_blow_frame_12": {
+      "path": "assets/imported/effects/smoke_blow/smoke_blow_frame_12.png",
+      "size": [
+        512,
+        154
+      ],
+      "source": "Smoke Blow_Frame_12.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_01": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_01.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_01.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_02": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_02.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_02.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_03": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_03.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_03.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_04": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_04.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_04.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_05": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_05.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_05.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_06": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_06.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_06.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_07": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_07.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_07.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_08": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_08.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_08.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_09": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_09.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_09.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_10": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_10.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_10.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_11": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_11.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_11.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_12": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_12.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_12.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_13": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_13.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_13.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_14": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_14.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_14.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_15": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_15.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_15.png"
+    },
+    "smoke_explosion_smoke_explosion_frame_16": {
+      "path": "assets/imported/effects/smoke_explosion/smoke_explosion_frame_16.png",
+      "size": [
+        512,
+        512
+      ],
+      "source": "Smoke Explosion_Frame_16.png"
+    },
+    "smoke_spell_smoke_spell_frame_01": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_01.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_01.png"
+    },
+    "smoke_spell_smoke_spell_frame_02": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_02.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_02.png"
+    },
+    "smoke_spell_smoke_spell_frame_03": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_03.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_03.png"
+    },
+    "smoke_spell_smoke_spell_frame_04": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_04.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_04.png"
+    },
+    "smoke_spell_smoke_spell_frame_05": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_05.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_05.png"
+    },
+    "smoke_spell_smoke_spell_frame_06": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_06.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_06.png"
+    },
+    "smoke_spell_smoke_spell_frame_07": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_07.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_07.png"
+    },
+    "smoke_spell_smoke_spell_frame_08": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_08.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_08.png"
+    },
+    "smoke_spell_smoke_spell_frame_09": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_09.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_09.png"
+    },
+    "smoke_spell_smoke_spell_frame_10": {
+      "path": "assets/imported/effects/smoke_spell/smoke_spell_frame_10.png",
+      "size": [
+        512,
+        256
+      ],
+      "source": "Smoke Spell_Frame_10.png"
+    }
+  },
+  "custom": {
+    "maps/sector01/terrain_concept.png": {
+      "path": "assets/maps/sector01/terrain_concept.png",
+      "size": [
+        1024,
+        683
+      ],
+      "source": "a_top_down_tileable_game_art_rpg_map_background.png"
+    },
+    "maps/sector01/overview_concept.png": {
+      "path": "assets/maps/sector01/overview_concept.png",
+      "size": [
+        1024,
+        683
+      ],
+      "source": "a_top_down_2d_digital_illustration_of_an_abandoned.png"
+    },
+    "custom/foliage/pine_tree_01.png": {
+      "path": "assets/custom/foliage/pine_tree_01.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_detailed_isolated_illustration_asset_image_a_si.png"
+    },
+    "custom/foliage/pine_tree_02.png": {
+      "path": "assets/custom/foliage/pine_tree_02.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_digital_illustration_of_a_tall_evergreen_pine_t.png"
+    },
+    "custom/foliage/pine_tree_03.png": {
+      "path": "assets/custom/foliage/pine_tree_03.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_detailed_isometric_style_digital_illustration_fe.png"
+    },
+    "custom/foliage/dead_tree_01.png": {
+      "path": "assets/custom/foliage/dead_tree_01.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_detailed_highly_rendered_illustration_graphic_o.png"
+    },
+    "custom/foliage/dead_tree_02.png": {
+      "path": "assets/custom/foliage/dead_tree_02.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_highly_detailed_digital_illustration_png_like_im.png"
+    },
+    "custom/foliage/bush_01.png": {
+      "path": "assets/custom/foliage/bush_01.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "source": "a_detailed_close_up_illustration_asset_style_scen.png"
+    },
+    "custom/environment/rock_formation_01.png": {
+      "path": "assets/custom/environment/rock_formation_01.png",
+      "size": [
+        1024,
+        873
+      ],
+      "source": "a_high_resolution_png_illustration_style_image_of.png"
+    },
+    "custom/environment/fallen_log_01.png": {
+      "path": "assets/custom/environment/fallen_log_01.png",
+      "size": [
+        1024,
+        879
+      ],
+      "source": "a_detailed_illustration_game_asset_style_scene.png"
+    },
+    "custom/environment/cliff_wall_01.png": {
+      "path": "assets/custom/environment/cliff_wall_01.png",
+      "size": [
+        1024,
+        683
+      ],
+      "source": "a_detailed_2d_digital_illustration_displays_a_segm.png"
+    }
+  }
+}
