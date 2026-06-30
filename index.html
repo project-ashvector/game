@@ -109,7 +109,30 @@ assets/items/operator_shard_vyra.png</code></section></div></div></div>
 
   <div id="playtestOverlay" class="overlay hidden"><div class="database-modal avos-crt playtest-modal"><button id="closePlaytest" class="modal-close">Close Console</button><div class="db-header"><div>ASH VECTOR PLAYTEST CONSOLE</div><div>LOCAL QA // DO NOT SHIP FINAL</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">SPRINT TEST TOOLS</div><h2>Milestone Bravo QA</h2><p>Use these buttons while testing the Chapter 1 path. They are included so we can test the game locally before GitHub upload.</p><div class="playtest-actions"><button id="qaHeal">Full Heal</button><button id="qaCredits">Add 100 Credits</button><button id="qaClearAnomalies">Mark 3 Anomalies Cleared</button><button id="qaBossReady">Unlock Boss Route</button><button id="qaCompleteChapter">Force Chapter Complete</button><button id="qaResetRun">Reset Current Run</button><button id="qaPath">Show Test Route</button></div></section><section class="fracture-card"><h3>Current QA State</h3><div id="qaState" class="mini-db"></div><h3>Keyboard</h3><div class="legend"><span>Arrow Keys: Move</span><span>Enter: Boot/Menu</span><span>F9: Console</span><span>Save: localStorage</span></div><p class="menu-info">Goal: test boot → menu → new game → terminal → enemy fights → boss → exit → chapter complete.</p></section></div></div></div>
 
-  <div id="battleOverlay" class="overlay hidden"><div class="battle" style="background-image:url('assets/battle_backgrounds/toxic_sewers_battle.png')"><div class="battle-tag">COMBAT PROTOCOL ENGAGED</div><div class="battle-stage"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><img id="battleEnemy" class="battle-sprite enemy" src="" alt="enemy"></div><div class="battle-ui"><div><h2 id="battleTitle">Hostile Entity</h2><p id="battleText">Choose a combat protocol.</p><div id="battleHp"></div></div><div id="attackButtons" class="attacks"></div></div></div></div>
+  <div id="battleOverlay" class="overlay hidden">
+    <div id="battlePanel" class="battle" style="background-image:url('assets/battle_backgrounds/toxic_sewers_battle.png')">
+      <div class="battle-hud-top">
+        <div><span class="battle-kicker">COMBAT PROTOCOL</span><b id="battleTitle">Hostile Entity</b></div>
+        <div class="battle-location">F-001 // TOXIC SEWERS</div>
+      </div>
+      <div class="battle-stage">
+        <div class="combatant hero-side"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><span class="combatant-name">AV-001 VYRA</span></div>
+        <div id="damageLayer" class="damage-layer"></div>
+        <div class="combatant enemy-side"><img id="battleEnemy" class="battle-sprite enemy" src="" alt="enemy"><span id="battleEnemyLabel" class="combatant-name">ANOMALY</span></div>
+      </div>
+      <div class="battle-ui">
+        <section class="battle-status-panel">
+          <div id="battleHp" class="battle-bars"></div>
+          <p id="battleText" class="battle-log-line">Choose a combat protocol.</p>
+        </section>
+        <section class="battle-command-panel">
+          <div class="command-title">VECTOR PROTOCOLS</div>
+          <div id="attackButtons" class="attacks"></div>
+        </section>
+      </div>
+      <div id="battleVictory" class="battle-victory hidden"></div>
+    </div>
+  </div>
   <script src="js/game.js"></script>
 </body>
 </html>

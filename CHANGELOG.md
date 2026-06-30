@@ -123,3 +123,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Generated optimized 128×128 game icons and 64×64 compact icons.
 - Added core item records to the Inventory Database.
 - Upgraded inventory cards with icons, rarity borders, and hover polish.
+
+## v40 — Combat UI Polish
+- Rebuilt battle overlay with a fixed, polished JRPG-style layout.
+- Added cleaner battle header, improved HP/EP meters, and command buttons.
+- Added damage numbers, hit flashes, battle shake, and dodge/heal popups.
+- Added victory loot screen using the new item icon pipeline.
+

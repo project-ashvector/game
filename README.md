@@ -99,3 +99,7 @@ AV-001 Vyra now uses the approved hooded cyan dual-blade artwork as the canonica
 - Generated optimized 128×128 game icons and 64×64 compact icons.
 - Added core item records to the Inventory Database.
 - Upgraded inventory cards with icons, rarity borders, and hover polish.
+
+### v40 Combat UI Polish
+The battle screen now uses a fixed RPG-style presentation with improved operator/anomaly placement, compact HP/EP meters, damage numbers, hit flash, screen shake, and a victory loot panel that displays item icons.
+

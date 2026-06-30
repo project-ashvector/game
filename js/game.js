@@ -234,21 +234,115 @@
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     battle={code,x,y,enemy:def,turn:'player',guard:false};
-    $('battleTitle').textContent=def.name;
+    $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
+    if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
     $('battleEnemy').src=def.img;
     $('battleEnemy').onerror=()=>{ $('battleText').textContent='Creature art missing: '+def.img; };
     $('battleHero').src='assets/operators/av001/battle.png';
     $('battleText').textContent='Choose a combat protocol.';
+    $('battleVictory')?.classList.add('hidden');
+    $('battlePanel')?.classList.remove('battle-shake');
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     $('battleOverlay').classList.remove('hidden');
     renderBattle();
   }
-  function renderBattle(){ if(!battle)return; const mod=combatModifiers(); $('battleHp').innerHTML=`<div class="statrow">${battle.enemy.name} HP ${battle.enemy.hp}/${battle.enemy.maxHp}<div class="bar"><span style="width:${100*battle.enemy.hp/battle.enemy.maxHp}%"></span></div></div><div class="statrow">Vyra HP ${state.player.hp}/${state.player.maxHp}<div class="bar"><span style="width:${100*state.player.hp/state.player.maxHp}%"></span></div></div><div class="statrow">EP ${state.player.ep}/${state.player.maxEp}<div class="bar ep"><span style="width:${100*state.player.ep/state.player.maxEp}%"></span></div></div><div class="statrow">Focus: ${skillList[mod.focus].name} Lv. ${mod.level}</div>`;
-    $('attackButtons').innerHTML=''; attacks.forEach((a,i)=>{let b=document.createElement('button'); const cost=Math.max(0,a.ep-mod.epDiscount); b.textContent=`${a.name}${cost?' - '+cost+'EP':''}`; b.disabled=state.player.ep<cost; b.onclick=()=>playerAttack(i); $('attackButtons').appendChild(b);}); }
-  function playerAttack(i){ if(!battle||battle.turn!=='player')return; const a=attacks[i]; const mod=combatModifiers(); const cost=Math.max(0,a.ep-mod.epDiscount); if(state.player.ep<cost){toast('Not enough EP.');return;} state.player.ep-=cost; if(a.heal){state.player.hp=Math.min(state.player.maxHp,state.player.hp+18+Math.floor(mod.level/4)); $('battleText').textContent=a.text; grantStyleXp(mod.focus, 3);} else {let crit=Math.random()<(0.15+mod.critBonus); let dmg=Math.max(1,a.dmg+state.player.atk-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0)); battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg); $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.`; grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3)));}
-    renderBattle(); if(battle.enemy.hp<=0){winBattle();} else {battle.turn='enemy'; setTimeout(enemyTurn,650);} }
-  function enemyTurn(){ if(!battle)return; const mod=combatModifiers(); let dodge = Math.random()<(0.08+mod.dodgeBonus); let dmg = dodge?0:Math.max(1,battle.enemy.atk-state.player.def+Math.floor(Math.random()*5)-mod.damageReduction); if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg); $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`; if(dmg) grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); if(state.player.hp<=0){state.player.hp=1; $('battleText').textContent+=' Emergency archive recovery prevented death.'; log('Defeat prevented by developer build mercy.');} battle.turn='player'; renderBattle(); renderUI(); }
-  function winBattle(){ const e=battle.enemy; setTile(battle.x,battle.y,'.'); state.flags.anomaliesCleared += battle.code==='E'?1:0; if(battle.code==='B'){state.flags.bossUnlocked=true; addItem('Corrupted Catalyst',1);} gainXp(e.xp); grantStyleXp(state.combatStyle || 'attack', e.xp); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1)); log(`Victory: ${e.name}. +${e.xp} Sync, +${e.credits} credits, loot recovered.`); battle=null; $('battleOverlay').classList.add('hidden'); renderAll(); }
+  function renderBattle(){
+    if(!battle)return;
+    const mod=combatModifiers();
+    const enemyPct = Math.max(0, Math.min(100, 100*battle.enemy.hp/battle.enemy.maxHp));
+    const heroPct = Math.max(0, Math.min(100, 100*state.player.hp/state.player.maxHp));
+    const epPct = Math.max(0, Math.min(100, 100*state.player.ep/state.player.maxEp));
+    $('battleHp').innerHTML=`
+      <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
+      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // HP ${state.player.hp}/${state.player.maxHp}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
+      <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${state.player.maxEp}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
+      <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level}</span></div>`;
+    $('attackButtons').innerHTML='';
+    attacks.forEach((a,i)=>{
+      let b=document.createElement('button');
+      const cost=Math.max(0,a.ep-mod.epDiscount);
+      b.innerHTML=`<b>${a.name}</b><span>${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}</span>`;
+      b.disabled=state.player.ep<cost;
+      b.onclick=()=>playerAttack(i);
+      $('attackButtons').appendChild(b);
+    });
+  }
+  function playerAttack(i){
+    if(!battle||battle.turn!=='player')return;
+    const a=attacks[i]; const mod=combatModifiers(); const cost=Math.max(0,a.ep-mod.epDiscount);
+    if(state.player.ep<cost){toast('Not enough EP.');return;}
+    state.player.ep-=cost;
+    if(a.heal){
+      const heal = 18+Math.floor(mod.level/4);
+      state.player.hp=Math.min(state.player.maxHp,state.player.hp+heal);
+      $('battleText').textContent=a.text;
+      showDamage('hero', `+${heal}`, 'heal');
+      grantStyleXp(mod.focus, 3);
+    } else {
+      let crit=Math.random()<(0.15+mod.critBonus);
+      let dmg=Math.max(1,a.dmg+state.player.atk-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
+      battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
+      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.`;
+      showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
+      flashCombatant('battleEnemy');
+      shakeBattle(crit ? 420 : 260);
+      grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3)));
+    }
+    renderBattle();
+    if(battle.enemy.hp<=0){setTimeout(winBattle,420);} else {battle.turn='enemy'; setTimeout(enemyTurn,760);}
+  }
+  function enemyTurn(){
+    if(!battle)return;
+    const mod=combatModifiers();
+    let dodge = Math.random()<(0.08+mod.dodgeBonus);
+    let dmg = dodge?0:Math.max(1,battle.enemy.atk-state.player.def+Math.floor(Math.random()*5)-mod.damageReduction);
+    if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg);
+    $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`;
+    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); }
+    else showDamage('hero', 'DODGE', 'dodge');
+    if(state.player.hp<=0){state.player.hp=1; $('battleText').textContent+=' Emergency archive recovery prevented death.'; log('Defeat prevented by developer build mercy.');}
+    battle.turn='player'; renderBattle(); renderUI();
+  }
+  function winBattle(){
+    if(!battle) return;
+    const e=battle.enemy;
+    const loot=[...e.loot];
+    setTile(battle.x,battle.y,'.');
+    state.flags.anomaliesCleared += battle.code==='E'?1:0;
+    if(battle.code==='B'){state.flags.bossUnlocked=true; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1);}
+    gainXp(e.xp); grantStyleXp(state.combatStyle || 'attack', e.xp); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
+    log(`Victory: ${e.name}. +${e.xp} Sync, +${e.credits} credits, loot recovered.`);
+    showVictoryPanel(e, loot);
+  }
+
+  function showDamage(side, text, type='hit'){
+    const layer = $('damageLayer');
+    if(!layer) return;
+    const pop=document.createElement('div');
+    pop.className=`damage-number ${type} ${side}`;
+    pop.textContent=text;
+    layer.appendChild(pop);
+    setTimeout(()=>pop.remove(),900);
+  }
+  function flashCombatant(id){
+    const el=$(id); if(!el) return;
+    el.classList.remove('hit-flash'); void el.offsetWidth; el.classList.add('hit-flash');
+    setTimeout(()=>el.classList.remove('hit-flash'),360);
+  }
+  function shakeBattle(ms=260){
+    const el=$('battlePanel'); if(!el || state.settings.reducedMotion) return;
+    el.classList.remove('battle-shake'); void el.offsetWidth; el.classList.add('battle-shake');
+    setTimeout(()=>el.classList.remove('battle-shake'),ms);
+  }
+  function showVictoryPanel(enemy, loot){
+    const panel=$('battleVictory');
+    const uniqueLoot = [...new Set(loot)];
+    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${enemy.xp} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">Return to Fracture</button></div>`;
+    panel.classList.remove('hidden');
+    const btn=$('continueBattleBtn');
+    if(btn) btn.onclick=()=>{ battle=null; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); };
+  }
+
   function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=10; state.player.maxEp+=4; state.player.atk+=2; state.player.def+=1; state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log(`Synchronization increased. Level ${state.player.level}.`);} }
   function useMedPatch(){ if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=state.player.maxHp){toast('HP already full.');return;} state.inventory['Med Patch']--; state.player.hp=Math.min(state.player.maxHp,state.player.hp+25); log('Used Med Patch. +25 HP.'); renderAll(); }
   function render(){
