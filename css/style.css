@@ -483,3 +483,11 @@ body.menu-protocol-open #mainMenu{filter:blur(2px) brightness(.55);pointer-event
 body.menu-protocol-open .overlay{pointer-events:auto;filter:none;}
 .menu-info.ok{color:var(--cyan)!important;}
 .menu-info.warn{color:var(--gold)!important;}
+
+
+/* v47 menu routing hard fix */
+.protocol-quick-panel{z-index:7000!important;}
+.protocol-quick-panel .database-modal{z-index:7001!important;}
+#mainMenu:not(.hidden) .menu-buttons button{pointer-events:auto!important;position:relative;z-index:2100;}
+#mainMenu:not(.hidden) #newGameBtn{pointer-events:auto!important;}
+body.menu-protocol-open .protocol-quick-panel{filter:none!important;pointer-events:auto!important;}
