@@ -156,3 +156,9 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added fullscreen field HUD so sidebar data is accessible while the normal sidebar is hidden.
 - Esc now closes open panels before exiting fullscreen layout.
 - Main menu protocol buttons now provide feedback and remain accessible.
+
+## v46
+- Fixed main menu protocol buttons not visibly opening their overlays.
+- Raised overlay z-index above menu/start layers.
+- Added Escape/Close overlay recovery behavior.
+- Improved Continue Operation fallback.

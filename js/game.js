@@ -440,7 +440,29 @@
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${p.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
   }
   function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
-  function openOverlay(id){document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $(id).classList.remove('hidden'); if(id==='anomalyOverlay') renderAnomalyDb(); if(id==='inventoryOverlay') renderInventoryDb(); if(id==='missionOverlay') renderUI(); if(id==='playtestOverlay') renderUI(); if(id==='progressionOverlay') renderProgressionDb();}
+  function openOverlay(id){
+    const target=$(id);
+    if(!target){toast('Protocol missing: '+id); return;}
+    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+    target.classList.remove('hidden');
+    target.style.zIndex='6000';
+    document.body.classList.add('menu-protocol-open');
+    if(id==='anomalyOverlay') renderAnomalyDb();
+    if(id==='inventoryOverlay') renderInventoryDb();
+    if(id==='missionOverlay') renderUI();
+    if(id==='playtestOverlay') renderUI();
+    if(id==='progressionOverlay') renderProgressionDb();
+    const info=$('menuInfo');
+    if(info){info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok');}
+  }
+
+  function closeOverlays(){
+    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+    document.body.classList.remove('menu-protocol-open');
+    const info=$('menuInfo');
+    if(info){info.textContent='Select a database protocol.'; info.classList.remove('ok','warn');}
+  }
+
   function getCreatureLibrary(){
     const anomalies = importedAnomalyRoster.map((x,i)=>({...x,id:displayId('AN', i),type:'Anomaly', icon:iconPathFor(x)}));
     const bosses = importedBossRoster.map((x,i)=>({...x,id:displayId('BOSS', i),type:'Boss', icon:iconPathFor(x)}));
@@ -649,13 +671,13 @@
         if(e.key==='ArrowRight')tryMove(1,0);
       }
     }, {passive:false});
-    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{load(); startGame(false)};
+    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{try{load();}catch(err){} startGame(false)};
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
-    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',()=>{ const info=$('menuInfo'); if(info) info.textContent='Protocol opened. Press Esc or Close to return.'; }); });
-    ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=()=>document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'))));
+    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
+    ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
