@@ -162,3 +162,9 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Raised overlay z-index above menu/start layers.
 - Added Escape/Close overlay recovery behavior.
 - Improved Continue Operation fallback.
+
+
+## v48 - Menu Protocol Recovery
+- Fixed main-menu protocol buttons by hiding the menu layer while modals are open.
+- Added inline fallback handlers and window.AV_MENU helpers.
+- Escape/Close now returns to the main menu when opening from menu.

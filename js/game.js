@@ -443,22 +443,48 @@
   function openOverlay(id){
     const target=$(id);
     if(!target){toast('Protocol missing: '+id); return;}
+
+    // v48: menu protocol recovery. When the player opens a database
+    // screen from the main menu, temporarily hide the menu itself. This
+    // avoids the menu/card layer covering or intercepting the modal on
+    // GitHub Pages/browser fullscreen layouts.
+    const menu=$('mainMenu');
+    const app=$('app');
+    const openedFromMenu = menu && app && !menu.classList.contains('hidden') && app.classList.contains('hidden');
+    if(openedFromMenu){
+      document.body.dataset.returnToMenu = '1';
+      menu.classList.add('hidden');
+    }
+
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     target.classList.remove('hidden');
-    target.style.zIndex='6000';
+    target.style.display='grid';
+    target.style.zIndex='9000';
+    target.style.pointerEvents='auto';
     document.body.classList.add('menu-protocol-open');
-    if(id==='anomalyOverlay') renderAnomalyDb();
-    if(id==='inventoryOverlay') renderInventoryDb();
-    if(id==='missionOverlay') renderUI();
-    if(id==='playtestOverlay') renderUI();
-    if(id==='progressionOverlay') renderProgressionDb();
+
+    try{
+      if(id==='anomalyOverlay') renderAnomalyDb();
+      if(id==='inventoryOverlay') renderInventoryDb();
+      if(id==='missionOverlay') renderUI();
+      if(id==='playtestOverlay') renderUI();
+      if(id==='progressionOverlay') renderProgressionDb();
+    }catch(err){
+      console.error('Overlay render failed:', id, err);
+      target.querySelector('.database-modal')?.insertAdjacentHTML('beforeend', `<p class="menu-info warn">Overlay opened, but a render error occurred: ${String(err.message||err)}</p>`);
+    }
+
     const info=$('menuInfo');
     if(info){info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok');}
   }
 
   function closeOverlays(){
-    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+    document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     document.body.classList.remove('menu-protocol-open');
+    if(document.body.dataset.returnToMenu === '1' && $('app').classList.contains('hidden')){
+      $('mainMenu').classList.remove('hidden');
+      delete document.body.dataset.returnToMenu;
+    }
     const info=$('menuInfo');
     if(info){info.textContent='Select a database protocol.'; info.classList.remove('ok','warn');}
   }
@@ -642,7 +668,51 @@
   }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
   function startAutosave(){ setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000); setInterval(()=>renderUI(), 1000); }
+
+  // v47: hard menu router. This runs in capture phase so menu protocols work
+  // even if old button handlers, overlays, or fullscreen CSS intercept clicks.
+  function menuProtocolFallback(title, body){
+    let panel=$('protocolQuickPanel');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='protocolQuickPanel';
+      panel.className='overlay protocol-quick-panel hidden';
+      panel.innerHTML=`<div class="database-modal avos-crt"><button id="closeProtocolQuick" class="modal-close">Close</button><div class="db-header"><div id="protocolQuickTitle">ASH VECTOR DATABASE</div><div>MENU PROTOCOL // v47</div></div><div id="protocolQuickBody" class="fracture-card"></div></div>`;
+      document.body.appendChild(panel);
+      $('closeProtocolQuick').onclick=()=>{ panel.classList.add('hidden'); document.body.classList.remove('menu-protocol-open'); };
+    }
+    $('protocolQuickTitle').textContent=title;
+    $('protocolQuickBody').innerHTML=body;
+    panel.classList.remove('hidden');
+    document.body.classList.add('menu-protocol-open');
+  }
+  function routeMainMenuAction(id){
+    const info=$('menuInfo');
+    if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
+    const routes={
+      continueBtn:()=>{ try{load();}catch(err){} startGame(false); },
+      newGameBtn:()=>startGame(true),
+      fractureIndexBtn:()=>openOverlay('fractureOverlay'),
+      operatorFilesBtn:()=>openOverlay('operatorOverlay'),
+      anomalyIndexBtn:()=>openOverlay('anomalyOverlay'),
+      inventoryDbBtn:()=>openOverlay('inventoryOverlay'),
+      progressionBtn:()=>openOverlay('progressionOverlay'),
+      missionMenuBtn:()=>openOverlay('missionOverlay'),
+      configBtn:()=>openOverlay('configOverlay'),
+      menuFullscreenBtn:()=>toggleFullscreenMode()
+    };
+    if(routes[id]){ routes[id](); return true; }
+    menuProtocolFallback('ASH VECTOR DATABASE', `<h2>${id}</h2><p>Protocol route missing. This fallback confirms the button is clickable.</p>`);
+    return true;
+  }
+
   function bind(){
+    document.addEventListener('click', e=>{
+      const btn=e.target.closest && e.target.closest('#mainMenu button, #launchStart');
+      if(!btn || $('mainMenu').classList.contains('hidden')) return;
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      routeMainMenuAction(btn.id || 'newGameBtn');
+    }, true);
     $('enterBtn').onclick=()=>{requestNativeFullscreen(); showMenu();}; document.addEventListener('keydown',e=>{
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
@@ -650,7 +720,7 @@
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
       if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
-      if(gameIsOpen && e.key==='Escape' && overlayOpen){ e.preventDefault(); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); return; }
+      if(e.key==='Escape' && overlayOpen){ e.preventDefault(); closeOverlays(); return; }
       if((e.key==='f'||e.key==='F') && gameIsOpen){ e.preventDefault(); toggleFullscreenMode(); return; }
       if(gameIsOpen && !overlayOpen){
         const k=e.key.toLowerCase();
@@ -682,5 +752,13 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch}; loadImages(); bind(); applySettings(); boot(); renderAll();
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction};
+  // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
+  window.AV_MENU={
+    start:()=>startGame(true),
+    continue:()=>{try{load();}catch(err){} startGame(false);},
+    open:(id)=>openOverlay(id),
+    fullscreen:()=>toggleFullscreenMode()
+  };
+  loadImages(); bind(); applySettings(); boot(); renderAll();
 })();

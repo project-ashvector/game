@@ -491,3 +491,9 @@ body.menu-protocol-open .overlay{pointer-events:auto;filter:none;}
 #mainMenu:not(.hidden) .menu-buttons button{pointer-events:auto!important;position:relative;z-index:2100;}
 #mainMenu:not(.hidden) #newGameBtn{pointer-events:auto!important;}
 body.menu-protocol-open .protocol-quick-panel{filter:none!important;pointer-events:auto!important;}
+
+
+/* v48 menu protocol hard recovery */
+.overlay:not(.hidden){display:grid!important;z-index:9000!important;pointer-events:auto!important;}
+body.menu-protocol-open #mainMenu.hidden + #app.hidden{display:none!important;}
+.database-modal{position:relative;z-index:9001!important;}

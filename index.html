@@ -29,16 +29,16 @@
       <h1>PROJECT:<br><span>ASH VECTOR</span></h1>
       <p class="menu-subtitle">Reality integrity compromised. Operator access required.</p>
       <div class="menu-buttons">
-        <button id="continueBtn">Continue Operation</button>
-        <button id="newGameBtn">Initialize Operator</button>
-        <button id="fractureIndexBtn">Fracture Index</button>
-        <button id="operatorFilesBtn">Operator Files</button>
-        <button id="anomalyIndexBtn">Anomaly Index</button>
-        <button id="inventoryDbBtn">Inventory Database</button>
-        <button id="progressionBtn">Progression Matrix</button>
-        <button id="missionMenuBtn">Mission Briefing</button>
-        <button id="configBtn">Configuration</button>
-        <button id="menuFullscreenBtn">Full Screen Mode</button>
+        <button id="continueBtn" onclick="window.AV_MENU&&window.AV_MENU.continue()">Continue Operation</button>
+        <button id="newGameBtn" onclick="window.AV_MENU&&window.AV_MENU.start()">Initialize Operator</button>
+        <button id="fractureIndexBtn" onclick="window.AV_MENU&&window.AV_MENU.open('fractureOverlay')">Fracture Index</button>
+        <button id="operatorFilesBtn" onclick="window.AV_MENU&&window.AV_MENU.open('operatorOverlay')">Operator Files</button>
+        <button id="anomalyIndexBtn" onclick="window.AV_MENU&&window.AV_MENU.open('anomalyOverlay')">Anomaly Index</button>
+        <button id="inventoryDbBtn" onclick="window.AV_MENU&&window.AV_MENU.open('inventoryOverlay')">Inventory Database</button>
+        <button id="progressionBtn" onclick="window.AV_MENU&&window.AV_MENU.open('progressionOverlay')">Progression Matrix</button>
+        <button id="missionMenuBtn" onclick="window.AV_MENU&&window.AV_MENU.open('missionOverlay')">Mission Briefing</button>
+        <button id="configBtn" onclick="window.AV_MENU&&window.AV_MENU.open('configOverlay')">Configuration</button>
+        <button id="menuFullscreenBtn" onclick="window.AV_MENU&&window.AV_MENU.fullscreen()">Full Screen Mode</button>
       </div>
       <div class="quick-start-hint">Press <b>Enter</b> or click <b>Initialize Operator</b> to start.</div>
       <div id="menuInfo" class="menu-info">Select a database protocol.</div>
