@@ -105,3 +105,8 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added official AV-001 map sprite asset derived from the canonical Vyra art.
 - Updated overworld renderer to draw Vyra on the dungeon map instead of the white placeholder tile.
 - Added facing-state storage for future walking animations.
+
+## v36 - Battle Background Production Pass
+- Replaced the green debug Toxic Sewers battle background with a cinematic sewer battle backdrop.
+- Kept the battle scene using the imported anomaly artwork and official Vyra battle asset.
+- Added a clearer production note for the battle UI polish pass.
