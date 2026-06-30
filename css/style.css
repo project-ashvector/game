@@ -508,3 +508,95 @@ body.menu-protocol-open #mainMenu.hidden + #app.hidden{display:none!important;}
 .menu-buttons button{min-height:44px;}
 .boot-logo button{position:relative!important;z-index:9600!important;}
 body.fullscreen-mode #app:not(.hidden){display:flex!important;}
+
+/* v50: no-scroll main menu + contained database previews */
+html, body { overflow: hidden !important; height: 100%; }
+#mainMenu:not(.hidden){
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:clamp(8px,1.5vw,18px)!important;
+  overflow:hidden!important;
+}
+#mainMenu:not(.hidden) .menu-card{
+  width:min(1080px, calc(100vw - 28px))!important;
+  height:auto!important;
+  max-height:calc(100dvh - 28px)!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:clamp(14px,2vh,24px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  gap:clamp(8px,1.2vh,14px)!important;
+}
+#mainMenu .menu-kicker{flex:0 0 auto;font-size:clamp(11px,1.4vw,15px);}
+#mainMenu .menu-logo{
+  display:block!important;
+  width:min(560px,72vw)!important;
+  max-width:100%!important;
+  max-height:clamp(72px,18vh,150px)!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  margin:0 auto!important;
+  border:0!important;
+}
+#mainMenu .menu-card h1{
+  margin:0!important;
+  font-size:clamp(34px,6.2vh,68px)!important;
+  line-height:.95!important;
+}
+#mainMenu .menu-subtitle{margin:0!important;font-size:clamp(12px,1.6vh,15px)!important;}
+#mainMenu .menu-buttons{
+  flex:0 0 auto!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:min(760px,88vw)!important;
+  max-width:100%!important;
+  margin:0 auto!important;
+}
+#mainMenu .menu-buttons button{
+  min-height:42px!important;
+  padding:8px 10px!important;
+  font-size:clamp(11px,1.45vh,14px)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#mainMenu .quick-start-hint,
+#mainMenu .menu-info,
+#mainMenu .ui-kit-note{
+  margin:0!important;
+  font-size:clamp(11px,1.45vh,14px)!important;
+  line-height:1.25!important;
+}
+#mainMenu #launchStart{display:none!important;}
+
+/* Keep database/operator artwork fully visible instead of cropping it. */
+.operator-art{display:flex!important;flex-direction:column!important;min-height:0!important;}
+.operator-art img{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  background:linear-gradient(180deg,rgba(8,10,14,.8),rgba(0,0,0,.55));
+}
+.operator-file{align-items:stretch!important;}
+.database-modal{overscroll-behavior:contain!important;}
+
+@media(max-height:720px){
+  #mainMenu .menu-logo{max-height:90px!important;}
+  #mainMenu .menu-card h1{font-size:clamp(28px,5.4vh,46px)!important;}
+  #mainMenu .menu-buttons button{min-height:36px!important;padding:6px 8px!important;}
+  #mainMenu .menu-buttons{gap:6px!important;}
+  #mainMenu .quick-start-hint,#mainMenu .menu-info,#mainMenu .ui-kit-note{font-size:11px!important;}
+}
+@media(max-width:700px){
+  #mainMenu .menu-buttons{grid-template-columns:1fr!important;width:min(420px,90vw)!important;}
+  #mainMenu .menu-logo{max-height:95px!important;}
+}

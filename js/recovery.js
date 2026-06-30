@@ -1,7 +1,7 @@
 
 (() => {
   'use strict';
-  const BUILD = 'v0.4.9';
+  const BUILD = 'v0.5.0';
   const $ = (id) => document.getElementById(id);
   const hide = (id) => { const el=$(id); if(el) el.classList.add('hidden'); };
   const show = (id) => { const el=$(id); if(el) el.classList.remove('hidden'); };
@@ -102,7 +102,7 @@
   function install(){
     forceFullWindow();
     // Correct visible build labels, even if older cached HTML text remains.
-    document.querySelectorAll('.boot-header span:last-child').forEach(el => el.textContent = BUILD + ' // MENU RECOVERY');
+    document.querySelectorAll('.boot-header span:last-child').forEach(el => el.textContent = BUILD + ' // MENU FIT PATCH');
     document.querySelectorAll('.ui-kit-note b').forEach(el => el.textContent = 'AVOS UI KIT ' + BUILD);
     const title=document.querySelector('title'); if(title) title.textContent='Project: ASH VECTOR - ' + BUILD;
 

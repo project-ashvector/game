@@ -175,3 +175,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added cache-busting query strings to CSS/JS.
 - Added independent recovery router for menu/database buttons.
 - Added boot failsafe and direct Enter/Space handling.
+
+## v50 - Menu Fit & Image Containment
+- Fixed cropped main menu logo.
+- Removed main menu scroll behavior.
+- Fit menu buttons and text into a single fixed screen.
+- Fixed cropped Operator file artwork display.
+- Updated cache-busting and AVOS visible version labels to v0.5.0.
