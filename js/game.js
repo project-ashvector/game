@@ -174,12 +174,13 @@
     const map = baseMap.map(r => r.split(''));
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{if(c==='P'){px=x;py=y;map[y][x]='.';}}));
-    return {map, player:{x:px,y:py,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,chapterComplete:false,anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', lastSave:Date.now()};
+    return {map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,chapterComplete:false,anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
       'assets/operators/av001/portrait.png',
       'assets/operators/av001/battle.png',
+      'assets/operators/av001/sprites/map_sprite.png',
       ...importedAnomalyRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(0,10).flatMap(c => [c.battle, iconPathFor(c)])
     ];
@@ -207,7 +208,7 @@
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
   function isBlocked(c){return c==='#' || c==='D';}
-  function tryMove(dx,dy){if(battle) return; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); return;} state.player.x=nx; state.player.y=ny; state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll();}
+  function tryMove(dx,dy){if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll();}
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); log('Standard Cache opened: Med Patch + 20 credits.');}
@@ -243,10 +244,41 @@
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
     for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
-    // player
-    const px=state.player.x*TILE, py=state.player.y*TILE; ctx.fillStyle='#eee'; ctx.fillRect(px+8,py+6,26,30); ctx.fillStyle='#bd1f2d'; ctx.fillRect(px+5,py+24,32,14); ctx.fillStyle='#111'; ctx.fillRect(px+13,py+12,5,5); ctx.fillRect(px+24,py+12,5,5); ctx.strokeStyle='#ff3048'; ctx.lineWidth=3; ctx.strokeRect(px+4,py+4,34,34);
+    // player / AV-001 Vyra exploration sprite
+    drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
     ctx.restore();
   }
+
+  function drawPlayerSprite(x,y){
+    const spritePath = 'assets/operators/av001/sprites/map_sprite.png';
+    const im = images[spritePath];
+    // feet anchored to tile bottom; sprite can be taller than one tile
+    const drawW = 48;
+    const drawH = 60;
+    const dx = x + (TILE-drawW)/2;
+    const dy = y + TILE - drawH + 4;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,.45)';
+    ctx.beginPath();
+    ctx.ellipse(x+TILE/2,y+TILE-4,18,7,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowColor='#00d9ff';
+    ctx.shadowBlur=12;
+    if(im && im.complete && im.naturalWidth){
+      const oldSmooth = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(im, dx, dy, drawW, drawH);
+      ctx.imageSmoothingEnabled = oldSmooth;
+    } else {
+      // fallback only if asset fails to load
+      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#00d9ff';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='#00d9ff';ctx.strokeRect(x+5,y+4,32,34);
+    }
+    ctx.strokeStyle='rgba(0,217,255,.75)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(x+5,y+4,TILE-10,TILE-8);
+    ctx.restore();
+  }
+
   function drawTile(c,x,y,tx,ty){
     const floor=((tx+ty)%2)?'#20252b':'#242a31'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE); ctx.strokeStyle='rgba(255,255,255,.04)'; ctx.strokeRect(x,y,TILE,TILE);
     if(c==='#'){ctx.fillStyle='#101318';ctx.fillRect(x,y,TILE,TILE);ctx.fillStyle='#2d333b';ctx.fillRect(x+4,y+4,TILE-8,TILE-8)}

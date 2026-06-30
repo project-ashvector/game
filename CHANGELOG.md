@@ -100,3 +100,8 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Replaced AV-001 visual assets with the approved hooded cyan dual-blade Vyra artwork.
 - Added profile, battle, portrait, icon, avatar, operator card, weapon, expression, skill icon, and sprite sheet paths.
 - Updated operator data to match the new official design.
+
+## v35 — Vyra Exploration Sprite
+- Added official AV-001 map sprite asset derived from the canonical Vyra art.
+- Updated overworld renderer to draw Vyra on the dungeon map instead of the white placeholder tile.
+- Added facing-state storage for future walking animations.
