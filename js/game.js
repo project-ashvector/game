@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.0 // ASSET IMPORT',
+    'Version 0.5.1 // MAP ART FIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -23,29 +23,29 @@
   ];
   const baseMap = [
     '########################################',
-    '#P....C......#...............L.........#',
-    '#.######.###.#.###########.#####.#####.#',
-    '#......#...#.#.....E.....#.....#.....#.#',
-    '######.###.#.#####.#####.#####.###.#.#.#',
-    '#......#...#.....#.....#.....#...#.#...#',
-    '#.######.#######.#####.#####.###.#.###.#',
-    '#......#.......#.....#.....#.....#...#.#',
-    '#.####.#######.#####.#####.#########.#.#',
-    '#.#..#.......#.....#.....#.....C.....#.#',
-    '#.#S.#######.#####.#####.###########.#.#',
-    '#.#..#.....#.....#.....#.....E.....#.#.#',
-    '#.##.#.###.#####.#####.#########.#.#.#.#',
-    '#....#...#.....#.....#.........#.#.#...#',
-    '########.#####.#####.#########.#.#.#####',
-    '#......#.....#.....#.....H...#.#.#.....#',
-    '#.####.#####.#####.#######.###.#.#####.#',
-    '#....#.....#.....#.......#.....#.....#.#',
-    '#.##.#####.#####.#######.###########.#.#',
-    '#..#.....#.....#.....E.#.............#.#',
-    '##.#####.#####.#######.###############.#',
-    '#......#.....#.......#.................#',
-    '#.####.#####.#######.###############D###',
-    '#....#.......#.................B.......X#',
+    '#P......#.....C..........#............L#',
+    '#..............#.......................#',
+    '#...###........#.....E...........###...#',
+    '#..............#.......................#',
+    '#......####..................###.......#',
+    '#.................................#....#',
+    '#..C..........###.................#....#',
+    '#.................#.........E..........#',
+    '#.....#...................####.........#',
+    '#.....#........S.......................#',
+    '#.............#####....................#',
+    '#..............................H.......#',
+    '#.........#....................###.....#',
+    '#.........#..........C.................#',
+    '#....###.................#.............#',
+    '#......................###.............#',
+    '#...............E......................#',
+    '#....................######............#',
+    '#.....C............................D...#',
+    '#..............###.....................#',
+    '#.........................#............#',
+    '#.........................#......B.....#',
+    '#..............L......................X#',
     '########################################'
   ];
 
@@ -84,9 +84,9 @@
       {x:17,y:9,img:'assets/imported/environment/bushes/bushes_small.png',w:46,h:40},
       {x:25,y:8,img:'assets/imported/environment/bridges/wooden_bridge_horizontal.png',w:126,h:74},
       {x:34,y:10,img:'assets/imported/props/buildings/watchtower_short.png',w:72,h:78},
-      {x:4,y:16,img:'assets/custom/environment/fallen_log_01.png',w:90,h:56},
+      {x:4,y:16,img:'assets/imported/environment/trees/tree_stump_tall.png',w:44,h:38},
       {x:11,y:17,img:'assets/imported/environment/trees/tree_stump_tall.png',w:44,h:38},
-      {x:16,y:18,img:'assets/custom/foliage/dead_tree_01.png',w:86,h:104},
+      {x:16,y:18,img:'assets/imported/environment/rocks/rock_04.png',w:42,h:38},
       {x:24,y:19,img:'assets/imported/props/barrels/wooden_barrel.png',w:36,h:42},
       {x:30,y:20,img:'assets/imported/environment/fences/wooden_fence_vertical.png',w:30,h:82},
       {x:36,y:22,img:'assets/imported/props/signage/red_banner.png',w:44,h:66}
@@ -242,7 +242,7 @@
     const map = baseMap.map(r => r.split(''));
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{if(c==='P'){px=x;py=y;map[y][x]='.';}}));
-    return {map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,chapterComplete:false,anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', lastSave:Date.now()};
+    return {mapVersion:'sector01_v2', map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,chapterComplete:false,anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -265,7 +265,7 @@
     });
   }
   function save(silent=false){localStorage.setItem('ashVectorSave', JSON.stringify(state)); state.lastSave = Date.now(); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.lastSave ||= Date.now(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); if(state.mapVersion !== 'sector01_v2'){ const keepSettings = state.settings || {}; state = newGameState(); state.settings = {...state.settings, ...keepSettings}; toast('Map updated. Starting new Sector 01 layout.'); } ensureProgression(); state.lastSave ||= Date.now(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -473,10 +473,9 @@
     }
     ctx.strokeStyle='rgba(0,0,0,.16)'; ctx.strokeRect(x,y,TILE,TILE);
     if(c==='#'){
-      ctx.fillStyle='rgba(4,7,8,.35)'; ctx.fillRect(x,y,TILE,TILE);
       const block = pickAsset(mapArt.blocked,tx,ty);
       const big = block.includes('tree');
-      drawAsset(block,x,y,big?70:44,big?82:38,true) || (ctx.fillStyle='#222',ctx.fillRect(x+4,y+4,TILE-8,TILE-8));
+      drawAsset(block,x,y,big?70:44,big?82:38,true) || (ctx.fillStyle='rgba(60,70,50,.55)',ctx.beginPath(),ctx.arc(x+TILE/2,y+TILE/2,16,0,Math.PI*2),ctx.fill());
     }
     if(c==='C'){
       if(!drawAsset(mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
