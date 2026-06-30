@@ -288,3 +288,26 @@ canvas#game {
 .battle-victory{position:absolute;inset:0;z-index:5;display:grid;place-items:center;background:rgba(0,0,0,.70);backdrop-filter:blur(5px)}.victory-card{width:min(620px,92%);background:linear-gradient(145deg,rgba(13,17,24,.98),rgba(4,6,10,.98));border:1px solid rgba(255,48,72,.55);border-left:4px solid var(--red2);box-shadow:0 0 48px rgba(0,0,0,.75);padding:20px}.victory-card h2{margin:.2rem 0 .5rem;color:#fff}.victory-loot{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0}.victory-loot-item{display:grid;place-items:center;text-align:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.10);padding:10px;gap:5px;border-left-width:3px!important}.victory-loot-item .item-icon-shell{width:70px;height:70px}.victory-loot-item .item-icon-shell img{width:58px;height:58px}.victory-loot-item span{font-size:12px;color:#dce7f0}
 .battle-shake{animation:battleShake .28s linear}@keyframes battleShake{0%,100%{transform:translate(0)}20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(3px,1px)}}
 @media(max-width:760px){.battle{height:calc(100dvh - 20px);width:calc(100vw - 20px);padding:10px}.battle-stage{height:calc(100% - 310px);grid-template-columns:1fr 30px 1fr;padding:6px 0}.battle-ui{grid-template-columns:1fr;min-height:260px}.battle-bars{grid-template-columns:1fr}.attacks{grid-template-columns:1fr!important}.battle-hud-top{align-items:flex-start;flex-direction:column}.battle-location{text-align:left}.battle-sprite{max-width:48vw!important}.combatant-name{display:none}}
+
+
+/* v41: true fullscreen / fixed 16:9 game presentation */
+#fullscreenBtn,#menuFullscreenBtn{border-color:rgba(112,215,255,.55)}
+body.fullscreen-mode{background:#000!important;overflow:hidden!important;width:100vw;height:100dvh;}
+body.fullscreen-mode #app{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important;overflow:hidden!important;background:#000;}
+body.fullscreen-mode .topbar{position:absolute;top:8px;left:8px;right:8px;z-index:30;background:rgba(5,7,10,.62);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(6px);opacity:.18;transition:opacity .15s ease;}
+body.fullscreen-mode .topbar:hover,body.fullscreen-mode .topbar:focus-within{opacity:1;}
+body.fullscreen-mode .layout{position:absolute;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:0!important;display:block!important;overflow:hidden!important;}
+body.fullscreen-mode .game-card{position:absolute;inset:0!important;width:100vw!important;height:100dvh!important;border:0!important;border-radius:0!important;padding:0!important;background:#000!important;display:flex!important;overflow:hidden!important;}
+body.fullscreen-mode .mission-strip,body.fullscreen-mode .objective-tracker{position:absolute;left:16px;z-index:12;width:min(760px,calc(100vw - 32px));background:rgba(5,7,10,.68);backdrop-filter:blur(6px);border-color:rgba(112,215,255,.22);font-size:12px;opacity:.18;transition:opacity .15s ease;}
+body.fullscreen-mode .mission-strip{top:70px;}
+body.fullscreen-mode .objective-tracker{top:124px;}
+body.fullscreen-mode .mission-strip:hover,body.fullscreen-mode .objective-tracker:hover{opacity:1;}
+body.fullscreen-mode canvas#game{width:100vw!important;height:100dvh!important;max-height:none!important;min-height:0!important;border:0!important;display:block!important;object-fit:contain;background:#000;}
+body.fullscreen-mode .panel{display:none!important;}
+body.fullscreen-mode .mobile-pad{position:absolute;left:16px;bottom:16px;z-index:20;background:rgba(5,7,10,.55);padding:8px;border:1px solid rgba(255,255,255,.12);border-radius:8px;opacity:.2;transition:opacity .15s ease;}
+body.fullscreen-mode .mobile-pad:hover{opacity:1;}
+.fullscreen-hint{position:fixed;right:12px;bottom:12px;z-index:120;background:rgba(5,7,10,.82);border:1px solid rgba(112,215,255,.45);color:#dce7f0;padding:8px 10px;font-size:12px;pointer-events:none;animation:fsHint 2.2s ease forwards;}
+@keyframes fsHint{0%{opacity:0;transform:translateY(8px)}15%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+body.fullscreen-mode .overlay{position:fixed!important;inset:0!important;}
+body.fullscreen-mode .battle{width:100vw!important;height:100dvh!important;max-height:none!important;border-radius:0!important;border:0!important;}
+@media(max-width:980px){body.fullscreen-mode .topbar{display:none!important}body.fullscreen-mode .mission-strip,body.fullscreen-mode .objective-tracker{display:none!important}body.fullscreen-mode .mobile-pad{display:block!important;opacity:.42}}

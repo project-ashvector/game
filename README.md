@@ -103,3 +103,10 @@ AV-001 Vyra now uses the approved hooded cyan dual-blade artwork as the canonica
 ### v40 Combat UI Polish
 The battle screen now uses a fixed RPG-style presentation with improved operator/anomaly placement, compact HP/EP meters, damage numbers, hit flash, screen shake, and a victory loot panel that displays item icons.
 
+
+
+## v41 Controls Update
+
+- `F` or the **Full Screen** button toggles fullscreen gameplay.
+- `ESC` exits fullscreen mode.
+- Arrow keys move Vyra without scrolling the browser page.

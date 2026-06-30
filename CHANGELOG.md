@@ -130,3 +130,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added damage numbers, hit flashes, battle shake, and dodge/heal popups.
 - Added victory loot screen using the new item icon pipeline.
 
+
+
+## v41 - Fullscreen Game Presentation
+- Added true fullscreen toggle and CSS fullscreen fallback.
+- Added fixed no-scroll gameplay viewport.
+- Hid side panel in fullscreen for a cleaner native-game feel.
+- Added F key shortcut and ESC fullscreen exit.

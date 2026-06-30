@@ -242,6 +242,7 @@
     $('battleText').textContent='Choose a combat protocol.';
     $('battleVictory')?.classList.add('hidden');
     $('battlePanel')?.classList.remove('battle-shake');
+    document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) document.body.classList.remove('fullscreen-mode'); });
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     $('battleOverlay').classList.remove('hidden');
     renderBattle();
@@ -538,6 +539,22 @@
     $('itemSearch').oninput=drawItems; $('itemFilter').onchange=drawItems; $('rarityFilter').onchange=drawItems; drawItems();
     const firstOwned = Object.keys(state.inventory)[0]; if(firstOwned) showItemDetail(firstOwned);
   }
+
+  function showFullscreenHint(msg){
+    const old=document.querySelector('.fullscreen-hint'); if(old) old.remove();
+    const h=document.createElement('div'); h.className='fullscreen-hint'; h.textContent=msg; document.body.appendChild(h); setTimeout(()=>h.remove(),2300);
+  }
+  async function toggleFullscreenMode(){
+    document.body.classList.toggle('fullscreen-mode');
+    const wantFs=document.body.classList.contains('fullscreen-mode');
+    try{
+      if(wantFs && !document.fullscreenElement && document.documentElement.requestFullscreen){ await document.documentElement.requestFullscreen(); }
+      if(!wantFs && document.fullscreenElement && document.exitFullscreen){ await document.exitFullscreen(); }
+    }catch(err){ /* Browser may block fullscreen unless user clicked. CSS mode still works. */ }
+    if(wantFs){ showFullscreenHint('Fullscreen mode on • Press F or ESC to exit'); }
+    else { showFullscreenHint('Fullscreen mode off'); }
+    setTimeout(()=>{ try{ canvas.focus({preventScroll:true}); }catch(e){} renderAll(); },80);
+  }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
   function startAutosave(){ setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000); setInterval(()=>renderUI(), 1000); }
   function bind(){
@@ -546,6 +563,8 @@
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
+      if((e.key==='f'||e.key==='F') && gameIsOpen){ e.preventDefault(); toggleFullscreenMode(); return; }
+      if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
       if(gameIsOpen && !overlayOpen && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)){
         e.preventDefault();
         if(e.key==='ArrowUp')tryMove(0,-1);
@@ -555,6 +574,7 @@
       }
     }, {passive:false});
     $('newGameBtn').onclick=()=>startGame(true); $('continueBtn').onclick=()=>{load(); startGame(false)}; $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); toast('Archive purged.');};
+    if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=()=>document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'))));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
