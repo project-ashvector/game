@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.7 // DEATH + MUSIC STATE FIX',
+    'Version 0.5.8 // MUSIC RECOVERY',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -22,10 +22,11 @@
     'Can you hear me...?',
   ];
 
-  // v56: robust browser-safe music + SFX manager.
-  // Music cannot autoplay until a user gesture happens, so we queue the requested
-  // track and unlock/resume it on the first click, tap, key press, or SFX action.
-  const BUILD_VERSION = '0.5.7';
+  // v58: hard audio recovery manager.
+  // Browser rule: music cannot begin until the first real click/key/tap.
+  // This manager keeps a desired track queued, unlocks from any gesture/SFX,
+  // and force-resumes the current track whenever the game state changes.
+  const BUILD_VERSION = '0.5.8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -44,23 +45,27 @@
 
     init(){
       Object.entries(MUSIC).forEach(([key, src]) => {
-        const audio = new Audio();
-        audio.src = `${src}?v=${BUILD_VERSION}`;
+        const audio = new Audio(`${src}?v=${BUILD_VERSION}`);
         audio.loop = true;
         audio.preload = 'auto';
         audio.volume = 0;
+        audio.muted = false;
         audio.setAttribute('playsinline', 'true');
         this.tracks[key] = audio;
       });
 
-      const unlock = () => this.unlock();
-      ['pointerdown','click','touchstart','keydown'].forEach(evt => {
+      const unlock = () => {
+        this.unlock();
+        this.forceResume();
+      };
+      ['pointerdown','mousedown','click','touchstart','keydown'].forEach(evt => {
         window.addEventListener(evt, unlock, { capture:true, passive:true });
       });
 
       document.addEventListener('visibilitychange', () => {
-        if(!document.hidden && this.requested) this.play(this.requested, true);
+        if(!document.hidden) this.forceResume();
       });
+      window.addEventListener('focus', () => this.forceResume());
 
       window.AV_AUDIO = this;
     },
@@ -68,31 +73,38 @@
     unlock(){
       if(this.unlocked) return;
       this.unlocked = true;
-      if(this.requested) this.play(this.requested, true);
+      this.forceResume();
+    },
+
+    force(key){
+      if(key) this.requested = key;
+      this.unlocked = true;
+      return this.play(this.requested, true);
+    },
+
+    forceResume(){
+      if(!this.unlocked || !this.requested) return;
+      return this.play(this.requested, true);
     },
 
     play(key, immediate=false){
-      if(!this.tracks[key]) return;
+      if(!key || !this.tracks[key]) return;
       this.requested = key;
-
-      // Queue music until the browser receives a real player gesture.
       if(!this.unlocked) return;
 
       const next = this.tracks[key];
-      if(this.current === key && !next.paused){
-        next.loop = true;
-        this.fade(next, next.volume || 0, this.volume, 120);
-        return;
-      }
+      next.loop = true;
+      next.muted = false;
 
-      const token = ++this.fadeToken;
+      // Stop all non-requested tracks immediately when doing recovery-style switches.
       Object.entries(this.tracks).forEach(([name, audio]) => {
         if(name !== key){
           if(immediate){
             audio.pause();
             audio.volume = 0;
-          } else {
-            this.fade(audio, audio.volume || 0, 0, 450, () => {
+          } else if(!audio.paused || audio.volume > 0){
+            const token = ++this.fadeToken;
+            this.fade(audio, audio.volume || 0, 0, 400, () => {
               if(token === this.fadeToken){
                 audio.pause();
                 audio.volume = 0;
@@ -102,32 +114,30 @@
         }
       });
 
-      next.loop = true;
       this.current = key;
-
       const startPlayback = () => {
         try{
+          // Keep currentTime untouched so loops continue naturally.
           const promise = next.play();
           if(promise && promise.catch){
             promise.catch(err => {
-              console.warn('[AV Audio] Music play blocked or failed:', key, err);
+              console.warn('[AV Audio] Music blocked/failed:', key, err);
             });
           }
         }catch(err){
-          console.warn('[AV Audio] Music play error:', key, err);
+          console.warn('[AV Audio] Music error:', key, err);
         }
       };
-
       startPlayback();
-      this.fade(next, next.volume || 0, this.volume, immediate ? 120 : 650);
+      this.fade(next, next.volume || 0, this.volume, immediate ? 80 : 520);
     },
 
     fade(audio, from, to, ms=500, done){
       const start = performance.now();
-      const safeFrom = Number.isFinite(from) ? from : 0;
+      const safeFrom = Math.max(0, Math.min(1, Number.isFinite(from) ? from : 0));
       const safeTo = Math.max(0, Math.min(1, to));
       const tick = now => {
-        const t = Math.min(1, (now - start) / ms);
+        const t = Math.min(1, (now - start) / Math.max(1, ms));
         audio.volume = safeFrom + (safeTo - safeFrom) * t;
         if(t < 1) requestAnimationFrame(tick);
         else { audio.volume = safeTo; if(done) done(); }
@@ -140,8 +150,24 @@
       if(this.current && this.tracks[this.current]) this.tracks[this.current].volume = this.volume;
     },
 
+    stopMusic(){
+      this.current = null;
+      Object.values(this.tracks).forEach(a => { a.pause(); a.volume = 0; });
+    },
+
     pauseAll(){
-      Object.values(this.tracks).forEach(a => a.pause());
+      // Kept for old calls. Do not forget the requested track; the next state change can resume.
+      this.current = null;
+      Object.values(this.tracks).forEach(a => { a.pause(); a.volume = 0; });
+    },
+
+    status(){
+      return {
+        requested: this.requested,
+        current: this.current,
+        unlocked: this.unlocked,
+        tracks: Object.fromEntries(Object.entries(this.tracks).map(([k,a]) => [k, {paused:a.paused, volume:a.volume, time:a.currentTime, src:a.currentSrc||a.src}]))
+      };
     }
   };
   AudioManager.init();
@@ -210,7 +236,7 @@
   const uiState = { mode: 'boot', returnStack: [] };
   let gameStarted = false;
   function activeMusicForState(){
-    // v57: music follows real UI/game state.
+    // v58: music follows real UI/game state.
     // Before the first game start, closing any menu/database always returns to intro.mp3.
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
     if(uiState.mode === 'overlay') return 'pause';
@@ -307,7 +333,7 @@
     return (creature.battle || '').replace('/battle.png','/icon.png');
   }
   function toBattleDef(creature, displayIdValue, fallbackType){
-    // v57: encounter tuning pass. Earlier enemies died too fast, so the
+    // v58: encounter tuning pass. Earlier enemies died too fast, so the
     // player could almost never reach 0 HP. These minimums keep early fights
     // winnable but make death possible if the player ignores HP/EP.
     const rawHp = Number(creature.hp || (fallbackType === 'boss' ? 120 : 30));
@@ -578,11 +604,11 @@
     battle.turn='defeated';
     state.player.hp = 0;
     SfxManager.death();
-    AudioManager.pauseAll();
+    AudioManager.stopMusic();
     $('battleText').textContent = 'Vyra has fallen. Archive synchronization failed.';
     renderBattle();
     const panel=$('battleVictory');
-    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled in v0.5.7.</span></div><div><b>Recovery</b><span>Restart from the beginning of Fracture 001.</span></div></div><button id="deathRetryBtn">Retry Fracture</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
+    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled in v0.5.8.</span></div><div><b>Recovery</b><span>Restart from the beginning of Fracture 001.</span></div></div><button id="deathRetryBtn">Retry Fracture</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
     panel.classList.remove('hidden');
     const retry=$('deathRetryBtn');
     const menu=$('deathMenuBtn');

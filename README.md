@@ -1,3 +1,7 @@
+# Project: ASH VECTOR v58 Music Recovery
+
+This build fixes music playback regression after v57. Intro and level music now resume from the active game state after the first click/key press. SFX remains unchanged.
+
 # Project: ASH VECTOR
 
 Current build: v56 — Music Playback Fix.
