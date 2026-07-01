@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.9 // ANOMALY CONTRACT BOARD',
+    'Version 0.7.0 // ENERGY CELLS + WASD MOVEMENT',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.9';
+  const BUILD_VERSION = '0.7.0';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -967,6 +967,7 @@
 
   const coreItemRegistry = [
     {id:'IT-001', name:'Med Patch', type:'Consumable', category:'Medical', slot:'Quick Use', rarity:'Common', stackSize:99, sellPrice:8, asset:'assets/items/med_patch.png', source:'assets/source/items/med_patch.png', status:'production-icon', desc:'Emergency field patch. Restores 25 HP.'},
+    {id:'IT-010', name:'Vector Cell', type:'Consumable', category:'Energy', slot:'Quick Use', rarity:'Common', stackSize:99, sellPrice:10, asset:'assets/items/corrupted_catalyst.png', source:'assets/source/items/corrupted_catalyst.png', status:'gameplay-consumable', desc:'Portable EP battery. Restores EP during fights or exploration.'},
     {id:'IT-002', name:'Scrap Metal', type:'Material', category:'Crafting', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:2, asset:'assets/items/scrap_metal.png', source:'assets/source/items/scrap_metal.png', status:'production-icon', desc:'Recovered industrial scrap used for upgrades.'},
     {id:'IT-003', name:'Corrupted Catalyst', type:'Material', category:'Catalyst', slot:'Stack', rarity:'Epic', stackSize:99, sellPrice:40, asset:'assets/items/corrupted_catalyst.png', source:'assets/source/items/corrupted_catalyst.png', status:'production-icon', desc:'Unstable upgrade material pulled from corrupted systems.'},
     {id:'IT-004', name:'Keycard LV1', type:'Key Item', category:'Access', slot:'Story', rarity:'Uncommon', stackSize:1, sellPrice:0, asset:'assets/items/keycard_lv1.png', source:'assets/source/items/keycard_lv1.png', status:'production-icon', desc:'Level-one access credential for sealed maintenance zones.'},
@@ -995,6 +996,7 @@
   const RARITY_POWER = {Common:1,Uncommon:2,Rare:4,Epic:7,Legendary:11,Mythic:16,Relic:20,Singularity:26};
   const SHOP_STOCK = [
     {name:'Med Patch', price:18, qty:1, label:'Buy Med Patch'},
+    {name:'Vector Cell', price:20, qty:1, label:'Buy Vector Cell'},
     {name:'Vector Training Blade', price:45, qty:1, label:'Buy Training Blade'},
     {name:'Sewer Guard Vest', price:40, qty:1, label:'Buy Guard Vest'}
   ];
@@ -1055,6 +1057,11 @@
       state.equipment.Weapon ||= 'Vector Training Blade';
       state.equipment.Chest ||= 'Sewer Guard Vest';
       state._v65StarterGear=true;
+    }
+    // v70: old saves get starter EP cells once, and new saves include them from newGameState.
+    if(!state._v70EnergyCells){
+      state.inventory['Vector Cell'] = Math.max(state.inventory['Vector Cell'] || 0, 2);
+      state._v70EnergyCells = true;
     }
   }
   function equippedItems(){ ensureEquipment(); return Object.entries(state.equipment).filter(([,name])=>!!name).map(([slot,name])=>({slot,name,item:findItemRecord(name)})); }
@@ -1187,7 +1194,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1240,7 +1247,7 @@
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: Med Patch + 20 credits + '+g.name+'.');} else log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
+    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.');}
     if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal')); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce(stageStoryKey('lore'));}
@@ -1493,6 +1500,13 @@
       b.onclick=()=>playerAttack(i);
       $('attackButtons').appendChild(b);
     });
+    const cellQty=state.inventory['Vector Cell']||0;
+    const cell=document.createElement('button');
+    cell.className='battle-item-button';
+    cell.innerHTML=`<b>Use Vector Cell</b><span>${cellQty} owned // Restore EP</span>`;
+    cell.disabled=!cellQty || state.player.ep>=epMax || battle.turn!=='player';
+    cell.onclick=useVectorCellBattle;
+    $('attackButtons').appendChild(cell);
   }
   function playerAttack(i){
     if(!battle||battle.turn!=='player')return;
@@ -1572,6 +1586,8 @@
     if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; state.bossKills ||= {}; state.bossKills[stageDef().key]=(state.bossKills[stageDef().key]||0)+1; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); recordDrop('Corrupted Catalyst', battle.enemy.name, 'Epic'); const bossReward=battle.enemy.bossReward || (stageDef().key==='f002'?'Ashveil Mother Core':'Toxic Monarch Relic'); if(!state.inventory[bossReward]){ loot.push(bossReward); addItem(bossReward,1); recordDrop(bossReward, battle.enemy.name, 'Relic'); }}
     const gearDrop = (!wasBoss && Math.random() < 0.42) ? pickGearDrop(false) : (wasBoss ? pickGearDrop(true) : null);
     if(gearDrop && !loot.includes(gearDrop.name)){ loot.push(gearDrop.name); addItem(gearDrop.name,1); recordDrop(gearDrop.name, battle.enemy.name, gearDrop.rarity || 'Rare'); }
+    const cellQty = wasBoss ? 2 : (wasAnomaly && Math.random()<0.38 ? 1 : 0);
+    if(cellQty){ for(let i=0;i<cellQty;i++) loot.push('Vector Cell'); addItem('Vector Cell', cellQty); }
     const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
     gainXp(xpGain); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
@@ -1614,7 +1630,39 @@
   }
 
   function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1; state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; log(`Player Level increased to ${state.player.level}.`); unlockNextStages();} queueAutosave(); }
-  function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=combatStatBlock().maxHp){toast('HP already full.');return;} const heal=25+(state.upgrades.medtech||0)*10; state.inventory['Med Patch']--; state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); log(`Used Med Patch. +${heal} HP.`); renderAll(); }
+  function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return false;} if(state.player.hp>=combatStatBlock().maxHp){toast('HP already full.');return false;} const heal=25+(state.upgrades.medtech||0)*10; const before=state.player.hp; state.inventory['Med Patch']--; if(state.inventory['Med Patch']<=0) delete state.inventory['Med Patch']; state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); const gained=state.player.hp-before; SfxManager.item(); log(`Used Med Patch. +${gained} HP.`); renderAll(); return gained; }
+  function useVectorCell(mode='field'){
+    ensureUpgrades(); ensureEquipment();
+    if((state.inventory['Vector Cell']||0)<=0){toast('No Vector Cell available.'); return 0;}
+    const epMax=combatStatBlock().maxEp||state.player.maxEp;
+    if(state.player.ep>=epMax){toast('EP already full.'); return 0;}
+    const restore=Math.max(12, Math.ceil(epMax*0.55) + (state.upgrades.energy||0)*4);
+    const before=state.player.ep;
+    state.inventory['Vector Cell']--;
+    if(state.inventory['Vector Cell']<=0) delete state.inventory['Vector Cell'];
+    state.player.ep=Math.min(epMax,state.player.ep+restore);
+    const gained=state.player.ep-before;
+    SfxManager.item();
+    log(`Used Vector Cell. +${gained} EP.`);
+    if(mode !== 'battle') renderAll(); else renderUI();
+    queueAutosave();
+    return gained;
+  }
+  function useVectorCellBattle(){
+    if(!battle || battle.turn!=='player') return;
+    const gained=useVectorCell('battle');
+    if(!gained) return;
+    $('battleText').textContent=`Vyra burns a Vector Cell. +${gained} EP restored.`;
+    showDamage('hero', `+${gained} EP`, 'heal');
+    battle.turn='enemy';
+    renderBattle();
+    setTimeout(enemyTurn,760);
+  }
+  function consumableButtonHtml(name){
+    if(name==='Med Patch') return '<button onclick="window.AV.useMedPatch()">Use HP</button>';
+    if(name==='Vector Cell') return '<button onclick="window.AV.useVectorCell()">Use EP</button>';
+    return '';
+  }
   function render(){
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
@@ -1756,7 +1804,7 @@
     $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/3 // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
-      return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':(isEquipmentLike(item)?`<button onclick="window.AV.equipItem('${safeHtml(k)}')">Equip</button>`:'')}</div>`;
+      return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${consumableButtonHtml(k) || (isEquipmentLike(item)?`<button onclick="window.AV.equipItem('${safeHtml(k)}')">Equip</button>`:'')}</div>`;
     }).join('')||'<div class="invrow">No recovered assets.</div>';
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
@@ -1952,7 +2000,7 @@
   function renderInventoryDb(){
     const owned = Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
-      return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${k==='Med Patch'?'<em>Usable</em>':(Object.values(state.equipment||{}).includes(k)?'<em>Equipped</em>':(isEquipmentLike(item)?'<em>Gear</em>':'<em>Stored</em>'))}</button>`;
+      return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${(k==='Med Patch'||k==='Vector Cell')?'<em>Usable</em>':(Object.values(state.equipment||{}).includes(k)?'<em>Equipped</em>':(isEquipmentLike(item)?'<em>Gear</em>':'<em>Stored</em>'))}</button>`;
     }).join('') || '<div class="invrow">No recovered assets yet.</div>';
     const fullRegistry=[...coreItemRegistry.map(normalizeItem), ...importedItemRegistry.map(normalizeItem)];
     const stats=combatStatBlock(); const epMax=stats.maxEp||state.player.maxEp; const equipmentPanel=renderEquipmentPanel(); const workshopPanel=renderWorkshopPanel(); const dropLogPanel=renderDropLogPanel(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
@@ -1973,7 +2021,7 @@
       <div id="itemRegistryButtons" class="item-grid"></div>`;
     const showItemDetail=(itemNameOrId)=>{
       const item = fullRegistry.find(d=>d.id===itemNameOrId || d.name===itemNameOrId) || findItemRecord(itemNameOrId);
-      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.equipSlot?`// ${item.equipSlot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Req Lv</b><span>${item.levelReq || '-'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${item.equipSlot?`<div class="gear-compare"><b>Stats</b><span>${statSummary(item.stats)}</span><small>Current ${item.equipSlot}: ${state.equipment?.[item.equipSlot] || 'Empty'}</small></div><button onclick="window.AV.equipItem('${safeHtml(item.name)}')">Equip ${item.equipSlot}</button>`:''}${item.name==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use Med Patch</button>':''}`;
+      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.equipSlot?`// ${item.equipSlot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Req Lv</b><span>${item.levelReq || '-'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${item.equipSlot?`<div class="gear-compare"><b>Stats</b><span>${statSummary(item.stats)}</span><small>Current ${item.equipSlot}: ${state.equipment?.[item.equipSlot] || 'Empty'}</small></div><button onclick="window.AV.equipItem('${safeHtml(item.name)}')">Equip ${item.equipSlot}</button>`:''}${consumableButtonHtml(item.name)}`;
     };
     const drawItems=()=>{
       const q=($('itemSearch').value||'').toLowerCase();
@@ -2039,7 +2087,7 @@
       const help=document.createElement('div');
       help.id='fsHelp';
       help.className='fullscreen-help hidden';
-      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>D</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Q</kbd> Med Patch <kbd>Esc</kbd> Close panels`;
+      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd>/<kbd>WASD</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>V</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Q</kbd> Med Patch <kbd>R</kbd> Vector Cell <kbd>Esc</kbd> Close panels`;
       document.body.appendChild(help);
     }
   }
@@ -2127,20 +2175,20 @@
         const k=e.key.toLowerCase();
         if(k==='m'){ e.preventDefault(); toggleSideHud(); return; }
         if(k==='i'){ e.preventDefault(); openOverlay('inventoryOverlay'); return; }
-        if(k==='d'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
+        if(k==='v'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
         if(k==='o'){ e.preventDefault(); openOverlay('operatorOverlay'); return; }
         if(k==='p'){ e.preventDefault(); openOverlay('progressionOverlay'); return; }
         if(k==='b'){ e.preventDefault(); openOverlay('missionOverlay'); return; }
         if(k==='h'){ e.preventDefault(); toggleFullscreenHelp(); return; }
         if(k==='q'){ e.preventDefault(); useMedPatch(); return; }
+        if(k==='r'){ e.preventDefault(); useVectorCell(); return; }
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
-      if(gameIsOpen && !overlayOpen && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)){
+      const moveKey = {ArrowUp:[0,-1], ArrowDown:[0,1], ArrowLeft:[-1,0], ArrowRight:[1,0], w:[0,-1], W:[0,-1], s:[0,1], S:[0,1], a:[-1,0], A:[-1,0], d:[1,0], D:[1,0]};
+      if(gameIsOpen && !overlayOpen && moveKey[e.key]){
         e.preventDefault();
-        if(e.key==='ArrowUp')tryMove(0,-1);
-        if(e.key==='ArrowDown')tryMove(0,1);
-        if(e.key==='ArrowLeft')tryMove(-1,0);
-        if(e.key==='ArrowRight')tryMove(1,0);
+        const [mx,my]=moveKey[e.key];
+        tryMove(mx,my);
       }
     }, {passive:false});
     $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{try{load();}catch(err){} startGame(false)};
@@ -2154,7 +2202,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
