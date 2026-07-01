@@ -1,3 +1,10 @@
+# v56 — Music Playback Fix
+
+- Fixed looping music not starting while SFX worked.
+- Added browser gesture unlock + queued track replay.
+- Added audio cache busting for GitHub Pages.
+- Updated boot/UI version to v0.5.6.
+
 
 ## v44 — Menu Launch Recovery
 - Fixed menu soft-lock where Enter/click could fail to start the game.

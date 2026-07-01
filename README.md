@@ -1,5 +1,11 @@
 # Project: ASH VECTOR
 
+Current build: v56 — Music Playback Fix.
+
+Music files live in `assets/music/` and SFX files live in `assets/sound fx/`. The music manager starts music after the first click/key press because browsers block autoplay before user interaction.
+
+# Project: ASH VECTOR
+
 **Current build:** v31 Creature Encounter Art Link
 
 Developer Build v21 — Real Engine Sprint 1

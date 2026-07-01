@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.5 // MUSIC + SFX',
+    'Version 0.5.6 // MUSIC FIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -22,9 +22,10 @@
     'Can you hear me...?',
   ];
 
-  // v54: state-aware looping music manager.
-  // Browsers require the first play() to happen after user input, so failed play attempts
-  // are safely retried the next time a player clicks or presses a key.
+  // v56: robust browser-safe music + SFX manager.
+  // Music cannot autoplay until a user gesture happens, so we queue the requested
+  // track and unlock/resume it on the first click, tap, key press, or SFX action.
+  const BUILD_VERSION = '0.5.6';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -32,67 +33,120 @@
     boss: 'assets/music/boss.mp3',
     pause: 'assets/music/pause.mp3'
   };
+
   const AudioManager = {
     tracks: {},
     current: null,
-    requested: null,
+    requested: 'intro',
     unlocked: false,
-    volume: 0.55,
+    volume: 0.58,
+    fadeToken: 0,
+
     init(){
       Object.entries(MUSIC).forEach(([key, src]) => {
-        const audio = new Audio(src);
+        const audio = new Audio();
+        audio.src = `${src}?v=${BUILD_VERSION}`;
         audio.loop = true;
         audio.preload = 'auto';
         audio.volume = 0;
+        audio.setAttribute('playsinline', 'true');
         this.tracks[key] = audio;
       });
-      const unlock = () => {
-        this.unlocked = true;
-        if(this.requested) this.play(this.requested, true);
-        window.removeEventListener('pointerdown', unlock);
-        window.removeEventListener('keydown', unlock);
-      };
-      window.addEventListener('pointerdown', unlock, {once:true});
-      window.addEventListener('keydown', unlock, {once:true});
+
+      const unlock = () => this.unlock();
+      ['pointerdown','click','touchstart','keydown'].forEach(evt => {
+        window.addEventListener(evt, unlock, { capture:true, passive:true });
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if(!document.hidden && this.requested) this.play(this.requested, true);
+      });
+
+      window.AV_AUDIO = this;
     },
+
+    unlock(){
+      if(this.unlocked) return;
+      this.unlocked = true;
+      if(this.requested) this.play(this.requested, true);
+    },
+
     play(key, immediate=false){
       if(!this.tracks[key]) return;
       this.requested = key;
-      if(this.current === key && !this.tracks[key].paused) return;
+
+      // Queue music until the browser receives a real player gesture.
+      if(!this.unlocked) return;
+
+      const next = this.tracks[key];
+      if(this.current === key && !next.paused){
+        next.loop = true;
+        this.fade(next, next.volume || 0, this.volume, 120);
+        return;
+      }
+
+      const token = ++this.fadeToken;
       Object.entries(this.tracks).forEach(([name, audio]) => {
         if(name !== key){
-          if(immediate){ audio.pause(); audio.currentTime = 0; audio.volume = 0; }
-          else this.fade(audio, audio.volume, 0, 450, () => { audio.pause(); audio.volume = 0; });
+          if(immediate){
+            audio.pause();
+            audio.volume = 0;
+          } else {
+            this.fade(audio, audio.volume || 0, 0, 450, () => {
+              if(token === this.fadeToken){
+                audio.pause();
+                audio.volume = 0;
+              }
+            });
+          }
         }
       });
-      const next = this.tracks[key];
+
       next.loop = true;
       this.current = key;
-      if(next.paused){
-        const promise = next.play();
-        if(promise && promise.catch) promise.catch(() => {});
-      }
-      this.fade(next, next.volume || 0, this.volume, immediate ? 80 : 650);
+
+      const startPlayback = () => {
+        try{
+          const promise = next.play();
+          if(promise && promise.catch){
+            promise.catch(err => {
+              console.warn('[AV Audio] Music play blocked or failed:', key, err);
+            });
+          }
+        }catch(err){
+          console.warn('[AV Audio] Music play error:', key, err);
+        }
+      };
+
+      startPlayback();
+      this.fade(next, next.volume || 0, this.volume, immediate ? 120 : 650);
     },
+
     fade(audio, from, to, ms=500, done){
       const start = performance.now();
+      const safeFrom = Number.isFinite(from) ? from : 0;
+      const safeTo = Math.max(0, Math.min(1, to));
       const tick = now => {
         const t = Math.min(1, (now - start) / ms);
-        audio.volume = from + (to - from) * t;
+        audio.volume = safeFrom + (safeTo - safeFrom) * t;
         if(t < 1) requestAnimationFrame(tick);
-        else { audio.volume = to; if(done) done(); }
+        else { audio.volume = safeTo; if(done) done(); }
       };
       requestAnimationFrame(tick);
     },
+
     setVolume(v){
       this.volume = Math.max(0, Math.min(1, v));
       if(this.current && this.tracks[this.current]) this.tracks[this.current].volume = this.volume;
     },
-    pauseAll(){ Object.values(this.tracks).forEach(a => a.pause()); }
+
+    pauseAll(){
+      Object.values(this.tracks).forEach(a => a.pause());
+    }
   };
   AudioManager.init();
 
-  // v55: Sound effects manager. Uses short one-shot clones so effects can overlap.
+  // v55/v56: Sound effects manager. Uses short one-shot clones so effects can overlap.
   const SFX = {
     step: 'assets/sound fx/steps.mp3',
     item: 'assets/sound fx/item-pickup.mp3',
@@ -106,45 +160,52 @@
       'assets/sound fx/slash4.mp3'
     ]
   };
+
   const SfxManager = {
     cache: {},
     volume: 0.72,
     lastStep: 0,
+
     init(){
       const all = [SFX.step, SFX.item, SFX.battleWin, SFX.levelWin, SFX.death, ...SFX.slashes];
       all.forEach(src => {
-        const audio = new Audio(src);
+        const audio = new Audio(`${src}?v=${BUILD_VERSION}`);
         audio.preload = 'auto';
         audio.volume = this.volume;
         this.cache[src] = audio;
       });
+      window.AV_SFX = this;
     },
+
     play(src, volume=this.volume){
       if(!src) return;
+      AudioManager.unlock();
       try{
-        const base = this.cache[src] || new Audio(src);
+        const base = this.cache[src] || new Audio(`${src}?v=${BUILD_VERSION}`);
         const a = base.cloneNode(true);
         a.volume = Math.max(0, Math.min(1, volume));
         a.play().catch(()=>{});
       }catch(err){}
     },
+
     step(){
       const now = performance.now();
       if(now - this.lastStep < 115) return;
       this.lastStep = now;
       this.play(SFX.step, 0.45);
     },
+
     slash(){
       const pick = SFX.slashes[Math.floor(Math.random() * SFX.slashes.length)];
       this.play(pick, 0.82);
     },
+
     item(){ this.play(SFX.item, 0.75); },
     battleWin(){ this.play(SFX.battleWin, 0.82); },
     levelWin(){ this.play(SFX.levelWin, 0.86); },
     death(){ this.play(SFX.death, 0.9); }
   };
   SfxManager.init();
-
 
   const uiState = { mode: 'boot', returnStack: [] };
   function activeMusicForState(){
