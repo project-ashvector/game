@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.5 // DEEP NPC DIALOGUE ROUTES',
+    'Version 0.7.6 // NPC STASH + FOOT PROMPT',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.5';
+  const BUILD_VERSION = '0.7.6';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -411,6 +411,7 @@
   // v74/v75: NPC contact system. NPCs are drawn on the map, can be clicked,
   // or can be talked to by standing near them and pressing E. v75 moves them deeper
   // into each route and supports alternating speaker portraits during dialog.
+  // v76 moves the talk prompt to Fermilat's feet and adds one-time NPC stash rewards.
   const NPC_DEFS = {
     fermilat: {
       id: 'fermilat',
@@ -438,11 +439,51 @@
     const px = state.player.x, py = state.player.y;
     return stageNpcs().find(n => Math.max(Math.abs(n.x-px), Math.abs(n.y-py)) <= 1) || null;
   }
+  function npcPlayerNearby(npc){
+    if(!state?.player || !npc) return false;
+    return Math.max(Math.abs(npc.x-state.player.x), Math.abs(npc.y-state.player.y)) <= 1;
+  }
+  function ensureNpcState(){
+    if(!state) return;
+    state.npcTalks ||= {};
+    state.npcRewards ||= {};
+  }
+  function npcRewardKey(npc){ return `${npc.id}:${npc.stage}`; }
+  function talkToNpc(npc){
+    if(storyActive || battle || !npc) return false;
+    ensureNpcState();
+    const key=npcRewardKey(npc);
+    state.npcTalks[key]=(state.npcTalks[key]||0)+1;
+    showStory(npc.scene, () => finishNpcTalk(npc));
+    queueAutosave();
+    return true;
+  }
+  function finishNpcTalk(npc){
+    ensureNpcState();
+    const key=npcRewardKey(npc);
+    if(state.npcRewards[key]){
+      log(`${npc.name} already gave you his suspicious little stash on ${stageDef(npc.stage).id}.`);
+      renderAll();
+      return;
+    }
+    const rewards = {
+      f001:{credits:15, items:{'Vector Cell':1,'Med Patch':1}, label:'Fermilat Creep Stash'},
+      f002:{credits:30, items:{'Vector Cell':2,'Burnt Alloy':1}, label:'Fermilat Ash Stash'},
+      f003:{credits:45, items:{'Vector Cell':2,'Corrupted Catalyst':1}, label:'Fermilat Grave Stash'}
+    }[npc.stage] || {credits:15, items:{'Vector Cell':1}, label:'Fermilat Stash'};
+    state.npcRewards[key]=true;
+    addCredits(rewards.credits||0);
+    Object.entries(rewards.items||{}).forEach(([name,qty])=>addItem(name,qty));
+    log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
+    toast(`${rewards.label} recovered.`);
+    save(true);
+    renderAll();
+  }
   function interactNearbyNpc(){
     if(storyActive || battle) return false;
     const npc = nearbyNpc();
     if(!npc){ toast('No NPC close enough. Find Fermilat deeper in the route and press E.'); return false; }
-    showStory(npc.scene);
+    talkToNpc(npc);
     return true;
   }
   function drawNpc(npc){
@@ -469,14 +510,23 @@
       ctx.fillStyle='#94ff62'; ctx.fillRect(x+13,y+11,16,6);
     }
     ctx.shadowBlur=0;
-    ctx.fillStyle='rgba(8,12,14,.82)';
-    ctx.fillRect(x-9,y-14,60,13);
-    ctx.fillStyle='#b9ff7c';
-    ctx.font='10px monospace';
-    ctx.textAlign='center';
-    ctx.fillText('E TALK', x+TILE/2, y-4);
-    ctx.strokeStyle='rgba(148,255,98,.78)';
-    ctx.lineWidth=1;
+    const near = npcPlayerNearby(npc);
+    if(near){
+      // v76: prompt moved down to Fermilat's feet so it no longer covers nearby caches/stashes.
+      const labelW=64, labelH=14;
+      const labelX=x+(TILE-labelW)/2;
+      const labelY=y+TILE-12;
+      ctx.fillStyle='rgba(8,12,14,.84)';
+      ctx.fillRect(labelX,labelY,labelW,labelH);
+      ctx.strokeStyle='rgba(148,255,98,.72)';
+      ctx.strokeRect(labelX+.5,labelY+.5,labelW-1,labelH-1);
+      ctx.fillStyle='#b9ff7c';
+      ctx.font='10px monospace';
+      ctx.textAlign='center';
+      ctx.fillText('PRESS E', x+TILE/2, labelY+10);
+    }
+    ctx.strokeStyle=near?'rgba(148,255,98,.88)':'rgba(148,255,98,.38)';
+    ctx.lineWidth=near?2:1;
     ctx.strokeRect(x+5,y+4,TILE-10,TILE-8);
     ctx.restore();
   }
@@ -490,7 +540,7 @@
     const my = (evt.clientY - rect.top) * scaleY + camera.y;
     const tx = Math.floor(mx / TILE), ty = Math.floor(my / TILE);
     const npc = npcAt(tx,ty);
-    if(npc){ evt.preventDefault(); showStory(npc.scene); }
+    if(npc){ evt.preventDefault(); talkToNpc(npc); }
   }
 
 
@@ -852,6 +902,7 @@
     ensureUpgrades();
     ensureEquipment();
     ensureRespawnState();
+    ensureNpcState();
   }
   function ensureStoryFlags(){
     state.flags ||= {};
@@ -1295,7 +1346,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, npcTalks:{}, npcRewards:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1319,7 +1370,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -2379,7 +2430,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
