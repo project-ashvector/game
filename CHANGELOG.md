@@ -1,3 +1,10 @@
+
+## v59 — Music Watchdog + Title Resize Stabilization
+- Removed old recovery script from HTML to stop conflicting menu/version behavior.
+- Added resilient music watchdog and pause/stall recovery.
+- Stabilized boot/title/menu layout to avoid resize glitches and logo cropping.
+- Updated build text to v0.5.9.
+
 # Project: ASH VECTOR v58 Music Recovery
 
 This build fixes music playback regression after v57. Intro and level music now resume from the active game state after the first click/key press. SFX remains unchanged.

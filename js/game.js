@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.8 // MUSIC RECOVERY',
+    'Version 0.5.9 // AUDIO WATCHDOG',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.5.8';
+  const BUILD_VERSION = '0.5.9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -42,6 +42,8 @@
     unlocked: false,
     volume: 0.58,
     fadeToken: 0,
+    watchdogTimer: null,
+    musicStopped: false,
 
     init(){
       Object.entries(MUSIC).forEach(([key, src]) => {
@@ -51,6 +53,10 @@
         audio.volume = 0;
         audio.muted = false;
         audio.setAttribute('playsinline', 'true');
+        audio.addEventListener('ended', () => this.recover(key));
+        audio.addEventListener('pause', () => { if(this.unlocked && this.requested === key) setTimeout(() => this.recover(key), 180); });
+        audio.addEventListener('stalled', () => this.recover(key));
+        audio.addEventListener('error', () => console.warn('[AV Audio] File error:', key, audio.error));
         this.tracks[key] = audio;
       });
 
@@ -67,6 +73,9 @@
       });
       window.addEventListener('focus', () => this.forceResume());
 
+      if(!this.watchdogTimer){
+        this.watchdogTimer = setInterval(() => this.watchdog(), 900);
+      }
       window.AV_AUDIO = this;
     },
 
@@ -83,13 +92,16 @@
     },
 
     forceResume(){
-      if(!this.unlocked || !this.requested) return;
+      if(!this.unlocked) return;
+      try{ if(typeof activeMusicForState === 'function') this.requested = activeMusicForState(); }catch(err){}
+      if(!this.requested) this.requested = 'intro';
       return this.play(this.requested, true);
     },
 
     play(key, immediate=false){
       if(!key || !this.tracks[key]) return;
       this.requested = key;
+      this.musicStopped = false;
       if(!this.unlocked) return;
 
       const next = this.tracks[key];
@@ -145,12 +157,54 @@
       requestAnimationFrame(tick);
     },
 
+    recover(key){
+      if(this.musicStopped || !this.unlocked) return;
+      const wanted = this.requested || key || 'intro';
+      if(key && key !== wanted) return;
+      const audio = this.tracks[wanted];
+      if(!audio) return;
+      audio.loop = true;
+      audio.muted = false;
+      if(audio.volume <= 0.02) audio.volume = this.volume;
+      try{
+        const promise = audio.play();
+        if(promise && promise.catch) promise.catch(()=>{});
+      }catch(err){}
+    },
+
+    watchdog(){
+      if(this.musicStopped || !this.unlocked) return;
+      try{ if(typeof activeMusicForState === 'function') this.requested = activeMusicForState(); }catch(err){}
+      const key = this.requested || 'intro';
+      const audio = this.tracks[key];
+      if(!audio) return;
+
+      Object.entries(this.tracks).forEach(([name, track]) => {
+        if(name !== key && !track.paused){
+          track.pause();
+          track.volume = 0;
+        }
+      });
+
+      audio.loop = true;
+      audio.muted = false;
+      if(audio.volume < this.volume * 0.55) audio.volume = this.volume;
+      if(audio.paused || audio.ended || audio.readyState === 0){
+        this.recover(key);
+      }
+      if(Number.isFinite(audio.duration) && audio.duration > 0 && audio.currentTime >= audio.duration - 0.08){
+        try{ audio.currentTime = 0; }catch(err){}
+        this.recover(key);
+      }
+    },
+
     setVolume(v){
       this.volume = Math.max(0, Math.min(1, v));
       if(this.current && this.tracks[this.current]) this.tracks[this.current].volume = this.volume;
     },
 
     stopMusic(){
+      this.musicStopped = true;
       this.current = null;
       Object.values(this.tracks).forEach(a => { a.pause(); a.volume = 0; });
     },

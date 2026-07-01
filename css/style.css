@@ -669,3 +669,107 @@ canvas#game{filter:brightness(.78) saturate(.62) contrast(1.08);}
   .battle-sprite.enemy{transform:translate(2%,20%) scale(1.13)!important;}
   .battle-ui{min-height:158px!important;}
 }
+
+
+/* v59: stable title screen sizing + no resize jump. Loaded last on purpose. */
+html, body{
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  overflow:hidden!important;
+}
+.boot-screen,
+.main-menu{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:0!important;
+  padding:clamp(8px,1.6vh,16px)!important;
+  overflow:hidden!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.boot-terminal,
+#mainMenu .menu-card{
+  width:min(1060px, calc(100vw - 32px))!important;
+  height:min(704px, calc(100dvh - 32px))!important;
+  min-height:0!important;
+  max-height:calc(100dvh - 32px)!important;
+  overflow:hidden!important;
+  padding:clamp(12px,2vh,22px) clamp(18px,2.6vw,32px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:clamp(6px,1.15vh,11px)!important;
+}
+#mainMenu .menu-kicker,
+#mainMenu .menu-subtitle,
+#mainMenu .quick-start-hint,
+#mainMenu .menu-info,
+#mainMenu .ui-kit-note{
+  flex:0 0 auto!important;
+  max-width:960px!important;
+  text-align:center!important;
+}
+#mainMenu .menu-logo{
+  flex:0 1 auto!important;
+  width:min(620px,78vw)!important;
+  height:auto!important;
+  max-height:min(165px,22dvh)!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  margin:0 auto!important;
+  display:block!important;
+}
+#mainMenu .menu-card h1{
+  flex:0 0 auto!important;
+  margin:0!important;
+  font-size:clamp(30px,7.2dvh,68px)!important;
+  line-height:.9!important;
+}
+#mainMenu .menu-subtitle{
+  margin:0!important;
+  font-size:clamp(12px,1.65dvh,15px)!important;
+  line-height:1.25!important;
+}
+#mainMenu .menu-buttons{
+  flex:0 1 auto!important;
+  width:min(820px,92vw)!important;
+  max-width:100%!important;
+  margin:0 auto!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:clamp(5px,.9vh,9px)!important;
+  overflow:hidden!important;
+}
+#mainMenu .menu-buttons button{
+  min-height:clamp(32px,4.8dvh,43px)!important;
+  padding:clamp(5px,.9vh,8px) 9px!important;
+  font-size:clamp(10px,1.45dvh,14px)!important;
+  line-height:1.1!important;
+}
+#mainMenu .quick-start-hint,
+#mainMenu .menu-info,
+#mainMenu .ui-kit-note{
+  margin:0!important;
+  padding:0!important;
+  font-size:clamp(10px,1.45dvh,13px)!important;
+  line-height:1.2!important;
+}
+.boot-logo img{
+  max-width:min(720px,86vw)!important;
+  max-height:min(230px,30dvh)!important;
+  object-fit:contain!important;
+}
+@media(max-width:780px){
+  #mainMenu .menu-buttons{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:520px), (max-height:620px){
+  #mainMenu .menu-logo{max-height:min(110px,18dvh)!important;}
+  #mainMenu .menu-card h1{font-size:clamp(24px,5.8dvh,42px)!important;}
+  #mainMenu .menu-buttons{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;}
+  #mainMenu .menu-buttons button{min-height:30px!important;font-size:10px!important;padding:4px 6px!important;}
+  #mainMenu .menu-subtitle,.quick-start-hint,#mainMenu .menu-info,#mainMenu .ui-kit-note{font-size:10px!important;}
+}
