@@ -120,3 +120,7 @@ The battle screen now uses a fixed RPG-style presentation with improved operator
 
 ### Fullscreen behavior
 The game starts in a fixed full-window layout. Browsers block true native fullscreen until the player clicks or presses a key, so ASH VECTOR requests native fullscreen on Enter, tap, Continue, or New Game.
+
+
+## v57 Notes
+Music now returns correctly depending on whether the player has started the game. Vyra can now die when HP reaches 0, triggering the death SFX and defeat panel.

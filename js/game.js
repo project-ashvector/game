@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.6 // MUSIC FIX',
+    'Version 0.5.7 // DEATH + MUSIC STATE FIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -25,7 +25,7 @@
   // v56: robust browser-safe music + SFX manager.
   // Music cannot autoplay until a user gesture happens, so we queue the requested
   // track and unlock/resume it on the first click, tap, key press, or SFX action.
-  const BUILD_VERSION = '0.5.6';
+  const BUILD_VERSION = '0.5.7';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -208,11 +208,15 @@
   SfxManager.init();
 
   const uiState = { mode: 'boot', returnStack: [] };
+  let gameStarted = false;
   function activeMusicForState(){
+    // v57: music follows real UI/game state.
+    // Before the first game start, closing any menu/database always returns to intro.mp3.
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
-    if(!document.querySelector('#mainMenu.hidden')) return 'intro';
-    if(!$('app').classList.contains('hidden')) return 'level1';
-    return 'intro';
+    if(uiState.mode === 'overlay') return 'pause';
+    if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return 'level1';
+    if(uiState.mode === 'menu' || !document.querySelector('#mainMenu.hidden')) return 'intro';
+    return gameStarted ? 'level1' : 'intro';
   }
   function refreshMusic(){ AudioManager.play(activeMusicForState()); }
 
@@ -303,13 +307,19 @@
     return (creature.battle || '').replace('/battle.png','/icon.png');
   }
   function toBattleDef(creature, displayIdValue, fallbackType){
-    const hp = Number(creature.hp || (fallbackType === 'boss' ? 120 : 30));
+    // v57: encounter tuning pass. Earlier enemies died too fast, so the
+    // player could almost never reach 0 HP. These minimums keep early fights
+    // winnable but make death possible if the player ignores HP/EP.
+    const rawHp = Number(creature.hp || (fallbackType === 'boss' ? 120 : 30));
+    const rawAtk = Number(creature.atk || (fallbackType === 'boss' ? 16 : 7));
+    const hp = Math.max(rawHp, fallbackType === 'boss' ? 180 : 60);
+    const atk = Math.max(rawAtk, fallbackType === 'boss' ? 22 : 13);
     return {
       id: displayIdValue,
       name: `${displayIdValue} ${creature.name}`,
       hp,
       maxHp: hp,
-      atk: Number(creature.atk || (fallbackType === 'boss' ? 16 : 7)),
+      atk,
       xp: fallbackType === 'boss' ? 90 : 18,
       credits: Number(creature.credits || (fallbackType === 'boss' ? 40 : 9)),
       img: creature.battle,
@@ -466,8 +476,8 @@
       }
     }catch(err){}
   }
-  function showMenu(){hideAll(); uiState.mode='menu'; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); uiState.mode='game'; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1');}
+  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1');}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -556,9 +566,30 @@
     $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`;
     if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); }
     else showDamage('hero', 'DODGE', 'dodge');
-    if(state.player.hp<=0){SfxManager.death(); state.player.hp=1; $('battleText').textContent+=' Emergency archive recovery prevented death.'; log('Defeat prevented by developer build mercy.');}
+    if(state.player.hp<=0){
+      handlePlayerDeath();
+      return;
+    }
     battle.turn='player'; renderBattle(); renderUI();
   }
+
+  function handlePlayerDeath(){
+    if(!battle) return;
+    battle.turn='defeated';
+    state.player.hp = 0;
+    SfxManager.death();
+    AudioManager.pauseAll();
+    $('battleText').textContent = 'Vyra has fallen. Archive synchronization failed.';
+    renderBattle();
+    const panel=$('battleVictory');
+    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled in v0.5.7.</span></div><div><b>Recovery</b><span>Restart from the beginning of Fracture 001.</span></div></div><button id="deathRetryBtn">Retry Fracture</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
+    panel.classList.remove('hidden');
+    const retry=$('deathRetryBtn');
+    const menu=$('deathMenuBtn');
+    if(retry) retry.onclick=()=>{ battle=null; state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
+    if(menu) menu.onclick=()=>{ battle=null; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
+  }
+
   function winBattle(){
     if(!battle) return;
     SfxManager.battleWin();
@@ -597,7 +628,7 @@
     panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${enemy.xp} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">Return to Fracture</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
-    if(btn) btn.onclick=()=>{ battle=null; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play('level1'); };
+    if(btn) btn.onclick=()=>{ battle=null; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
   }
 
   function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=10; state.player.maxEp+=4; state.player.atk+=2; state.player.def+=1; state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log(`Synchronization increased. Level ${state.player.level}.`);} }
@@ -762,7 +793,7 @@
     target.style.zIndex='9000';
     target.style.pointerEvents='auto';
     document.body.classList.add('menu-protocol-open');
-    AudioManager.play('pause');
+    AudioManager.play(activeMusicForState());
 
     try{
       if(id==='anomalyOverlay') renderAnomalyDb();
@@ -782,22 +813,21 @@
   function closeOverlays(){
     document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     document.body.classList.remove('menu-protocol-open');
-    const previous = uiState.returnStack.pop() || (!$('app').classList.contains('hidden') ? 'game' : 'menu');
-    if(previous === 'game'){
+    const previous = uiState.returnStack.pop() || (gameStarted && !$('app').classList.contains('hidden') ? 'game' : 'menu');
+    if(previous === 'game' && gameStarted){
       $('mainMenu').classList.add('hidden');
       $('app').classList.remove('hidden');
       document.body.classList.add('game-active','fullscreen-mode');
       uiState.mode='game';
       canvas.focus({preventScroll:true});
       renderAll();
-      AudioManager.play('level1');
     } else {
       $('app').classList.add('hidden');
       $('mainMenu').classList.remove('hidden');
       document.body.classList.remove('game-active');
       uiState.mode='menu';
-      AudioManager.play('intro');
     }
+    AudioManager.play(activeMusicForState());
     const info=$('menuInfo');
     if(info){info.textContent='Select a database protocol.'; info.classList.remove('ok','warn');}
   }

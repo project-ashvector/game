@@ -1,3 +1,11 @@
+
+## v57 — Audio State + Death Fix
+- Fixed menu-before-game music: closing menu/database panels now returns to intro music until gameplay starts.
+- Fixed gameplay menu music: in-game overlays use pause music and return to exploration music when closed.
+- Removed developer mercy death prevention. Vyra can now die when HP reaches 0.
+- Added defeat screen with retry and main menu options.
+- Tuned encounters so death is actually possible during normal play.
+
 # v56 — Music Playback Fix
 
 - Fixed looping music not starting while SFX worked.
