@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.6 // NPC STASH + FOOT PROMPT',
+    'Version 0.7.7 // ENEMY SFX + COMBAT HOTKEYS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.6';
+  const BUILD_VERSION = '0.7.7';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -257,13 +257,14 @@
       window.AV_SFX = this;
     },
 
-    play(src, volume=this.volume){
+    play(src, volume=this.volume, playbackRate=1){
       if(!src) return;
       AudioManager.unlock();
       try{
         const base = this.cache[src] || new Audio(`${src}?v=${BUILD_VERSION}`);
         const a = base.cloneNode(true);
         a.volume = Math.max(0, Math.min(1, volume));
+        a.playbackRate = Math.max(0.55, Math.min(1.55, Number.isFinite(playbackRate) ? playbackRate : 1));
         a.play().catch(()=>{});
       }catch(err){}
     },
@@ -277,7 +278,16 @@
 
     slash(){
       const pick = SFX.slashes[Math.floor(Math.random() * SFX.slashes.length)];
-      this.play(pick, 0.82);
+      this.play(pick, 0.82, 0.95 + Math.random() * 0.18);
+    },
+
+    enemyAttack(isBoss=false, dodged=false){
+      // v77: enemy/boss attacks now have audio too. Uses the existing slash bank,
+      // pitched lower for boss hits so no new SFX files are required.
+      const pick = SFX.slashes[Math.floor(Math.random() * SFX.slashes.length)];
+      const rate = isBoss ? (0.68 + Math.random() * 0.10) : (0.78 + Math.random() * 0.22);
+      const volume = isBoss ? 0.98 : 0.76;
+      this.play(pick, dodged ? volume * 0.55 : volume, rate);
     },
 
     item(){ this.play(SFX.item, 0.75); },
@@ -1719,6 +1729,13 @@
     cell.disabled=!cellQty || state.player.ep>=epMax || battle.turn!=='player';
     cell.onclick=useVectorCellBattle;
     $('attackButtons').appendChild(cell);
+
+    const guard=document.createElement('button');
+    guard.className='battle-guard-button';
+    guard.innerHTML=`<b>Guard</b><span>G // block next hit + regain 2 EP</span>`;
+    guard.disabled=battle.turn!=='player';
+    guard.onclick=guardBattle;
+    $('attackButtons').appendChild(guard);
   }
   function playerAttack(i){
     if(!battle||battle.turn!=='player')return;
@@ -1744,15 +1761,38 @@
     renderBattle();
     if(battle.enemy.hp<=0){setTimeout(winBattle,420);} else {battle.turn='enemy'; setTimeout(enemyTurn,760);}
   }
+  function guardBattle(){
+    if(!battle || battle.turn!=='player') return;
+    const epMax = combatStatBlock().maxEp || state.player.maxEp;
+    battle.guard = true;
+    state.player.ep = Math.min(epMax, state.player.ep + 2);
+    $('battleText').textContent = 'Vyra braces behind a Vector Guard. Next incoming hit is reduced.';
+    showDamage('hero', 'GUARD', 'dodge');
+    grantStyleXp('defense', 5);
+    battle.turn='enemy';
+    renderBattle();
+    setTimeout(enemyTurn, 680);
+  }
   function enemyTurn(){
     if(!battle)return;
     const mod=combatModifiers();
     let dodge = Math.random()<(0.08+mod.dodgeBonus);
+    SfxManager.enemyAttack(battle.code === 'B', dodge);
     const stats=combatStatBlock(); let dmg = dodge?0:Math.max(1,battle.enemy.atk-stats.def+Math.floor(Math.random()*5)-mod.damageReduction-stats.block);
+    let guardText = '';
+    if(battle.guard && dmg>0){
+      const blocked = Math.max(1, Math.ceil(dmg * 0.5));
+      dmg = Math.max(0, dmg - blocked);
+      guardText = ` // Guard blocked ${blocked}`;
+      battle.guard = false;
+      grantStyleXp('defense', 4 + blocked);
+    } else {
+      battle.guard = false;
+    }
     if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg);
-    $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`;
-    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
-    else showDamage('hero', 'DODGE', 'dodge');
+    $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}.`;
+    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?320:220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
+    else showDamage('hero', battle.guard ? 'GUARD' : 'DODGE', 'dodge');
     if(state.player.hp<=0){
       handlePlayerDeath();
       return;
@@ -2386,6 +2426,16 @@
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
       if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
+      if(battle && !$('battleOverlay').classList.contains('hidden')){
+        const tag = (e.target && e.target.tagName || '').toLowerCase();
+        const typingTarget = ['input','textarea','select'].includes(tag) || (e.target && e.target.isContentEditable);
+        const key = String(e.key || '').toLowerCase();
+        if(!typingTarget){
+          if(['1','2','3','4'].includes(key)){ e.preventDefault(); playerAttack(Number(key)-1); return; }
+          if(key==='r'){ e.preventDefault(); useVectorCellBattle(); return; }
+          if(key==='g'){ e.preventDefault(); guardBattle(); return; }
+        }
+      }
       if(e.key==='Escape' && overlayOpen){ e.preventDefault(); closeOverlays(); return; }
       if((e.key==='f'||e.key==='F') && gameIsOpen){ e.preventDefault(); toggleFullscreenMode(); return; }
       if(gameIsOpen && !overlayOpen){
