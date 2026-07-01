@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.9 // OVERDRIVE FINISHER',
+    'Version 0.8.0 // ANOMALY RESEARCH',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.9';
+  const BUILD_VERSION = '0.8.0';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -649,6 +649,7 @@
   }
   function clearStageRespawns(key=currentStageKey()){
     ensureRespawnState();
+    ensureResearch();
     Object.keys(state.respawns || {}).forEach(k => { if(k.startsWith(key+':')) delete state.respawns[k]; });
   }
   function scheduleEncounterRespawn(code,x,y,label='Anomaly'){
@@ -871,6 +872,92 @@
     if(battle.enemy.hp<=0){ setTimeout(winBattle,420); return; }
     battle.turn='enemy';
     setTimeout(enemyTurn, 900);
+  }
+
+  // v80: Anomaly Research turns repeated kills into long-term collection progress.
+  // No new monster names or assets: this reads the existing imported anomaly/boss library.
+  const RESEARCH_THRESHOLDS = [1, 5, 10, 25, 50];
+  function ensureResearch(){
+    if(!state) return;
+    state.anomalyResearch ||= {};
+  }
+  function researchKey(idOrEnemy){
+    if(!idOrEnemy) return 'UNKNOWN';
+    if(typeof idOrEnemy === 'string') return idOrEnemy;
+    return idOrEnemy.id || idOrEnemy.name || 'UNKNOWN';
+  }
+  function researchRecordFor(id, fallbackName='', type='Anomaly'){
+    ensureResearch();
+    const key = researchKey(id);
+    state.anomalyResearch[key] ||= {id:key, name:fallbackName || key, type, kills:0, claimed:[], stages:{}, firstSeen:0, lastSeen:0};
+    const rec = state.anomalyResearch[key];
+    rec.name ||= fallbackName || key;
+    rec.type ||= type;
+    rec.claimed ||= [];
+    rec.stages ||= {};
+    return rec;
+  }
+  function researchRank(kills=0){
+    return RESEARCH_THRESHOLDS.filter(t => Number(kills||0) >= t).length;
+  }
+  function nextResearchThreshold(kills=0){
+    return RESEARCH_THRESHOLDS.find(t => Number(kills||0) < t) || null;
+  }
+  function researchRewardFor(threshold, wasBoss=false){
+    const credits = wasBoss ? 30 + threshold * 8 : 12 + threshold * 4;
+    const skillXp = wasBoss ? 40 + threshold * 18 : 18 + threshold * 10;
+    const items = [];
+    if(threshold === 5) items.push(['Vector Cell', 1]);
+    if(threshold === 10) items.push(['Med Patch', 1]);
+    if(threshold === 25) items.push([wasBoss ? 'Rust Core' : 'Corrupted Catalyst', 1]);
+    if(threshold === 50) items.push(['Operator Shard: Vyra', wasBoss ? 2 : 1]);
+    return {credits, skillXp, items};
+  }
+  function recordAnomalyResearch(enemy, wasBoss=false){
+    ensureResearch();
+    if(!enemy) return null;
+    const key = researchKey(enemy);
+    const rec = researchRecordFor(key, enemy.name, wasBoss ? 'Boss' : 'Anomaly');
+    const before = rec.kills || 0;
+    rec.name = enemy.name || rec.name;
+    rec.type = wasBoss ? 'Boss' : 'Anomaly';
+    rec.kills = before + 1;
+    rec.lastSeen = Date.now();
+    if(!rec.firstSeen) rec.firstSeen = rec.lastSeen;
+    rec.stages ||= {};
+    rec.stages[stageDef().id] = (rec.stages[stageDef().id] || 0) + 1;
+    const rewards=[];
+    RESEARCH_THRESHOLDS.forEach(threshold => {
+      if(rec.kills >= threshold && !(rec.claimed||[]).includes(threshold)){
+        rec.claimed.push(threshold);
+        const reward = researchRewardFor(threshold, wasBoss);
+        addCredits(reward.credits);
+        grantStyleXp('slayer', reward.skillXp);
+        reward.items.forEach(([name, qty]) => addItem(name, qty));
+        rewards.push(`Rank ${researchRank(rec.kills)} reward: +${reward.credits} credits, +${reward.skillXp} Hunt XP${reward.items.length ? ', '+reward.items.map(([n,q])=>`${q} ${n}`).join(', ') : ''}`);
+      }
+    });
+    if(before === 0){ log(`Research unlocked: ${rec.name}.`); }
+    if(rewards.length){ log(`Research advanced: ${rec.name} // ${rec.kills} kills. ${rewards[rewards.length-1]}`); toast(`Research rank up: ${rec.name}`); }
+    queueAutosave();
+    return rec;
+  }
+  function researchSummary(){
+    ensureResearch();
+    const all = (typeof getCreatureLibrary === 'function') ? getCreatureLibrary() : [];
+    const records = Object.values(state.anomalyResearch || {});
+    const discovered = records.filter(r => (r.kills||0) > 0).length;
+    const kills = records.reduce((sum,r)=>sum+(r.kills||0),0);
+    const ranks = records.reduce((sum,r)=>sum+researchRank(r.kills||0),0);
+    return {discovered, total:all.length||0, kills, ranks};
+  }
+  function researchLineForCreature(d){
+    ensureResearch();
+    const rec = state.anomalyResearch?.[d.id];
+    const kills = rec?.kills || 0;
+    const rank = researchRank(kills);
+    const next = nextResearchThreshold(kills);
+    return {kills, rank, next, text: next ? `${kills}/${next} to next research reward` : `${kills} kills // complete`};
   }
 
   // Reused/adapted from Cryptic Idle Worlds: RuneScape-style XP table + skill matrix.
@@ -1477,7 +1564,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, npcTalks:{}, npcRewards:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1501,7 +1588,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -1561,7 +1648,8 @@
     $('preBattleKicker').textContent=`${stage.id} // ${code==='B'?'BOSS CLASS':'HOSTILE ENTITY'}`;
     $('preBattleName').textContent=def.name;
     $('preBattleText').textContent=def.note || (code==='B'?'AVOS: Boss-class signature confirmed. This is where confidence gets expensive.':'AVOS: Hostile signature ahead. Verify HP, pick a training focus, then make it regret spawning.');
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    const research=researchLineForCreature({id:def.id,name:def.name,type:code==='B'?'Boss':'Anomaly'});
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
   }
@@ -1976,6 +2064,7 @@
     setTile(battle.x,battle.y,'.');
     const wasBoss = battle.code === 'B';
     const wasAnomaly = battle.code === 'E';
+    recordAnomalyResearch(e, wasBoss);
     ensureRespawnState();
     if(wasAnomaly){
       state.flags.anomaliesCleared = Math.min(3, (state.flags.anomaliesCleared || 0) + 1);
@@ -2022,7 +2111,8 @@
     const panel=$('battleVictory');
     const uniqueLoot = [...new Set(loot)];
     const nextLabel = meta.wasBoss ? 'Recover Toxic Core' : 'Return to Fracture';
-    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)))} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
+    const research = researchLineForCreature({id:enemy.id, name:enemy.name, type:meta.wasBoss?'Boss':'Anomaly'});
+    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)))} // Credits +${enemy.credits}</p><p class="fineprint">Research Rank ${research.rank} // ${research.text}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
     if(btn) btn.onclick=()=>{
@@ -2196,7 +2286,7 @@
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
   function renderUI(){
-    ensureProgression(); ensureContracts(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
+    ensureProgression(); ensureContracts(); ensureResearch(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
     const p=state.player; const stats=combatStatBlock(); const def=stageDef();
     const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000);
     const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
@@ -2205,10 +2295,11 @@
     const pendingRespawns=pendingRespawnsForStage(def.key);
     const nextRespawn=pendingRespawns.length ? Math.min(...pendingRespawns.map(r=>r.seconds)) : 0;
     const respawnText=pendingRespawns.length ? `Pending ${pendingRespawns.length} // next ${nextRespawn}s` : 'Ready';
+    const researchStats = researchSummary();
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
-    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Respawn ${respawnText}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
-    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/3 // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
+    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Research ${researchStats.discovered}/${researchStats.total}</div><div class="statrow">Respawn ${respawnText} // Research Kills ${researchStats.kills}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/3 // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
       return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${consumableButtonHtml(k) || (isEquipmentLike(item)?`<button onclick="window.AV.equipItem('${safeHtml(k)}')">Equip</button>`:'')}</div>`;
@@ -2296,19 +2387,25 @@
     return anomalies.concat(bosses);
   }
   function showCreatureFile(d){
+    ensureResearch();
     const img = d.battle;
     const icon = d.icon || iconPathFor(d);
-    $('anomalyFile').innerHTML=`<div class="creature-card-file"><div class="record-kicker">${d.id} // ${d.type||'Anomaly'}</div><h2>${d.name}</h2><div class="creature-preview"><img src="${img}" alt="${d.name}" onerror="this.onerror=null;this.src='${icon}'"></div><div class="record-grid"><div><b>HP</b><span>${d.hp}</span></div><div><b>ATK</b><span>${d.atk}</span></div><div><b>Credits</b><span>${d.credits}</span></div><div><b>Loot</b><span>${(d.loot||[]).join(', ')}</span></div></div><div class="protocol-list"><div><b>Battle Asset</b><span>${img}</span></div><div><b>Icon Asset</b><span>${icon}</span></div><div><b>Pipeline Status</b><span>Imported creature library // active in Fracture encounters.</span></div></div><p class="fineprint">This creature is loaded from the imported monster/boss library and can be assigned to any Fracture encounter tile.</p></div>`;
+    const research = researchLineForCreature(d);
+    const rec = state.anomalyResearch?.[d.id] || null;
+    const stageHistory = rec?.stages ? Object.entries(rec.stages).map(([stage,kills])=>`${stage}: ${kills}`).join(' // ') : 'Not encountered yet';
+    $('anomalyFile').innerHTML=`<div class="creature-card-file"><div class="record-kicker">${d.id} // ${d.type||'Anomaly'}</div><h2>${d.name}</h2><div class="creature-preview"><img src="${img}" alt="${d.name}" onerror="this.onerror=null;this.src='${icon}'"></div><div class="record-grid"><div><b>HP</b><span>${d.hp}</span></div><div><b>ATK</b><span>${d.atk}</span></div><div><b>Credits</b><span>${d.credits}</span></div><div><b>Loot</b><span>${(d.loot||[]).join(', ')}</span></div><div><b>Research Kills</b><span>${research.kills}</span></div><div><b>Research Rank</b><span>${research.rank}/${RESEARCH_THRESHOLDS.length}</span></div><div><b>Next Reward</b><span>${research.next ? research.kills+'/'+research.next+' kills' : 'Complete'}</span></div><div><b>Seen In</b><span>${stageHistory}</span></div></div><div class="protocol-list"><div><b>Battle Asset</b><span>${img}</span></div><div><b>Icon Asset</b><span>${icon}</span></div><div><b>Research Rewards</b><span>Ranks unlock at ${RESEARCH_THRESHOLDS.join(', ')} kills and grant credits, Anomaly Hunting XP, and supplies.</span></div><div><b>Pipeline Status</b><span>Imported creature library // active in Fracture encounters.</span></div></div><p class="fineprint">This creature is loaded from the imported monster/boss library and can be assigned to any Fracture encounter tile.</p></div>`;
   }
   function renderAnomalyDb(){
+    ensureResearch();
     const all = getCreatureLibrary();
-    $('anomalyList').innerHTML=`<div class="creature-tools"><input id="creatureSearch" placeholder="Search anomalies / bosses..."><select id="creatureFilter"><option value="all">All records</option><option value="Anomaly">Anomalies</option><option value="Boss">Bosses</option><option value="Chapter 1">Chapter 1</option></select><div class="creature-count"></div></div><div id="creatureListButtons" class="creature-list-buttons"></div>`;
+    const summary = researchSummary();
+    $('anomalyList').innerHTML=`<div class="creature-tools"><input id="creatureSearch" placeholder="Search anomalies / bosses..."><select id="creatureFilter"><option value="all">All records</option><option value="Anomaly">Anomalies</option><option value="Boss">Bosses</option><option value="Chapter 1">Chapter 1</option></select><div class="creature-count"></div><div class="fineprint">Research: ${summary.discovered}/${summary.total} entries // ${summary.kills} total kills // ${summary.ranks} ranks</div></div><div id="creatureListButtons" class="creature-list-buttons"></div>`;
     const drawList=()=>{
       const q=($('creatureSearch').value||'').toLowerCase();
       const f=$('creatureFilter').value;
       const filtered=all.filter(d=>(f==='all'||d.type===f) && (`${d.id} ${d.name}`.toLowerCase().includes(q)));
       document.querySelector('#anomalyList .creature-count').textContent=`${filtered.length} / ${all.length} records`;
-      $('creatureListButtons').innerHTML=filtered.slice(0,160).map((d,i)=>`<button data-id="${d.id}"><span>${d.id}</span><b>${d.name}</b></button>`).join('') || '<p class="menu-info">No matching records.</p>';
+      $('creatureListButtons').innerHTML=filtered.slice(0,160).map((d,i)=>{ const r=researchLineForCreature(d); return `<button data-id="${d.id}"><span>${d.id}</span><b>${d.name}</b><small>${r.kills} kills // Rank ${r.rank}</small></button>`; }).join('') || '<p class="menu-info">No matching records.</p>';
       document.querySelectorAll('#creatureListButtons button').forEach(b=>b.onclick=()=>showCreatureFile(all.find(d=>d.id===b.dataset.id)));
       if(filtered[0]) showCreatureFile(filtered[0]);
     };
@@ -2631,7 +2728,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
