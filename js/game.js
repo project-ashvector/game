@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.8 // RESPAWN TRAINING LOOP',
+    'Version 0.6.9 // ANOMALY CONTRACT BOARD',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.8';
+  const BUILD_VERSION = '0.6.9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -621,6 +621,122 @@
     forgenetics: { name: 'Forgenetics', short:'BIO', emblem:'G', icon:'assets/skills/forgenetics.png', type: 'noncombat', bonus: 'Future bio-upgrade loop.' },
     system_hacking: { name: 'System Hacking', short:'SYS', emblem:'Y', icon:'assets/skills/system_hacking.png', type: 'noncombat', bonus: 'Future terminal loop.' }
   };
+
+
+  // v69: repeatable Anomaly Contracts give respawning monsters a real grind loop.
+  // Contracts use the existing imported creature roster and do not add new monster names/assets.
+  const CONTRACT_POOLS = {
+    f001: [
+      {title:'Sewer Sweep', desc:'Neutralize repeat anomaly signatures inside Toxic Sewers.', target:5, credits:28, syncXp:24, skillXp:90, item:'Scrap Metal', itemQty:2},
+      {title:'Overflow Cleanup', desc:'Farm respawns until AVOS stops screaming about biohazards.', target:8, credits:46, syncXp:38, skillXp:140, item:'Med Patch', itemQty:1},
+      {title:'Shard Static', desc:'Collect enough anomaly readings to stabilize Vyra sync fragments.', target:10, credits:64, syncXp:55, skillXp:190, item:'Operator Shard: Vyra', itemQty:1}
+    ],
+    f002: [
+      {title:'Outpost Suppression', desc:'Thin the Ash Wastes patrol signatures using the imported creature roster.', target:7, credits:70, syncXp:62, skillXp:210, item:'Burnt Alloy', itemQty:2},
+      {title:'Signal Cleanup', desc:'Break hostile readings around the outpost relay route.', target:10, credits:96, syncXp:88, skillXp:300, item:'Outpost Access Chip', itemQty:1},
+      {title:'Core Hunt', desc:'Grind stronger signatures for a better chance at crafting materials.', target:12, credits:120, syncXp:110, skillXp:390, item:'Rust Core', itemQty:1}
+    ],
+    f003: [
+      {title:'Neon Grave Sweep', desc:'Preview contract for the locked graveyard route.', target:12, credits:140, syncXp:130, skillXp:460, item:'Corrupted Catalyst', itemQty:1}
+    ]
+  };
+
+  function buildContract(stageKey=currentStageKey()){
+    const pool = CONTRACT_POOLS[stageKey] || CONTRACT_POOLS.f001;
+    state.contractCounter = (state.contractCounter || 0) + 1;
+    const pick = pool[(state.contractCounter - 1) % pool.length];
+    return {
+      id:`${stageKey}-contract-${state.contractCounter}`,
+      stage:stageKey,
+      title:pick.title,
+      desc:pick.desc,
+      target:pick.target,
+      progress:0,
+      credits:pick.credits,
+      syncXp:pick.syncXp,
+      skillXp:pick.skillXp,
+      item:pick.item,
+      itemQty:pick.itemQty || 1,
+      complete:false,
+      claimed:false,
+      createdAt:Date.now()
+    };
+  }
+
+  function ensureContracts(){
+    state.contracts ||= {};
+    state.contractHistory ||= [];
+    state.contractCounter ||= 0;
+    Object.keys(STAGE_DEFS).forEach(key => {
+      const c = state.contracts[key];
+      if(!c || c.claimed || c.stage !== key) state.contracts[key] = buildContract(key);
+      state.contracts[key].target = Math.max(1, Number(state.contracts[key].target || 5));
+      state.contracts[key].progress = Math.max(0, Number(state.contracts[key].progress || 0));
+      state.contracts[key].complete = state.contracts[key].progress >= state.contracts[key].target;
+    });
+  }
+
+  function activeContract(stageKey=currentStageKey()){
+    ensureContracts();
+    return state.contracts[stageKey] || state.contracts.f001;
+  }
+
+  function advanceContract(enemyName='Anomaly'){
+    ensureContracts();
+    const c = activeContract();
+    if(!c || c.complete || c.claimed) return;
+    c.progress = Math.min(c.target, (c.progress || 0) + 1);
+    c.lastTarget = enemyName;
+    if(c.progress >= c.target){
+      c.complete = true;
+      log(`Contract complete: ${c.title}. Claim it from Mission Briefing.`);
+      toast(`Contract complete: ${c.title}`);
+    }
+  }
+
+  function claimContract(stageKey=currentStageKey()){
+    ensureContracts();
+    const c = activeContract(stageKey);
+    if(!c.complete){ toast(`${c.title}: ${c.progress}/${c.target}`); return; }
+    addCredits(c.credits || 0);
+    gainXp(c.syncXp || 0);
+    grantStyleXp('slayer', c.skillXp || 0);
+    if(c.item) addItem(c.item, c.itemQty || 1);
+    c.claimed = true;
+    state.contractHistory.unshift({title:c.title, stage:stageDef(stageKey).id, claimedAt:Date.now(), credits:c.credits, item:c.item, itemQty:c.itemQty});
+    state.contractHistory = state.contractHistory.slice(0, 12);
+    state.contracts[stageKey] = buildContract(stageKey);
+    log(`Contract reward claimed: ${c.title}.`);
+    save(true); renderAll(); renderMissionContractPanel(); toast('Contract claimed. New contract loaded.');
+  }
+
+  function rerollContract(stageKey=currentStageKey()){
+    ensureContracts();
+    const cost = Math.max(10, 10 + (stageDef(stageKey).levelReq || 1) * 2);
+    if(state.player.credits < cost){ toast(`Need ${cost} credits to reroll contract.`); return; }
+    state.player.credits -= cost;
+    state.contracts[stageKey] = buildContract(stageKey);
+    log(`Contract rerolled for ${stageDef(stageKey).id}.`);
+    save(true); renderAll(); renderMissionContractPanel();
+  }
+
+  function contractHtml(stageKey=currentStageKey()){
+    const c = activeContract(stageKey);
+    const def = stageDef(stageKey);
+    const pct = Math.min(100, Math.floor((c.progress / c.target) * 100));
+    const reward = `${c.credits} credits // ${c.syncXp} Sync XP // ${c.skillXp} Anomaly Hunting XP${c.item ? ' // '+c.itemQty+' '+c.item : ''}`;
+    return `<section class="fracture-card contract-board"><div class="record-kicker">REPEATABLE CONTRACT // ${safeHtml(def.id)}</div><h3>${safeHtml(c.title)}</h3><p>${safeHtml(c.desc)}</p><div class="statrow">Progress ${c.progress}/${c.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Reward</b><span>${safeHtml(reward)}</span></div><div><b>Status</b><span>${c.complete?'Ready to claim':'Hunt respawning anomalies to progress'}</span></div></div><button onclick="window.AV.claimContract('${stageKey}')" ${c.complete?'':'disabled'}>${c.complete?'Claim Contract':'Incomplete'}</button><button onclick="window.AV.rerollContract('${stageKey}')">Reroll Contract</button></section>`;
+  }
+
+  function renderMissionContractPanel(){
+    ensureContracts();
+    const grid = document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel = $('missionContractBoard');
+    if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
+    panel.innerHTML = contractHtml();
+  }
+
   function createSkillData(){
     const data = {};
     Object.keys(skillList).forEach(k => data[k] = { xp: 0, level: 1 });
@@ -1071,7 +1187,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1094,7 +1210,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -1449,6 +1565,7 @@
       state.flags.anomaliesCleared = Math.min(3, (state.flags.anomaliesCleared || 0) + 1);
       const stageKey = stageDef().key;
       state.enemyKills[stageKey] = (state.enemyKills[stageKey] || 0) + 1;
+      advanceContract(e.name);
       scheduleEncounterRespawn('E', battle.x, battle.y, e.name);
     }
     if(wasAnomaly && state.flags.anomaliesCleared >= 3 && !state.flags.bossUnlocked){state.flags.bossUnlocked=true; log('AVOS forced the boss route open. Somebody in security is getting demoted.'); pulseObjective(currentObjectiveText());}
@@ -1624,7 +1741,7 @@
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
   function renderUI(){
-    ensureProgression(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
+    ensureProgression(); ensureContracts(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
     const p=state.player; const stats=combatStatBlock(); const def=stageDef();
     const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000);
     const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
@@ -1645,9 +1762,12 @@
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
     const objectives=[['Reach recovery terminal',state.flags.terminal],[`Clear 3 anomalies (${anomalyClears}/3)`,anomalyClears>=3],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
     const activeText=currentObjectiveText();
-    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ');
-    $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('');
+    const contract=activeContract();
+    const contractLine=`📜 Contract: ${safeHtml(contract.title)} (${contract.progress}/${contract.target})${contract.complete?' — ready to claim':''}`;
+    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine}`;
+    $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
+    renderMissionContractPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
     renderFullscreenHud();
@@ -1681,7 +1801,7 @@
       if(id==='inventoryOverlay') renderInventoryDb();
       if(id==='operatorOverlay') renderOperatorDb();
       if(id==='fractureOverlay') renderFractureDb();
-      if(id==='missionOverlay') renderUI();
+      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); }
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
     }catch(err){
@@ -1933,7 +2053,7 @@
       <div class="fs-row"><b>Vyra</b><br>Player Lv ${p.level} // Credits ${p.credits}</div>
       <div class="fs-row">HP ${p.hp}/${s.maxHp}<div class="bar"><span style="width:${100*p.hp/s.maxHp}%"></span></div></div>
       <div class="fs-row">EP ${p.ep}/${s.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(s.maxEp||p.maxEp)}%"></span></div></div>
-      <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${Math.min(3, state.flags.anomaliesCleared||0)}/3 // Kills ${(state.enemyKills||{})[def.key]||0} // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}</div>`;
+      <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${Math.min(3, state.flags.anomaliesCleared||0)}/3 // Kills ${(state.enemyKills||{})[def.key]||0} // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}<br>Contract: ${activeContract().progress}/${activeContract().target}</div>`;
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
     for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
@@ -2034,7 +2154,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
