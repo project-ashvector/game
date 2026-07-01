@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.5 // GEAR, SHOP & STAGE MATRIX',
+    'Version 0.6.6 // STAGES, DROP LOG & ROUTES',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.5';
+  const BUILD_VERSION = '0.6.6';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -330,8 +330,8 @@
     '########################################'
   ];
 
-  // v63: stage definitions. F-001 is the current vertical slice; F-002 is the next-map shell
-  // unlocked after Chapter 1 clear plus the player-level requirement.
+  // v66: stage definitions now drive a real multi-map route.
+  // F-002 is playable after F-001 completion. F-003 is a locked preview route.
   const stage2Map = [
     '########################################',
     '#P.............#.......................##',
@@ -360,16 +360,46 @@
     '########################################'
   ];
 
+  const stage3Map = [
+    '########################################',
+    '#P....#.............#.................##',
+    '####.###.##########.#.#########.#######',
+    '#....#...#....C...#.#.....E...#......##',
+    '#.S..#.###.######.#.#####.###.#####..#',
+    '#....#.....#....#.#.....#.#.#.....#..#',
+    '####.#####.#.##.#.#####.#.#.#####.#..#',
+    '#....#.....#..#.#.....#.#.#.....#.#..#',
+    '#.####.########.#####.#.#.#####.#.#..#',
+    '#.#....#......#.....#.#.#.....#.#...##',
+    '#.#.####.####.#####.#.#.###.#.#.#####',
+    '#.#......#..#.....#.#.#...#.#.#.....#',
+    '#.#########.#####.#.#.###.#.#.###.#.#',
+    '#.....E.....#...#.#.#.....#.#.....#.#',
+    '#####.#######.#.#.#.#######.#######.#',
+    '#.....#.....#.#.#.#.......#.......#.#',
+    '#.#####.###.#.#.#.#######.####.#.#.#',
+    '#.....#...#.#.#.#.....C.#......#.#.#',
+    '#####.###.#.#.#.#####.##########.#.#',
+    '#...#...#.#.#.#.....#........E...#.#',
+    '#.#.###.#.#.#.#####.###########D##.#',
+    '#.#...#.#...#.....#.......H..B..X..#',
+    '#.###.#.#########.##################',
+    '#.....#.........L..................##',
+    '########################################'
+  ];
+
   function normalizeMapRows(rows){
     const width = Math.max(...rows.map(r=>r.length));
     return rows.map(r => (r + '#'.repeat(width)).slice(0,width));
   }
   const STAGE_DEFS = {
-    f001: {key:'f001', id:'F-001', title:'Toxic Sewers', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards'},
-    f002: {key:'f002', id:'F-002', title:'Ash Wastes Outpost', chapter:'Chapter 2 // Broken Signal', levelReq:3, map:normalizeMapRows(stage2Map), threat:'MEDIUM', objective:'new terminal → stronger anomalies → gate boss → next extraction', reward:'Preview rewards and stronger enemy table'}
+    f001: {key:'f001', id:'F-001', title:'Toxic Sewers', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards', rewardCredits:40, rewardShards:3, nextKey:'f002', bg:'assets/battle_backgrounds/toxic_sewers_battle.png'},
+    f002: {key:'f002', id:'F-002', title:'Ash Wastes Outpost', chapter:'Chapter 2 // Broken Signal', levelReq:3, map:normalizeMapRows(stage2Map), threat:'MEDIUM', objective:'outpost terminal → 3 stronger anomalies → ash gate boss → extraction', reward:'70 Credits, Rust Core, Corrupted Catalyst, Keycard LV1, Vyra Shards', rewardCredits:70, rewardShards:5, nextKey:'f003', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
+    f003: {key:'f003', id:'F-003', title:'Neon Graveyard', chapter:'Chapter 3 // Dead Frequencies', levelReq:7, map:normalizeMapRows(stage3Map), threat:'HIGH', objective:'grave signal terminal → spectral anomalies → signal boss → extraction', reward:'120 Credits, 2 Rust Cores, 2 Catalysts, rare gear preview', rewardCredits:120, rewardShards:7, nextKey:null, bg:'assets/battle_backgrounds/neon_graveyard_battle.png'}
   };
   function currentStageKey(){ return state?.currentStage || 'f001'; }
   function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
+  function battleBgForStage(key=currentStageKey()){ return stageDef(key).bg || STAGE_DEFS.f001.bg; }
   function parseStageMap(key){
     const def=stageDef(key); const map=def.map.map(r=>r.split(''));
     let px=1,py=1;
@@ -430,6 +460,12 @@
       '31,14': {type:'anomaly', index:24},
       '9,19': {type:'anomaly', index:31},
       '30,21': {type:'boss', index:5}
+    },
+    f003: {
+      '27,3': {type:'anomaly', index:42},
+      '6,13': {type:'anomaly', index:54},
+      '30,19': {type:'anomaly', index:67},
+      '31,21': {type:'boss', index:12}
     }
   };
   function encounterSlotFor(x,y,code){
@@ -632,7 +668,7 @@
     const info=skillList[key] || {short:'?', emblem:'?'};
     const label=safeHtml(info.name||key);
     const glyph=safeHtml(info.emblem||info.short||'?');
-    const img=info.icon ? `<img src="${safeHtml(info.icon)}?v=65" alt="${label}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : '';
+    const img=info.icon ? `<img src="${safeHtml(info.icon)}?v=66" alt="${label}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : '';
     return `<span class="skill-emblem skill-${key}" aria-label="${label}">${img}<b>${glyph}</b></span>`;
   }
   function skillXpToNext(key){
@@ -693,10 +729,10 @@
   function playerMeetsStageRequirement(key){
     const def=stageDef(key);
     ensureProgression();
-    return state.player.level >= def.levelReq && (key === 'f001' || state.stages[key]?.unlocked || state.flags.chapterComplete);
+    return key === 'f001' || (state.player.level >= def.levelReq && !!state.stages[key]?.unlocked);
   }
   function loadStage(key){
-    ensureProgression();
+    ensureProgression(); unlockNextStages();
     const def=stageDef(key);
     if(!playerMeetsStageRequirement(key)){
       toast(`${def.id} locked. Requires Player Lv. ${def.levelReq} and previous mission clear.`);
@@ -704,7 +740,7 @@
     }
     const parsed=parseStageMap(key);
     state.currentStage=key;
-    state.mapVersion='sector_stage_v3';
+    state.mapVersion='sector_stage_v4';
     state.map=parsed.map;
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
@@ -716,14 +752,21 @@
     log(`${def.id} // ${def.title} loaded.`);
     save(true);
     hideAll(); uiState.mode='game'; gameStarted=true; document.body.classList.add('game-active','fullscreen-mode'); $('app').classList.remove('hidden');
-    renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText());
+    document.body.dataset.stage=def.key; renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
     return true;
   }
   function unlockNextStages(){
-    Object.keys(STAGE_DEFS).forEach(k=> state.stages ||= {});
+    state.stages ||= {};
     const order=Object.keys(STAGE_DEFS);
-    order.forEach((key,i)=>{ state.stages[key] ||= {unlocked:i===0,complete:false}; if(i===0) state.stages[key].unlocked=true; const prev=order[i-1]; if(prev && state.stages[prev]?.complete && state.player.level >= STAGE_DEFS[key].levelReq) state.stages[key].unlocked=true; });
+    order.forEach((key,i)=>{
+      state.stages[key] ||= {unlocked:i===0,complete:false};
+      if(i===0) state.stages[key].unlocked=true;
+      const prev=order[i-1];
+      if(prev && state.stages[prev]?.complete && state.player.level >= STAGE_DEFS[key].levelReq){ state.stages[key].unlocked=true; }
+      if(prev && !state.stages[prev]?.complete && i>0){ state.stages[key].unlocked=false; }
+    });
   }
+
 
 
   const coreItemRegistry = [
@@ -914,6 +957,13 @@
     const b=equipmentBonuses();
     return `<section class="equipment-panel"><div class="record-kicker">EQUIPPED GEAR</div><h3>Operator Loadout</h3><div class="equipment-grid">${rows}</div><div class="gear-statline">Gear Power ${gearPower()} // Gear: +${b.atk} ATK, +${b.str} STR, +${b.def} DEF, +${b.hp} HP, +${b.ep} EP</div></section>`;
   }
+  function renderDropLogPanel(){
+    state.dropLog ||= [];
+    state.bossKills ||= {};
+    const bossRows=Object.entries(STAGE_DEFS).map(([key,d])=>`<div><b>${d.id}</b><span>Boss kills: ${state.bossKills[key]||0} // ${state.stages?.[key]?.complete?'Complete':(state.stages?.[key]?.unlocked?'Unlocked':'Locked')}</span></div>`).join('');
+    const drops=state.dropLog.slice(0,8).map(d=>`<div class="drop-log-row ${rarityClass(d.rarity)}"><b>${safeHtml(d.name)}</b><span>${safeHtml(d.rarity||'Drop')} // ${safeHtml(d.source||'Recovered')} // ${safeHtml(d.stage||'F-???')}</span></div>`).join('') || '<div class="drop-log-row"><b>No rare drops yet</b><span>Bosses, gear drops, and stage clears will appear here.</span></div>';
+    return `<section class="drop-log-panel"><div class="record-kicker">RARE DROP ARCHIVE</div><h3>Collection Log</h3><div class="protocol-list">${bossRows}</div><div class="drop-log-list">${drops}</div></section>`;
+  }
   function renderWorkshopPanel(){
     const shop=SHOP_STOCK.map(s=>`<button onclick="window.AV.buyShopItem('${s.name}')"><b>${s.label}</b><span>${s.price} credits</span></button>`).join('');
     const recipes=CRAFTING_RECIPES.map(r=>`<button onclick="window.AV.craftRecipe('${r.id}')"><b>Craft ${r.name}</b><span>${Object.entries(r.cost).map(([n,q])=>q+' '+n).join(', ')} + ${r.credits} credits</span></button>`).join('');
@@ -934,7 +984,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v3', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v4', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -957,7 +1007,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages}; state=newGameState(); Object.assign(state, keep); } state.mapVersion='sector_stage_v3'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } state.mapVersion='sector_stage_v4'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -978,7 +1028,7 @@
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -987,7 +1037,7 @@
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; if(g){addItem(g.name,1); log('Standard Cache opened: Med Patch + 20 credits + '+g.name+'.');} else log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
+    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: Med Patch + 20 credits + '+g.name+'.');} else log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
     if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce('terminal'); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce('lore');}
@@ -1023,6 +1073,12 @@
   }
   function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n; SfxManager.item(); queueAutosave();}
   function addCredits(n){state.player.credits+=n; queueAutosave();}
+  function recordDrop(name, source='Recovered', rarity='Common'){
+    state.dropLog ||= [];
+    const entry={name, source, rarity, stage:stageDef().id, time:Date.now()};
+    state.dropLog.unshift(entry);
+    state.dropLog=state.dropLog.slice(0,50);
+  }
 
   const STORY_SCENES = {
     intro: {
@@ -1048,6 +1104,14 @@
     bossIntro: {
       kicker:'BOSS ENCOUNTER // TOXIC CORE', speaker:'VYRA',
       lines:['That thing is carrying the Toxic Core.', 'AVOS: Correct. Recommended tactic: hit it until the health bar experiences a personal tragedy.']
+    },
+    f002Intro: {
+      kicker:'CHAPTER 2 // BROKEN SIGNAL', speaker:'AVOS',
+      lines:['Welcome to Fracture 002: Ash Wastes Outpost. Everything here is dry, hostile, and somehow still sticky.', 'The outpost signal is jamming the ASH route map. Sync the terminal, delete three stronger anomalies, then breach the ash gate boss.']
+    },
+    f003Intro: {
+      kicker:'CHAPTER 3 // DEAD FREQUENCIES', speaker:'VYRA',
+      lines:['This place is quiet. Not peaceful quiet. More like somebody muted a scream.', 'AVOS: Neon Graveyard is high-threat. The route exists now, but it is meant as a preview until more content and balancing are added.']
     },
     bossDefeated: {
       kicker:'TOXIC CORE RECOVERED', speaker:'AVOS',
@@ -1113,7 +1177,13 @@
     ensureStoryFlags(); ensureProgression();
     const def=stageDef();
     if(!state.flags.chapterRewardsClaimed){
-      addCredits(def.key==='f001'?40:70); addItem('Rust Core',1); addItem('Operator Shard: Vyra',def.key==='f001'?3:5); addItem('Corrupted Catalyst',1);
+      const credits=def.rewardCredits || 50;
+      addCredits(credits);
+      addItem('Rust Core', def.key==='f003'?2:1);
+      addItem('Operator Shard: Vyra', def.rewardShards || 3);
+      addItem('Corrupted Catalyst', def.key==='f003'?2:1);
+      if(def.key==='f002') addItem('Keycard LV1',1);
+      recordDrop(`${def.id} Clear Reward`, 'Stage Clear', 'Legendary');
       state.flags.chapterRewardsClaimed=true;
     }
     state.flags.chapterComplete=true;
@@ -1125,10 +1195,13 @@
     log(`${def.id} complete: Core recovered. Rewards delivered to inventory.`);
     save(true); renderAll(); showChapterClearPanel();
   }
+
   function showChapterClearPanel(){
     const def=stageDef();
-    const next=STAGE_DEFS.f002;
-    const nextReady = def.key==='f001' && playerMeetsStageRequirement('f002');
+    const order=Object.keys(STAGE_DEFS);
+    const nextKey=def.nextKey || order[order.indexOf(def.key)+1];
+    const next=nextKey ? STAGE_DEFS[nextKey] : null;
+    const nextReady = !!next && playerMeetsStageRequirement(next.key);
     let panel=$('chapterClearOverlay');
     if(!panel){
       panel=document.createElement('div');
@@ -1137,21 +1210,25 @@
       panel.innerHTML=`<div class="chapter-clear-card avos-crt"><div class="record-kicker" id="chapterClearKicker"></div><h2 id="chapterClearTitle"></h2><p id="chapterClearCopy"></p><div class="victory-loot chapter-rewards" id="chapterRewardList"></div><div class="story-actions"><button id="chapterContinueBtn">Continue Exploring</button><button id="chapterNextBtn">Start Next Fracture</button><button id="chapterMenuBtn">Return to Main Menu</button></div></div>`;
       document.body.appendChild(panel);
       $('chapterContinueBtn').onclick=()=>{ panel.classList.add('hidden'); uiState.mode='game'; $('app').classList.remove('hidden'); AudioManager.play(activeMusicForState()); renderAll(); };
-      $('chapterNextBtn').onclick=()=>{ panel.classList.add('hidden'); loadStage('f002'); };
+      $('chapterNextBtn').onclick=()=>{ if(nextReady){ panel.classList.add('hidden'); loadStage(next.key); } else if(next){ toast(`${next.id} requires Player Lv. ${next.levelReq} and previous stage clear.`); } else toast('Next fracture coming soon.'); };
       $('chapterMenuBtn').onclick=()=>{ panel.classList.add('hidden'); gameStarted=false; showMenu(); };
     }
     $('chapterClearKicker').textContent=`STAGE COMPLETE // ${def.id} STABILIZED`;
-    $('chapterClearTitle').textContent=def.key==='f001'?'THE AWAKENING':'BROKEN SIGNAL';
-    $('chapterClearCopy').textContent=`${def.title} cleared. Progress saved locally. ${nextReady?'F-002 is available from the Fracture Index.':'Next fracture requires Player Lv. '+next.levelReq+'. Train more if it is locked.'}`;
-    const rewards=[def.key==='f001'?'40 Credits':'70 Credits','Rust Core',`Operator Shard: Vyra x${def.key==='f001'?3:5}`,'Corrupted Catalyst'];
+    $('chapterClearTitle').textContent=def.chapter.replace(/^Chapter \d+ \/\/\s*/, '').toUpperCase();
+    $('chapterClearCopy').textContent=`${def.title} cleared. Progress saved locally. ${next ? (nextReady ? next.id+' is available now.' : next.id+' requires Player Lv. '+next.levelReq+'. Train more if it is locked.') : 'More fractures are coming in a future build.'}`;
+    const rewards=[`${def.rewardCredits||50} Credits`, def.key==='f003'?'Rust Core x2':'Rust Core', `Operator Shard: Vyra x${def.rewardShards||3}`, def.key==='f003'?'Corrupted Catalyst x2':'Corrupted Catalyst'];
+    if(def.key==='f002') rewards.push('Keycard LV1');
     $('chapterRewardList').innerHTML=rewards.map(name=>`<div class="victory-loot-item"><span>${safeHtml(name)}</span></div>`).join('');
-    const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!nextReady; btn.textContent=nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`; }
+    const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!next; btn.textContent=next ? (nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`) : 'Next Fracture Coming Soon'; }
     panel.classList.remove('hidden');
   }
 
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     const stage=stageDef();
+    const battlePanel=$('battlePanel');
+    if(battlePanel) battlePanel.style.backgroundImage=`url('${battleBgForStage(stage.key)}?v=${BUILD_VERSION}')`;
+    const loc=document.querySelector('.battle-location'); if(loc) loc.textContent=`${stage.id} // ${stage.title.toUpperCase()}`;
     const scale = Math.max(1, stage.levelReq);
     if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
     battle={code,x,y,enemy:def,turn:'player',guard:false};
@@ -1258,9 +1335,9 @@
     const wasAnomaly = battle.code === 'E';
     state.flags.anomaliesCleared += wasAnomaly?1:0;
     if(wasAnomaly && state.flags.anomaliesCleared >= 3 && !state.flags.bossUnlocked){state.flags.bossUnlocked=true; log('AVOS forced the boss route open. Somebody in security is getting demoted.'); pulseObjective(currentObjectiveText());}
-    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); if(!state.inventory['Toxic Monarch Relic']){ loot.push('Toxic Monarch Relic'); addItem('Toxic Monarch Relic',1); }}
+    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; state.bossKills ||= {}; state.bossKills[stageDef().key]=(state.bossKills[stageDef().key]||0)+1; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); recordDrop('Corrupted Catalyst', battle.enemy.name, 'Epic'); if(!state.inventory['Toxic Monarch Relic']){ loot.push('Toxic Monarch Relic'); addItem('Toxic Monarch Relic',1); recordDrop('Toxic Monarch Relic', battle.enemy.name, 'Relic'); }}
     const gearDrop = (!wasBoss && Math.random() < 0.42) ? pickGearDrop(false) : (wasBoss ? pickGearDrop(true) : null);
-    if(gearDrop && !loot.includes(gearDrop.name)){ loot.push(gearDrop.name); addItem(gearDrop.name,1); }
+    if(gearDrop && !loot.includes(gearDrop.name)){ loot.push(gearDrop.name); addItem(gearDrop.name,1); recordDrop(gearDrop.name, battle.enemy.name, gearDrop.rarity || 'Rare'); }
     const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
     gainXp(xpGain); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
@@ -1550,11 +1627,11 @@
       panel=document.createElement('section'); panel.id='stageSelectPanel'; panel.className='fracture-card stage-select-panel'; host.prepend(panel);
     }
     ensureProgression(); unlockNextStages();
-    panel.innerHTML=`<div class="record-kicker">FRACTURE ROUTE SELECT</div><h2>Stage / Map System</h2><p>Stages save to localStorage. Later stages can require Player Level and previous mission completion.</p><div class="stage-grid">${Object.entries(STAGE_DEFS).map(([key,d])=>{
+    panel.innerHTML=`<div class="record-kicker">FRACTURE ROUTE SELECT</div><h2>Stage / Map System</h2><p>Stages save to localStorage. Clear a fracture, meet the Player Level requirement, then launch the next map from here.</p><div class="stage-grid">${Object.entries(STAGE_DEFS).map(([key,d])=>{
       const unlocked=playerMeetsStageRequirement(key);
       const active=currentStageKey()===key;
       const complete=!!state.stages[key]?.complete;
-      return `<button class="stage-card ${active?'active':''} ${unlocked?'':'locked'}" data-stage="${key}" ${unlocked?'':'disabled'}><b>${d.id}</b><span>${d.title}</span><small>Req Lv. ${d.levelReq} // ${complete?'Complete':'Active/Locked'} // ${d.threat}</small><em>${unlocked?(active?'Current':'Start Stage'):'Locked'}</em></button>`;
+      return `<button class="stage-card ${active?'active':''} ${unlocked?'':'locked'}" data-stage="${key}" ${unlocked?'':'disabled'}><b>${d.id}</b><span>${d.title}</span><small>${d.chapter} // Req Lv. ${d.levelReq}</small><small>${complete?'Complete':(unlocked?'Available':'Locked')} // ${d.threat}</small><em>${unlocked?(active?'Current':'Start Stage'):'Locked'}</em></button>`;
     }).join('')}</div>`;
     panel.querySelectorAll('[data-stage]').forEach(btn=>btn.onclick=()=>loadStage(btn.dataset.stage));
   }
@@ -1635,9 +1712,9 @@
       return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${k==='Med Patch'?'<em>Usable</em>':(Object.values(state.equipment||{}).includes(k)?'<em>Equipped</em>':(isEquipmentLike(item)?'<em>Gear</em>':'<em>Stored</em>'))}</button>`;
     }).join('') || '<div class="invrow">No recovered assets yet.</div>';
     const fullRegistry=[...coreItemRegistry.map(normalizeItem), ...importedItemRegistry.map(normalizeItem)];
-    const stats=combatStatBlock(); const epMax=stats.maxEp||state.player.maxEp; const equipmentPanel=renderEquipmentPanel(); const workshopPanel=renderWorkshopPanel(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
+    const stats=combatStatBlock(); const epMax=stats.maxEp||state.player.maxEp; const equipmentPanel=renderEquipmentPanel(); const workshopPanel=renderWorkshopPanel(); const dropLogPanel=renderDropLogPanel(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
     $('inventoryDatabaseList').innerHTML=`
-      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${epMax} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div>${equipmentPanel}${workshopPanel}<div class="item-tools">
+      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${epMax} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div>${equipmentPanel}${workshopPanel}${dropLogPanel}<div class="item-tools">
         <input id="itemSearch" placeholder="Search items / weapons / armor...">
         <div class="item-filter-row">
           <select id="itemFilter"><option value="all">All categories</option><option value="Weapon">Weapons</option><option value="Equipment">Equipment</option><option value="Consumable">Consumables</option><option value="Material">Materials</option><option value="Key Item">Key Items</option><option value="Archive">Archives</option><option value="Shard">Operator Shards</option></select>
@@ -1719,7 +1796,7 @@
       const help=document.createElement('div');
       help.id='fsHelp';
       help.className='fullscreen-help hidden';
-      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>D</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Esc</kbd> Close panels`;
+      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>D</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Q</kbd> Med Patch <kbd>Esc</kbd> Close panels`;
       document.body.appendChild(help);
     }
   }
@@ -1805,6 +1882,7 @@
         if(k==='p'){ e.preventDefault(); openOverlay('progressionOverlay'); return; }
         if(k==='b'){ e.preventDefault(); openOverlay('missionOverlay'); return; }
         if(k==='h'){ e.preventDefault(); toggleFullscreenHelp(); return; }
+        if(k==='q'){ e.preventDefault(); useMedPatch(); return; }
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
       if(gameIsOpen && !overlayOpen && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)){

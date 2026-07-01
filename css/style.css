@@ -1032,3 +1032,17 @@ body:not(.game-active) .fs-persistent-stats{display:none}.stage-select-panel{gri
 .equip-slot span{font-weight:800;color:#fff}.equip-slot small{grid-column:1/-1;color:#b8d9e8;font-size:.72rem}.equip-slot button{grid-column:1/-1;padding:6px 8px;font-size:.72rem}
 .gear-statline{margin-top:10px;color:#8be9ff;font-weight:800;font-size:.85rem}.workshop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.workshop-grid>div{display:flex;flex-direction:column;gap:8px}.workshop-grid button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left}.gear-compare{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.05);border-radius:12px;padding:10px;margin:10px 0;display:grid;gap:5px}.gear-compare b{color:#8be9ff}.gear-compare span{color:#fff;font-weight:800}.operator-shard-panel{margin-top:14px}.operator-shard-panel button{width:100%;margin-top:8px}.rarity-legendary,.rarity-mythic,.rarity-relic,.rarity-singularity{box-shadow:0 0 18px rgba(255,195,74,.18), inset 0 0 16px rgba(255,195,74,.07)}
 @media(max-width:760px){.equipment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workshop-grid{grid-template-columns:1fr}.equip-slot{min-height:84px}}
+
+
+/* v66 stage route + collection log polish */
+body[data-stage="f002"] canvas#game{box-shadow:0 0 0 1px rgba(255,163,77,.22),0 0 34px rgba(255,120,35,.08)}
+body[data-stage="f003"] canvas#game{box-shadow:0 0 0 1px rgba(188,92,255,.28),0 0 34px rgba(188,92,255,.14)}
+.drop-log-panel{border:1px solid rgba(255,236,157,.20);background:linear-gradient(145deg,rgba(17,13,9,.84),rgba(8,12,18,.88));padding:12px;border-radius:16px;margin:12px 0;}
+.drop-log-list{display:grid;gap:7px;margin-top:10px;}
+.drop-log-row{display:grid;grid-template-columns:minmax(160px,1fr) 2fr;gap:8px;align-items:center;border:1px solid rgba(255,255,255,.10);background:rgba(5,7,10,.72);padding:9px;border-radius:12px;}
+.drop-log-row b{color:#fff;}
+.drop-log-row span{color:var(--muted);font-size:.86rem;}
+.drop-log-row.rarity-epic,.drop-log-row.rarity-legendary,.drop-log-row.rarity-relic{border-color:rgba(255,236,157,.38);box-shadow:inset 0 0 22px rgba(255,236,157,.06);}
+.stage-card small+small{color:#9aa3ad;}
+.stage-card:not(.locked):hover{transform:translateY(-1px);background:rgba(12,24,36,.88);}
+@media(max-width:760px){.drop-log-row{grid-template-columns:1fr}.stage-card b{font-size:17px}}

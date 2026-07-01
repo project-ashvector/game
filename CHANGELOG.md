@@ -1,4 +1,12 @@
 
+## v0.6.6 / v66 - Stage Route + Drop Archive
+- Added F-003 locked preview route and expanded stage definitions.
+- Added dynamic next-stage routing after a stage clear.
+- Added stage-specific battle backgrounds for F-002 and F-003.
+- Added Rare Drop Archive and boss-kill tracking to Inventory.
+- Added Q hotkey for Med Patch use.
+
+
 ## v64 / v0.6.4 - Skill Emblem Asset Pass
 - Imported uploaded `assets/skills` emblems.
 - Updated skill matrix, combat style picker, and inventory skill strip to show real emblem art.
