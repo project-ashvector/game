@@ -1046,3 +1046,11 @@ body[data-stage="f003"] canvas#game{box-shadow:0 0 0 1px rgba(188,92,255,.28),0 
 .stage-card small+small{color:#9aa3ad;}
 .stage-card:not(.locked):hover{transform:translateY(-1px);background:rgba(12,24,36,.88);}
 @media(max-width:760px){.drop-log-row{grid-template-columns:1fr}.stage-card b{font-size:17px}}
+
+
+/* v67 F-002 full-stage route polish */
+body[data-stage="f002"] .mission-strip{border-color:rgba(255,163,77,.38);box-shadow:0 0 22px rgba(255,120,35,.08) inset;}
+body[data-stage="f002"] .objective-tracker{background:linear-gradient(135deg,rgba(60,26,8,.82),rgba(8,14,20,.9));border-color:rgba(255,163,77,.32);}
+.stage-card small:nth-of-type(3),.stage-card small:nth-of-type(4){font-size:11px;line-height:1.25;opacity:.84;}
+.stage-card:not(.locked) small:nth-of-type(4){color:#eac27d;}
+.pre-battle-card .record-grid div:last-child{border-color:rgba(255,163,77,.28);}

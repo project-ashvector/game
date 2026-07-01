@@ -1,3 +1,12 @@
+# Changelog
+
+## v67 / v0.6.7
+- Rebuilt F-002 Ash Wastes Outpost into a real playable stage.
+- Added F-002 named enemies, boss, loot, stage dialogue, and stage rewards.
+- Added F-002 gear/material records and crafting hooks.
+- Improved Fracture Index stage cards with objective/reward/boss kill data.
+- Raised F-002/F-003 level requirements to Lv. 5 / Lv. 12.
+
 
 ## v0.6.6 / v66 - Stage Route + Drop Archive
 - Added F-003 locked preview route and expanded stage definitions.
