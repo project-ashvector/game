@@ -1021,3 +1021,14 @@ body:not(.game-active) .fs-persistent-stats{display:none}.stage-select-panel{gri
 .skill-row .skill-emblem img{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);}
 .style-card .skill-emblem{width:44px;height:44px;min-width:44px;}
 .inventory-skill-strip .skill-emblem img{inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);}
+
+
+/* v65 gear/equipment systems */
+.equipment-panel,.workshop-panel{border:1px solid rgba(0,217,255,.22);background:rgba(3,12,18,.72);border-radius:16px;padding:14px;margin:12px 0;box-shadow:inset 0 0 22px rgba(0,217,255,.06)}
+.equipment-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-top:10px}
+.equip-slot{min-height:92px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.035);border-radius:12px;padding:9px;display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center;position:relative;overflow:hidden}
+.equip-slot.empty{opacity:.62;border-style:dashed;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.equip-slot b{color:#dff8ff;text-transform:uppercase;font-size:.78rem;letter-spacing:.08em}
+.equip-slot span{font-weight:800;color:#fff}.equip-slot small{grid-column:1/-1;color:#b8d9e8;font-size:.72rem}.equip-slot button{grid-column:1/-1;padding:6px 8px;font-size:.72rem}
+.gear-statline{margin-top:10px;color:#8be9ff;font-weight:800;font-size:.85rem}.workshop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.workshop-grid>div{display:flex;flex-direction:column;gap:8px}.workshop-grid button{display:flex;justify-content:space-between;gap:10px;align-items:center;text-align:left}.gear-compare{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.05);border-radius:12px;padding:10px;margin:10px 0;display:grid;gap:5px}.gear-compare b{color:#8be9ff}.gear-compare span{color:#fff;font-weight:800}.operator-shard-panel{margin-top:14px}.operator-shard-panel button{width:100%;margin-top:8px}.rarity-legendary,.rarity-mythic,.rarity-relic,.rarity-singularity{box-shadow:0 0 18px rgba(255,195,74,.18), inset 0 0 16px rgba(255,195,74,.07)}
+@media(max-width:760px){.equipment-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.workshop-grid{grid-template-columns:1fr}.equip-slot{min-height:84px}}

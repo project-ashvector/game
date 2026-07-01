@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.3 // SKILL & STAGE MATRIX',
+    'Version 0.6.5 // GEAR, SHOP & STAGE MATRIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.3';
+  const BUILD_VERSION = '0.6.5';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -526,6 +526,7 @@
     if(state.flags?.chapterComplete && state.player?.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
     ensureStoryFlags();
     ensureUpgrades();
+    ensureEquipment();
   }
   function ensureStoryFlags(){
     state.flags ||= {};
@@ -584,9 +585,10 @@
     if(!cp || !cp.snapshot) return false;
     state = JSON.parse(JSON.stringify(cp.snapshot));
     state.checkpoint = cp;
-    state.player.hp = Math.max(1, Math.min(state.player.maxHp, state.player.hp || state.player.maxHp));
-    state.player.ep = Math.max(0, Math.min(state.player.maxEp, state.player.ep || state.player.maxEp));
     ensureProgression();
+    const caps=combatStatBlock();
+    state.player.hp = Math.max(1, Math.min(caps.maxHp, state.player.hp || caps.maxHp));
+    state.player.ep = Math.max(0, Math.min(caps.maxEp||state.player.maxEp, state.player.ep || (caps.maxEp||state.player.maxEp)));
     toast(`Restored: ${cp.label}`);
     return true;
   }
@@ -630,7 +632,7 @@
     const info=skillList[key] || {short:'?', emblem:'?'};
     const label=safeHtml(info.name||key);
     const glyph=safeHtml(info.emblem||info.short||'?');
-    const img=info.icon ? `<img src="${safeHtml(info.icon)}?v=64" alt="${label}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : '';
+    const img=info.icon ? `<img src="${safeHtml(info.icon)}?v=65" alt="${label}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : '';
     return `<span class="skill-emblem skill-${key}" aria-label="${label}">${img}<b>${glyph}</b></span>`;
   }
   function skillXpToNext(key){
@@ -644,20 +646,24 @@
   function combatStatBlock(){
     ensureProgression();
     const atkLv=skillLevel('attack'), strLv=skillLevel('strength'), defLv=skillLevel('defense'), hpLv=skillLevel('health');
+    const gear=equipmentBonuses();
     return {
       atkLv,strLv,defLv,hpLv,
-      atk: state.player.atk + Math.floor((atkLv-1)/5),
-      strBonus: Math.floor((strLv-1)/3),
-      def: state.player.def + Math.floor((defLv-1)/4),
-      maxHp: state.player.maxHp + Math.floor((hpLv-1)*2.5),
-      hpBonus: Math.floor((hpLv-1)*2.5),
-      crit: Math.min(0.25, 0.08 + atkLv * 0.0025),
+      atk: state.player.atk + Math.floor((atkLv-1)/5) + gear.atk,
+      strBonus: Math.floor((strLv-1)/3) + gear.str,
+      def: state.player.def + Math.floor((defLv-1)/4) + gear.def,
+      maxHp: state.player.maxHp + Math.floor((hpLv-1)*2.5) + gear.hp,
+      maxEp: state.player.maxEp + gear.ep,
+      hpBonus: Math.floor((hpLv-1)*2.5) + gear.hp,
+      crit: Math.min(0.35, 0.08 + atkLv * 0.0025 + gear.crit),
+      xpBonus: gear.xpBonus || 0,
       block: Math.floor((defLv-1)/5)
     };
   }
   function syncHpCap(){
     const stats=combatStatBlock();
     if(state.player.hp > stats.maxHp) state.player.hp = stats.maxHp;
+    if(stats.maxEp && state.player.ep > stats.maxEp) state.player.ep = stats.maxEp;
     return stats;
   }
   let autosaveQueued=false;
@@ -702,7 +708,7 @@
     state.map=parsed.map;
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
-    state.player.ep=Math.min(state.player.maxEp,state.player.ep || state.player.maxEp);
+    state.player.ep=Math.min(combatStatBlock().maxEp||state.player.maxEp,state.player.ep || (combatStatBlock().maxEp||state.player.maxEp));
     state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0};
     state.visited={[`${parsed.px},${parsed.py}`]:1};
     battle=null;
@@ -714,8 +720,9 @@
     return true;
   }
   function unlockNextStages(){
-    ensureProgression();
-    if(state.stages.f001?.complete && state.player.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
+    Object.keys(STAGE_DEFS).forEach(k=> state.stages ||= {});
+    const order=Object.keys(STAGE_DEFS);
+    order.forEach((key,i)=>{ state.stages[key] ||= {unlocked:i===0,complete:false}; if(i===0) state.stages[key].unlocked=true; const prev=order[i-1]; if(prev && state.stages[prev]?.complete && state.player.level >= STAGE_DEFS[key].levelReq) state.stages[key].unlocked=true; });
   }
 
 
@@ -726,17 +733,208 @@
     {id:'IT-004', name:'Keycard LV1', type:'Key Item', category:'Access', slot:'Story', rarity:'Uncommon', stackSize:1, sellPrice:0, asset:'assets/items/keycard_lv1.png', source:'assets/source/items/keycard_lv1.png', status:'production-icon', desc:'Level-one access credential for sealed maintenance zones.'},
     {id:'IT-005', name:'Archive Log 001', type:'Archive', category:'Lore', slot:'Database', rarity:'Rare', stackSize:1, sellPrice:0, asset:'assets/items/archive_log_001.png', source:'assets/source/items/archive_log_001.png', status:'production-icon', desc:'Recovered classified AVOS archive fragment.'},
     {id:'IT-006', name:'Operator Shard: Vyra', type:'Shard', category:'Operator', slot:'Recruitment', rarity:'Legendary', stackSize:999, sellPrice:75, asset:'assets/items/operator_shard_vyra.png', source:'assets/source/items/operator_shard_vyra.png', status:'production-icon', desc:'A synchronization shard keyed to Operator AV-001.'},
-    {id:'IT-007', name:'Rust Core', type:'Material', category:'Anomaly Core', slot:'Stack', rarity:'Rare', stackSize:99, sellPrice:25, asset:'assets/items/rust_core.png', source:'assets/source/items/rust_core.png', status:'production-icon', desc:'Dense anomaly core used in future crafting and operator growth.'}
+    {id:'IT-007', name:'Rust Core', type:'Material', category:'Anomaly Core', slot:'Stack', rarity:'Rare', stackSize:99, sellPrice:25, asset:'assets/items/rust_core.png', source:'assets/source/items/rust_core.png', status:'production-icon', desc:'Dense anomaly core used in future crafting and operator growth.'},
+    {id:'EQ-001', name:'Vector Training Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Common', stackSize:1, sellPrice:12, asset:'assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png', status:'gameplay-gear', levelReq:1, stats:{atk:3,str:1}, desc:'Starter blade tuned for Vyra. Good enough to make sewer monsters sign medical waivers.'},
+    {id:'EQ-002', name:'Sewer Guard Vest', type:'Equipment', category:'Armor', slot:'Chest', rarity:'Common', stackSize:1, sellPrice:10, asset:'assets/items/imported/armor/chest/common/it-1007_chest_common.png', status:'gameplay-gear', levelReq:1, stats:{def:2,hp:8}, desc:'A cleaned-up vest from an unlucky guard. Smells like plot progression.'},
+    {id:'EQ-003', name:'Rustcore Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Rare', stackSize:1, sellPrice:55, asset:'assets/items/imported/weapons/weapons/rare/it-1108_duskhowl_blade.png', status:'crafted-gear', levelReq:3, stats:{atk:8,str:4,crit:0.03}, desc:'Crafted from anomaly metal. The edge hums like it knows your browser history.'},
+    {id:'EQ-004', name:'Catalyst Core', type:'Equipment', category:'Core', slot:'Core', rarity:'Epic', stackSize:1, sellPrice:90, asset:'assets/items/corrupted_catalyst.png', status:'crafted-gear', levelReq:5, stats:{atk:3,def:2,hp:20,ep:10}, desc:'A dangerous core module that boosts every important stat and probably voids warranties.'},
+    {id:'EQ-005', name:'Toxic Monarch Relic', type:'Equipment', category:'Relic', slot:'Relic', rarity:'Legendary', stackSize:1, sellPrice:140, asset:'assets/items/rust_core.png', status:'boss-gear', levelReq:5, stats:{atk:5,str:5,def:3,hp:25,crit:0.05,xpBonus:0.05}, desc:'Boss-class relic. It whispers motivational insults before every fight.'}
   ];
 
   const importedItemRegistry = [{"id":"IT-1001","name":"Common Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/cape/common/it-1001_cape_common.png","status":"placeholder-art"},{"id":"IT-1002","name":"Epic Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/cape/epic/it-1002_cape_epic.png","status":"placeholder-art"},{"id":"IT-1003","name":"Legendary Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/cape/legendary/it-1003_cape_legendary.png","status":"placeholder-art"},{"id":"IT-1004","name":"Mythic Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/cape/mythic/it-1004_cape_mythic.png","status":"placeholder-art"},{"id":"IT-1005","name":"Rare Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/cape/rare/it-1005_cape_rare.png","status":"placeholder-art"},{"id":"IT-1006","name":"Uncommon Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/cape/uncommon/it-1006_cape_uncommon.png","status":"placeholder-art"},{"id":"IT-1007","name":"Common Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/chest/common/it-1007_chest_common.png","status":"placeholder-art"},{"id":"IT-1008","name":"Epic Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/chest/epic/it-1008_chest_epic.png","status":"placeholder-art"},{"id":"IT-1009","name":"Legendary Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/chest/legendary/it-1009_chest_legendary.png","status":"placeholder-art"},{"id":"IT-1010","name":"Mythic Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/chest/mythic/it-1010_chest_mythic.png","status":"placeholder-art"},{"id":"IT-1011","name":"Rare Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/chest/rare/it-1011_chest_rare.png","status":"placeholder-art"},{"id":"IT-1012","name":"Uncommon Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/chest/uncommon/it-1012_chest_uncommon.png","status":"placeholder-art"},{"id":"IT-1013","name":"Common Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/gloves/common/it-1013_gloves_common.png","status":"placeholder-art"},{"id":"IT-1014","name":"Epic Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/gloves/epic/it-1014_gloves_epic.png","status":"placeholder-art"},{"id":"IT-1015","name":"Legendary Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/gloves/legendary/it-1015_gloves_legendary.png","status":"placeholder-art"},{"id":"IT-1016","name":"Mythic Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/gloves/mythic/it-1016_gloves_mythic.png","status":"placeholder-art"},{"id":"IT-1017","name":"Rare Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/gloves/rare/it-1017_gloves_rare.png","status":"placeholder-art"},{"id":"IT-1018","name":"Uncommon Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/gloves/uncommon/it-1018_gloves_uncommon.png","status":"placeholder-art"},{"id":"IT-1019","name":"Common Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/helm/common/it-1019_helm_common.png","status":"placeholder-art"},{"id":"IT-1020","name":"Epic Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/helm/epic/it-1020_helm_epic.png","status":"placeholder-art"},{"id":"IT-1021","name":"Legendary Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/helm/legendary/it-1021_helm_legendary.png","status":"placeholder-art"},{"id":"IT-1022","name":"Mythic Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/helm/mythic/it-1022_helm_mythic.png","status":"placeholder-art"},{"id":"IT-1023","name":"Rare Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/helm/rare/it-1023_helm_rare.png","status":"placeholder-art"},{"id":"IT-1024","name":"Uncommon Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/helm/uncommon/it-1024_helm_uncommon.png","status":"placeholder-art"},{"id":"IT-1025","name":"Common Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/legs/common/it-1025_legs_common.png","status":"placeholder-art"},{"id":"IT-1026","name":"Epic Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/legs/epic/it-1026_legs_epic.png","status":"placeholder-art"},{"id":"IT-1027","name":"Legendary Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/legs/legendary/it-1027_legs_legendary.png","status":"placeholder-art"},{"id":"IT-1028","name":"Mythic Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/legs/mythic/it-1028_legs_mythic.png","status":"placeholder-art"},{"id":"IT-1029","name":"Rare Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/legs/rare/it-1029_legs_rare.png","status":"placeholder-art"},{"id":"IT-1030","name":"Uncommon Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/legs/uncommon/it-1030_legs_uncommon.png","status":"placeholder-art"},{"id":"IT-1031","name":"Common Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/neckless/common/it-1031_neckless_common.png","status":"placeholder-art"},{"id":"IT-1032","name":"Epic Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/neckless/epic/it-1032_neckless_epic.png","status":"placeholder-art"},{"id":"IT-1033","name":"Legendary Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/neckless/legendary/it-1033_neckless_legendary.png","status":"placeholder-art"},{"id":"IT-1034","name":"Mythic Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/neckless/mythic/it-1034_neckless_mythic.png","status":"placeholder-art"},{"id":"IT-1035","name":"Rare Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/neckless/rare/it-1035_neckless_rare.png","status":"placeholder-art"},{"id":"IT-1036","name":"Uncommon Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/neckless/uncommon/it-1036_neckless_uncommon.png","status":"placeholder-art"},{"id":"IT-1037","name":"Common Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/ring/common/it-1037_ring_common.png","status":"placeholder-art"},{"id":"IT-1038","name":"Epic Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/ring/epic/it-1038_ring_epic.png","status":"placeholder-art"},{"id":"IT-1039","name":"Legendary Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/ring/legendary/it-1039_ring_legendary.png","status":"placeholder-art"},{"id":"IT-1040","name":"Mythic Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/ring/mythic/it-1040_ring_mythic.png","status":"placeholder-art"},{"id":"IT-1041","name":"Rare Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/ring/rare/it-1041_ring_rare.png","status":"placeholder-art"},{"id":"IT-1042","name":"Uncommon Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/ring/uncommon/it-1042_ring_uncommon.png","status":"placeholder-art"},{"id":"IT-1043","name":"Bread","type":"Consumable","category":"Consumables","slot":"Consumables","rarity":"Common","stackSize":999,"sellPrice":5,"asset":"assets/items/imported/consumables/consumables/common/it-1043_bread.png","status":"production-art"},{"id":"IT-1044","name":"Ashthorn Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1044_ashthorn_dagger.png","status":"production-art"},{"id":"IT-1045","name":"Blightweave Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1045_blightweave_staff.png","status":"production-art"},{"id":"IT-1046","name":"Bloodrot Sword","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1046_bloodrot_sword.png","status":"production-art"},{"id":"IT-1047","name":"Cinderbite Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1047_cinderbite_dagger.png","status":"production-art"},{"id":"IT-1048","name":"Deathbloom Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1048_deathbloom_staff.png","status":"production-art"},{"id":"IT-1049","name":"Duskbranch Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1049_duskbranch_staff.png","status":"production-art"},{"id":"IT-1050","name":"Duskfang Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1050_duskfang_blade.png","status":"production-art"},{"id":"IT-1051","name":"Embercrack Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1051_embercrack_axe.png","status":"production-art"},{"id":"IT-1052","name":"Frostbite Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1052_frostbite_blade.png","status":"production-art"},{"id":"IT-1053","name":"Gloomroot Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1053_gloomroot_bow.png","status":"production-art"},{"id":"IT-1054","name":"Gloomspire Scepter","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1054_gloomspire_scepter.png","status":"production-art"},{"id":"IT-1055","name":"Gravemarrow Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1055_gravemarrow_spear.png","status":"production-art"},{"id":"IT-1056","name":"Gravethorn Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1056_gravethorn_warblade.png","status":"production-art"},{"id":"IT-1057","name":"Marshfang Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1057_marshfang_dagger.png","status":"production-art"},{"id":"IT-1058","name":"Mirefang Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1058_mirefang_spear.png","status":"production-art"},{"id":"IT-1059","name":"Mirewood Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1059_mirewood_staff.png","status":"production-art"},{"id":"IT-1060","name":"Nightthorn Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1060_nightthorn_bow.png","status":"production-art"},{"id":"IT-1061","name":"Plaguefang Claw","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1061_plaguefang_claw.png","status":"production-art"},{"id":"IT-1062","name":"Shardstone Mace","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1062_shardstone_mace.png","status":"production-art"},{"id":"IT-1063","name":"Smogcoil Whip","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1063_smogcoil_whip.png","status":"production-art"},{"id":"IT-1064","name":"Sootveil Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1064_sootveil_blade.png","status":"production-art"},{"id":"IT-1065","name":"Soulshard Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1065_soulshard_wand.png","status":"production-art"},{"id":"IT-1066","name":"Soulspike Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1066_soulspike_dagger.png","status":"production-art"},{"id":"IT-1067","name":"Thornrend Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1067_thornrend_axe.png","status":"production-art"},{"id":"IT-1068","name":"Thornslicer Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1068_thornslicer_saber.png","status":"production-art"},{"id":"IT-1069","name":"Bloodshard Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1069_bloodshard_warhammer.png","status":"production-art"},{"id":"IT-1070","name":"Duskdrift Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1070_duskdrift_longbow.png","status":"production-art"},{"id":"IT-1071","name":"Duskspire Catalyst","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1071_duskspire_catalyst.png","status":"production-art"},{"id":"IT-1072","name":"Emberwrath Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1072_emberwrath_crossbow.png","status":"production-art"},{"id":"IT-1073","name":"Gloomthorn Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1073_gloomthorn_warblade.png","status":"production-art"},{"id":"IT-1074","name":"Gravetide Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1074_gravetide_pike.png","status":"production-art"},{"id":"IT-1075","name":"Mirethorn Greatblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1075_mirethorn_greatblade.png","status":"production-art"},{"id":"IT-1076","name":"Plaguewrought Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1076_plaguewrought_glaive.png","status":"production-art"},{"id":"IT-1077","name":"Shardrift Longspear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1077_shardrift_longspear.png","status":"production-art"},{"id":"IT-1078","name":"Soulflare Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1078_soulflare_bow.png","status":"production-art"},{"id":"IT-1079","name":"Soulreaver Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1079_soulreaver_scythe.png","status":"production-art"},{"id":"IT-1080","name":"Soulshatter Claws","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1080_soulshatter_claws.png","status":"production-art"},{"id":"IT-1081","name":"Venomspire Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1081_venomspire_spear.png","status":"production-art"},{"id":"IT-1082","name":"Voidcarver Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1082_voidcarver_blade.png","status":"production-art"},{"id":"IT-1083","name":"Wraithvine Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1083_wraithvine_staff.png","status":"production-art"},{"id":"IT-1084","name":"Ashvenom Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1084_ashvenom_saber.png","status":"production-art"},{"id":"IT-1085","name":"Bloodspire Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1085_bloodspire_blade.png","status":"production-art"},{"id":"IT-1086","name":"Duskfang Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1086_duskfang_scythe.png","status":"production-art"},{"id":"IT-1087","name":"Duskthorn Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1087_duskthorn_pike.png","status":"production-art"},{"id":"IT-1088","name":"Gravemarrow Halberd","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1088_gravemarrow_halberd.png","status":"production-art"},{"id":"IT-1089","name":"Soulforge Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1089_soulforge_staff.png","status":"production-art"},{"id":"IT-1090","name":"Soulrend Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1090_soulrend_longbow.png","status":"production-art"},{"id":"IT-1091","name":"Voidheart Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1091_voidheart_greataxe.png","status":"production-art"},{"id":"IT-1092","name":"Voidlash Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1092_voidlash_crossbow.png","status":"production-art"},{"id":"IT-1093","name":"Wraithbound Blades","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1093_wraithbound_blades.png","status":"production-art"},{"id":"IT-1094","name":"Ashbreaker Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1094_ashbreaker_pike.png","status":"production-art"},{"id":"IT-1095","name":"Duskveil Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1095_duskveil_longbow.png","status":"production-art"},{"id":"IT-1096","name":"Gravemind Scepter","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1096_gravemind_scepter.png","status":"production-art"},{"id":"IT-1097","name":"Shardking Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1097_shardking_blade.png","status":"production-art"},{"id":"IT-1098","name":"Smolderthorn Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1098_smolderthorn_glaive.png","status":"production-art"},{"id":"IT-1099","name":"Soulreign Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1099_soulreign_bow.png","status":"production-art"},{"id":"IT-1100","name":"Soulshatter Greatblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1100_soulshatter_greatblade.png","status":"production-art"},{"id":"IT-1101","name":"Voidborne Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1101_voidborne_scythe.png","status":"production-art"},{"id":"IT-1102","name":"Voidrend Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1102_voidrend_warhammer.png","status":"production-art"},{"id":"IT-1103","name":"Wraithforged Twinblades","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1103_wraithforged_twinblades.png","status":"production-art"},{"id":"IT-1104","name":"Ashdrift Longspear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1104_ashdrift_longspear.png","status":"production-art"},{"id":"IT-1105","name":"Ashgloom Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1105_ashgloom_warblade.png","status":"production-art"},{"id":"IT-1106","name":"Bloodcurse Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1106_bloodcurse_wand.png","status":"production-art"},{"id":"IT-1107","name":"Bloodveil Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1107_bloodveil_greataxe.png","status":"production-art"},{"id":"IT-1108","name":"Duskhowl Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1108_duskhowl_blade.png","status":"production-art"},{"id":"IT-1109","name":"Duskshard Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1109_duskshard_glaive.png","status":"production-art"},{"id":"IT-1110","name":"Duskthorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1110_duskthorn_longbow.png","status":"production-art"},{"id":"IT-1111","name":"Embershard Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1111_embershard_crossbow.png","status":"production-art"},{"id":"IT-1112","name":"Gravemist Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1112_gravemist_scythe.png","status":"production-art"},{"id":"IT-1113","name":"Gravethorn Cleaver","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1113_gravethorn_cleaver.png","status":"production-art"},{"id":"IT-1114","name":"Mirefang Longsword","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1114_mirefang_longsword.png","status":"production-art"},{"id":"IT-1115","name":"Rotfang Claws","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1115_rotfang_claws.png","status":"production-art"},{"id":"IT-1116","name":"Shatterspike Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1116_shatterspike_blade.png","status":"production-art"},{"id":"IT-1117","name":"Soulbind Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1117_soulbind_bow.png","status":"production-art"},{"id":"IT-1118","name":"Soulpiercer Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1118_soulpiercer_longbow.png","status":"production-art"},{"id":"IT-1119","name":"Soulshard Catalyst","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1119_soulshard_catalyst.png","status":"production-art"},{"id":"IT-1120","name":"Venomspire Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1120_venomspire_pike.png","status":"production-art"},{"id":"IT-1121","name":"Venomthorn Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1121_venomthorn_saber.png","status":"production-art"},{"id":"IT-1122","name":"Voidreaver Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1122_voidreaver_blade.png","status":"production-art"},{"id":"IT-1123","name":"Wraithbone Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1123_wraithbone_staff.png","status":"production-art"},{"id":"IT-1124","name":"Ashwrought Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1124_ashwrought_greataxe.png","status":"production-art"},{"id":"IT-1125","name":"Blightthorn Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1125_blightthorn_bow.png","status":"production-art"},{"id":"IT-1126","name":"Bloodthorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1126_bloodthorn_longbow.png","status":"production-art"},{"id":"IT-1127","name":"Cinderspine Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1127_cinderspine_crossbow.png","status":"production-art"},{"id":"IT-1128","name":"Cryptvine Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1128_cryptvine_bow.png","status":"production-art"},{"id":"IT-1129","name":"Duskchill Knife","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1129_duskchill_knife.png","status":"production-art"},{"id":"IT-1130","name":"Duskroot Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1130_duskroot_wand.png","status":"production-art"},{"id":"IT-1131","name":"Duskveil Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1131_duskveil_glaive.png","status":"production-art"},{"id":"IT-1132","name":"Emberfang Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png","status":"production-art"},{"id":"IT-1133","name":"Gravemind Flail","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1133_gravemind_flail.png","status":"production-art"},{"id":"IT-1134","name":"Gravetide Mace","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1134_gravetide_mace.png","status":"production-art"},{"id":"IT-1135","name":"Marrowshard Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1135_marrowshard_blade.png","status":"production-art"},{"id":"IT-1136","name":"Mirethorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1136_mirethorn_longbow.png","status":"production-art"},{"id":"IT-1137","name":"Mireweaver Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1137_mireweaver_staff.png","status":"production-art"},{"id":"IT-1138","name":"Plaguebite Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1138_plaguebite_axe.png","status":"production-art"},{"id":"IT-1139","name":"Shardfang Rapier","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1139_shardfang_rapier.png","status":"production-art"},{"id":"IT-1140","name":"Sootcrack Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1140_sootcrack_warhammer.png","status":"production-art"},{"id":"IT-1141","name":"Thornpierce Lance","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1141_thornpierce_lance.png","status":"production-art"},{"id":"IT-1142","name":"Voidpiercer Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1142_voidpiercer_spear.png","status":"production-art"},{"id":"IT-1143","name":"Voidwhisper Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1143_voidwhisper_staff.png","status":"production-art"}];
 
+
+
+  // v65: Equipment, drops, vendor/crafting, and operator shard sync.
+  const EQUIPMENT_SLOTS = ['Weapon','Helmet','Chest','Legs','Gloves','Boots','Cape','Ring','Core','Relic'];
+  const SLOT_LABELS = {Weapon:'Weapon',Helmet:'Helmet',Chest:'Chest',Legs:'Legs',Gloves:'Gloves',Boots:'Boots',Cape:'Cape',Ring:'Ring',Core:'Core',Relic:'Relic'};
+  const RARITY_POWER = {Common:1,Uncommon:2,Rare:4,Epic:7,Legendary:11,Mythic:16,Relic:20,Singularity:26};
+  const SHOP_STOCK = [
+    {name:'Med Patch', price:18, qty:1, label:'Buy Med Patch'},
+    {name:'Vector Training Blade', price:45, qty:1, label:'Buy Training Blade'},
+    {name:'Sewer Guard Vest', price:40, qty:1, label:'Buy Guard Vest'}
+  ];
+  const CRAFTING_RECIPES = [
+    {id:'rustcore_blade', name:'Rustcore Blade', makes:'Rustcore Blade', cost:{'Scrap Metal':6,'Rust Core':1,'Corrupted Catalyst':1}, credits:35},
+    {id:'catalyst_core', name:'Catalyst Core', makes:'Catalyst Core', cost:{'Scrap Metal':10,'Rust Core':2,'Corrupted Catalyst':2}, credits:70}
+  ];
+  function createEmptyEquipment(){ const o={}; EQUIPMENT_SLOTS.forEach(s=>o[s]=null); return o; }
+  function normalizeEquipSlot(slot, itemType=''){
+    const s=String(slot||itemType||'').toLowerCase();
+    if(s.includes('weapon')) return 'Weapon';
+    if(s.includes('helm')) return 'Helmet';
+    if(s.includes('chest')) return 'Chest';
+    if(s.includes('leg')) return 'Legs';
+    if(s.includes('glove')) return 'Gloves';
+    if(s.includes('boot')) return 'Boots';
+    if(s.includes('cape')) return 'Cape';
+    if(s.includes('ring')) return 'Ring';
+    if(s.includes('core')) return 'Core';
+    if(s.includes('relic') || s.includes('neck')) return 'Relic';
+    return '';
+  }
+  function isEquipmentLike(item){ return !!normalizeEquipSlot(item?.slot, item?.type) || item?.type === 'Weapon' || item?.type === 'Equipment'; }
+  function rarityPower(r){ return RARITY_POWER[r] || 1; }
+  function generatedGearStats(item){
+    const slot=normalizeEquipSlot(item.slot, item.type);
+    if(!slot) return {};
+    const p=rarityPower(item.rarity);
+    if(slot==='Weapon') return {atk:2+p*2, str:Math.max(1,Math.floor(p/2)), crit:Math.min(.12, p*.006)};
+    if(slot==='Core') return {atk:Math.ceil(p/2), def:Math.ceil(p/2), hp:6+p*3, ep:4+p*2};
+    if(slot==='Ring' || slot==='Relic') return {atk:Math.ceil(p/2), ep:5+p*2, crit:Math.min(.09, p*.005), xpBonus:Math.min(.12, p*.006)};
+    if(slot==='Cape') return {def:Math.ceil(p/2), hp:5+p*3, ep:p};
+    return {def:1+p, hp:4+p*4};
+  }
+  function gearLevelReq(item){
+    if(item.levelReq) return item.levelReq;
+    const r=String(item.rarity||'Common');
+    return ({Common:1,Uncommon:2,Rare:4,Epic:7,Legendary:10,Mythic:15,Relic:20,Singularity:30}[r] || 1);
+  }
+  function statSummary(stats={}){
+    const parts=[];
+    [['atk','ATK'],['str','STR'],['def','DEF'],['hp','HP'],['ep','EP']].forEach(([k,l])=>{ if(stats[k]) parts.push(`+${stats[k]} ${l}`); });
+    if(stats.crit) parts.push(`+${Math.round(stats.crit*100)}% Crit`);
+    if(stats.xpBonus) parts.push(`+${Math.round(stats.xpBonus*100)}% XP`);
+    return parts.join(' // ') || 'No stat bonus';
+  }
+  function ensureEquipment(){
+    state.equipment ||= createEmptyEquipment();
+    EQUIPMENT_SLOTS.forEach(s=>{ if(!(s in state.equipment)) state.equipment[s]=null; });
+    state.operatorSyncRank ||= 0;
+    state.unlockedOperators ||= {vyra:true};
+    state.inventory ||= {};
+    if(!state._v65StarterGear){
+      if(!state.inventory['Vector Training Blade']) state.inventory['Vector Training Blade']=1;
+      if(!state.inventory['Sewer Guard Vest']) state.inventory['Sewer Guard Vest']=1;
+      state.equipment.Weapon ||= 'Vector Training Blade';
+      state.equipment.Chest ||= 'Sewer Guard Vest';
+      state._v65StarterGear=true;
+    }
+  }
+  function equippedItems(){ ensureEquipment(); return Object.entries(state.equipment).filter(([,name])=>!!name).map(([slot,name])=>({slot,name,item:findItemRecord(name)})); }
+  function equipmentBonuses(){
+    ensureEquipment();
+    const total={atk:0,str:0,def:0,hp:0,ep:0,crit:0,xpBonus:0};
+    equippedItems().forEach(({item})=>{
+      const stats=item.stats || generatedGearStats(item);
+      Object.keys(total).forEach(k=> total[k] += Number(stats[k]||0));
+    });
+    const sync=state.operatorSyncRank||0;
+    total.atk += sync*2;
+    total.def += sync;
+    total.hp += sync*8;
+    total.ep += sync*3;
+    return total;
+  }
+  function gearPower(){ const b=equipmentBonuses(); return b.atk*3 + b.str*2 + b.def*3 + Math.floor(b.hp/4) + Math.floor(b.ep/3) + Math.round((b.crit+b.xpBonus)*100); }
+  function canEquipItem(item){
+    const slot=normalizeEquipSlot(item.slot, item.type);
+    if(!slot) return {ok:false, reason:'Not equipment'};
+    if(state.player.level < gearLevelReq(item)) return {ok:false, reason:`Requires Player Lv. ${gearLevelReq(item)}`};
+    return {ok:true, slot};
+  }
+  function equipItem(name){
+    ensureEquipment();
+    if(!state.inventory[name]){ toast('You do not own that gear.'); return; }
+    const item=findItemRecord(name);
+    const check=canEquipItem(item);
+    if(!check.ok){ toast(check.reason); return; }
+    state.equipment[check.slot]=name;
+    syncHpCap();
+    log(`Equipped ${name} in ${check.slot}.`);
+    save(true); renderAll(); renderInventoryDb(); toast(`Equipped: ${name}`);
+  }
+  function unequipSlot(slot){
+    ensureEquipment();
+    if(!state.equipment[slot]) return;
+    const old=state.equipment[slot];
+    state.equipment[slot]=null;
+    syncHpCap();
+    log(`Unequipped ${old}.`);
+    save(true); renderAll(); renderInventoryDb();
+  }
+  function gearRegistry(){ return [...coreItemRegistry, ...importedItemRegistry].map(normalizeItem).filter(isEquipmentLike); }
+  function pickGearDrop(wasBoss=false){
+    const stage=stageDef();
+    const pool=gearRegistry().filter(item=>{
+      const req=gearLevelReq(item);
+      if(req > Math.max(state.player.level+3, stage.levelReq+4)) return false;
+      if(!wasBoss && ['Legendary','Mythic','Relic','Singularity'].includes(item.rarity)) return false;
+      return true;
+    });
+    if(!pool.length) return null;
+    const roll=Math.random();
+    const targetRarity = wasBoss ? (roll<.12?'Legendary':roll<.45?'Epic':'Rare') : (roll<.18?'Rare':roll<.48?'Uncommon':'Common');
+    const rarityPool=pool.filter(i=>i.rarity===targetRarity);
+    const chosen=(rarityPool.length?rarityPool:pool)[Math.floor(Math.random()*(rarityPool.length?rarityPool.length:pool.length))];
+    return chosen;
+  }
+  function buyShopItem(name){
+    const entry=SHOP_STOCK.find(x=>x.name===name); if(!entry) return;
+    if(state.player.credits < entry.price){ toast(`Need ${entry.price} credits.`); return; }
+    state.player.credits -= entry.price; addItem(entry.name, entry.qty||1); log(`Purchased ${entry.name}.`); save(true); renderAll(); renderInventoryDb();
+  }
+  function canCraft(recipe){
+    const missing=[];
+    Object.entries(recipe.cost).forEach(([name,qty])=>{ if((state.inventory[name]||0)<qty) missing.push(`${qty} ${name}`); });
+    if(state.player.credits < recipe.credits) missing.push(`${recipe.credits} credits`);
+    return missing;
+  }
+  function craftRecipe(id){
+    const r=CRAFTING_RECIPES.find(x=>x.id===id); if(!r) return;
+    const missing=canCraft(r);
+    if(missing.length){ toast(`Need: ${missing.join(', ')}`); return; }
+    Object.entries(r.cost).forEach(([name,qty])=>{ state.inventory[name]-=qty; if(state.inventory[name]<=0) delete state.inventory[name]; });
+    state.player.credits -= r.credits;
+    addItem(r.makes,1);
+    log(`Crafted ${r.makes}.`);
+    save(true); renderAll(); renderInventoryDb(); toast(`Crafted: ${r.makes}`);
+  }
+  function syncVyra(){
+    ensureEquipment();
+    const cost = 5 + (state.operatorSyncRank||0)*3;
+    const owned = state.inventory['Operator Shard: Vyra'] || 0;
+    if(state.operatorSyncRank >= 10){ toast('Vyra sync is maxed for this build.'); return; }
+    if(owned < cost){ toast(`Need ${cost} Vyra Shards.`); return; }
+    state.inventory['Operator Shard: Vyra'] -= cost;
+    if(state.inventory['Operator Shard: Vyra'] <= 0) delete state.inventory['Operator Shard: Vyra'];
+    state.operatorSyncRank++;
+    state.player.hp = Math.min(combatStatBlock().maxHp, state.player.hp + 12);
+    log(`Vyra Sync raised to Rank ${state.operatorSyncRank}.`);
+    save(true); renderAll(); renderOperatorDb(); toast(`Vyra Sync Rank ${state.operatorSyncRank}`);
+  }
+  function renderEquipmentPanel(){
+    ensureEquipment();
+    const rows=EQUIPMENT_SLOTS.map(slot=>{
+      const name=state.equipment[slot];
+      if(!name) return `<div class="equip-slot empty"><b>${slot}</b><span>Empty</span></div>`;
+      const item=findItemRecord(name);
+      return `<div class="equip-slot ${rarityClass(item.rarity)}"><b>${slot}</b>${itemIconHtml(item)}<span>${safeHtml(name)}</span><small>${statSummary(item.stats)}</small><button data-unequip-slot="${slot}" onclick="window.AV.unequipSlot('${slot}')">Unequip</button></div>`;
+    }).join('');
+    const b=equipmentBonuses();
+    return `<section class="equipment-panel"><div class="record-kicker">EQUIPPED GEAR</div><h3>Operator Loadout</h3><div class="equipment-grid">${rows}</div><div class="gear-statline">Gear Power ${gearPower()} // Gear: +${b.atk} ATK, +${b.str} STR, +${b.def} DEF, +${b.hp} HP, +${b.ep} EP</div></section>`;
+  }
+  function renderWorkshopPanel(){
+    const shop=SHOP_STOCK.map(s=>`<button onclick="window.AV.buyShopItem('${s.name}')"><b>${s.label}</b><span>${s.price} credits</span></button>`).join('');
+    const recipes=CRAFTING_RECIPES.map(r=>`<button onclick="window.AV.craftRecipe('${r.id}')"><b>Craft ${r.name}</b><span>${Object.entries(r.cost).map(([n,q])=>q+' '+n).join(', ')} + ${r.credits} credits</span></button>`).join('');
+    return `<section class="workshop-panel"><div class="record-kicker">FIELD VENDOR / CRAFTING</div><h3>Gear Terminal</h3><div class="workshop-grid"><div><b>Vendor</b>${shop}</div><div><b>Crafting</b>${recipes}</div></div></section>`;
+  }
+  function renderOperatorDb(){
+    ensureEquipment();
+    const sync=$('operatorSync'); if(sync) sync.textContent=`Rank ${state.operatorSyncRank}/10`;
+    const host=document.querySelector('#operatorOverlay .operator-data'); if(!host) return;
+    let panel=$('operatorShardPanel');
+    if(!panel){ panel=document.createElement('div'); panel.id='operatorShardPanel'; panel.className='operator-shard-panel protocol-list'; host.appendChild(panel); }
+    const cost=5+(state.operatorSyncRank||0)*3;
+    const owned=state.inventory['Operator Shard: Vyra']||0;
+    panel.innerHTML=`<div><b>Shard Sync</b><span>Owned ${owned} // Next rank cost ${cost} shards</span></div><div><b>Rank Bonus</b><span>Each rank adds +2 ATK, +1 DEF, +8 HP, +3 EP.</span></div><button onclick="window.AV.syncVyra()" ${owned<cost?'disabled':''}>Synchronize Vyra</button>`;
+  }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v3', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v3', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -759,7 +957,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages}; state=newGameState(); Object.assign(state, keep); } state.mapVersion='sector_stage_v3'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages}; state=newGameState(); Object.assign(state, keep); } state.mapVersion='sector_stage_v3'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -789,9 +987,9 @@
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
+    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; if(g){addItem(g.name,1); log('Standard Cache opened: Med Patch + 20 credits + '+g.name+'.');} else log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
     if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce('terminal'); pulseObjective(currentObjectiveText());}
-    if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
+    if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce('lore');}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
     if(c==='X'){ if(state.flags.chapterComplete){showChapterClearPanel();} else if(state.flags.bossDefeated && state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){completeChapter();} else toast('Exit protocol denied. Finish the objective.');}
@@ -819,7 +1017,7 @@
     $('preBattleKicker').textContent=`${stage.id} // ${code==='B'?'BOSS CLASS':'HOSTILE ENTITY'}`;
     $('preBattleName').textContent=def.name;
     $('preBattleText').textContent=code==='B'?'AVOS: Boss-class signature confirmed. This is where confidence gets expensive.':'AVOS: Hostile signature ahead. Verify HP, pick a training focus, then make it regret spawning.';
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
   }
@@ -922,7 +1120,7 @@
     state.flags.chapterClearSeen=true;
     state.stages[def.key] ||= {unlocked:true,complete:false};
     state.stages[def.key].complete=true;
-    if(def.key==='f001' && state.player.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked=true;
+    unlockNextStages();
     SfxManager.levelWin();
     log(`${def.id} complete: Core recovered. Rewards delivered to inventory.`);
     save(true); renderAll(); showChapterClearPanel();
@@ -976,11 +1174,11 @@
     const mod=combatModifiers();
     const enemyPct = Math.max(0, Math.min(100, 100*battle.enemy.hp/battle.enemy.maxHp));
     const heroMax = combatStatBlock().maxHp; const heroPct = Math.max(0, Math.min(100, 100*state.player.hp/heroMax));
-    const epPct = Math.max(0, Math.min(100, 100*state.player.ep/state.player.maxEp));
+    const epMax = combatStatBlock().maxEp || state.player.maxEp; const epPct = Math.max(0, Math.min(100, 100*state.player.ep/epMax));
     $('battleHp').innerHTML=`
       <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
       <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
-      <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${state.player.maxEp}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
+      <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level}</span></div>`;
     $('attackButtons').innerHTML='';
     attacks.forEach((a,i)=>{
@@ -1005,8 +1203,7 @@
       grantStyleXp(mod.focus, 3);
     } else {
       SfxManager.slash();
-      let crit=Math.random()<(0.15+mod.critBonus);
-      const stats=combatStatBlock(); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
+      const stats=combatStatBlock(); let crit=Math.random()<(stats.crit+mod.critBonus); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
       battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
       $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.`;
       showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
@@ -1061,9 +1258,12 @@
     const wasAnomaly = battle.code === 'E';
     state.flags.anomaliesCleared += wasAnomaly?1:0;
     if(wasAnomaly && state.flags.anomaliesCleared >= 3 && !state.flags.bossUnlocked){state.flags.bossUnlocked=true; log('AVOS forced the boss route open. Somebody in security is getting demoted.'); pulseObjective(currentObjectiveText());}
-    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1);}
-    gainXp(e.xp); grantStyleXp(state.combatStyle || 'attack', e.xp); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
-    log(`Victory: ${e.name}. +${e.xp} Sync, +${e.credits} credits, loot recovered.`);
+    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); if(!state.inventory['Toxic Monarch Relic']){ loot.push('Toxic Monarch Relic'); addItem('Toxic Monarch Relic',1); }}
+    const gearDrop = (!wasBoss && Math.random() < 0.42) ? pickGearDrop(false) : (wasBoss ? pickGearDrop(true) : null);
+    if(gearDrop && !loot.includes(gearDrop.name)){ loot.push(gearDrop.name); addItem(gearDrop.name,1); }
+    const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
+    gainXp(xpGain); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
+    log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
     showVictoryPanel(e, loot, {wasBoss, wasAnomaly}); queueAutosave();
   }
 
@@ -1090,7 +1290,7 @@
     const panel=$('battleVictory');
     const uniqueLoot = [...new Set(loot)];
     const nextLabel = meta.wasBoss ? 'Recover Toxic Core' : 'Return to Fracture';
-    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${enemy.xp} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
+    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)))} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
     if(btn) btn.onclick=()=>{
@@ -1102,7 +1302,7 @@
     };
   }
 
-  function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1; state.player.hp=combatStatBlock().maxHp; state.player.ep=state.player.maxEp; log(`Player Level increased to ${state.player.level}.`); unlockNextStages();} queueAutosave(); }
+  function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1; state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; log(`Player Level increased to ${state.player.level}.`); unlockNextStages();} queueAutosave(); }
   function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=combatStatBlock().maxHp){toast('HP already full.');return;} const heal=25+(state.upgrades.medtech||0)*10; state.inventory['Med Patch']--; state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); log(`Used Med Patch. +${heal} HP.`); renderAll(); }
   function render(){
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
@@ -1236,11 +1436,11 @@
     const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
-    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
     $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
-      return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':''}</div>`;
+      return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':(isEquipmentLike(item)?`<button onclick="window.AV.equipItem('${safeHtml(k)}')">Equip</button>`:'')}</div>`;
     }).join('')||'<div class="invrow">No recovered assets.</div>';
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
@@ -1252,6 +1452,7 @@
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
     renderFullscreenHud();
+    renderOperatorDb();
   }
   function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
   function openOverlay(id){
@@ -1279,6 +1480,7 @@
     try{
       if(id==='anomalyOverlay') renderAnomalyDb();
       if(id==='inventoryOverlay') renderInventoryDb();
+      if(id==='operatorOverlay') renderOperatorDb();
       if(id==='fractureOverlay') renderFractureDb();
       if(id==='missionOverlay') renderUI();
       if(id==='playtestOverlay') renderUI();
@@ -1396,7 +1598,7 @@
     return normalizeItem({name, asset:'assets/items/scrap_metal.png', rarity:'Common', type:'Recovered Asset', description:'Recovered item registered by AVOS.'});
   }
   function normalizeItem(item){
-    return {
+    const base = {
       ...item,
       type: item.type || item.category || 'Item',
       rarity: item.rarity || rarityFromCategory(item.category),
@@ -1404,6 +1606,14 @@
       stackSize: item.stackSize || item.stack || (item.type === 'Equipment' ? 1 : 999),
       sellPrice: item.sellPrice || item.value || 0
     };
+    const slot=normalizeEquipSlot(base.slot, base.type);
+    if(slot){
+      base.equipSlot=slot;
+      base.stats = base.stats || generatedGearStats(base);
+      base.levelReq = gearLevelReq(base);
+      if(!String(base.desc||'').includes('Stats:')) base.desc = `${base.desc} Stats: ${statSummary(base.stats)}. Requires Player Lv. ${base.levelReq}.`;
+    }
+    return base;
   }
   function rarityFromCategory(category){
     const c = String(category||'').toLowerCase();
@@ -1422,12 +1632,12 @@
   function renderInventoryDb(){
     const owned = Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
-      return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${k==='Med Patch'?'<em>Usable</em>':'<em>Stored</em>'}</button>`;
+      return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${k==='Med Patch'?'<em>Usable</em>':(Object.values(state.equipment||{}).includes(k)?'<em>Equipped</em>':(isEquipmentLike(item)?'<em>Gear</em>':'<em>Stored</em>'))}</button>`;
     }).join('') || '<div class="invrow">No recovered assets yet.</div>';
     const fullRegistry=[...coreItemRegistry.map(normalizeItem), ...importedItemRegistry.map(normalizeItem)];
-    const stats=combatStatBlock(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
+    const stats=combatStatBlock(); const epMax=stats.maxEp||state.player.maxEp; const equipmentPanel=renderEquipmentPanel(); const workshopPanel=renderWorkshopPanel(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
     $('inventoryDatabaseList').innerHTML=`
-      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${state.player.maxEp} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div><div class="item-tools">
+      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${epMax} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div>${equipmentPanel}${workshopPanel}<div class="item-tools">
         <input id="itemSearch" placeholder="Search items / weapons / armor...">
         <div class="item-filter-row">
           <select id="itemFilter"><option value="all">All categories</option><option value="Weapon">Weapons</option><option value="Equipment">Equipment</option><option value="Consumable">Consumables</option><option value="Material">Materials</option><option value="Key Item">Key Items</option><option value="Archive">Archives</option><option value="Shard">Operator Shards</option></select>
@@ -1443,7 +1653,7 @@
       <div id="itemRegistryButtons" class="item-grid"></div>`;
     const showItemDetail=(itemNameOrId)=>{
       const item = fullRegistry.find(d=>d.id===itemNameOrId || d.name===itemNameOrId) || findItemRecord(itemNameOrId);
-      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.slot?`// ${item.slot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Status</b><span>${item.status || 'active'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${item.name==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use Med Patch</button>':''}`;
+      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.equipSlot?`// ${item.equipSlot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Req Lv</b><span>${item.levelReq || '-'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${item.equipSlot?`<div class="gear-compare"><b>Stats</b><span>${statSummary(item.stats)}</span><small>Current ${item.equipSlot}: ${state.equipment?.[item.equipSlot] || 'Empty'}</small></div><button onclick="window.AV.equipItem('${safeHtml(item.name)}')">Equip ${item.equipSlot}</button>`:''}${item.name==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use Med Patch</button>':''}`;
     };
     const drawItems=()=>{
       const q=($('itemSearch').value||'').toLowerCase();
@@ -1517,12 +1727,12 @@
   function toggleFullscreenHelp(){ ensureFullscreenUi(); $('fsHelp').classList.toggle('hidden'); }
   function renderFullscreenHud(){
     ensureProgression(); const p=state.player; const s=combatStatBlock(); const def=stageDef();
-    const persist=$('fsPersistentStats'); if(persist){ persist.innerHTML=`<b>Lv ${p.level}</b><span>HP ${p.hp}/${s.maxHp}</span><span>EP ${p.ep}/${p.maxEp}</span><em>${def.id}</em>`; }
+    const persist=$('fsPersistentStats'); if(persist){ persist.innerHTML=`<b>Lv ${p.level}</b><span>HP ${p.hp}/${s.maxHp}</span><span>EP ${p.ep}/${s.maxEp||p.maxEp}</span><em>${def.id}</em>`; }
     const hud=$('fsSidehud'); if(!hud || hud.classList.contains('hidden')) return;
     $('fsHudStats').innerHTML=`
       <div class="fs-row"><b>Vyra</b><br>Player Lv ${p.level} // Credits ${p.credits}</div>
       <div class="fs-row">HP ${p.hp}/${s.maxHp}<div class="bar"><span style="width:${100*p.hp/s.maxHp}%"></span></div></div>
-      <div class="fs-row">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div>
+      <div class="fs-row">EP ${p.ep}/${s.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(s.maxEp||p.maxEp)}%"></span></div></div>
       <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${state.flags.anomaliesCleared}/3 // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}</div>`;
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
@@ -1614,9 +1824,9 @@
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

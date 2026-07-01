@@ -255,3 +255,7 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 ## v0.6.3 / v63 - Skill & Stage Matrix
 - Trainable combat skills now max at 99 and use the RuneScape-style XP table.
 - Added stat scaling, Health skill, full-screen HP/Lv HUD, improved Inventory menu, skill emblems, pre-battle scan dialog, autosave improvements, and the first next-stage selector/map shell.
+
+
+## v65 / v0.6.5
+- Added gear/equipment, equip/unequip UI, gear drops, crafting/vendor terminal, boss relic, and Vyra shard sync.
