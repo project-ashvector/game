@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.1 // MAP ART FIX',
+    'Version 0.5.3 // MAZE + FOG UPDATE',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -21,31 +21,33 @@
     'WARNING: Unauthorized access detected.',
     'Can you hear me...?',
   ];
+  // v53: Maze-first F-001 layout. Walls are collision first, art second.
+  // This replaces the wide-open test field with corridors, rooms, gates, and side paths.
   const baseMap = [
     '########################################',
-    '#P......#.....C..........#............L#',
-    '#..............#.......................#',
-    '#...###........#.....E...........###...#',
-    '#..............#.......................#',
-    '#......####..................###.......#',
-    '#.................................#....#',
-    '#..C..........###.................#....#',
-    '#.................#.........E..........#',
-    '#.....#...................####.........#',
-    '#.....#........S.......................#',
-    '#.............#####....................#',
-    '#..............................H.......#',
-    '#.........#....................###.....#',
-    '#.........#..........C.................#',
-    '#....###.................#.............#',
-    '#......................###.............#',
-    '#...............E......................#',
-    '#....................######............#',
-    '#.....C............................D...#',
-    '#..............###.....................#',
-    '#.........................#............#',
-    '#.........................#......B.....#',
-    '#..............L......................X#',
+    '#P....................................##',
+    '###.#.###.#.#......####.###.#####.###.##',
+    '#.#.......##.....C....#.#.......#.#...##',
+    '#.#...S..####......##.###.......###.#.##',
+    '#.#.................#.#.#....E.##...#.##',
+    '#.#.#.###.###.#.#.#.#.#.#.......#.###.##',
+    '#...#.....#.#.###.#...#.#.#.#...#.....##',
+    '#.#####.###.#.###.#####.#.#.#.###.###.##',
+    '#.....#...C.#...#...#.#...#.#...#...#.##',
+    '#####.###.#.###........####.###.#####.##',
+    '#...#.#...#...#.........#...#.........##',
+    '###.#......##.##...##...#.###.#######.##',
+    '#...#..............E....#.#.........#.##',
+    '#.###L#....##.##.......##.##......#.#.##',
+    '#.............#...#...#...#...#C#.#.#.##',
+    '#.###.#.#######.#####.#.##........#.#.##',
+    '#...#.#.......#.....#...#.......#...#.##',
+    '#####.###########.#.#####..######.###.##',
+    '#...#.......#...#.#.........#....E..#.##',
+    '#.#.#.#####H###.##########.##......##.##',
+    '#.#...#...#...#.........#.D.#.......#.##',
+    '#.#####.#.#############.#........B...X##',
+    '#.......#.................#...#.......##',
     '########################################'
   ];
 
@@ -72,25 +74,9 @@
     terminal: 'assets/imported/props/buildings/magic_stone_tower.png',
     door: 'assets/imported/environment/fences/wooden_fence_horizontal.png',
     exit: 'assets/imported/props/signage/flag.png',
-    props: [
-      {x:2,y:2,img:'assets/imported/props/tents/tent.png',w:84,h:78},
-      {x:6,y:1,img:'assets/imported/props/barrels/wooden_barrel.png',w:36,h:42},
-      {x:13,y:1,img:'assets/imported/environment/bushes/bushes_medium.png',w:62,h:48},
-      {x:19,y:2,img:'assets/imported/props/campfires/campfire.png',w:58,h:46},
-      {x:32,y:2,img:'assets/imported/environment/trees/tree_small.png',w:78,h:90},
-      {x:1,y:8,img:'assets/imported/environment/trees/tree_medium.png',w:92,h:104},
-      {x:7,y:7,img:'assets/imported/environment/rocks/rock_05.png',w:28,h:28},
-      {x:12,y:10,img:'assets/imported/props/carts/wooden_cart.png',w:86,h:44},
-      {x:17,y:9,img:'assets/imported/environment/bushes/bushes_small.png',w:46,h:40},
-      {x:25,y:8,img:'assets/imported/environment/bridges/wooden_bridge_horizontal.png',w:126,h:74},
-      {x:34,y:10,img:'assets/imported/props/buildings/watchtower_short.png',w:72,h:78},
-      {x:4,y:16,img:'assets/imported/environment/trees/tree_stump_tall.png',w:44,h:38},
-      {x:11,y:17,img:'assets/imported/environment/trees/tree_stump_tall.png',w:44,h:38},
-      {x:16,y:18,img:'assets/imported/environment/rocks/rock_04.png',w:42,h:38},
-      {x:24,y:19,img:'assets/imported/props/barrels/wooden_barrel.png',w:36,h:42},
-      {x:30,y:20,img:'assets/imported/environment/fences/wooden_fence_vertical.png',w:30,h:82},
-      {x:36,y:22,img:'assets/imported/props/signage/red_banner.png',w:44,h:66}
-    ]
+    // v53: non-colliding decorative prop stamps disabled.
+    // Map blockers now come from # tiles only, so visuals match collision.
+    props: []
   };
   function imgFor(path){ return images[path]; }
   function drawAsset(path,x,y,w,h,anchorBottom=false){
@@ -106,10 +92,10 @@
   function pickAsset(list,tx,ty){ return list[Math.abs((tx*13 + ty*7) % list.length)]; }
 
   const encounterSlots = {
-    '19,3': {type:'anomaly', index:0},
-    '29,11': {type:'anomaly', index:6},
-    '21,19': {type:'anomaly', index:14},
-    '31,23': {type:'boss', index:0}
+    '29,5': {type:'anomaly', index:0},
+    '19,13': {type:'anomaly', index:6},
+    '33,19': {type:'anomaly', index:14},
+    '33,22': {type:'boss', index:0}
   };
 
   const importedAnomalyRoster = [{"id": "AN-002", "name": "Ashborn Revenant", "battle": "assets/anomalies/an002_ashborn_revenant/battle.png", "hp": 28, "atk": 7, "credits": 9, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-003", "name": "Ashen Horror", "battle": "assets/anomalies/an003_ashen_horror/battle.png", "hp": 31, "atk": 8, "credits": 10, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-004", "name": "Ashen Revenant", "battle": "assets/anomalies/an004_ashen_revenant/battle.png", "hp": 34, "atk": 9, "credits": 11, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-005", "name": "Ashen Whelp", "battle": "assets/anomalies/an005_ashen_whelp/battle.png", "hp": 37, "atk": 10, "credits": 12, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-006", "name": "Ashfang Serpent", "battle": "assets/anomalies/an006_ashfang_serpent/battle.png", "hp": 40, "atk": 11, "credits": 13, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-007", "name": "Ashveil Spider", "battle": "assets/anomalies/an007_ashveil_spider/battle.png", "hp": 43, "atk": 12, "credits": 14, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-008", "name": "Bilebrood", "battle": "assets/anomalies/an008_bilebrood/battle.png", "hp": 46, "atk": 13, "credits": 15, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-009", "name": "Blight Rat", "battle": "assets/anomalies/an009_blight_rat/battle.png", "hp": 49, "atk": 14, "credits": 16, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-010", "name": "Blight Widow", "battle": "assets/anomalies/an010_blight_widow/battle.png", "hp": 52, "atk": 15, "credits": 17, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-011", "name": "Blightclaw Ravager", "battle": "assets/anomalies/an011_blightclaw_ravager/battle.png", "hp": 55, "atk": 7, "credits": 18, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-012", "name": "Blightdrake", "battle": "assets/anomalies/an012_blightdrake/battle.png", "hp": 58, "atk": 8, "credits": 19, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-013", "name": "Blistercoil Drake", "battle": "assets/anomalies/an013_blistercoil_drake/battle.png", "hp": 61, "atk": 9, "credits": 20, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-014", "name": "Blistergrub", "battle": "assets/anomalies/an014_blistergrub/battle.png", "hp": 64, "atk": 10, "credits": 21, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-015", "name": "Bloodreaver Scarab", "battle": "assets/anomalies/an015_bloodreaver_scarab/battle.png", "hp": 67, "atk": 11, "credits": 22, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-016", "name": "Bonegnasher", "battle": "assets/anomalies/an016_bonegnasher/battle.png", "hp": 70, "atk": 12, "credits": 23, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-017", "name": "Bramblechoke Horror", "battle": "assets/anomalies/an017_bramblechoke_horror/battle.png", "hp": 73, "atk": 13, "credits": 24, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-018", "name": "Carrion Scarab", "battle": "assets/anomalies/an018_carrion_scarab/battle.png", "hp": 76, "atk": 14, "credits": 25, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-019", "name": "Carrion Weaver", "battle": "assets/anomalies/an019_carrion_weaver/battle.png", "hp": 79, "atk": 15, "credits": 26, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-020", "name": "Charnel Spawn", "battle": "assets/anomalies/an020_charnel_spawn/battle.png", "hp": 82, "atk": 7, "credits": 27, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-021", "name": "Cindershade Horror", "battle": "assets/anomalies/an021_cindershade_horror/battle.png", "hp": 85, "atk": 8, "credits": 28, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-022", "name": "Cindershroud Wisp", "battle": "assets/anomalies/an022_cindershroud_wisp/battle.png", "hp": 88, "atk": 9, "credits": 29, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-023", "name": "Cragjaw", "battle": "assets/anomalies/an023_cragjaw/battle.png", "hp": 91, "atk": 10, "credits": 30, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-024", "name": "Cragrot Shambler", "battle": "assets/anomalies/an024_cragrot_shambler/battle.png", "hp": 94, "atk": 11, "credits": 31, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-025", "name": "Crypt Blight", "battle": "assets/anomalies/an025_crypt_blight/battle.png", "hp": 97, "atk": 12, "credits": 32, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-026", "name": "Crypt Darter", "battle": "assets/anomalies/an026_crypt_darter/battle.png", "hp": 100, "atk": 13, "credits": 33, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-027", "name": "Crypt Ghast", "battle": "assets/anomalies/an027_crypt_ghast/battle.png", "hp": 103, "atk": 14, "credits": 34, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-028", "name": "Crypt Howler", "battle": "assets/anomalies/an028_crypt_howler/battle.png", "hp": 106, "atk": 15, "credits": 35, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-029", "name": "Crypt Ravager", "battle": "assets/anomalies/an029_crypt_ravager/battle.png", "hp": 109, "atk": 7, "credits": 36, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-030", "name": "Crypt Serpent", "battle": "assets/anomalies/an030_crypt_serpent/battle.png", "hp": 112, "atk": 8, "credits": 37, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-031", "name": "Crypt Widow", "battle": "assets/anomalies/an031_crypt_widow/battle.png", "hp": 115, "atk": 9, "credits": 38, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-032", "name": "Cryptbane Spider", "battle": "assets/anomalies/an032_cryptbane_spider/battle.png", "hp": 118, "atk": 10, "credits": 39, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-033", "name": "Cryptmire Beast", "battle": "assets/anomalies/an033_cryptmire_beast/battle.png", "hp": 121, "atk": 11, "credits": 40, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-034", "name": "Deathrot Spawn", "battle": "assets/anomalies/an034_deathrot_spawn/battle.png", "hp": 124, "atk": 12, "credits": 41, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-035", "name": "Dreadthorn Lurker", "battle": "assets/anomalies/an035_dreadthorn_lurker/battle.png", "hp": 127, "atk": 13, "credits": 42, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-036", "name": "Duskgloom Howler", "battle": "assets/anomalies/an036_duskgloom_howler/battle.png", "hp": 130, "atk": 14, "credits": 43, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-037", "name": "Duskthorn Beast", "battle": "assets/anomalies/an037_duskthorn_beast/battle.png", "hp": 133, "atk": 15, "credits": 44, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-038", "name": "Duskwatch Bettle", "battle": "assets/anomalies/an038_duskwatch_bettle/battle.png", "hp": 136, "atk": 7, "credits": 45, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-039", "name": "Duskwither", "battle": "assets/anomalies/an039_duskwither/battle.png", "hp": 139, "atk": 8, "credits": 46, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-040", "name": "Duskwither Shade", "battle": "assets/anomalies/an040_duskwither_shade/battle.png", "hp": 142, "atk": 9, "credits": 47, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-041", "name": "Duskworm", "battle": "assets/anomalies/an041_duskworm/battle.png", "hp": 145, "atk": 10, "credits": 48, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-042", "name": "Ember Beetle", "battle": "assets/anomalies/an042_ember_beetle/battle.png", "hp": 148, "atk": 11, "credits": 49, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-043", "name": "Embergnash Scarab", "battle": "assets/anomalies/an043_embergnash_scarab/battle.png", "hp": 151, "atk": 12, "credits": 50, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-044", "name": "Frostgrave Abomination", "battle": "assets/anomalies/an044_frostgrave_abomination/battle.png", "hp": 154, "atk": 13, "credits": 51, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-045", "name": "Gloomwing", "battle": "assets/anomalies/an045_gloomwing/battle.png", "hp": 157, "atk": 14, "credits": 52, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-046", "name": "Grave Vulture", "battle": "assets/anomalies/an046_grave_vulture/battle.png", "hp": 160, "atk": 15, "credits": 53, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-047", "name": "Graveblade Stalker", "battle": "assets/anomalies/an047_graveblade_stalker/battle.png", "hp": 163, "atk": 7, "credits": 54, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-048", "name": "Gravebloom Horror", "battle": "assets/anomalies/an048_gravebloom_horror/battle.png", "hp": 166, "atk": 8, "credits": 55, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-049", "name": "Graveborn Wretch", "battle": "assets/anomalies/an049_graveborn_wretch/battle.png", "hp": 169, "atk": 9, "credits": 56, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-050", "name": "Gravecoil", "battle": "assets/anomalies/an050_gravecoil/battle.png", "hp": 172, "atk": 10, "credits": 57, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-051", "name": "Gravemarrow", "battle": "assets/anomalies/an051_gravemarrow/battle.png", "hp": 175, "atk": 11, "credits": 58, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-052", "name": "Gravemist Wyrm", "battle": "assets/anomalies/an052_gravemist_wyrm/battle.png", "hp": 178, "atk": 12, "credits": 59, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-053", "name": "Grime Crawler", "battle": "assets/anomalies/an053_grime_crawler/battle.png", "hp": 181, "atk": 13, "credits": 60, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-054", "name": "Hollow Hound", "battle": "assets/anomalies/an054_hollow_hound/battle.png", "hp": 184, "atk": 14, "credits": 61, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-055", "name": "Hollow Revenant", "battle": "assets/anomalies/an055_hollow_revenant/battle.png", "hp": 187, "atk": 15, "credits": 62, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-056", "name": "Hollow Scarab", "battle": "assets/anomalies/an056_hollow_scarab/battle.png", "hp": 190, "atk": 7, "credits": 63, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-057", "name": "Hollow Weaver", "battle": "assets/anomalies/an057_hollow_weaver/battle.png", "hp": 193, "atk": 8, "credits": 64, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-058", "name": "Hollowfang", "battle": "assets/anomalies/an058_hollowfang/battle.png", "hp": 196, "atk": 9, "credits": 65, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-059", "name": "Mire Thrasher", "battle": "assets/anomalies/an059_mire_thrasher/battle.png", "hp": 199, "atk": 10, "credits": 66, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-060", "name": "Mireclaw", "battle": "assets/anomalies/an060_mireclaw/battle.png", "hp": 202, "atk": 11, "credits": 67, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-061", "name": "Miregulper Beast", "battle": "assets/anomalies/an061_miregulper_beast/battle.png", "hp": 205, "atk": 12, "credits": 68, "loot": ["Scrap Metal", "Corrupted Catalyst"]}];
@@ -424,6 +410,31 @@
     drawMapProps();
     // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
+    ctx.restore();
+    drawMapAtmosphere();
+  }
+
+  function drawMapAtmosphere(){
+    // v53: global fog/tint pass. Keeps bright imported tiles but makes F-001 feel toxic.
+    const t = Date.now() * 0.00025;
+    ctx.save();
+    ctx.fillStyle='rgba(5,10,15,.34)';
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    const vignette = ctx.createRadialGradient(VIEW_W/2, VIEW_H/2, VIEW_W*0.18, VIEW_W/2, VIEW_H/2, VIEW_W*0.72);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');
+    vignette.addColorStop(0.62,'rgba(0,0,0,.18)');
+    vignette.addColorStop(1,'rgba(0,0,0,.58)');
+    ctx.fillStyle=vignette;
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    for(let i=0;i<7;i++){
+      const y=(i*91 + (t*70)%91) % (VIEW_H+80) - 40;
+      const grd=ctx.createLinearGradient(0,y,VIEW_W,y+42);
+      grd.addColorStop(0,'rgba(120,190,190,0)');
+      grd.addColorStop(0.5,'rgba(120,190,190,.055)');
+      grd.addColorStop(1,'rgba(120,190,190,0)');
+      ctx.fillStyle=grd;
+      ctx.fillRect(0,y,VIEW_W,42);
+    }
     ctx.restore();
   }
 

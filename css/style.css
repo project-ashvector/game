@@ -600,3 +600,41 @@ html, body { overflow: hidden !important; height: 100%; }
   #mainMenu .menu-buttons{grid-template-columns:1fr!important;width:min(420px,90vw)!important;}
   #mainMenu .menu-logo{max-height:95px!important;}
 }
+
+
+/* v53: maze/fog/battle/menu rebuild polish */
+:root{--av-build:"0.5.3"}
+body{overflow:hidden!important;}
+#app{height:100dvh;overflow:hidden!important;}
+.layout{max-width:none!important;width:100vw!important;height:calc(100dvh - 55px)!important;margin:0!important;padding:10px!important;overflow:hidden!important;}
+.game-card{overflow:hidden!important;}
+canvas#game{filter:brightness(.78) saturate(.62) contrast(1.08);}
+.game-card:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,14,20,.18),rgba(7,14,20,.05) 50%,rgba(0,0,0,.20));mix-blend-mode:multiply;}
+.game-card{position:relative;}
+
+/* Main menu: no scrollbar, logo fully contained, protocol buttons always visible. */
+.main-menu{overflow:hidden!important;}
+#mainMenu .menu-card{width:min(1040px,calc(100vw - 36px))!important;height:min(690px,calc(100dvh - 36px))!important;min-height:0!important;overflow:hidden!important;padding:18px 28px!important;display:grid!important;grid-template-rows:auto minmax(110px,150px) auto auto auto auto auto!important;align-content:center!important;gap:10px!important;}
+#mainMenu .menu-logo{max-width:min(620px,72vw)!important;width:100%!important;max-height:150px!important;height:100%!important;object-fit:contain!important;object-position:center!important;margin:0 auto!important;display:block!important;}
+#mainMenu .menu-card h1{font-size:clamp(34px,5.8vh,64px)!important;line-height:.9!important;margin:0!important;}
+#mainMenu .menu-subtitle{margin:0!important;font-size:clamp(12px,1.4vh,15px)!important;}
+#mainMenu .menu-buttons{margin:6px auto!important;gap:8px!important;max-width:760px!important;grid-template-columns:repeat(3,minmax(180px,1fr))!important;}
+#mainMenu .menu-buttons button{min-height:38px!important;padding:8px 10px!important;font-size:clamp(11px,1.35vh,14px)!important;}
+#mainMenu .quick-start-hint{margin-top:2px!important;padding:8px!important;}
+#mainMenu .menu-info,#mainMenu .ui-kit-note{margin:0!important;font-size:clamp(11px,1.35vh,14px)!important;}
+
+/* Battle: lower combatants so they stand closer to the command panel. */
+.battle-stage{height:calc(100% - 204px)!important;padding:4px 30px 0!important;align-items:end!important;}
+.battle-sprite{max-height:calc(100% - 4px)!important;object-position:center bottom!important;}
+.battle-sprite.hero{transform:translate(-2%,10%) scale(1.08)!important;}
+.battle-sprite.enemy{transform:translate(2%,10%) scale(1.12)!important;}
+.battle-ui{min-height:176px!important;}
+.combatant-name{bottom:-2px!important;}
+
+@media(max-height:760px){
+  #mainMenu .menu-card{height:calc(100dvh - 24px)!important;padding:12px 22px!important;grid-template-rows:auto minmax(80px,115px) auto auto auto auto auto!important;gap:7px!important;}
+  #mainMenu .menu-logo{max-height:115px!important;}
+  #mainMenu .menu-card h1{font-size:clamp(28px,5.2vh,48px)!important;}
+  #mainMenu .menu-buttons button{min-height:34px!important;padding:6px 8px!important;}
+}
+@media(max-width:900px){#mainMenu .menu-buttons{grid-template-columns:repeat(2,minmax(150px,1fr))!important;}}

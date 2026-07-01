@@ -182,3 +182,11 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Fit menu buttons and text into a single fixed screen.
 - Fixed cropped Operator file artwork display.
 - Updated cache-busting and AVOS visible version labels to v0.5.0.
+
+
+## v53 - Maze / Fog / Battle Layout Update
+- Replaced the open level with a maze-first Fracture 001 layout.
+- Added fog/tint/vignette canvas atmosphere.
+- Removed non-colliding decorative props to make collision clearer.
+- Moved battle sprites closer to the command panel.
+- Added main menu fit rules to prevent logo cropping and menu scroll.
