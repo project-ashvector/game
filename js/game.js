@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.2 // UPGRADE MATRIX',
+    'Version 0.6.3 // SKILL & STAGE MATRIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.2';
+  const BUILD_VERSION = '0.6.3';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -330,6 +330,54 @@
     '########################################'
   ];
 
+  // v63: stage definitions. F-001 is the current vertical slice; F-002 is the next-map shell
+  // unlocked after Chapter 1 clear plus the player-level requirement.
+  const stage2Map = [
+    '########################################',
+    '#P.............#.......................##',
+    '#####.#####.####.#####.#########.#######',
+    '#...#.....#......#...#.........#.......#',
+    '#.S.###.#.######.#.#.#####.###.#####..#',
+    '#.....#.#......#...#.....#.#.....E.#..#',
+    '###.#.#.######.#########.#.#.#######..#',
+    '#...#.#....C.#.....#.....#.#.........##',
+    '#.###.######.#####.#.#####.#########..#',
+    '#...#......#.....#.#.....#.....#.....##',
+    '###.######.#####.#.#####.#####.#.######',
+    '#...#....#.....#.#.....#.....#.#......#',
+    '#.###.##.#####.#.#####.#####.#.####..#',
+    '#.....##.....#.#.....#.....#.#....#..#',
+    '#.##########.#.#####.#####.#.##E.#..#',
+    '#......C.....#.....#.....#.#.##..#..#',
+    '######.############.###.#.#.##.###..#',
+    '#....#..............#...#.#........###',
+    '#.##.###########.####.###.######.##..#',
+    '#.#......E....#......#.....#....#...#',
+    '#.#.#########.#########.###.##D###..#',
+    '#.#.....H...#.........#.#.....B..X..#',
+    '#.#########.#########.#.#############',
+    '#...........L.........#............##',
+    '########################################'
+  ];
+
+  function normalizeMapRows(rows){
+    const width = Math.max(...rows.map(r=>r.length));
+    return rows.map(r => (r + '#'.repeat(width)).slice(0,width));
+  }
+  const STAGE_DEFS = {
+    f001: {key:'f001', id:'F-001', title:'Toxic Sewers', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards'},
+    f002: {key:'f002', id:'F-002', title:'Ash Wastes Outpost', chapter:'Chapter 2 // Broken Signal', levelReq:3, map:normalizeMapRows(stage2Map), threat:'MEDIUM', objective:'new terminal → stronger anomalies → gate boss → next extraction', reward:'Preview rewards and stronger enemy table'}
+  };
+  function currentStageKey(){ return state?.currentStage || 'f001'; }
+  function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
+  function parseStageMap(key){
+    const def=stageDef(key); const map=def.map.map(r=>r.split(''));
+    let px=1,py=1;
+    map.forEach((row,y)=>row.forEach((c,x)=>{ if(c==='P'){ px=x; py=y; map[y][x]='.'; }}));
+    return {map, px, py};
+  }
+
+
   const mapArt = {
     ground: [
       'assets/imported/environment/ground/ground_01.png',
@@ -370,12 +418,24 @@
   }
   function pickAsset(list,tx,ty){ return list[Math.abs((tx*13 + ty*7) % list.length)]; }
 
-  const encounterSlots = {
-    '29,5': {type:'anomaly', index:0},
-    '19,13': {type:'anomaly', index:6},
-    '33,19': {type:'anomaly', index:14},
-    '33,22': {type:'boss', index:0}
+  const ENCOUNTER_SLOTS = {
+    f001: {
+      '29,5': {type:'anomaly', index:0},
+      '19,13': {type:'anomaly', index:6},
+      '33,19': {type:'anomaly', index:14},
+      '33,22': {type:'boss', index:0}
+    },
+    f002: {
+      '33,5': {type:'anomaly', index:18},
+      '31,14': {type:'anomaly', index:24},
+      '9,19': {type:'anomaly', index:31},
+      '30,21': {type:'boss', index:5}
+    }
   };
+  function encounterSlotFor(x,y,code){
+    const slots = ENCOUNTER_SLOTS[currentStageKey()] || ENCOUNTER_SLOTS.f001;
+    return slots[`${x},${y}`] || (code === 'B' ? {type:'boss', index:0} : {type:'anomaly', index:0});
+  }
 
   const importedAnomalyRoster = [{"id": "AN-002", "name": "Ashborn Revenant", "battle": "assets/anomalies/an002_ashborn_revenant/battle.png", "hp": 28, "atk": 7, "credits": 9, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-003", "name": "Ashen Horror", "battle": "assets/anomalies/an003_ashen_horror/battle.png", "hp": 31, "atk": 8, "credits": 10, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-004", "name": "Ashen Revenant", "battle": "assets/anomalies/an004_ashen_revenant/battle.png", "hp": 34, "atk": 9, "credits": 11, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-005", "name": "Ashen Whelp", "battle": "assets/anomalies/an005_ashen_whelp/battle.png", "hp": 37, "atk": 10, "credits": 12, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-006", "name": "Ashfang Serpent", "battle": "assets/anomalies/an006_ashfang_serpent/battle.png", "hp": 40, "atk": 11, "credits": 13, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-007", "name": "Ashveil Spider", "battle": "assets/anomalies/an007_ashveil_spider/battle.png", "hp": 43, "atk": 12, "credits": 14, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-008", "name": "Bilebrood", "battle": "assets/anomalies/an008_bilebrood/battle.png", "hp": 46, "atk": 13, "credits": 15, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-009", "name": "Blight Rat", "battle": "assets/anomalies/an009_blight_rat/battle.png", "hp": 49, "atk": 14, "credits": 16, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-010", "name": "Blight Widow", "battle": "assets/anomalies/an010_blight_widow/battle.png", "hp": 52, "atk": 15, "credits": 17, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-011", "name": "Blightclaw Ravager", "battle": "assets/anomalies/an011_blightclaw_ravager/battle.png", "hp": 55, "atk": 7, "credits": 18, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-012", "name": "Blightdrake", "battle": "assets/anomalies/an012_blightdrake/battle.png", "hp": 58, "atk": 8, "credits": 19, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-013", "name": "Blistercoil Drake", "battle": "assets/anomalies/an013_blistercoil_drake/battle.png", "hp": 61, "atk": 9, "credits": 20, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-014", "name": "Blistergrub", "battle": "assets/anomalies/an014_blistergrub/battle.png", "hp": 64, "atk": 10, "credits": 21, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-015", "name": "Bloodreaver Scarab", "battle": "assets/anomalies/an015_bloodreaver_scarab/battle.png", "hp": 67, "atk": 11, "credits": 22, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-016", "name": "Bonegnasher", "battle": "assets/anomalies/an016_bonegnasher/battle.png", "hp": 70, "atk": 12, "credits": 23, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-017", "name": "Bramblechoke Horror", "battle": "assets/anomalies/an017_bramblechoke_horror/battle.png", "hp": 73, "atk": 13, "credits": 24, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-018", "name": "Carrion Scarab", "battle": "assets/anomalies/an018_carrion_scarab/battle.png", "hp": 76, "atk": 14, "credits": 25, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-019", "name": "Carrion Weaver", "battle": "assets/anomalies/an019_carrion_weaver/battle.png", "hp": 79, "atk": 15, "credits": 26, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-020", "name": "Charnel Spawn", "battle": "assets/anomalies/an020_charnel_spawn/battle.png", "hp": 82, "atk": 7, "credits": 27, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-021", "name": "Cindershade Horror", "battle": "assets/anomalies/an021_cindershade_horror/battle.png", "hp": 85, "atk": 8, "credits": 28, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-022", "name": "Cindershroud Wisp", "battle": "assets/anomalies/an022_cindershroud_wisp/battle.png", "hp": 88, "atk": 9, "credits": 29, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-023", "name": "Cragjaw", "battle": "assets/anomalies/an023_cragjaw/battle.png", "hp": 91, "atk": 10, "credits": 30, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-024", "name": "Cragrot Shambler", "battle": "assets/anomalies/an024_cragrot_shambler/battle.png", "hp": 94, "atk": 11, "credits": 31, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-025", "name": "Crypt Blight", "battle": "assets/anomalies/an025_crypt_blight/battle.png", "hp": 97, "atk": 12, "credits": 32, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-026", "name": "Crypt Darter", "battle": "assets/anomalies/an026_crypt_darter/battle.png", "hp": 100, "atk": 13, "credits": 33, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-027", "name": "Crypt Ghast", "battle": "assets/anomalies/an027_crypt_ghast/battle.png", "hp": 103, "atk": 14, "credits": 34, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-028", "name": "Crypt Howler", "battle": "assets/anomalies/an028_crypt_howler/battle.png", "hp": 106, "atk": 15, "credits": 35, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-029", "name": "Crypt Ravager", "battle": "assets/anomalies/an029_crypt_ravager/battle.png", "hp": 109, "atk": 7, "credits": 36, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-030", "name": "Crypt Serpent", "battle": "assets/anomalies/an030_crypt_serpent/battle.png", "hp": 112, "atk": 8, "credits": 37, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-031", "name": "Crypt Widow", "battle": "assets/anomalies/an031_crypt_widow/battle.png", "hp": 115, "atk": 9, "credits": 38, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-032", "name": "Cryptbane Spider", "battle": "assets/anomalies/an032_cryptbane_spider/battle.png", "hp": 118, "atk": 10, "credits": 39, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-033", "name": "Cryptmire Beast", "battle": "assets/anomalies/an033_cryptmire_beast/battle.png", "hp": 121, "atk": 11, "credits": 40, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-034", "name": "Deathrot Spawn", "battle": "assets/anomalies/an034_deathrot_spawn/battle.png", "hp": 124, "atk": 12, "credits": 41, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-035", "name": "Dreadthorn Lurker", "battle": "assets/anomalies/an035_dreadthorn_lurker/battle.png", "hp": 127, "atk": 13, "credits": 42, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-036", "name": "Duskgloom Howler", "battle": "assets/anomalies/an036_duskgloom_howler/battle.png", "hp": 130, "atk": 14, "credits": 43, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-037", "name": "Duskthorn Beast", "battle": "assets/anomalies/an037_duskthorn_beast/battle.png", "hp": 133, "atk": 15, "credits": 44, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-038", "name": "Duskwatch Bettle", "battle": "assets/anomalies/an038_duskwatch_bettle/battle.png", "hp": 136, "atk": 7, "credits": 45, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-039", "name": "Duskwither", "battle": "assets/anomalies/an039_duskwither/battle.png", "hp": 139, "atk": 8, "credits": 46, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-040", "name": "Duskwither Shade", "battle": "assets/anomalies/an040_duskwither_shade/battle.png", "hp": 142, "atk": 9, "credits": 47, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-041", "name": "Duskworm", "battle": "assets/anomalies/an041_duskworm/battle.png", "hp": 145, "atk": 10, "credits": 48, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-042", "name": "Ember Beetle", "battle": "assets/anomalies/an042_ember_beetle/battle.png", "hp": 148, "atk": 11, "credits": 49, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-043", "name": "Embergnash Scarab", "battle": "assets/anomalies/an043_embergnash_scarab/battle.png", "hp": 151, "atk": 12, "credits": 50, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-044", "name": "Frostgrave Abomination", "battle": "assets/anomalies/an044_frostgrave_abomination/battle.png", "hp": 154, "atk": 13, "credits": 51, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-045", "name": "Gloomwing", "battle": "assets/anomalies/an045_gloomwing/battle.png", "hp": 157, "atk": 14, "credits": 52, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-046", "name": "Grave Vulture", "battle": "assets/anomalies/an046_grave_vulture/battle.png", "hp": 160, "atk": 15, "credits": 53, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-047", "name": "Graveblade Stalker", "battle": "assets/anomalies/an047_graveblade_stalker/battle.png", "hp": 163, "atk": 7, "credits": 54, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-048", "name": "Gravebloom Horror", "battle": "assets/anomalies/an048_gravebloom_horror/battle.png", "hp": 166, "atk": 8, "credits": 55, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-049", "name": "Graveborn Wretch", "battle": "assets/anomalies/an049_graveborn_wretch/battle.png", "hp": 169, "atk": 9, "credits": 56, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-050", "name": "Gravecoil", "battle": "assets/anomalies/an050_gravecoil/battle.png", "hp": 172, "atk": 10, "credits": 57, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-051", "name": "Gravemarrow", "battle": "assets/anomalies/an051_gravemarrow/battle.png", "hp": 175, "atk": 11, "credits": 58, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-052", "name": "Gravemist Wyrm", "battle": "assets/anomalies/an052_gravemist_wyrm/battle.png", "hp": 178, "atk": 12, "credits": 59, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-053", "name": "Grime Crawler", "battle": "assets/anomalies/an053_grime_crawler/battle.png", "hp": 181, "atk": 13, "credits": 60, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-054", "name": "Hollow Hound", "battle": "assets/anomalies/an054_hollow_hound/battle.png", "hp": 184, "atk": 14, "credits": 61, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-055", "name": "Hollow Revenant", "battle": "assets/anomalies/an055_hollow_revenant/battle.png", "hp": 187, "atk": 15, "credits": 62, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-056", "name": "Hollow Scarab", "battle": "assets/anomalies/an056_hollow_scarab/battle.png", "hp": 190, "atk": 7, "credits": 63, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-057", "name": "Hollow Weaver", "battle": "assets/anomalies/an057_hollow_weaver/battle.png", "hp": 193, "atk": 8, "credits": 64, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-058", "name": "Hollowfang", "battle": "assets/anomalies/an058_hollowfang/battle.png", "hp": 196, "atk": 9, "credits": 65, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-059", "name": "Mire Thrasher", "battle": "assets/anomalies/an059_mire_thrasher/battle.png", "hp": 199, "atk": 10, "credits": 66, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-060", "name": "Mireclaw", "battle": "assets/anomalies/an060_mireclaw/battle.png", "hp": 202, "atk": 11, "credits": 67, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-061", "name": "Miregulper Beast", "battle": "assets/anomalies/an061_miregulper_beast/battle.png", "hp": 205, "atk": 12, "credits": 68, "loot": ["Scrap Metal", "Corrupted Catalyst"]}];
   const importedBossRoster = [{"id": "BOSS-002", "name": "Ashborn Revenant Lord", "battle": "assets/bosses/boss002_ashborn_revenant_lord/battle.png", "hp": 120, "atk": 16, "credits": 40, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-003", "name": "Ashen Horror Overlord", "battle": "assets/bosses/boss003_ashen_horror_overlord/battle.png", "hp": 138, "atk": 17, "credits": 46, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-004", "name": "Ashen Revenant Titan", "battle": "assets/bosses/boss004_ashen_revenant_titan/battle.png", "hp": 156, "atk": 18, "credits": 52, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-005", "name": "Ashen Whelp Matriarch", "battle": "assets/bosses/boss005_ashen_whelp_matriarch/battle.png", "hp": 174, "atk": 19, "credits": 58, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-006", "name": "Ashfang Serpent Alpha", "battle": "assets/bosses/boss006_ashfang_serpent_alpha/battle.png", "hp": 192, "atk": 20, "credits": 64, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-007", "name": "Ashveil Spider Mother", "battle": "assets/bosses/boss007_ashveil_spider_mother/battle.png", "hp": 210, "atk": 21, "credits": 70, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-008", "name": "Bilebrood Overfiend", "battle": "assets/bosses/boss008_bilebrood_overfiend/battle.png", "hp": 228, "atk": 22, "credits": 76, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-009", "name": "Blight Widow Queen", "battle": "assets/bosses/boss009_blight_widow_queen/battle.png", "hp": 246, "atk": 23, "credits": 82, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-010", "name": "Blightclaw Ravager Alpha", "battle": "assets/bosses/boss010_blightclaw_ravager_alpha/battle.png", "hp": 264, "atk": 24, "credits": 88, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-011", "name": "Blightdrake Abomination", "battle": "assets/bosses/boss011_blightdrake_abomination/battle.png", "hp": 282, "atk": 25, "credits": 94, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-012", "name": "Cindershade Horror King", "battle": "assets/bosses/boss012_cindershade_horror_king/battle.png", "hp": 300, "atk": 26, "credits": 100, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-013", "name": "Crypt Blight Overlord", "battle": "assets/bosses/boss013_crypt_blight_overlord/battle.png", "hp": 318, "atk": 27, "credits": 106, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-014", "name": "Crypt Ghast Lord", "battle": "assets/bosses/boss014_crypt_ghast_lord/battle.png", "hp": 336, "atk": 16, "credits": 112, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-015", "name": "Crypt Ravager Dreadknight", "battle": "assets/bosses/boss015_crypt_ravager_dreadknight/battle.png", "hp": 354, "atk": 17, "credits": 118, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-016", "name": "Cryptmire Beast Alpha", "battle": "assets/bosses/boss016_cryptmire_beast_alpha/battle.png", "hp": 372, "atk": 18, "credits": 124, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-017", "name": "Deathrot Spawn Colossus", "battle": "assets/bosses/boss017_deathrot_spawn_colossus/battle.png", "hp": 390, "atk": 19, "credits": 130, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-018", "name": "Dreadthorn Lurker Alpha", "battle": "assets/bosses/boss018_dreadthorn_lurker_alpha/battle.png", "hp": 408, "atk": 20, "credits": 136, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-019", "name": "Duskgloom Howler Alpha", "battle": "assets/bosses/boss019_duskgloom_howler_alpha/battle.png", "hp": 426, "atk": 21, "credits": 142, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-020", "name": "Duskwither Shade Wraith", "battle": "assets/bosses/boss020_duskwither_shade_wraith/battle.png", "hp": 444, "atk": 22, "credits": 148, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-021", "name": "Eldrith Oracle Of The End", "battle": "assets/bosses/boss021_eldrith_oracle_of_the_end/battle.png", "hp": 462, "atk": 23, "credits": 154, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-022", "name": "Frostgrave Abomination Titan", "battle": "assets/bosses/boss022_frostgrave_abomination_titan/battle.png", "hp": 480, "atk": 24, "credits": 160, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-023", "name": "Gloomwing Tyrant", "battle": "assets/bosses/boss023_gloomwing_tyrant/battle.png", "hp": 498, "atk": 25, "credits": 166, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-024", "name": "Gravecoil Overlord", "battle": "assets/bosses/boss024_gravecoil_overlord/battle.png", "hp": 516, "atk": 26, "credits": 172, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-025", "name": "Gravemarrow Ancient", "battle": "assets/bosses/boss025_gravemarrow_ancient/battle.png", "hp": 534, "atk": 27, "credits": 178, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-026", "name": "Gravemist Wyrm Overlord", "battle": "assets/bosses/boss026_gravemist_wyrm_overlord/battle.png", "hp": 552, "atk": 16, "credits": 184, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-027", "name": "Korr Magoth World Butcher", "battle": "assets/bosses/boss027_korr_magoth_world_butcher/battle.png", "hp": 570, "atk": 17, "credits": 190, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-028", "name": "Mirevenom Broodmother", "battle": "assets/bosses/boss028_mirevenom_broodmother/battle.png", "hp": 588, "atk": 18, "credits": 196, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-029", "name": "Mol Gorath The Searing Maw", "battle": "assets/bosses/boss029_mol_gorath_the_searing_maw/battle.png", "hp": 606, "atk": 19, "credits": 202, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-030", "name": "Nocturn Husk Alpha", "battle": "assets/bosses/boss030_nocturn_husk_alpha/battle.png", "hp": 624, "atk": 20, "credits": 208, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-031", "name": "Noxious Bloom Ancient", "battle": "assets/bosses/boss031_noxious_bloom_ancient/battle.png", "hp": 642, "atk": 21, "credits": 214, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-032", "name": "Noxmire Spawn Broodking", "battle": "assets/bosses/boss032_noxmire_spawn_broodking/battle.png", "hp": 660, "atk": 22, "credits": 220, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-033", "name": "Nyxaris Shadowed Crown", "battle": "assets/bosses/boss033_nyxaris_shadowed_crown/battle.png", "hp": 678, "atk": 23, "credits": 226, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-034", "name": "Rimeclaw Stalker Alpha", "battle": "assets/bosses/boss034_rimeclaw_stalker_alpha/battle.png", "hp": 696, "atk": 24, "credits": 232, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-035", "name": "Rotlash Creeper Warlord", "battle": "assets/bosses/boss035_rotlash_creeper_warlord/battle.png", "hp": 714, "atk": 25, "credits": 238, "loot": ["Rust Core", "Corrupted Catalyst"]}, {"id": "BOSS-036", "name": "Scorchbloom Horror Overlord", "battle": "assets/bosses/boss036_scorchbloom_horror_overlord/battle.png", "hp": 732, "atk": 26, "credits": 244, "loot": ["Rust Core", "Corrupted Catalyst"]}];
@@ -408,7 +468,7 @@
     };
   }
   function getEncounterDef(code, x, y){
-    const slot = encounterSlots[`${x},${y}`] || (code === 'B' ? {type:'boss', index:0} : {type:'anomaly', index:0});
+    const slot = encounterSlotFor(x,y,code);
     if(slot.type === 'boss'){
       const creature = importedBossRoster[slot.index] || importedBossRoster[0];
       return toBattleDef(creature, displayId('BOSS', slot.index), 'boss');
@@ -434,17 +494,18 @@
     return Math.floor(xp / 4);
   });
   const skillList = {
-    attack: { name: 'Striker Protocol', glyph: '⚔', type: 'combat', bonus: 'Better base damage and crit chance.' },
-    strength: { name: 'Force Module', glyph: '◆', type: 'combat', bonus: 'Higher melee damage scaling.' },
-    defense: { name: 'Barrier Matrix', glyph: '⬟', type: 'combat', bonus: 'Reduces incoming damage.' },
-    magic: { name: 'Neurohex', glyph: '✦', type: 'combat', bonus: 'Improves EP efficiency and protocol damage.' },
-    ranged: { name: 'Synapsis Bowline', glyph: '⌁', type: 'combat', bonus: 'Improves dodge chance and precision.' },
-    slayer: { name: 'Anomaly Hunting', glyph: '☠', type: 'noncombat', bonus: 'Tracks creature takedowns.' },
-    cryptomining: { name: 'Cryptomining', glyph: '◈', type: 'noncombat', bonus: 'Future resource loop.' },
-    datafishing: { name: 'Datafishing', glyph: '≈', type: 'noncombat', bonus: 'Future data recovery loop.' },
-    codecraft: { name: 'Codecraft', glyph: '⌬', type: 'noncombat', bonus: 'Future crafting loop.' },
-    forgenetics: { name: 'Forgentics', glyph: '✚', type: 'noncombat', bonus: 'Future bio-upgrade loop.' },
-    system_hacking: { name: 'System Hacking', glyph: '⌁', type: 'noncombat', bonus: 'Future terminal loop.' }
+    attack: { name: 'Attack', short:'ATK', emblem:'A', type: 'combat', bonus: 'Improves hit quality, crit chance, and unlocks stronger stage scaling.' },
+    strength: { name: 'Strength', short:'STR', emblem:'S', type: 'combat', bonus: 'Raises blade damage and physical pressure.' },
+    defense: { name: 'Defense', short:'DEF', emblem:'D', type: 'combat', bonus: 'Reduces incoming damage and improves survival.' },
+    health: { name: 'Health', short:'HP', emblem:'H', type: 'combat', bonus: 'Raises max HP as the operator survives combat.' },
+    magic: { name: 'Neurohex', short:'HEX', emblem:'N', type: 'combat', bonus: 'Improves EP efficiency and protocol damage.' },
+    ranged: { name: 'Precision', short:'PRC', emblem:'P', type: 'combat', bonus: 'Improves dodge chance and ranged/aimed protocol accuracy.' },
+    slayer: { name: 'Anomaly Hunting', short:'HNT', emblem:'X', type: 'noncombat', bonus: 'Tracks creature takedowns and future slayer tasks.' },
+    cryptomining: { name: 'Cryptomining', short:'MIN', emblem:'M', type: 'noncombat', bonus: 'Future resource loop.' },
+    datafishing: { name: 'Datafishing', short:'DAT', emblem:'F', type: 'noncombat', bonus: 'Future data recovery loop.' },
+    codecraft: { name: 'Codecraft', short:'CRF', emblem:'C', type: 'noncombat', bonus: 'Future crafting loop.' },
+    forgenetics: { name: 'Forgentics', short:'BIO', emblem:'G', type: 'noncombat', bonus: 'Future bio-upgrade loop.' },
+    system_hacking: { name: 'System Hacking', short:'SYS', emblem:'Y', type: 'noncombat', bonus: 'Future terminal loop.' }
   };
   function createSkillData(){
     const data = {};
@@ -454,7 +515,15 @@
   function ensureProgression(){
     if(!state.skillData) state.skillData = createSkillData();
     Object.keys(skillList).forEach(k => state.skillData[k] ||= {xp:0,level:1});
+    // v63 migration: old saves did not have Health. Start it at the player's current level so HP feels consistent.
+    state.skillData.health ||= {xp:0, level:Math.max(1, state.player?.level || 1)};
     state.combatStyle ||= 'attack';
+    state.currentStage ||= 'f001';
+    state.stages ||= {f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}};
+    state.stages.f001 ||= {unlocked:true,complete:false};
+    state.stages.f001.unlocked = true;
+    state.stages.f002 ||= {unlocked:false,complete:false};
+    if(state.flags?.chapterComplete && state.player?.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
     ensureStoryFlags();
     ensureUpgrades();
   }
@@ -523,8 +592,10 @@
   }
   function grantStyleXp(style, xp){
     ensureProgression();
+    if(!skillList[style]) return;
     const data = state.skillData[style] || (state.skillData[style] = {xp:0,level:1});
-    data.xp += xp;
+    const oldLevel=data.level;
+    data.xp = Math.min(xpTable[99], data.xp + Math.max(0, xp));
     for(let lvl=1; lvl<=99; lvl++){
       if(data.xp >= xpTable[lvl] && data.level < lvl){
         data.level = lvl;
@@ -533,15 +604,11 @@
         toast(`${skillName} Lv. ${lvl}`);
       }
     }
+    levelBenefit(style, oldLevel, data.level);
+    queueAutosave();
   }
-  function stylePercent(k){
-    ensureProgression();
-    const d = state.skillData[k] || {xp:0,level:1};
-    const next = xpTable[d.level + 1] || xpTable[99] || 1;
-    const prev = xpTable[d.level] || 0;
-    return Math.max(0, Math.min(100, ((d.xp - prev) / Math.max(1, next - prev)) * 100));
-  }
-  function setCombatStyle(k){ ensureProgression(); state.combatStyle = k; renderProgressionDb(); renderUI(); toast(`Training focus: ${skillList[k].name}`); }
+  function stylePercent(k){ return skillXpToNext(k).pct; }
+  function setCombatStyle(k){ ensureProgression(); state.combatStyle = k; renderProgressionDb(); renderUI(); toast(`Training focus: ${skillList[k].name}`); save(true); }
 
   function skillLevel(k){ ensureProgression(); return (state.skillData[k] || {level:1}).level || 1; }
   function combatModifiers(){
@@ -556,6 +623,96 @@
       damageReduction: focus === 'defense' ? Math.floor(lvl / 3) : 0,
       epDiscount: focus === 'magic' ? Math.min(3, Math.floor(lvl / 12)) : 0
     };
+  }
+
+
+  function skillEmblem(key){
+    const info=skillList[key] || {short:'?', emblem:'?'};
+    return `<span class="skill-emblem skill-${key}" aria-label="${safeHtml(info.name||key)}"><b>${safeHtml(info.emblem||info.short||'?')}</b></span>`;
+  }
+  function skillXpToNext(key){
+    ensureProgression();
+    const d=state.skillData[key] || {xp:0,level:1};
+    if(d.level >= 99) return {prev:xpTable[99], next:xpTable[99], remaining:0, pct:100};
+    const prev=xpTable[d.level] || 0;
+    const next=xpTable[d.level+1] || xpTable[99];
+    return {prev,next,remaining:Math.max(0,next-d.xp),pct:Math.max(0,Math.min(100,((d.xp-prev)/Math.max(1,next-prev))*100))};
+  }
+  function combatStatBlock(){
+    ensureProgression();
+    const atkLv=skillLevel('attack'), strLv=skillLevel('strength'), defLv=skillLevel('defense'), hpLv=skillLevel('health');
+    return {
+      atkLv,strLv,defLv,hpLv,
+      atk: state.player.atk + Math.floor((atkLv-1)/5),
+      strBonus: Math.floor((strLv-1)/3),
+      def: state.player.def + Math.floor((defLv-1)/4),
+      maxHp: state.player.maxHp + Math.floor((hpLv-1)*2.5),
+      hpBonus: Math.floor((hpLv-1)*2.5),
+      crit: Math.min(0.25, 0.08 + atkLv * 0.0025),
+      block: Math.floor((defLv-1)/5)
+    };
+  }
+  function syncHpCap(){
+    const stats=combatStatBlock();
+    if(state.player.hp > stats.maxHp) state.player.hp = stats.maxHp;
+    return stats;
+  }
+  let autosaveQueued=false;
+  function queueAutosave(){
+    if(autosaveQueued) return;
+    autosaveQueued=true;
+    setTimeout(()=>{ autosaveQueued=false; try{ save(true); }catch(e){} }, 350);
+  }
+  function levelBenefit(skill, oldLevel, newLevel){
+    if(newLevel <= oldLevel) return;
+    const gained = newLevel - oldLevel;
+    if(skill === 'health'){
+      const hpGain = gained * 3;
+      state.player.maxHp += hpGain;
+      state.player.hp = Math.min(combatStatBlock().maxHp, state.player.hp + hpGain);
+      log(`Health training raised Max HP by ${hpGain}.`);
+    }
+    if(skill === 'defense' && Math.floor(newLevel/5) > Math.floor(oldLevel/5)){
+      state.player.def += 1;
+      log('Defense training improved base DEF by 1.');
+    }
+    if((skill === 'attack' || skill === 'strength') && Math.floor(newLevel/5) > Math.floor(oldLevel/5)){
+      state.player.atk += 1;
+      log(`${skillList[skill].name} training improved base ATK by 1.`);
+    }
+  }
+  function playerMeetsStageRequirement(key){
+    const def=stageDef(key);
+    ensureProgression();
+    return state.player.level >= def.levelReq && (key === 'f001' || state.stages[key]?.unlocked || state.flags.chapterComplete);
+  }
+  function loadStage(key){
+    ensureProgression();
+    const def=stageDef(key);
+    if(!playerMeetsStageRequirement(key)){
+      toast(`${def.id} locked. Requires Player Lv. ${def.levelReq} and previous mission clear.`);
+      return false;
+    }
+    const parsed=parseStageMap(key);
+    state.currentStage=key;
+    state.mapVersion='sector_stage_v3';
+    state.map=parsed.map;
+    state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
+    state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
+    state.player.ep=Math.min(state.player.maxEp,state.player.ep || state.player.maxEp);
+    state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0};
+    state.visited={[`${parsed.px},${parsed.py}`]:1};
+    battle=null;
+    setCheckpoint(`${def.id} Entry`);
+    log(`${def.id} // ${def.title} loaded.`);
+    save(true);
+    hideAll(); uiState.mode='game'; gameStarted=true; document.body.classList.add('game-active','fullscreen-mode'); $('app').classList.remove('hidden');
+    renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText());
+    return true;
+  }
+  function unlockNextStages(){
+    ensureProgression();
+    if(state.stages.f001?.complete && state.player.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
   }
 
 
@@ -575,10 +732,8 @@
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   const images = {};
   function newGameState(){
-    const map = baseMap.map(r => r.split(''));
-    let px=1,py=1;
-    map.forEach((row,y)=>row.forEach((c,x)=>{if(c==='P'){px=x;py=y;map[y][x]='.';}}));
-    return {mapVersion:'sector01_v2', map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    const parsed = parseStageMap('f001');
+    return {mapVersion:'sector_stage_v3', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -600,8 +755,8 @@
       images[p] = im;
     });
   }
-  function save(silent=false){localStorage.setItem('ashVectorSave', JSON.stringify(state)); state.lastSave = Date.now(); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); if(state.mapVersion !== 'sector01_v2'){ const keepSettings = state.settings || {}; state = newGameState(); state.settings = {...state.settings, ...keepSettings}; toast('Map updated. Starting new Sector 01 layout.'); } ensureProgression(); state.lastSave ||= Date.now(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages}; state=newGameState(); Object.assign(state, keep); } state.mapVersion='sector_stage_v3'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -623,17 +778,17 @@
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
   function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
-  function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
+  function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
   function isBlocked(c){return c==='#' || c==='D';}
-  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll();}
+  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll(); queueAutosave();}
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
     if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
     if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce('terminal'); pulseObjective(currentObjectiveText());}
-    if(c==='H'){state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
+    if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce('lore');}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
     if(c==='X'){ if(state.flags.chapterComplete){showChapterClearPanel();} else if(state.flags.bossDefeated && state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){completeChapter();} else toast('Exit protocol denied. Finish the objective.');}
@@ -641,11 +796,32 @@
   function startEncounterTile(code,x,y){
     ensureStoryFlags();
     if(code==='B' && !state.flags.bossUnlocked){toast('Boss route locked. Clear three anomalies first.'); return;}
-    if(code==='B' && !state.flags.storySeen.bossIntro){showStoryOnce('bossIntro', () => startBattle(code,x,y)); return;}
-    startBattle(code,x,y);
+    const engage=()=>showPreBattleDialog(code,x,y);
+    if(code==='B' && !state.flags.storySeen.bossIntro){showStoryOnce('bossIntro', engage); return;}
+    engage();
   }
-  function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n; SfxManager.item();}
-  function addCredits(n){state.player.credits+=n;}
+  function showPreBattleDialog(code,x,y){
+    const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
+    const stage=stageDef();
+    let overlay=$('preBattleOverlay');
+    if(!overlay){
+      overlay=document.createElement('div'); overlay.id='preBattleOverlay'; overlay.className='overlay pre-battle-overlay hidden';
+      overlay.innerHTML=`<div class="pre-battle-card avos-crt"><button id="preBattleBack" class="modal-close">Back Out</button><div class="db-header"><div id="preBattleHeader">ANOMALY CONTACT</div><div>PRE-BATTLE SCAN</div></div><div class="pre-battle-layout"><img id="preBattleImg" alt="enemy preview"><section><div class="record-kicker" id="preBattleKicker"></div><h2 id="preBattleName"></h2><p id="preBattleText"></p><div id="preBattleStats" class="record-grid"></div><div class="story-actions"><button id="preBattleStart">Engage</button><button id="preBattleCancel">Retreat</button></div></section></div></div>`;
+      document.body.appendChild(overlay);
+      $('preBattleBack').onclick=$('preBattleCancel').onclick=()=>{overlay.classList.add('hidden'); uiState.mode='game'; AudioManager.play(activeMusicForState()); renderAll();};
+    }
+    const s=combatStatBlock();
+    $('preBattleHeader').textContent=code==='B'?'BOSS CONTACT':'ANOMALY CONTACT';
+    $('preBattleImg').src=def.img;
+    $('preBattleKicker').textContent=`${stage.id} // ${code==='B'?'BOSS CLASS':'HOSTILE ENTITY'}`;
+    $('preBattleName').textContent=def.name;
+    $('preBattleText').textContent=code==='B'?'AVOS: Boss-class signature confirmed. This is where confidence gets expensive.':'AVOS: Hostile signature ahead. Verify HP, pick a training focus, then make it regret spawning.';
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); startBattle(code,x,y);};
+    uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
+  }
+  function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n; SfxManager.item(); queueAutosave();}
+  function addCredits(n){state.player.credits+=n; queueAutosave();}
 
   const STORY_SCENES = {
     intro: {
@@ -719,11 +895,12 @@
   }
   function currentObjectiveText(){
     ensureStoryFlags();
-    if(!state.flags.terminal) return 'Objective: Find and sync the recovery terminal.';
+    const def=stageDef();
+    if(!state.flags.terminal) return `Objective: Find and sync the ${def.id} recovery terminal.`;
     if(state.flags.anomaliesCleared < 3) return `Objective: Clear anomaly signatures (${state.flags.anomaliesCleared}/3).`;
-    if(!state.flags.bossDefeated) return 'Objective: Boss route open. Defeat the Toxic Core guardian.';
+    if(!state.flags.bossDefeated) return `Objective: Boss route open. Defeat the ${def.id} guardian.`;
     if(!state.flags.chapterComplete) return 'Objective: Extract through the white exit marker.';
-    return 'Chapter 1 complete. Free exploration available.';
+    return `${def.id} complete. Use Fracture Index to select the next stage.`;
   }
   function pulseObjective(msg){
     if(!msg) msg=currentObjectiveText();
@@ -732,35 +909,50 @@
     toast(msg);
   }
   function completeChapter(){
-    ensureStoryFlags();
+    ensureStoryFlags(); ensureProgression();
+    const def=stageDef();
     if(!state.flags.chapterRewardsClaimed){
-      addCredits(40); addItem('Rust Core',1); addItem('Operator Shard: Vyra',3); addItem('Corrupted Catalyst',1);
+      addCredits(def.key==='f001'?40:70); addItem('Rust Core',1); addItem('Operator Shard: Vyra',def.key==='f001'?3:5); addItem('Corrupted Catalyst',1);
       state.flags.chapterRewardsClaimed=true;
     }
     state.flags.chapterComplete=true;
     state.flags.chapterClearSeen=true;
+    state.stages[def.key] ||= {unlocked:true,complete:false};
+    state.stages[def.key].complete=true;
+    if(def.key==='f001' && state.player.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked=true;
     SfxManager.levelWin();
-    log('Chapter 1 complete: Toxic Core recovered. Rewards delivered to inventory.');
+    log(`${def.id} complete: Core recovered. Rewards delivered to inventory.`);
     save(true); renderAll(); showChapterClearPanel();
   }
   function showChapterClearPanel(){
+    const def=stageDef();
+    const next=STAGE_DEFS.f002;
+    const nextReady = def.key==='f001' && playerMeetsStageRequirement('f002');
     let panel=$('chapterClearOverlay');
     if(!panel){
       panel=document.createElement('div');
       panel.id='chapterClearOverlay';
       panel.className='overlay chapter-clear-overlay hidden';
-      panel.innerHTML=`<div class="chapter-clear-card avos-crt"><div class="record-kicker">CHAPTER COMPLETE // F-001 STABILIZED</div><h2>THE AWAKENING</h2><p>Vyra recovered the Toxic Core and survived Fracture 001. Barely. The sewer is still judging everyone involved.</p><div class="victory-loot chapter-rewards" id="chapterRewardList"></div><div class="story-actions"><button id="chapterContinueBtn">Continue Exploring</button><button id="chapterMenuBtn">Return to Main Menu</button></div></div>`;
+      panel.innerHTML=`<div class="chapter-clear-card avos-crt"><div class="record-kicker" id="chapterClearKicker"></div><h2 id="chapterClearTitle"></h2><p id="chapterClearCopy"></p><div class="victory-loot chapter-rewards" id="chapterRewardList"></div><div class="story-actions"><button id="chapterContinueBtn">Continue Exploring</button><button id="chapterNextBtn">Start Next Fracture</button><button id="chapterMenuBtn">Return to Main Menu</button></div></div>`;
       document.body.appendChild(panel);
       $('chapterContinueBtn').onclick=()=>{ panel.classList.add('hidden'); uiState.mode='game'; $('app').classList.remove('hidden'); AudioManager.play(activeMusicForState()); renderAll(); };
+      $('chapterNextBtn').onclick=()=>{ panel.classList.add('hidden'); loadStage('f002'); };
       $('chapterMenuBtn').onclick=()=>{ panel.classList.add('hidden'); gameStarted=false; showMenu(); };
     }
-    const rewards=['40 Credits','Rust Core','Operator Shard: Vyra x3','Corrupted Catalyst'];
+    $('chapterClearKicker').textContent=`STAGE COMPLETE // ${def.id} STABILIZED`;
+    $('chapterClearTitle').textContent=def.key==='f001'?'THE AWAKENING':'BROKEN SIGNAL';
+    $('chapterClearCopy').textContent=`${def.title} cleared. Progress saved locally. ${nextReady?'F-002 is available from the Fracture Index.':'Next fracture requires Player Lv. '+next.levelReq+'. Train more if it is locked.'}`;
+    const rewards=[def.key==='f001'?'40 Credits':'70 Credits','Rust Core',`Operator Shard: Vyra x${def.key==='f001'?3:5}`,'Corrupted Catalyst'];
     $('chapterRewardList').innerHTML=rewards.map(name=>`<div class="victory-loot-item"><span>${safeHtml(name)}</span></div>`).join('');
+    const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!nextReady; btn.textContent=nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`; }
     panel.classList.remove('hidden');
   }
 
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
+    const stage=stageDef();
+    const scale = Math.max(1, stage.levelReq);
+    if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
     battle={code,x,y,enemy:def,turn:'player',guard:false};
     uiState.mode='combat'; AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
@@ -780,11 +972,11 @@
     if(!battle)return;
     const mod=combatModifiers();
     const enemyPct = Math.max(0, Math.min(100, 100*battle.enemy.hp/battle.enemy.maxHp));
-    const heroPct = Math.max(0, Math.min(100, 100*state.player.hp/state.player.maxHp));
+    const heroMax = combatStatBlock().maxHp; const heroPct = Math.max(0, Math.min(100, 100*state.player.hp/heroMax));
     const epPct = Math.max(0, Math.min(100, 100*state.player.ep/state.player.maxEp));
     $('battleHp').innerHTML=`
       <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
-      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // HP ${state.player.hp}/${state.player.maxHp}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
+      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${state.player.maxEp}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level}</span></div>`;
     $('attackButtons').innerHTML='';
@@ -804,20 +996,20 @@
     state.player.ep-=cost;
     if(a.heal){
       const heal = 18+Math.floor(mod.level/4);
-      state.player.hp=Math.min(state.player.maxHp,state.player.hp+heal);
+      state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal);
       $('battleText').textContent=a.text;
       showDamage('hero', `+${heal}`, 'heal');
       grantStyleXp(mod.focus, 3);
     } else {
       SfxManager.slash();
       let crit=Math.random()<(0.15+mod.critBonus);
-      let dmg=Math.max(1,a.dmg+state.player.atk-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
+      const stats=combatStatBlock(); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
       battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
       $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.`;
       showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
       flashCombatant('battleEnemy');
       shakeBattle(crit ? 420 : 260);
-      grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3)));
+      grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3))); grantStyleXp('health', Math.max(1, Math.floor(dmg/5)));
     }
     renderBattle();
     if(battle.enemy.hp<=0){setTimeout(winBattle,420);} else {battle.turn='enemy'; setTimeout(enemyTurn,760);}
@@ -826,10 +1018,10 @@
     if(!battle)return;
     const mod=combatModifiers();
     let dodge = Math.random()<(0.08+mod.dodgeBonus);
-    let dmg = dodge?0:Math.max(1,battle.enemy.atk-state.player.def+Math.floor(Math.random()*5)-mod.damageReduction);
+    const stats=combatStatBlock(); let dmg = dodge?0:Math.max(1,battle.enemy.atk-stats.def+Math.floor(Math.random()*5)-mod.damageReduction-stats.block);
     if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg);
     $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`;
-    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); }
+    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
     else showDamage('hero', 'DODGE', 'dodge');
     if(state.player.hp<=0){
       handlePlayerDeath();
@@ -869,7 +1061,7 @@
     if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1);}
     gainXp(e.xp); grantStyleXp(state.combatStyle || 'attack', e.xp); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${e.xp} Sync, +${e.credits} credits, loot recovered.`);
-    showVictoryPanel(e, loot, {wasBoss, wasAnomaly});
+    showVictoryPanel(e, loot, {wasBoss, wasAnomaly}); queueAutosave();
   }
 
   function showDamage(side, text, type='hit'){
@@ -907,8 +1099,8 @@
     };
   }
 
-  function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=10; state.player.maxEp+=4; state.player.atk+=2; state.player.def+=1; state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log(`Synchronization increased. Level ${state.player.level}.`);} }
-  function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=state.player.maxHp){toast('HP already full.');return;} const heal=25+(state.upgrades.medtech||0)*10; state.inventory['Med Patch']--; state.player.hp=Math.min(state.player.maxHp,state.player.hp+heal); log(`Used Med Patch. +${heal} HP.`); renderAll(); }
+  function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1; state.player.hp=combatStatBlock().maxHp; state.player.ep=state.player.maxEp; log(`Player Level increased to ${state.player.level}.`); unlockNextStages();} queueAutosave(); }
+  function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=combatStatBlock().maxHp){toast('HP already full.');return;} const heal=25+(state.upgrades.medtech||0)*10; state.inventory['Med Patch']--; state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); log(`Used Med Patch. +${heal} HP.`); renderAll(); }
   function render(){
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
@@ -1034,22 +1226,29 @@
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){const c=tileAt(x,y); mctx.fillStyle=c==='#'?'#111':c==='C'?'#e0b64b':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#303842'; mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
-  function renderUI(){ ensureProgression(); const p=state.player; const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000); const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0); $('stats').innerHTML=`<div class="statrow">Level ${p.level} // Credits ${p.credits}</div><div class="statrow">Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Striker Protocol'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${p.atk} // DEF ${p.def} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${p.maxHp}<div class="bar"><span style="width:${100*p.hp/p.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
-    ensureStoryFlags();
-    $('fractureStatus').innerHTML=`<div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Chapter: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
+  function renderUI(){
+    ensureProgression(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
+    const p=state.player; const stats=combatStatBlock(); const def=stageDef();
+    const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000);
+    const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
+    if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
+    if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
+    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
       return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':''}</div>`;
     }).join('')||'<div class="invrow">No recovered assets.</div>';
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
-    const objectives=[['Reach recovery terminal',state.flags.terminal],['Clear 3 anomalies',state.flags.anomaliesCleared>=3],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Chapter Complete',state.flags.chapterComplete]];
+    const objectives=[['Reach recovery terminal',state.flags.terminal],['Clear 3 anomalies',state.flags.anomaliesCleared>=3],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
     const activeText=currentObjectiveText();
     $('objectiveTracker').innerHTML=`<b>${activeText}</b><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ');
     $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('');
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
-    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${p.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
+    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
+    renderFullscreenHud();
   }
   function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
   function openOverlay(id){
@@ -1077,6 +1276,7 @@
     try{
       if(id==='anomalyOverlay') renderAnomalyDb();
       if(id==='inventoryOverlay') renderInventoryDb();
+      if(id==='fractureOverlay') renderFractureDb();
       if(id==='missionOverlay') renderUI();
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
@@ -1136,6 +1336,24 @@
     $('creatureSearch').oninput=drawList; $('creatureFilter').onchange=drawList; drawList();
   }
 
+
+  function renderFractureDb(){
+    const host=document.querySelector('#fractureOverlay .fracture-grid');
+    if(!host) return;
+    let panel=$('stageSelectPanel');
+    if(!panel){
+      panel=document.createElement('section'); panel.id='stageSelectPanel'; panel.className='fracture-card stage-select-panel'; host.prepend(panel);
+    }
+    ensureProgression(); unlockNextStages();
+    panel.innerHTML=`<div class="record-kicker">FRACTURE ROUTE SELECT</div><h2>Stage / Map System</h2><p>Stages save to localStorage. Later stages can require Player Level and previous mission completion.</p><div class="stage-grid">${Object.entries(STAGE_DEFS).map(([key,d])=>{
+      const unlocked=playerMeetsStageRequirement(key);
+      const active=currentStageKey()===key;
+      const complete=!!state.stages[key]?.complete;
+      return `<button class="stage-card ${active?'active':''} ${unlocked?'':'locked'}" data-stage="${key}" ${unlocked?'':'disabled'}><b>${d.id}</b><span>${d.title}</span><small>Req Lv. ${d.levelReq} // ${complete?'Complete':'Active/Locked'} // ${d.threat}</small><em>${unlocked?(active?'Current':'Start Stage'):'Locked'}</em></button>`;
+    }).join('')}</div>`;
+    panel.querySelectorAll('[data-stage]').forEach(btn=>btn.onclick=()=>loadStage(btn.dataset.stage));
+  }
+
   function renderUpgradeStation(){
     const root=$('upgradeStation');
     if(!root) return;
@@ -1151,20 +1369,22 @@
   }
 
   function renderProgressionDb(){
-    ensureProgression();
-    const styleKeys = Object.keys(skillList).filter(k => skillList[k].type === 'combat');
+    ensureProgression(); unlockNextStages();
+    const styleKeys = ['attack','strength','defense','health','magic','ranged'];
     if($('combatStylePicker')) $('combatStylePicker').innerHTML = styleKeys.map(k => {
       const active = state.combatStyle === k ? ' active' : '';
-      return `<button class="style-card${active}" data-style="${k}"><span class="skill-glyph">${skillList[k].glyph}</span><span>${skillList[k].name}</span></button>`;
+      const d=state.skillData[k];
+      return `<button class="style-card${active}" data-style="${k}">${skillEmblem(k)}<span><b>${skillList[k].name}</b><small>Lv. ${d.level}</small></span></button>`;
     }).join('');
     document.querySelectorAll('#combatStylePicker [data-style]').forEach(b => b.onclick = () => setCombatStyle(b.dataset.style));
     const rows = Object.entries(skillList).map(([k,info]) => {
       const d = state.skillData[k] || {xp:0,level:1};
-      const pct = stylePercent(k);
-      return `<div class="skill-row ${info.type}"><span class="skill-glyph">${info.glyph}</span><div><b>${info.name}</b><span>${info.type.toUpperCase()} // Lv. ${d.level} // XP ${d.xp.toLocaleString()} // ${info.bonus}</span><div class="bar xp"><span style="width:${pct}%"></span></div></div></div>`;
+      const next=skillXpToNext(k);
+      return `<div class="skill-row ${info.type}">${skillEmblem(k)}<div><b>${info.name} <em>${info.short}</em></b><span>${info.type.toUpperCase()} // Lv. ${d.level}/99 // XP ${d.xp.toLocaleString()} // ${d.level>=99?'MAX':next.remaining.toLocaleString()+' to next'}</span><div class="bar xp"><span style="width:${next.pct}%"></span></div><small>${info.bonus}</small></div></div>`;
     }).join('');
     if($('progressionList')) $('progressionList').innerHTML = rows;
     renderUpgradeStation();
+    renderFractureDb();
   }
 
   function findItemRecord(name){
@@ -1202,8 +1422,9 @@
       return `<button class="owned-item ${rarityClass(item.rarity)}" data-item-name="${k}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><span>${item.rarity} // ${item.type}</span><small>${item.desc}</small></div>${k==='Med Patch'?'<em>Usable</em>':'<em>Stored</em>'}</button>`;
     }).join('') || '<div class="invrow">No recovered assets yet.</div>';
     const fullRegistry=[...coreItemRegistry.map(normalizeItem), ...importedItemRegistry.map(normalizeItem)];
+    const stats=combatStatBlock(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
     $('inventoryDatabaseList').innerHTML=`
-      <div class="item-tools">
+      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${state.player.maxEp} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div><div class="item-tools">
         <input id="itemSearch" placeholder="Search items / weapons / armor...">
         <div class="item-filter-row">
           <select id="itemFilter"><option value="all">All categories</option><option value="Weapon">Weapons</option><option value="Equipment">Equipment</option><option value="Consumable">Consumables</option><option value="Material">Materials</option><option value="Key Item">Key Items</option><option value="Archive">Archives</option><option value="Shard">Operator Shards</option></select>
@@ -1273,6 +1494,7 @@
       q.querySelector('[data-hot="brief"]').onclick=()=>openOverlay('missionOverlay');
       q.querySelector('[data-hot="help"]').onclick=toggleFullscreenHelp;
     }
+    if(!document.getElementById('fsPersistentStats')){ const ps=document.createElement('div'); ps.id='fsPersistentStats'; ps.className='fs-persistent-stats'; document.body.appendChild(ps); }
     if(!document.getElementById('fsSidehud')){
       const h=document.createElement('div');
       h.id='fsSidehud';
@@ -1291,13 +1513,14 @@
   function toggleSideHud(){ ensureFullscreenUi(); const el=$('fsSidehud'); el.classList.toggle('hidden'); renderFullscreenHud(); }
   function toggleFullscreenHelp(){ ensureFullscreenUi(); $('fsHelp').classList.toggle('hidden'); }
   function renderFullscreenHud(){
+    ensureProgression(); const p=state.player; const s=combatStatBlock(); const def=stageDef();
+    const persist=$('fsPersistentStats'); if(persist){ persist.innerHTML=`<b>Lv ${p.level}</b><span>HP ${p.hp}/${s.maxHp}</span><span>EP ${p.ep}/${p.maxEp}</span><em>${def.id}</em>`; }
     const hud=$('fsSidehud'); if(!hud || hud.classList.contains('hidden')) return;
-    const p=state.player;
     $('fsHudStats').innerHTML=`
-      <div class="fs-row"><b>Vyra</b><br>Lv ${p.level} // Credits ${p.credits}</div>
-      <div class="fs-row">HP ${p.hp}/${p.maxHp}<div class="bar"><span style="width:${100*p.hp/p.maxHp}%"></span></div></div>
+      <div class="fs-row"><b>Vyra</b><br>Player Lv ${p.level} // Credits ${p.credits}</div>
+      <div class="fs-row">HP ${p.hp}/${s.maxHp}<div class="bar"><span style="width:${100*p.hp/s.maxHp}%"></span></div></div>
       <div class="fs-row">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div>
-      <div class="fs-row">Anomalies Cleared: ${state.flags.anomaliesCleared}/3<br>Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div>`;
+      <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${state.flags.anomaliesCleared}/3 // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}</div>`;
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
     for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
@@ -1388,9 +1611,9 @@
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
-    $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

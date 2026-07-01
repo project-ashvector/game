@@ -970,3 +970,26 @@ body.story-open #game{filter:saturate(.9) brightness(.8);}
   letter-spacing:.06em;
 }
 @media(max-width:760px){.upgrade-card{grid-template-columns:1fr}.upgrade-card button{width:100%}}
+
+
+/* v63 skill/stage/inventory polish */
+.skill-emblem{
+  width:42px;height:42px;min-width:42px;border-radius:14px;display:inline-grid;place-items:center;
+  border:1px solid rgba(91,214,255,.65);background:radial-gradient(circle at 30% 20%,rgba(114,238,255,.28),rgba(7,12,20,.92));
+  box-shadow:0 0 18px rgba(46,204,255,.16), inset 0 0 14px rgba(255,255,255,.05); color:#e9fbff; font-family:inherit;
+}
+.skill-emblem b{font-size:18px;letter-spacing:.06em;text-shadow:0 0 10px rgba(87,223,255,.7)}
+.skill-attack{border-color:rgba(255,80,96,.85);background:radial-gradient(circle at 30% 20%,rgba(255,80,96,.32),rgba(14,8,13,.95));}
+.skill-strength{border-color:rgba(255,186,73,.85);background:radial-gradient(circle at 30% 20%,rgba(255,190,79,.32),rgba(18,12,5,.95));}
+.skill-defense{border-color:rgba(92,255,171,.8);background:radial-gradient(circle at 30% 20%,rgba(92,255,171,.28),rgba(6,17,12,.95));}
+.skill-health{border-color:rgba(255,93,151,.9);background:radial-gradient(circle at 30% 20%,rgba(255,93,151,.30),rgba(18,6,12,.95));}
+.skill-magic,.skill-system_hacking{border-color:rgba(174,112,255,.85);background:radial-gradient(circle at 30% 20%,rgba(174,112,255,.30),rgba(12,7,22,.95));}
+.skill-ranged,.skill-datafishing{border-color:rgba(83,255,242,.85);background:radial-gradient(circle at 30% 20%,rgba(83,255,242,.28),rgba(4,17,19,.95));}
+.skill-row{display:flex;gap:12px;align-items:center}.skill-row small{display:block;color:rgba(219,246,255,.68);margin-top:4px}.skill-row em{font-style:normal;color:#67e8ff;font-size:11px;margin-left:5px}
+.style-card{display:flex;align-items:center;gap:10px;text-align:left}.style-card span:last-child{display:flex;flex-direction:column;gap:2px}.style-card small{opacity:.72}
+.inventory-hero-panel{display:grid;grid-template-columns:1.35fr .9fr;gap:14px;border:1px solid rgba(91,214,255,.22);background:rgba(5,12,20,.72);border-radius:18px;padding:14px;margin-bottom:14px;box-shadow:inset 0 0 30px rgba(51,213,255,.05)}
+.inventory-hero-panel h2{margin:.1rem 0 .25rem}.inventory-skill-strip{display:grid;grid-template-columns:1fr 1fr;gap:8px}.inventory-skill-strip div{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.035)}.inventory-skill-strip .skill-emblem{width:32px;height:32px;min-width:32px;border-radius:10px}.inventory-skill-strip .skill-emblem b{font-size:14px}
+.fs-persistent-stats{position:fixed;top:72px;right:18px;z-index:5200;display:flex;gap:8px;align-items:center;padding:8px 10px;border:1px solid rgba(90,224,255,.38);border-radius:14px;background:rgba(3,7,12,.76);backdrop-filter:blur(10px);box-shadow:0 10px 28px rgba(0,0,0,.35);font-size:12px;letter-spacing:.04em}.fs-persistent-stats b{color:#e7fbff}.fs-persistent-stats span{color:#9eeaff}.fs-persistent-stats em{font-style:normal;color:#ff6978}
+body:not(.game-active) .fs-persistent-stats{display:none}.stage-select-panel{grid-column:1/-1}.stage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.stage-card{padding:13px;border-radius:16px;text-align:left;display:flex;flex-direction:column;gap:5px;border:1px solid rgba(91,214,255,.25);background:rgba(6,14,22,.72)}.stage-card b{font-size:20px;color:#eafcff}.stage-card span{font-weight:800}.stage-card small{opacity:.72}.stage-card em{font-style:normal;color:#67e8ff}.stage-card.active{box-shadow:0 0 0 1px rgba(91,214,255,.8),0 0 28px rgba(91,214,255,.12)}.stage-card.locked{opacity:.48;filter:grayscale(.55)}
+.pre-battle-overlay{z-index:9300}.pre-battle-card{width:min(920px,94vw);max-height:88vh;overflow:auto;border-radius:24px;padding:20px;background:linear-gradient(180deg,rgba(8,13,23,.96),rgba(4,7,14,.98));border:1px solid rgba(91,214,255,.3);box-shadow:0 30px 100px rgba(0,0,0,.62)}.pre-battle-layout{display:grid;grid-template-columns:minmax(180px,320px) 1fr;gap:18px;align-items:center}.pre-battle-layout img{width:100%;max-height:360px;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.55))}.stat-hero-line{color:#e9fbff}
+@media(max-width:780px){.inventory-hero-panel,.pre-battle-layout{grid-template-columns:1fr}.fs-persistent-stats{top:58px;left:12px;right:12px;justify-content:center}.inventory-skill-strip{grid-template-columns:1fr}}

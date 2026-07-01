@@ -244,3 +244,8 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added permanent upgrade ranks for ATK, HP/DEF, EP, and Med Patch healing.
 - Added checkpoint recovery so death can retry from the latest synced location.
 - Updated cache strings and labels to v62 / v0.6.2.
+
+
+## v0.6.3 / v63 - Skill & Stage Matrix
+- Trainable combat skills now max at 99 and use the RuneScape-style XP table.
+- Added stat scaling, Health skill, full-screen HP/Lv HUD, improved Inventory menu, skill emblems, pre-battle scan dialog, autosave improvements, and the first next-stage selector/map shell.
