@@ -1,3 +1,10 @@
+# v0.6.8 - Respawn Training Loop
+- Added 3-second respawn for normal anomaly encounters.
+- Added stage kill tracking for level grinding.
+- Respawn queue now appears in Fracture Status and main stat panel.
+- Capped mission anomaly objective display at 3/3 while allowing infinite training kills.
+- Corrected F-002 encounter IDs to use existing imported creature/boss records.
+
 # Changelog
 
 ## v67 / v0.6.7

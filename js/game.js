@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.7a // F-002 EXISTING CREATURE ROSTER',
+    'Version 0.6.8 // RESPAWN TRAINING LOOP',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.7a';
+  const BUILD_VERSION = '0.6.8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -476,14 +476,70 @@
   // v67a: F-002 uses the imported creature/boss library only; no invented monster names.
   const STAGE_ENCOUNTER_DEFS = {
     f002: {
-      '31,5': {id:'AN-019', display:'Charnel Spawn', hp:150, atk:19, xp:44, credits:38, loot:['Scrap Metal','Burnt Alloy'], note:'Imported anomaly record selected for the Ash Wastes route. Its biomass is doing something gross and absolutely not OSHA-approved.'},
-      '25,11': {id:'AN-025', display:'Crypt Darter', hp:132, atk:22, xp:48, credits:42, loot:['Scrap Metal','Outpost Access Chip'], note:'Imported anomaly record selected for the outpost patrol lane. Fast, ugly, and way too proud of both.'},
-      '13,19': {id:'AN-032', display:'Cryptmire Beast', hp:178, atk:20, xp:54, credits:45, loot:['Burnt Alloy','Med Patch'], note:'Imported anomaly record selected for the ruined waste channel. It smells like bad decisions with claws.'},
-      '35,20': {id:'BOSS-006', display:'Ashveil Spider Mother', hp:360, atk:30, xp:150, credits:95, loot:['Ashveil Mother Core','Corrupted Catalyst','Burnt Alloy'], bossReward:'Ashveil Mother Core', note:'Imported boss-class record. Large, venomous, and apparently upset that you walked into her landfill nursery.'}
+      '31,5': {id:'AN-020', display:'Charnel Spawn', hp:150, atk:19, xp:44, credits:38, loot:['Scrap Metal','Burnt Alloy'], note:'Imported anomaly record selected for the Ash Wastes route. Its biomass is doing something gross and absolutely not OSHA-approved.'},
+      '25,11': {id:'AN-026', display:'Crypt Darter', hp:132, atk:22, xp:48, credits:42, loot:['Scrap Metal','Outpost Access Chip'], note:'Imported anomaly record selected for the outpost patrol lane. Fast, ugly, and way too proud of both.'},
+      '13,19': {id:'AN-033', display:'Cryptmire Beast', hp:178, atk:20, xp:54, credits:45, loot:['Burnt Alloy','Med Patch'], note:'Imported anomaly record selected for the ruined waste channel. It smells like bad decisions with claws.'},
+      '35,20': {id:'BOSS-007', display:'Ashveil Spider Mother', hp:360, atk:30, xp:150, credits:95, loot:['Ashveil Mother Core','Corrupted Catalyst','Burnt Alloy'], bossReward:'Ashveil Mother Core', note:'Imported boss-class record. Large, venomous, and apparently upset that you walked into her landfill nursery.'}
     }
   };
   function stageEncounterOverride(x,y){
     return (STAGE_ENCOUNTER_DEFS[currentStageKey()] || {})[`${x},${y}`] || null;
+  }
+
+  // v68: monster respawn/training loop. Normal anomaly tiles rebuild after 3 seconds
+  // so players can grind XP, skill levels, credits, and drops without resetting a map.
+  const RESPAWN_DELAY_MS = 3000;
+  function respawnKey(stage,x,y){ return `${stage}:${x},${y}`; }
+  function ensureRespawnState(){
+    if(!state) return;
+    state.respawns ||= {};
+    state.enemyKills ||= {};
+  }
+  function clearStageRespawns(key=currentStageKey()){
+    ensureRespawnState();
+    Object.keys(state.respawns || {}).forEach(k => { if(k.startsWith(key+':')) delete state.respawns[k]; });
+  }
+  function scheduleEncounterRespawn(code,x,y,label='Anomaly'){
+    if(code !== 'E' || !state || !state.map) return;
+    ensureRespawnState();
+    const stage=currentStageKey();
+    const key=respawnKey(stage,x,y);
+    state.respawns[key]={stage,x,y,code:'E',readyAt:Date.now()+RESPAWN_DELAY_MS,label};
+    queueAutosave();
+    setTimeout(processRespawns, RESPAWN_DELAY_MS + 80);
+  }
+  function pendingRespawnsForStage(key=currentStageKey()){
+    ensureRespawnState();
+    const now=Date.now();
+    return Object.values(state.respawns || {}).filter(r => r && r.stage === key).map(r => ({...r, seconds:Math.max(0, Math.ceil((r.readyAt-now)/1000))}));
+  }
+  function processRespawns(){
+    if(!state || !state.map) return;
+    ensureRespawnState();
+    const now=Date.now();
+    let changed=false, deferred=false;
+    Object.entries({...state.respawns}).forEach(([key,r]) => {
+      if(!r || now < r.readyAt) return;
+      if(r.stage !== currentStageKey()) return;
+      if(battle || storyActive || (state.player.x === r.x && state.player.y === r.y)){
+        r.readyAt = now + 750;
+        state.respawns[key] = r;
+        deferred = true;
+        return;
+      }
+      const current = tileAt(r.x,r.y);
+      if(current === '.'){
+        setTile(r.x,r.y,'E');
+        delete state.respawns[key];
+        changed = true;
+        log(`Anomaly signature respawned: ${r.label || 'hostile record'}.`);
+      } else {
+        delete state.respawns[key];
+        changed = true;
+      }
+    });
+    if(changed){ renderAll(); queueAutosave(); }
+    if(deferred) setTimeout(processRespawns, 850);
   }
 
   const importedAnomalyRoster = [{"id": "AN-002", "name": "Ashborn Revenant", "battle": "assets/anomalies/an002_ashborn_revenant/battle.png", "hp": 28, "atk": 7, "credits": 9, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-003", "name": "Ashen Horror", "battle": "assets/anomalies/an003_ashen_horror/battle.png", "hp": 31, "atk": 8, "credits": 10, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-004", "name": "Ashen Revenant", "battle": "assets/anomalies/an004_ashen_revenant/battle.png", "hp": 34, "atk": 9, "credits": 11, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-005", "name": "Ashen Whelp", "battle": "assets/anomalies/an005_ashen_whelp/battle.png", "hp": 37, "atk": 10, "credits": 12, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-006", "name": "Ashfang Serpent", "battle": "assets/anomalies/an006_ashfang_serpent/battle.png", "hp": 40, "atk": 11, "credits": 13, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-007", "name": "Ashveil Spider", "battle": "assets/anomalies/an007_ashveil_spider/battle.png", "hp": 43, "atk": 12, "credits": 14, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-008", "name": "Bilebrood", "battle": "assets/anomalies/an008_bilebrood/battle.png", "hp": 46, "atk": 13, "credits": 15, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-009", "name": "Blight Rat", "battle": "assets/anomalies/an009_blight_rat/battle.png", "hp": 49, "atk": 14, "credits": 16, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-010", "name": "Blight Widow", "battle": "assets/anomalies/an010_blight_widow/battle.png", "hp": 52, "atk": 15, "credits": 17, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-011", "name": "Blightclaw Ravager", "battle": "assets/anomalies/an011_blightclaw_ravager/battle.png", "hp": 55, "atk": 7, "credits": 18, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-012", "name": "Blightdrake", "battle": "assets/anomalies/an012_blightdrake/battle.png", "hp": 58, "atk": 8, "credits": 19, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-013", "name": "Blistercoil Drake", "battle": "assets/anomalies/an013_blistercoil_drake/battle.png", "hp": 61, "atk": 9, "credits": 20, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-014", "name": "Blistergrub", "battle": "assets/anomalies/an014_blistergrub/battle.png", "hp": 64, "atk": 10, "credits": 21, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-015", "name": "Bloodreaver Scarab", "battle": "assets/anomalies/an015_bloodreaver_scarab/battle.png", "hp": 67, "atk": 11, "credits": 22, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-016", "name": "Bonegnasher", "battle": "assets/anomalies/an016_bonegnasher/battle.png", "hp": 70, "atk": 12, "credits": 23, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-017", "name": "Bramblechoke Horror", "battle": "assets/anomalies/an017_bramblechoke_horror/battle.png", "hp": 73, "atk": 13, "credits": 24, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-018", "name": "Carrion Scarab", "battle": "assets/anomalies/an018_carrion_scarab/battle.png", "hp": 76, "atk": 14, "credits": 25, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-019", "name": "Carrion Weaver", "battle": "assets/anomalies/an019_carrion_weaver/battle.png", "hp": 79, "atk": 15, "credits": 26, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-020", "name": "Charnel Spawn", "battle": "assets/anomalies/an020_charnel_spawn/battle.png", "hp": 82, "atk": 7, "credits": 27, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-021", "name": "Cindershade Horror", "battle": "assets/anomalies/an021_cindershade_horror/battle.png", "hp": 85, "atk": 8, "credits": 28, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-022", "name": "Cindershroud Wisp", "battle": "assets/anomalies/an022_cindershroud_wisp/battle.png", "hp": 88, "atk": 9, "credits": 29, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-023", "name": "Cragjaw", "battle": "assets/anomalies/an023_cragjaw/battle.png", "hp": 91, "atk": 10, "credits": 30, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-024", "name": "Cragrot Shambler", "battle": "assets/anomalies/an024_cragrot_shambler/battle.png", "hp": 94, "atk": 11, "credits": 31, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-025", "name": "Crypt Blight", "battle": "assets/anomalies/an025_crypt_blight/battle.png", "hp": 97, "atk": 12, "credits": 32, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-026", "name": "Crypt Darter", "battle": "assets/anomalies/an026_crypt_darter/battle.png", "hp": 100, "atk": 13, "credits": 33, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-027", "name": "Crypt Ghast", "battle": "assets/anomalies/an027_crypt_ghast/battle.png", "hp": 103, "atk": 14, "credits": 34, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-028", "name": "Crypt Howler", "battle": "assets/anomalies/an028_crypt_howler/battle.png", "hp": 106, "atk": 15, "credits": 35, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-029", "name": "Crypt Ravager", "battle": "assets/anomalies/an029_crypt_ravager/battle.png", "hp": 109, "atk": 7, "credits": 36, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-030", "name": "Crypt Serpent", "battle": "assets/anomalies/an030_crypt_serpent/battle.png", "hp": 112, "atk": 8, "credits": 37, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-031", "name": "Crypt Widow", "battle": "assets/anomalies/an031_crypt_widow/battle.png", "hp": 115, "atk": 9, "credits": 38, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-032", "name": "Cryptbane Spider", "battle": "assets/anomalies/an032_cryptbane_spider/battle.png", "hp": 118, "atk": 10, "credits": 39, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-033", "name": "Cryptmire Beast", "battle": "assets/anomalies/an033_cryptmire_beast/battle.png", "hp": 121, "atk": 11, "credits": 40, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-034", "name": "Deathrot Spawn", "battle": "assets/anomalies/an034_deathrot_spawn/battle.png", "hp": 124, "atk": 12, "credits": 41, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-035", "name": "Dreadthorn Lurker", "battle": "assets/anomalies/an035_dreadthorn_lurker/battle.png", "hp": 127, "atk": 13, "credits": 42, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-036", "name": "Duskgloom Howler", "battle": "assets/anomalies/an036_duskgloom_howler/battle.png", "hp": 130, "atk": 14, "credits": 43, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-037", "name": "Duskthorn Beast", "battle": "assets/anomalies/an037_duskthorn_beast/battle.png", "hp": 133, "atk": 15, "credits": 44, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-038", "name": "Duskwatch Bettle", "battle": "assets/anomalies/an038_duskwatch_bettle/battle.png", "hp": 136, "atk": 7, "credits": 45, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-039", "name": "Duskwither", "battle": "assets/anomalies/an039_duskwither/battle.png", "hp": 139, "atk": 8, "credits": 46, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-040", "name": "Duskwither Shade", "battle": "assets/anomalies/an040_duskwither_shade/battle.png", "hp": 142, "atk": 9, "credits": 47, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-041", "name": "Duskworm", "battle": "assets/anomalies/an041_duskworm/battle.png", "hp": 145, "atk": 10, "credits": 48, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-042", "name": "Ember Beetle", "battle": "assets/anomalies/an042_ember_beetle/battle.png", "hp": 148, "atk": 11, "credits": 49, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-043", "name": "Embergnash Scarab", "battle": "assets/anomalies/an043_embergnash_scarab/battle.png", "hp": 151, "atk": 12, "credits": 50, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-044", "name": "Frostgrave Abomination", "battle": "assets/anomalies/an044_frostgrave_abomination/battle.png", "hp": 154, "atk": 13, "credits": 51, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-045", "name": "Gloomwing", "battle": "assets/anomalies/an045_gloomwing/battle.png", "hp": 157, "atk": 14, "credits": 52, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-046", "name": "Grave Vulture", "battle": "assets/anomalies/an046_grave_vulture/battle.png", "hp": 160, "atk": 15, "credits": 53, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-047", "name": "Graveblade Stalker", "battle": "assets/anomalies/an047_graveblade_stalker/battle.png", "hp": 163, "atk": 7, "credits": 54, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-048", "name": "Gravebloom Horror", "battle": "assets/anomalies/an048_gravebloom_horror/battle.png", "hp": 166, "atk": 8, "credits": 55, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-049", "name": "Graveborn Wretch", "battle": "assets/anomalies/an049_graveborn_wretch/battle.png", "hp": 169, "atk": 9, "credits": 56, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-050", "name": "Gravecoil", "battle": "assets/anomalies/an050_gravecoil/battle.png", "hp": 172, "atk": 10, "credits": 57, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-051", "name": "Gravemarrow", "battle": "assets/anomalies/an051_gravemarrow/battle.png", "hp": 175, "atk": 11, "credits": 58, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-052", "name": "Gravemist Wyrm", "battle": "assets/anomalies/an052_gravemist_wyrm/battle.png", "hp": 178, "atk": 12, "credits": 59, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-053", "name": "Grime Crawler", "battle": "assets/anomalies/an053_grime_crawler/battle.png", "hp": 181, "atk": 13, "credits": 60, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-054", "name": "Hollow Hound", "battle": "assets/anomalies/an054_hollow_hound/battle.png", "hp": 184, "atk": 14, "credits": 61, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-055", "name": "Hollow Revenant", "battle": "assets/anomalies/an055_hollow_revenant/battle.png", "hp": 187, "atk": 15, "credits": 62, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-056", "name": "Hollow Scarab", "battle": "assets/anomalies/an056_hollow_scarab/battle.png", "hp": 190, "atk": 7, "credits": 63, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-057", "name": "Hollow Weaver", "battle": "assets/anomalies/an057_hollow_weaver/battle.png", "hp": 193, "atk": 8, "credits": 64, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-058", "name": "Hollowfang", "battle": "assets/anomalies/an058_hollowfang/battle.png", "hp": 196, "atk": 9, "credits": 65, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-059", "name": "Mire Thrasher", "battle": "assets/anomalies/an059_mire_thrasher/battle.png", "hp": 199, "atk": 10, "credits": 66, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-060", "name": "Mireclaw", "battle": "assets/anomalies/an060_mireclaw/battle.png", "hp": 202, "atk": 11, "credits": 67, "loot": ["Scrap Metal", "Corrupted Catalyst"]}, {"id": "AN-061", "name": "Miregulper Beast", "battle": "assets/anomalies/an061_miregulper_beast/battle.png", "hp": 205, "atk": 12, "credits": 68, "loot": ["Scrap Metal", "Corrupted Catalyst"]}];
@@ -585,6 +641,7 @@
     ensureStoryFlags();
     ensureUpgrades();
     ensureEquipment();
+    ensureRespawnState();
   }
   function ensureStoryFlags(){
     state.flags ||= {};
@@ -764,6 +821,7 @@
     state.currentStage=key;
     state.mapVersion='sector_stage_v5';
     state.map=parsed.map;
+    clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
     state.player.ep=Math.min(combatStatBlock().maxEp||state.player.maxEp,state.player.ep || (combatStatBlock().maxEp||state.player.maxEp));
@@ -1013,7 +1071,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1213,7 +1271,8 @@
     ensureStoryFlags();
     const def=stageDef();
     if(!state.flags.terminal) return `Objective: Find and sync the ${def.id} recovery terminal.`;
-    if(state.flags.anomaliesCleared < 3) return `Objective: Clear anomaly signatures (${state.flags.anomaliesCleared}/3).`;
+    const cleared=Math.min(3, state.flags.anomaliesCleared || 0);
+    if(cleared < 3) return `Objective: Clear anomaly signatures (${cleared}/3).`;
     if(!state.flags.bossDefeated) return `Objective: Boss route open. Defeat the ${def.id} guardian.`;
     if(!state.flags.chapterComplete) return 'Objective: Extract through the white exit marker.';
     return `${def.id} complete. Use Fracture Index to select the next stage.`;
@@ -1385,7 +1444,13 @@
     setTile(battle.x,battle.y,'.');
     const wasBoss = battle.code === 'B';
     const wasAnomaly = battle.code === 'E';
-    state.flags.anomaliesCleared += wasAnomaly?1:0;
+    ensureRespawnState();
+    if(wasAnomaly){
+      state.flags.anomaliesCleared = Math.min(3, (state.flags.anomaliesCleared || 0) + 1);
+      const stageKey = stageDef().key;
+      state.enemyKills[stageKey] = (state.enemyKills[stageKey] || 0) + 1;
+      scheduleEncounterRespawn('E', battle.x, battle.y, e.name);
+    }
     if(wasAnomaly && state.flags.anomaliesCleared >= 3 && !state.flags.bossUnlocked){state.flags.bossUnlocked=true; log('AVOS forced the boss route open. Somebody in security is getting demoted.'); pulseObjective(currentObjectiveText());}
     if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; state.bossKills ||= {}; state.bossKills[stageDef().key]=(state.bossKills[stageDef().key]||0)+1; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); recordDrop('Corrupted Catalyst', battle.enemy.name, 'Epic'); const bossReward=battle.enemy.bossReward || (stageDef().key==='f002'?'Ashveil Mother Core':'Toxic Monarch Relic'); if(!state.inventory[bossReward]){ loot.push(bossReward); addItem(bossReward,1); recordDrop(bossReward, battle.enemy.name, 'Relic'); }}
     const gearDrop = (!wasBoss && Math.random() < 0.42) ? pickGearDrop(false) : (wasBoss ? pickGearDrop(true) : null);
@@ -1563,17 +1628,22 @@
     const p=state.player; const stats=combatStatBlock(); const def=stageDef();
     const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000);
     const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
+    const anomalyClears=Math.min(3, state.flags.anomaliesCleared || 0);
+    const stageKills=(state.enemyKills||{})[def.key] || 0;
+    const pendingRespawns=pendingRespawnsForStage(def.key);
+    const nextRespawn=pendingRespawns.length ? Math.min(...pendingRespawns.map(r=>r.seconds)) : 0;
+    const respawnText=pendingRespawns.length ? `Pending ${pendingRespawns.length} // next ${nextRespawn}s` : 'Ready';
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
-    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
-    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
+    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Respawn ${respawnText}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/3 // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
       return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':(isEquipmentLike(item)?`<button onclick="window.AV.equipItem('${safeHtml(k)}')">Equip</button>`:'')}</div>`;
     }).join('')||'<div class="invrow">No recovered assets.</div>';
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
-    const objectives=[['Reach recovery terminal',state.flags.terminal],['Clear 3 anomalies',state.flags.anomaliesCleared>=3],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
+    const objectives=[['Reach recovery terminal',state.flags.terminal],[`Clear 3 anomalies (${anomalyClears}/3)`,anomalyClears>=3],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
     const activeText=currentObjectiveText();
     $('objectiveTracker').innerHTML=`<b>${activeText}</b><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ');
     $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('');
@@ -1863,14 +1933,21 @@
       <div class="fs-row"><b>Vyra</b><br>Player Lv ${p.level} // Credits ${p.credits}</div>
       <div class="fs-row">HP ${p.hp}/${s.maxHp}<div class="bar"><span style="width:${100*p.hp/s.maxHp}%"></span></div></div>
       <div class="fs-row">EP ${p.ep}/${s.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(s.maxEp||p.maxEp)}%"></span></div></div>
-      <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${state.flags.anomaliesCleared}/3 // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}</div>`;
+      <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${Math.min(3, state.flags.anomaliesCleared||0)}/3 // Kills ${(state.enemyKills||{})[def.key]||0} // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}</div>`;
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
     for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
     x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
   }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
-  function startAutosave(){ setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000); setInterval(()=>renderUI(), 1000); }
+  let autosaveStarted=false;
+  function startAutosave(){
+    if(autosaveStarted) return;
+    autosaveStarted=true;
+    setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000);
+    setInterval(()=>{ processRespawns(); renderUI(); }, 1000);
+    setInterval(processRespawns, 500);
+  }
 
   // v47: hard menu router. This runs in capture phase so menu protocols work
   // even if old button handlers, overlays, or fullscreen CSS intercept clicks.
@@ -1957,7 +2034,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
@@ -1965,5 +2042,5 @@
     open:(id)=>openOverlay(id),
     fullscreen:()=>toggleFullscreenMode()
   };
-  loadImages(); bind(); applySettings(); boot(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
+  loadImages(); bind(); applySettings(); boot(); startAutosave(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
 })();
