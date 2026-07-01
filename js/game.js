@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.3 // NEON GRAVEYARD FULL ROUTE',
+    'Version 0.7.4 // NPC CONTACTS + FERMILAT',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.3';
+  const BUILD_VERSION = '0.7.4';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -405,6 +405,89 @@
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{ if(c==='P'){ px=x; py=y; map[y][x]='.'; }}));
     return {map, px, py};
+  }
+
+
+  // v74: NPC contact system. NPCs are drawn on the map, can be clicked,
+  // or can be talked to by standing near them and pressing E.
+  const NPC_DEFS = {
+    fermilat: {
+      id: 'fermilat',
+      name: 'Fermilat',
+      asset: 'assets/npcs/fermilat.png',
+      stages: {
+        f001: {x:4, y:3, scene:'fermilatF001'},
+        f002: {x:6, y:3, scene:'fermilatF002'},
+        f003: {x:3, y:5, scene:'fermilatF003'}
+      }
+    }
+  };
+  function stageNpcs(key=currentStageKey()){
+    return Object.values(NPC_DEFS).map(n => {
+      const pos = n.stages[key];
+      return pos ? {...n, ...pos, stage:key} : null;
+    }).filter(Boolean);
+  }
+  function npcAt(x,y,key=currentStageKey()){
+    return stageNpcs(key).find(n => n.x === x && n.y === y) || null;
+  }
+  function nearbyNpc(){
+    const px = state.player.x, py = state.player.y;
+    return stageNpcs().find(n => Math.max(Math.abs(n.x-px), Math.abs(n.y-py)) <= 1) || null;
+  }
+  function interactNearbyNpc(){
+    if(storyActive || battle) return false;
+    const npc = nearbyNpc();
+    if(!npc){ toast('No NPC close enough. Walk up to Fermilat and press E.'); return false; }
+    showStory(npc.scene);
+    return true;
+  }
+  function drawNpc(npc){
+    const x = npc.x * TILE, y = npc.y * TILE;
+    const im = images[npc.asset];
+    const drawW = 48;
+    const drawH = 76;
+    const dx = x + (TILE-drawW)/2;
+    const dy = y + TILE - drawH + 6;
+    ctx.save();
+    ctx.fillStyle='rgba(0,0,0,.48)';
+    ctx.beginPath();
+    ctx.ellipse(x+TILE/2,y+TILE-4,18,7,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowColor='#94ff62';
+    ctx.shadowBlur=13;
+    if(im && im.complete && im.naturalWidth){
+      const oldSmooth = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(im, dx, dy, drawW, drawH);
+      ctx.imageSmoothingEnabled = oldSmooth;
+    } else {
+      ctx.fillStyle='#1c3b20'; ctx.fillRect(x+9,y+2,24,38);
+      ctx.fillStyle='#94ff62'; ctx.fillRect(x+13,y+11,16,6);
+    }
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(8,12,14,.82)';
+    ctx.fillRect(x-9,y-14,60,13);
+    ctx.fillStyle='#b9ff7c';
+    ctx.font='10px monospace';
+    ctx.textAlign='center';
+    ctx.fillText('E TALK', x+TILE/2, y-4);
+    ctx.strokeStyle='rgba(148,255,98,.78)';
+    ctx.lineWidth=1;
+    ctx.strokeRect(x+5,y+4,TILE-10,TILE-8);
+    ctx.restore();
+  }
+  function drawNpcs(){ stageNpcs().forEach(drawNpc); }
+  function handleCanvasNpcClick(evt){
+    if(storyActive || battle || $('app').classList.contains('hidden')) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (evt.clientX - rect.left) * scaleX + camera.x;
+    const my = (evt.clientY - rect.top) * scaleY + camera.y;
+    const tx = Math.floor(mx / TILE), ty = Math.floor(my / TILE);
+    const npc = npcAt(tx,ty);
+    if(npc){ evt.preventDefault(); showStory(npc.scene); }
   }
 
 
@@ -1216,6 +1299,7 @@
       'assets/operators/av001/portrait.png',
       'assets/operators/av001/battle.png',
       'assets/operators/av001/sprites/map_sprite.png',
+      NPC_DEFS.fermilat.asset,
       ...mapArt.ground,
       ...mapArt.blocked,
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit,
@@ -1370,6 +1454,18 @@
       kicker:'ASHVEIL MOTHER CORE RECOVERED', speaker:'VYRA',
       lines:['The gate is down. Core secured.', 'AVOS: Excellent. You have defeated a trash king. The resume writes itself. Extraction route is open.']
     },
+    fermilatF001: {
+      kicker:'NPC CONTACT // F-001 TOXIC SEWERS', speaker:'FERMILAT',
+      lines:['hey got any feet pics i can sniff—i mean have?', 'AVOS: That was the worst opening line I have ever logged. And I have logged sewer monsters.', 'Fermilat: It was for science. Foot science. Very serious.']
+    },
+    fermilatF002: {
+      kicker:'NPC CONTACT // F-002 ASH WASTES OUTPOST', speaker:'FERMILAT',
+      lines:['i still want them feet pics.', 'This ash outpost is dry, the air is cursed, and my collection is tragically empty.', 'AVOS: The mission log will pretend this conversation never happened.']
+    },
+    fermilatF003: {
+      kicker:'NPC CONTACT // F-003 NEON GRAVEYARD', speaker:'FERMILAT',
+      lines:['dead frequencies, neon graves, zero feet pics. this is basically endgame suffering.', 'Fermilat: If the ghosts have feet, do those count?', 'VYRA: I am leaving now. Permanently.']
+    },
     bossDefeated: {
       kicker:'TOXIC CORE RECOVERED', speaker:'AVOS',
       lines:['Boss-class entity deleted. Toxic Core stabilized.', 'Extraction route is now authorized. Head to the white exit marker before the sewer develops opinions again.']
@@ -1403,6 +1499,8 @@
       $('storyNext').onclick=advanceStory;
       $('storySkip').onclick=finishStory;
     }
+    const storyPortrait = document.querySelector('#storyOverlay .story-body img');
+    if(storyPortrait){ storyPortrait.src = key.startsWith('fermilat') ? NPC_DEFS.fermilat.asset : 'assets/operators/av001/portrait.png'; storyPortrait.alt = key.startsWith('fermilat') ? 'Fermilat portrait' : 'Vyra portrait'; }
     $('storyKicker').textContent=scene.kicker;
     $('storySpeaker').textContent=scene.speaker;
     overlay.classList.remove('hidden');
@@ -1704,6 +1802,7 @@
     ctx.save(); ctx.translate(-camera.x,-camera.y);
     for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
     drawMapProps();
+    drawNpcs();
     // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
     ctx.restore();
@@ -1822,6 +1921,7 @@
   function renderMini(){
     const w=state.map[0].length,h=state.map.length; mctx.clearRect(0,0,mini.width,mini.height); const sx=mini.width/w, sy=mini.height/h;
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){const c=tileAt(x,y); mctx.fillStyle=c==='#'?'#111':c==='C'?'#e0b64b':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#303842'; mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
+    stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
   function renderUI(){
@@ -2224,6 +2324,7 @@
           tryMove(mx,my);
           return;
         }
+        if(key==='e'){ e.preventDefault(); interactNearbyNpc(); return; }
         if(key==='m'){ e.preventDefault(); toggleSideHud(); return; }
         if(key==='i'){ e.preventDefault(); openOverlay('inventoryOverlay'); return; }
         if(key==='v'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
@@ -2244,10 +2345,11 @@
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
+    canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
