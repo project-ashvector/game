@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.3 // MAZE + FOG UPDATE',
+    'Version 0.5.4 // AUDIO + STATE FIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -21,6 +21,86 @@
     'WARNING: Unauthorized access detected.',
     'Can you hear me...?',
   ];
+
+  // v54: state-aware looping music manager.
+  // Browsers require the first play() to happen after user input, so failed play attempts
+  // are safely retried the next time a player clicks or presses a key.
+  const MUSIC = {
+    intro: 'assets/music/intro.mp3',
+    level1: 'assets/music/level1.mp3',
+    battle: 'assets/music/battle.mp3',
+    boss: 'assets/music/boss.mp3',
+    pause: 'assets/music/pause.mp3'
+  };
+  const AudioManager = {
+    tracks: {},
+    current: null,
+    requested: null,
+    unlocked: false,
+    volume: 0.55,
+    init(){
+      Object.entries(MUSIC).forEach(([key, src]) => {
+        const audio = new Audio(src);
+        audio.loop = true;
+        audio.preload = 'auto';
+        audio.volume = 0;
+        this.tracks[key] = audio;
+      });
+      const unlock = () => {
+        this.unlocked = true;
+        if(this.requested) this.play(this.requested, true);
+        window.removeEventListener('pointerdown', unlock);
+        window.removeEventListener('keydown', unlock);
+      };
+      window.addEventListener('pointerdown', unlock, {once:true});
+      window.addEventListener('keydown', unlock, {once:true});
+    },
+    play(key, immediate=false){
+      if(!this.tracks[key]) return;
+      this.requested = key;
+      if(this.current === key && !this.tracks[key].paused) return;
+      Object.entries(this.tracks).forEach(([name, audio]) => {
+        if(name !== key){
+          if(immediate){ audio.pause(); audio.currentTime = 0; audio.volume = 0; }
+          else this.fade(audio, audio.volume, 0, 450, () => { audio.pause(); audio.volume = 0; });
+        }
+      });
+      const next = this.tracks[key];
+      next.loop = true;
+      this.current = key;
+      if(next.paused){
+        const promise = next.play();
+        if(promise && promise.catch) promise.catch(() => {});
+      }
+      this.fade(next, next.volume || 0, this.volume, immediate ? 80 : 650);
+    },
+    fade(audio, from, to, ms=500, done){
+      const start = performance.now();
+      const tick = now => {
+        const t = Math.min(1, (now - start) / ms);
+        audio.volume = from + (to - from) * t;
+        if(t < 1) requestAnimationFrame(tick);
+        else { audio.volume = to; if(done) done(); }
+      };
+      requestAnimationFrame(tick);
+    },
+    setVolume(v){
+      this.volume = Math.max(0, Math.min(1, v));
+      if(this.current && this.tracks[this.current]) this.tracks[this.current].volume = this.volume;
+    },
+    pauseAll(){ Object.values(this.tracks).forEach(a => a.pause()); }
+  };
+  AudioManager.init();
+
+  const uiState = { mode: 'boot', returnStack: [] };
+  function activeMusicForState(){
+    if(battle) return battle.code === 'B' ? 'boss' : 'battle';
+    if(!document.querySelector('#mainMenu.hidden')) return 'intro';
+    if(!$('app').classList.contains('hidden')) return 'level1';
+    return 'intro';
+  }
+  function refreshMusic(){ AudioManager.play(activeMusicForState()); }
+
   // v53: Maze-first F-001 layout. Walls are collision first, art second.
   // This replaces the wide-open test field with corridors, rooms, gates, and side paths.
   const baseMap = [
@@ -255,6 +335,7 @@
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
+    uiState.mode='boot'; AudioManager.play('intro');
     let i=0; const lines=$('bootLines'); const prog=$('bootProgress').firstElementChild;
     function step(){
       if(i<bootLines.length){lines.textContent += '> '+bootLines[i++]+'\n'; prog.style.width=Math.min(100, i/bootLines.length*100)+'%'; setTimeout(step, state.settings.reducedMotion?30:260);} else {$('bootLogo').classList.remove('hidden'); bootDone=true;}}
@@ -270,8 +351,8 @@
       }
     }catch(err){}
   }
-  function showMenu(){hideAll(); document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll();}
+  function showMenu(){hideAll(); uiState.mode='menu'; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
+  function startGame(fresh=false){if(fresh) state=newGameState(); ensureProgression(); hideAll(); uiState.mode='game'; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1');}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -291,6 +372,7 @@
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     battle={code,x,y,enemy:def,turn:'player',guard:false};
+    uiState.mode='combat'; AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
     if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
     $('battleEnemy').src=def.img;
@@ -398,7 +480,7 @@
     panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${enemy.xp} // Credits +${enemy.credits}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">Return to Fracture</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
-    if(btn) btn.onclick=()=>{ battle=null; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); };
+    if(btn) btn.onclick=()=>{ battle=null; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play('level1'); };
   }
 
   function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=10; state.player.maxEp+=4; state.player.atk+=2; state.player.def+=1; state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log(`Synchronization increased. Level ${state.player.level}.`);} }
@@ -547,24 +629,23 @@
     const target=$(id);
     if(!target){toast('Protocol missing: '+id); return;}
 
-    // v48: menu protocol recovery. When the player opens a database
-    // screen from the main menu, temporarily hide the menu itself. This
-    // avoids the menu/card layer covering or intercepting the modal on
-    // GitHub Pages/browser fullscreen layouts.
     const menu=$('mainMenu');
     const app=$('app');
-    const openedFromMenu = menu && app && !menu.classList.contains('hidden') && app.classList.contains('hidden');
-    if(openedFromMenu){
-      document.body.dataset.returnToMenu = '1';
-      menu.classList.add('hidden');
-    }
+    const openedFromGame = app && !app.classList.contains('hidden');
+    const openedFromMenu = menu && !menu.classList.contains('hidden');
+    uiState.returnStack.push(openedFromGame ? 'game' : openedFromMenu ? 'menu' : uiState.mode || 'menu');
+    uiState.mode = 'overlay';
 
-    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+    if(openedFromMenu) menu.classList.add('hidden');
+    if(openedFromGame) document.body.classList.add('game-active');
+
+    document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     target.classList.remove('hidden');
     target.style.display='grid';
     target.style.zIndex='9000';
     target.style.pointerEvents='auto';
     document.body.classList.add('menu-protocol-open');
+    AudioManager.play('pause');
 
     try{
       if(id==='anomalyOverlay') renderAnomalyDb();
@@ -584,9 +665,21 @@
   function closeOverlays(){
     document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     document.body.classList.remove('menu-protocol-open');
-    if(document.body.dataset.returnToMenu === '1' && $('app').classList.contains('hidden')){
+    const previous = uiState.returnStack.pop() || (!$('app').classList.contains('hidden') ? 'game' : 'menu');
+    if(previous === 'game'){
+      $('mainMenu').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      document.body.classList.add('game-active','fullscreen-mode');
+      uiState.mode='game';
+      canvas.focus({preventScroll:true});
+      renderAll();
+      AudioManager.play('level1');
+    } else {
+      $('app').classList.add('hidden');
       $('mainMenu').classList.remove('hidden');
-      delete document.body.dataset.returnToMenu;
+      document.body.classList.remove('game-active');
+      uiState.mode='menu';
+      AudioManager.play('intro');
     }
     const info=$('menuInfo');
     if(info){info.textContent='Select a database protocol.'; info.classList.remove('ok','warn');}
@@ -855,7 +948,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

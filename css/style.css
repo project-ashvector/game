@@ -638,3 +638,34 @@ canvas#game{filter:brightness(.78) saturate(.62) contrast(1.08);}
   #mainMenu .menu-buttons button{min-height:34px!important;padding:6px 8px!important;}
 }
 @media(max-width:900px){#mainMenu .menu-buttons{grid-template-columns:repeat(2,minmax(150px,1fr))!important;}}
+
+/* v54: battle composition + audio/state polish */
+.battle-stage{
+  height:calc(100% - 176px)!important;
+  padding:0 36px 0!important;
+  align-items:end!important;
+  overflow:visible!important;
+}
+.combatant{align-items:end!important;place-items:end center!important;overflow:visible!important;}
+.combatant:after{
+  content:"";
+  position:absolute;
+  bottom:8px;
+  width:min(190px,62%);
+  height:20px;
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.72),rgba(0,0,0,0) 70%);
+  filter:blur(2px);
+  z-index:-1;
+}
+.battle-sprite{max-height:calc(100% + 24px)!important;object-position:center bottom!important;}
+.battle-sprite.hero{transform:translate(-2%,18%) scale(1.13)!important;}
+.battle-sprite.enemy{transform:translate(2%,18%) scale(1.16)!important;}
+.battle-ui{min-height:172px!important;position:relative;z-index:3;}
+.combatant-name{bottom:-10px!important;}
+@media(max-height:760px){
+  .battle-stage{height:calc(100% - 158px)!important;}
+  .battle-sprite.hero{transform:translate(-2%,20%) scale(1.10)!important;}
+  .battle-sprite.enemy{transform:translate(2%,20%) scale(1.13)!important;}
+  .battle-ui{min-height:158px!important;}
+}

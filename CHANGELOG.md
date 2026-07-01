@@ -190,3 +190,8 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Removed non-colliding decorative props to make collision clearer.
 - Moved battle sprites closer to the command panel.
 - Added main menu fit rules to prevent logo cropping and menu scroll.
+
+## v54 — Music Loop + State/Battle Fix
+- Added looping AudioManager and wired intro, level1, battle, boss, and pause tracks.
+- Fixed in-game database/menu close behavior so it returns to gameplay.
+- Lowered battle sprites closer to the command UI and added ground shadow styling.
