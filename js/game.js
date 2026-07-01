@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.5.4 // AUDIO + STATE FIX',
+    'Version 0.5.5 // MUSIC + SFX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -91,6 +91,60 @@
     pauseAll(){ Object.values(this.tracks).forEach(a => a.pause()); }
   };
   AudioManager.init();
+
+  // v55: Sound effects manager. Uses short one-shot clones so effects can overlap.
+  const SFX = {
+    step: 'assets/sound fx/steps.mp3',
+    item: 'assets/sound fx/item-pickup.mp3',
+    battleWin: 'assets/sound fx/battle-win.mp3',
+    levelWin: 'assets/sound fx/level-win.mp3',
+    death: 'assets/sound fx/death.mp3',
+    slashes: [
+      'assets/sound fx/slash1.mp3',
+      'assets/sound fx/slash2.mp3',
+      'assets/sound fx/slash3.mp3',
+      'assets/sound fx/slash4.mp3'
+    ]
+  };
+  const SfxManager = {
+    cache: {},
+    volume: 0.72,
+    lastStep: 0,
+    init(){
+      const all = [SFX.step, SFX.item, SFX.battleWin, SFX.levelWin, SFX.death, ...SFX.slashes];
+      all.forEach(src => {
+        const audio = new Audio(src);
+        audio.preload = 'auto';
+        audio.volume = this.volume;
+        this.cache[src] = audio;
+      });
+    },
+    play(src, volume=this.volume){
+      if(!src) return;
+      try{
+        const base = this.cache[src] || new Audio(src);
+        const a = base.cloneNode(true);
+        a.volume = Math.max(0, Math.min(1, volume));
+        a.play().catch(()=>{});
+      }catch(err){}
+    },
+    step(){
+      const now = performance.now();
+      if(now - this.lastStep < 115) return;
+      this.lastStep = now;
+      this.play(SFX.step, 0.45);
+    },
+    slash(){
+      const pick = SFX.slashes[Math.floor(Math.random() * SFX.slashes.length)];
+      this.play(pick, 0.82);
+    },
+    item(){ this.play(SFX.item, 0.75); },
+    battleWin(){ this.play(SFX.battleWin, 0.82); },
+    levelWin(){ this.play(SFX.levelWin, 0.86); },
+    death(){ this.play(SFX.death, 0.9); }
+  };
+  SfxManager.init();
+
 
   const uiState = { mode: 'boot', returnStack: [] };
   function activeMusicForState(){
@@ -357,7 +411,7 @@
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
   function isBlocked(c){return c==='#' || c==='D';}
-  function tryMove(dx,dy){if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll();}
+  function tryMove(dx,dy){if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll();}
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); log('Standard Cache opened: Med Patch + 20 credits.');}
@@ -365,9 +419,9 @@
     if(c==='H'){state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log('Healing station restored HP/EP.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.');}
     if(c==='E'||c==='B'){startBattle(c,x,y);}
-    if(c==='X'){ if(state.flags.chapterComplete){toast('Chapter already complete.');} else if(state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){state.flags.chapterComplete=true; log('Chapter 1 complete: Toxic Core recovered.'); toast('CHAPTER 1 COMPLETE');} else toast('Exit protocol denied. Finish the objective.');}
+    if(c==='X'){ if(state.flags.chapterComplete){toast('Chapter already complete.');} else if(state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){state.flags.chapterComplete=true; SfxManager.levelWin(); log('Chapter 1 complete: Toxic Core recovered.'); toast('CHAPTER 1 COMPLETE');} else toast('Exit protocol denied. Finish the objective.');}
   }
-  function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n;}
+  function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n; SfxManager.item();}
   function addCredits(n){state.player.credits+=n;}
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
@@ -419,6 +473,7 @@
       showDamage('hero', `+${heal}`, 'heal');
       grantStyleXp(mod.focus, 3);
     } else {
+      SfxManager.slash();
       let crit=Math.random()<(0.15+mod.critBonus);
       let dmg=Math.max(1,a.dmg+state.player.atk-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
       battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
@@ -440,11 +495,12 @@
     $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}.`;
     if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); }
     else showDamage('hero', 'DODGE', 'dodge');
-    if(state.player.hp<=0){state.player.hp=1; $('battleText').textContent+=' Emergency archive recovery prevented death.'; log('Defeat prevented by developer build mercy.');}
+    if(state.player.hp<=0){SfxManager.death(); state.player.hp=1; $('battleText').textContent+=' Emergency archive recovery prevented death.'; log('Defeat prevented by developer build mercy.');}
     battle.turn='player'; renderBattle(); renderUI();
   }
   function winBattle(){
     if(!battle) return;
+    SfxManager.battleWin();
     const e=battle.enemy;
     const loot=[...e.loot];
     setTile(battle.x,battle.y,'.');

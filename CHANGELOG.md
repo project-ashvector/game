@@ -195,3 +195,11 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added looping AudioManager and wired intro, level1, battle, boss, and pause tracks.
 - Fixed in-game database/menu close behavior so it returns to gameplay.
 - Lowered battle sprites closer to the command UI and added ground shadow styling.
+
+
+## v55 — Sound FX Integration
+- Added one-shot SFX manager.
+- Added walking step sound on movement.
+- Added randomized slash sounds in combat.
+- Added battle win, death, level win, and item pickup sounds.
+- Updated AVOS version text to v0.5.5.
