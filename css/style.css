@@ -993,3 +993,31 @@ body.story-open #game{filter:saturate(.9) brightness(.8);}
 body:not(.game-active) .fs-persistent-stats{display:none}.stage-select-panel{grid-column:1/-1}.stage-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.stage-card{padding:13px;border-radius:16px;text-align:left;display:flex;flex-direction:column;gap:5px;border:1px solid rgba(91,214,255,.25);background:rgba(6,14,22,.72)}.stage-card b{font-size:20px;color:#eafcff}.stage-card span{font-weight:800}.stage-card small{opacity:.72}.stage-card em{font-style:normal;color:#67e8ff}.stage-card.active{box-shadow:0 0 0 1px rgba(91,214,255,.8),0 0 28px rgba(91,214,255,.12)}.stage-card.locked{opacity:.48;filter:grayscale(.55)}
 .pre-battle-overlay{z-index:9300}.pre-battle-card{width:min(920px,94vw);max-height:88vh;overflow:auto;border-radius:24px;padding:20px;background:linear-gradient(180deg,rgba(8,13,23,.96),rgba(4,7,14,.98));border:1px solid rgba(91,214,255,.3);box-shadow:0 30px 100px rgba(0,0,0,.62)}.pre-battle-layout{display:grid;grid-template-columns:minmax(180px,320px) 1fr;gap:18px;align-items:center}.pre-battle-layout img{width:100%;max-height:360px;object-fit:contain;filter:drop-shadow(0 20px 30px rgba(0,0,0,.55))}.stat-hero-line{color:#e9fbff}
 @media(max-width:780px){.inventory-hero-panel,.pre-battle-layout{grid-template-columns:1fr}.fs-persistent-stats{top:58px;left:12px;right:12px;justify-content:center}.inventory-skill-strip{grid-template-columns:1fr}}
+
+
+/* v64: real skill emblem assets */
+.skill-emblem{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.skill-emblem img{
+  position:absolute;
+  inset:3px;
+  width:calc(100% - 6px);
+  height:calc(100% - 6px);
+  object-fit:contain;
+  z-index:2;
+  filter:drop-shadow(0 3px 8px rgba(0,0,0,.72));
+}
+.skill-emblem b{
+  position:relative;
+  z-index:1;
+  opacity:.18;
+}
+.skill-emblem:not(.missing-icon) b{opacity:0;}
+.skill-emblem.missing-icon b{opacity:1;}
+.skill-row .skill-emblem{width:52px;height:52px;min-width:52px;border-radius:16px;}
+.skill-row .skill-emblem img{inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);}
+.style-card .skill-emblem{width:44px;height:44px;min-width:44px;}
+.inventory-skill-strip .skill-emblem img{inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);}

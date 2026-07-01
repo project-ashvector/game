@@ -1,4 +1,10 @@
 
+## v64 / v0.6.4 - Skill Emblem Asset Pass
+- Imported uploaded `assets/skills` emblems.
+- Updated skill matrix, combat style picker, and inventory skill strip to show real emblem art.
+- Added safe fallback support for missing/future skill icons.
+
+
 ## v60 — Chapter 1 Flow
 - Added story popups and dialogue beats for Chapter 1.
 - Added current objective tracker text.

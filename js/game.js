@@ -494,18 +494,18 @@
     return Math.floor(xp / 4);
   });
   const skillList = {
-    attack: { name: 'Attack', short:'ATK', emblem:'A', type: 'combat', bonus: 'Improves hit quality, crit chance, and unlocks stronger stage scaling.' },
-    strength: { name: 'Strength', short:'STR', emblem:'S', type: 'combat', bonus: 'Raises blade damage and physical pressure.' },
-    defense: { name: 'Defense', short:'DEF', emblem:'D', type: 'combat', bonus: 'Reduces incoming damage and improves survival.' },
-    health: { name: 'Health', short:'HP', emblem:'H', type: 'combat', bonus: 'Raises max HP as the operator survives combat.' },
-    magic: { name: 'Neurohex', short:'HEX', emblem:'N', type: 'combat', bonus: 'Improves EP efficiency and protocol damage.' },
-    ranged: { name: 'Precision', short:'PRC', emblem:'P', type: 'combat', bonus: 'Improves dodge chance and ranged/aimed protocol accuracy.' },
-    slayer: { name: 'Anomaly Hunting', short:'HNT', emblem:'X', type: 'noncombat', bonus: 'Tracks creature takedowns and future slayer tasks.' },
-    cryptomining: { name: 'Cryptomining', short:'MIN', emblem:'M', type: 'noncombat', bonus: 'Future resource loop.' },
-    datafishing: { name: 'Datafishing', short:'DAT', emblem:'F', type: 'noncombat', bonus: 'Future data recovery loop.' },
-    codecraft: { name: 'Codecraft', short:'CRF', emblem:'C', type: 'noncombat', bonus: 'Future crafting loop.' },
-    forgenetics: { name: 'Forgentics', short:'BIO', emblem:'G', type: 'noncombat', bonus: 'Future bio-upgrade loop.' },
-    system_hacking: { name: 'System Hacking', short:'SYS', emblem:'Y', type: 'noncombat', bonus: 'Future terminal loop.' }
+    attack: { name: 'Attack', short:'ATK', emblem:'A', icon:'assets/skills/attack.png', type: 'combat', bonus: 'Improves hit quality, crit chance, and unlocks stronger stage scaling.' },
+    strength: { name: 'Strength', short:'STR', emblem:'S', icon:'assets/skills/strength.png', type: 'combat', bonus: 'Raises blade damage and physical pressure.' },
+    defense: { name: 'Defense', short:'DEF', emblem:'D', icon:'assets/skills/defense.png', type: 'combat', bonus: 'Reduces incoming damage and improves survival.' },
+    health: { name: 'Health', short:'HP', emblem:'H', icon:'assets/skills/health.png', type: 'combat', bonus: 'Raises max HP as the operator survives combat.' },
+    magic: { name: 'Neurohex', short:'HEX', emblem:'N', icon:'assets/skills/magic.png', type: 'combat', bonus: 'Improves EP efficiency and protocol damage.' },
+    ranged: { name: 'Precision', short:'PRC', emblem:'P', icon:'assets/skills/ranged.png', type: 'combat', bonus: 'Improves dodge chance and ranged/aimed protocol accuracy.' },
+    slayer: { name: 'Anomaly Hunting', short:'HNT', emblem:'X', icon:'assets/skills/slayer.png', type: 'noncombat', bonus: 'Tracks creature takedowns and future slayer tasks.' },
+    cryptomining: { name: 'Cryptomining', short:'MIN', emblem:'M', icon:'assets/skills/cryptomining.png', type: 'noncombat', bonus: 'Future resource loop.' },
+    datafishing: { name: 'Datafishing', short:'DAT', emblem:'F', icon:'assets/skills/datafishing.png', type: 'noncombat', bonus: 'Future data recovery loop.' },
+    codecraft: { name: 'Codecraft', short:'CRF', emblem:'C', icon:'assets/skills/codecraft.png', type: 'noncombat', bonus: 'Future crafting loop.' },
+    forgenetics: { name: 'Forgenetics', short:'BIO', emblem:'G', icon:'assets/skills/forgenetics.png', type: 'noncombat', bonus: 'Future bio-upgrade loop.' },
+    system_hacking: { name: 'System Hacking', short:'SYS', emblem:'Y', icon:'assets/skills/system_hacking.png', type: 'noncombat', bonus: 'Future terminal loop.' }
   };
   function createSkillData(){
     const data = {};
@@ -628,7 +628,10 @@
 
   function skillEmblem(key){
     const info=skillList[key] || {short:'?', emblem:'?'};
-    return `<span class="skill-emblem skill-${key}" aria-label="${safeHtml(info.name||key)}"><b>${safeHtml(info.emblem||info.short||'?')}</b></span>`;
+    const label=safeHtml(info.name||key);
+    const glyph=safeHtml(info.emblem||info.short||'?');
+    const img=info.icon ? `<img src="${safeHtml(info.icon)}?v=64" alt="${label}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : '';
+    return `<span class="skill-emblem skill-${key}" aria-label="${label}">${img}<b>${glyph}</b></span>`;
   }
   function skillXpToNext(key){
     ensureProgression();
