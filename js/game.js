@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.4 // NPC CONTACTS + FERMILAT',
+    'Version 0.7.5 // DEEP NPC DIALOGUE ROUTES',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.4';
+  const BUILD_VERSION = '0.7.5';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -408,17 +408,20 @@
   }
 
 
-  // v74: NPC contact system. NPCs are drawn on the map, can be clicked,
-  // or can be talked to by standing near them and pressing E.
+  // v74/v75: NPC contact system. NPCs are drawn on the map, can be clicked,
+  // or can be talked to by standing near them and pressing E. v75 moves them deeper
+  // into each route and supports alternating speaker portraits during dialog.
   const NPC_DEFS = {
     fermilat: {
       id: 'fermilat',
       name: 'Fermilat',
       asset: 'assets/npcs/fermilat.png',
       stages: {
-        f001: {x:4, y:3, scene:'fermilatF001'},
-        f002: {x:6, y:3, scene:'fermilatF002'},
-        f003: {x:3, y:5, scene:'fermilatF003'}
+        // v75: Fermilat is deeper in each route now, closer to the boss side-path.
+        // He is meant to feel like a weird optional NPC you find, not a spawn greeter.
+        f001: {x:30, y:22, scene:'fermilatF001'},
+        f002: {x:31, y:20, scene:'fermilatF002'},
+        f003: {x:27, y:21, scene:'fermilatF003'}
       }
     }
   };
@@ -438,7 +441,7 @@
   function interactNearbyNpc(){
     if(storyActive || battle) return false;
     const npc = nearbyNpc();
-    if(!npc){ toast('No NPC close enough. Walk up to Fermilat and press E.'); return false; }
+    if(!npc){ toast('No NPC close enough. Find Fermilat deeper in the route and press E.'); return false; }
     showStory(npc.scene);
     return true;
   }
@@ -1342,7 +1345,7 @@
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
   function isBlocked(c){return c==='#' || c==='D';}
-  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll(); queueAutosave();}
+  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); const npcBlock=npcAt(nx,ny); if(npcBlock){toast('Fermilat is blocking the route. Press E to talk.'); renderAll(); return;} if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll(); queueAutosave();}
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
@@ -1456,15 +1459,30 @@
     },
     fermilatF001: {
       kicker:'NPC CONTACT // F-001 TOXIC SEWERS', speaker:'FERMILAT',
-      lines:['hey got any feet pics i can sniff—i mean have?', 'AVOS: That was the worst opening line I have ever logged. And I have logged sewer monsters.', 'Fermilat: It was for science. Foot science. Very serious.']
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'hey got any feet pics i can sniff—i mean have?'},
+        {speaker:'VYRA', portrait:'vyra', text:'I fought through a sewer and the hidden NPC near the boss is asking for feet pics?'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'Hidden? No. Strategically stationed. Also the word is “collectibles.”'},
+        {speaker:'VYRA', portrait:'vyra', text:'Ask again and I am marking you as a hostile object on the minimap.'}
+      ]
     },
     fermilatF002: {
       kicker:'NPC CONTACT // F-002 ASH WASTES OUTPOST', speaker:'FERMILAT',
-      lines:['i still want them feet pics.', 'This ash outpost is dry, the air is cursed, and my collection is tragically empty.', 'AVOS: The mission log will pretend this conversation never happened.']
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'i still want them feet pics.'},
+        {speaker:'VYRA', portrait:'vyra', text:'You crossed into the ash wastes for this?'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'The grind is real. The outpost is dry. The collection remains tragically empty.'},
+        {speaker:'VYRA', portrait:'vyra', text:'AVOS, remind me to install an ignore button.'}
+      ]
     },
     fermilatF003: {
       kicker:'NPC CONTACT // F-003 NEON GRAVEYARD', speaker:'FERMILAT',
-      lines:['dead frequencies, neon graves, zero feet pics. this is basically endgame suffering.', 'Fermilat: If the ghosts have feet, do those count?', 'VYRA: I am leaving now. Permanently.']
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'dead frequencies, neon graves, zero feet pics. this is basically endgame suffering.'},
+        {speaker:'VYRA', portrait:'vyra', text:'You are hiding beside a boss gate in a haunted graveyard and that is still your main concern?'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'Consistency is important for character development.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Your character development needs a patch note and a warning label.'}
+      ]
     },
     bossDefeated: {
       kicker:'TOXIC CORE RECOVERED', speaker:'AVOS',
@@ -1500,12 +1518,24 @@
       $('storySkip').onclick=finishStory;
     }
     const storyPortrait = document.querySelector('#storyOverlay .story-body img');
-    if(storyPortrait){ storyPortrait.src = key.startsWith('fermilat') ? NPC_DEFS.fermilat.asset : 'assets/operators/av001/portrait.png'; storyPortrait.alt = key.startsWith('fermilat') ? 'Fermilat portrait' : 'Vyra portrait'; }
+    const lineData = raw => {
+      if(raw && typeof raw === 'object') return raw;
+      const speaker = scene.speaker || (key.startsWith('fermilat') ? 'FERMILAT' : 'VYRA');
+      return {speaker, portrait:key.startsWith('fermilat') ? 'fermilat' : 'vyra', text:String(raw || '')};
+    };
+    const portraitSrc = line => line.portrait === 'fermilat' || String(line.speaker||'').toUpperCase().includes('FERMILAT')
+      ? NPC_DEFS.fermilat.asset
+      : 'assets/operators/av001/portrait.png';
     $('storyKicker').textContent=scene.kicker;
-    $('storySpeaker').textContent=scene.speaker;
     overlay.classList.remove('hidden');
     document.body.classList.add('story-open');
-    const draw=()=>{ $('storyLine').textContent=scene.lines[i] || ''; $('storyNext').textContent = i >= scene.lines.length-1 ? 'Close' : 'Continue'; };
+    const draw=()=>{
+      const line=lineData(scene.lines[i]);
+      if(storyPortrait){ storyPortrait.src = portraitSrc(line); storyPortrait.alt = `${line.speaker || 'Speaker'} portrait`; }
+      $('storySpeaker').textContent=line.speaker || scene.speaker || 'AVOS';
+      $('storyLine').textContent=line.text || '';
+      $('storyNext').textContent = i >= scene.lines.length-1 ? 'Close' : 'Continue';
+    };
     overlay._advance=()=>{ i++; if(i>=scene.lines.length) finishStory(); else draw(); };
     draw();
   }
