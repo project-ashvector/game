@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.6.0 // CHAPTER FLOW',
+    'Version 0.6.2 // UPGRADE MATRIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.6.0';
+  const BUILD_VERSION = '0.6.2';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -456,6 +456,7 @@
     Object.keys(skillList).forEach(k => state.skillData[k] ||= {xp:0,level:1});
     state.combatStyle ||= 'attack';
     ensureStoryFlags();
+    ensureUpgrades();
   }
   function ensureStoryFlags(){
     state.flags ||= {};
@@ -463,6 +464,62 @@
     state.flags.bossDefeated ||= false;
     state.flags.chapterRewardsClaimed ||= false;
     state.flags.chapterClearSeen ||= false;
+  }
+  const UPGRADE_DEFS = {
+    blade:{name:'Blade Calibration', max:5, base:25, step:20, desc:'+2 ATK each rank.', apply(){state.player.atk += 2;}},
+    armor:{name:'Carbon Skin Plating', max:5, base:30, step:25, desc:'+8 Max HP and +1 DEF each rank.', apply(){state.player.maxHp += 8; state.player.hp = Math.min(state.player.maxHp, state.player.hp + 8); state.player.def += 1;}},
+    energy:{name:'Vector Cell Expansion', max:5, base:25, step:20, desc:'+5 Max EP each rank.', apply(){state.player.maxEp += 5; state.player.ep = Math.min(state.player.maxEp, state.player.ep + 5);}},
+    medtech:{name:'Med Patch Efficiency', max:3, base:35, step:30, desc:'+10 HP healed by Med Patch each rank.', apply(){}}
+  };
+  function ensureUpgrades(){
+    state.upgrades ||= {};
+    Object.keys(UPGRADE_DEFS).forEach(k => state.upgrades[k] ||= 0);
+    state.checkpoint ||= null;
+  }
+  function upgradeCost(key){
+    ensureUpgrades();
+    const d=UPGRADE_DEFS[key];
+    const rank=state.upgrades[key]||0;
+    return d.base + d.step * rank;
+  }
+  function buyUpgrade(key){
+    ensureUpgrades();
+    const d=UPGRADE_DEFS[key];
+    if(!d) return;
+    const rank=state.upgrades[key]||0;
+    if(rank >= d.max){ toast('Upgrade already maxed.'); return; }
+    const cost=upgradeCost(key);
+    if(state.player.credits < cost){ toast(`Need ${cost} credits.`); return; }
+    state.player.credits -= cost;
+    state.upgrades[key] = rank + 1;
+    d.apply();
+    if(state.checkpoint?.snapshot){
+      state.checkpoint.snapshot.player = JSON.parse(JSON.stringify(state.player));
+      state.checkpoint.snapshot.inventory = JSON.parse(JSON.stringify(state.inventory));
+      state.checkpoint.snapshot.upgrades = JSON.parse(JSON.stringify(state.upgrades));
+      state.checkpoint.snapshot.skillData = JSON.parse(JSON.stringify(state.skillData));
+      state.checkpoint.snapshot.combatStyle = state.combatStyle;
+    }
+    log(`${d.name} upgraded to rank ${state.upgrades[key]}/${d.max}.`);
+    renderProgressionDb(); renderUI(); save(true);
+  }
+  function setCheckpoint(label='Checkpoint'){
+    ensureProgression();
+    const snap = JSON.parse(JSON.stringify({...state, checkpoint:null, lastSave:Date.now()}));
+    state.checkpoint = {label, savedAt:Date.now(), snapshot:snap};
+    log(`${label} checkpoint synced.`);
+  }
+  function restoreCheckpoint(){
+    ensureProgression();
+    const cp = state.checkpoint;
+    if(!cp || !cp.snapshot) return false;
+    state = JSON.parse(JSON.stringify(cp.snapshot));
+    state.checkpoint = cp;
+    state.player.hp = Math.max(1, Math.min(state.player.maxHp, state.player.hp || state.player.maxHp));
+    state.player.ep = Math.max(0, Math.min(state.player.maxEp, state.player.ep || state.player.maxEp));
+    ensureProgression();
+    toast(`Restored: ${cp.label}`);
+    return true;
   }
   function grantStyleXp(style, xp){
     ensureProgression();
@@ -521,7 +578,7 @@
     const map = baseMap.map(r => r.split(''));
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{if(c==='P'){px=x;py=y;map[y][x]='.';}}));
-    return {mapVersion:'sector01_v2', map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', lastSave:Date.now()};
+    return {mapVersion:'sector01_v2', map, player:{x:px,y:py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -565,7 +622,7 @@
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -575,8 +632,8 @@
   function handleTile(c,x,y){
     ensureStoryFlags();
     if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); addCredits(20); log('Standard Cache opened: Med Patch + 20 credits.'); pulseObjective('Cache recovered. Keep moving toward the terminal and anomaly signatures.');}
-    if(c==='S'){state.flags.terminal=true; save(); log('Recovery Terminal synced your archive.'); showStoryOnce('terminal'); pulseObjective(currentObjectiveText());}
-    if(c==='H'){state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log('Healing station restored HP/EP.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
+    if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce('terminal'); pulseObjective(currentObjectiveText());}
+    if(c==='H'){state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce('lore');}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
     if(c==='X'){ if(state.flags.chapterComplete){showChapterClearPanel();} else if(state.flags.bossDefeated && state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){completeChapter();} else toast('Exit protocol denied. Finish the objective.');}
@@ -790,11 +847,12 @@
     $('battleText').textContent = 'Vyra has fallen. Archive synchronization failed.';
     renderBattle();
     const panel=$('battleVictory');
-    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled in v0.5.8.</span></div><div><b>Recovery</b><span>Restart from the beginning of Fracture 001.</span></div></div><button id="deathRetryBtn">Retry Fracture</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
+    const retryLabel = state.checkpoint?.label ? `Retry from ${safeHtml(state.checkpoint.label)}` : 'Retry Fracture';
+    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled.</span></div><div><b>Recovery</b><span>${state.checkpoint?.label ? 'Checkpoint found: '+safeHtml(state.checkpoint.label) : 'No checkpoint found. Restart from Fracture Entry.'}</span></div></div><button id="deathRetryBtn">${retryLabel}</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
     panel.classList.remove('hidden');
     const retry=$('deathRetryBtn');
     const menu=$('deathMenuBtn');
-    if(retry) retry.onclick=()=>{ battle=null; state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
+    if(retry) retry.onclick=()=>{ const restored=restoreCheckpoint(); battle=null; if(!restored) state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
     if(menu) menu.onclick=()=>{ battle=null; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
   }
 
@@ -850,7 +908,7 @@
   }
 
   function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=10; state.player.maxEp+=4; state.player.atk+=2; state.player.def+=1; state.player.hp=state.player.maxHp; state.player.ep=state.player.maxEp; log(`Synchronization increased. Level ${state.player.level}.`);} }
-  function useMedPatch(){ if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=state.player.maxHp){toast('HP already full.');return;} state.inventory['Med Patch']--; state.player.hp=Math.min(state.player.maxHp,state.player.hp+25); log('Used Med Patch. +25 HP.'); renderAll(); }
+  function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return;} if(state.player.hp>=state.player.maxHp){toast('HP already full.');return;} const heal=25+(state.upgrades.medtech||0)*10; state.inventory['Med Patch']--; state.player.hp=Math.min(state.player.maxHp,state.player.hp+heal); log(`Used Med Patch. +${heal} HP.`); renderAll(); }
   function render(){
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
@@ -976,9 +1034,9 @@
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){const c=tileAt(x,y); mctx.fillStyle=c==='#'?'#111':c==='C'?'#e0b64b':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#303842'; mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
-  function renderUI(){ const p=state.player; const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000); $('stats').innerHTML=`<div class="statrow">Level ${p.level} // Credits ${p.credits}</div><div class="statrow">Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Striker Protocol'} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${p.maxHp}<div class="bar"><span style="width:${100*p.hp/p.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+  function renderUI(){ ensureProgression(); const p=state.player; const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000); const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0); $('stats').innerHTML=`<div class="statrow">Level ${p.level} // Credits ${p.credits}</div><div class="statrow">Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Striker Protocol'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${p.atk} // DEF ${p.def} // Autosave ${saveAge}s</div><div class="statrow">HP ${p.hp}/${p.maxHp}<div class="bar"><span style="width:${100*p.hp/p.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/p.maxEp}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
     ensureStoryFlags();
-    $('fractureStatus').innerHTML=`<div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Chapter: ${state.flags.chapterComplete?'Complete':'Active'}</div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Anomalies Cleared: ${state.flags.anomaliesCleared}/3</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Chapter: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div>`;
     $('inventory').innerHTML=Object.entries(state.inventory).map(([k,v])=>{
       const item=findItemRecord(k);
       return `<div class="invrow invrow-polished ${rarityClass(item.rarity)}" title="${item.desc}">${itemIconHtml(item,v)}<div><b>${k}</b><small>${item.rarity} // ${item.type}</small></div>${k==='Med Patch'?'<button onclick="window.AV.useMedPatch()">Use</button>':''}</div>`;
@@ -1078,6 +1136,20 @@
     $('creatureSearch').oninput=drawList; $('creatureFilter').onchange=drawList; drawList();
   }
 
+  function renderUpgradeStation(){
+    const root=$('upgradeStation');
+    if(!root) return;
+    ensureProgression();
+    const rows=Object.entries(UPGRADE_DEFS).map(([key,d])=>{
+      const rank=state.upgrades[key]||0;
+      const maxed=rank>=d.max;
+      const cost=upgradeCost(key);
+      return `<div class="upgrade-card ${maxed?'maxed':''}"><div><b>${safeHtml(d.name)}</b><span>Rank ${rank}/${d.max} // ${safeHtml(d.desc)}</span><div class="upgrade-pips">${Array.from({length:d.max},(_,i)=>`<i class="${i<rank?'on':''}"></i>`).join('')}</div></div><button data-upgrade="${key}" ${maxed?'disabled':''}>${maxed?'MAX':cost+' credits'}</button></div>`;
+    }).join('');
+    root.innerHTML=`<h3>Operator Upgrade Matrix</h3><p class="menu-info">Spend recovered credits to permanently improve Vyra. Checkpoints preserve purchased upgrades.</p>${rows}<div class="upgrade-statline">ATK ${state.player.atk} // DEF ${state.player.def} // HP ${state.player.maxHp} // EP ${state.player.maxEp}</div>`;
+    root.querySelectorAll('[data-upgrade]').forEach(btn=>btn.onclick=()=>buyUpgrade(btn.dataset.upgrade));
+  }
+
   function renderProgressionDb(){
     ensureProgression();
     const styleKeys = Object.keys(skillList).filter(k => skillList[k].type === 'combat');
@@ -1092,6 +1164,7 @@
       return `<div class="skill-row ${info.type}"><span class="skill-glyph">${info.glyph}</span><div><b>${info.name}</b><span>${info.type.toUpperCase()} // Lv. ${d.level} // XP ${d.xp.toLocaleString()} // ${info.bonus}</span><div class="bar xp"><span style="width:${pct}%"></span></div></div></div>`;
     }).join('');
     if($('progressionList')) $('progressionList').innerHTML = rows;
+    renderUpgradeStation();
   }
 
   function findItemRecord(name){
@@ -1317,7 +1390,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=state.player.maxHp;state.player.ep=state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel};
+  window.AV={useMedPatch, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

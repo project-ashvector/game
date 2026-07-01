@@ -237,3 +237,10 @@ Planning, documentation, production direction, and prototype scaffolding for Pro
 - Added randomized slash sounds in combat.
 - Added battle win, death, level win, and item pickup sounds.
 - Updated AVOS version text to v0.5.5.
+
+
+## v62 / v0.6.2 - Upgrade Matrix + Checkpoints
+- Added credit-based Operator Upgrade Matrix in Progression Matrix.
+- Added permanent upgrade ranks for ATK, HP/DEF, EP, and Med Patch healing.
+- Added checkpoint recovery so death can retry from the latest synced location.
+- Updated cache strings and labels to v62 / v0.6.2.
