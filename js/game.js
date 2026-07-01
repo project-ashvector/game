@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.1 // SIDE QUEST JOURNAL',
+    'Version 0.8.2 // MOBILE PLAYABLE',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.1';
+  const BUILD_VERSION = '0.8.2';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -1396,7 +1396,7 @@
     log(`${def.id} // ${def.title} loaded.`);
     save(true);
     hideAll(); uiState.mode='game'; gameStarted=true; document.body.classList.add('game-active','fullscreen-mode'); $('app').classList.remove('hidden');
-    document.body.dataset.stage=def.key; renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
+    document.body.dataset.stage=def.key; ensureMobileActionPad(); setMobilePlayMode(); renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
     return true;
   }
   function unlockNextStages(){
@@ -1694,7 +1694,7 @@
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStoryOnce('intro'), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -2628,6 +2628,89 @@
     const firstOwned = Object.keys(state.inventory)[0]; if(firstOwned) showItemDetail(firstOwned);
   }
 
+  // v82: phone/mobile playability helpers.
+  // Keeps the canvas scaled to the phone viewport, adds hold-to-walk touch movement,
+  // and exposes the important hotkeys as tap buttons.
+  let mobileMoveTimer = null;
+  let mobileResizeTimer = null;
+  function isPhoneLike(){
+    return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+  }
+  function setMobilePlayMode(){
+    const mobile = isPhoneLike();
+    document.body.classList.toggle('mobile-play', !!mobile);
+    if(mobile && gameStarted && uiState.mode === 'game'){
+      document.body.classList.add('fullscreen-mode');
+      ensureMobileActionPad();
+    }
+    try{ canvas.style.touchAction = 'none'; }catch(err){}
+    clearTimeout(mobileResizeTimer);
+    mobileResizeTimer = setTimeout(()=>{ try{ renderAll(); }catch(err){} }, 90);
+  }
+  function moveByName(dir){
+    const moves={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+    const m=moves[dir];
+    if(!m) return;
+    tryMove(m[0],m[1]);
+  }
+  function stopMobileMove(){
+    if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
+  }
+  function bindMobileMoveButtons(){
+    document.querySelectorAll('[data-move]').forEach(btn=>{
+      if(btn.dataset.mobileBound === '1') return;
+      btn.dataset.mobileBound = '1';
+      btn.setAttribute('type','button');
+      const start=(e)=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        AudioManager.unlock();
+        stopMobileMove();
+        moveByName(btn.dataset.move);
+        mobileMoveTimer=setInterval(()=>moveByName(btn.dataset.move), 210);
+        try{ btn.setPointerCapture && e.pointerId != null && btn.setPointerCapture(e.pointerId); }catch(err){}
+      };
+      const stop=(e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } stopMobileMove(); };
+      btn.addEventListener('pointerdown', start, {passive:false});
+      btn.addEventListener('touchstart', start, {passive:false});
+      ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(evt=>btn.addEventListener(evt, stop, {passive:false}));
+      btn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
+    });
+  }
+  function ensureMobileActionPad(){
+    if(document.getElementById('mobileActionPad')) return;
+    const pad=document.createElement('div');
+    pad.id='mobileActionPad';
+    pad.className='mobile-action-pad';
+    pad.innerHTML=`
+      <button type="button" data-mobile-action="talk"><b>E</b><span>Talk</span></button>
+      <button type="button" data-mobile-action="med"><b>Q</b><span>HP</span></button>
+      <button type="button" data-mobile-action="cell"><b>R</b><span>EP</span></button>
+      <button type="button" data-mobile-action="inv"><b>I</b><span>Inv</span></button>
+      <button type="button" data-mobile-action="map"><b>M</b><span>Map</span></button>`;
+    document.body.appendChild(pad);
+    pad.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('pointerdown', e=>{
+        e.preventDefault(); e.stopPropagation();
+        AudioManager.unlock();
+        const action=btn.dataset.mobileAction;
+        if(action==='talk') interactNearbyNpc();
+        if(action==='med') useMedPatch();
+        if(action==='cell') useVectorCell();
+        if(action==='inv') openOverlay('inventoryOverlay');
+        if(action==='map') toggleSideHud();
+      }, {passive:false});
+    });
+  }
+  function setupMobilePlayability(){
+    bindMobileMoveButtons();
+    ensureMobileActionPad();
+    setMobilePlayMode();
+    window.addEventListener('resize', setMobilePlayMode, {passive:true});
+    window.addEventListener('orientationchange', () => setTimeout(setMobilePlayMode, 220), {passive:true});
+    window.addEventListener('blur', stopMobileMove, {passive:true});
+    document.addEventListener('visibilitychange', () => { if(document.hidden) stopMobileMove(); });
+  }
+
   function showFullscreenHint(msg){
     const old=document.querySelector('.fullscreen-hint'); if(old) old.remove();
     const h=document.createElement('div'); h.className='fullscreen-hint'; h.textContent=msg; document.body.appendChild(h); setTimeout(()=>h.remove(),2300);
@@ -2652,7 +2735,7 @@
       q.innerHTML=`
         <button data-hot="map"><b>M</b>Map</button>
         <button data-hot="inv"><b>I</b>Inventory</button>
-        <button data-hot="db"><b>D</b>Anomalies</button>
+        <button data-hot="db"><b>V</b>Anomalies</button>
         <button data-hot="op"><b>O</b>Operator</button>
         <button data-hot="prog"><b>P</b>Progress</button>
         <button data-hot="brief"><b>B</b>Briefing</button>
@@ -2810,12 +2893,12 @@
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
-    document.querySelectorAll('[data-move]').forEach(b=>b.onclick=()=>({up:()=>tryMove(0,-1),down:()=>tryMove(0,1),left:()=>tryMove(-1,0),right:()=>tryMove(1,0)}[b.dataset.move]()));
+    bindMobileMoveButtons(); setupMobilePlayability();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
