@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.8 // STATUS EFFECTS + COUNTER FLOW',
+    'Version 0.7.9 // OVERDRIVE FINISHER',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.8';
+  const BUILD_VERSION = '0.7.9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -829,6 +829,50 @@
     return count;
   }
 
+  // v79: Overdrive gives long fights a payoff and makes status/guard loops matter.
+  function ensureOverdrive(){
+    if(!state?.player) return;
+    state.player.maxOverdrive ||= 100;
+    state.player.overdrive = Math.max(0, Math.min(state.player.maxOverdrive, Number(state.player.overdrive || 0)));
+  }
+  function chargeOverdrive(amount=0, reason=''){
+    ensureOverdrive();
+    const before = state.player.overdrive || 0;
+    state.player.overdrive = Math.min(state.player.maxOverdrive || 100, before + Math.max(0, Math.floor(amount)));
+    if(before < (state.player.maxOverdrive || 100) && state.player.overdrive >= (state.player.maxOverdrive || 100)){
+      toast('Overdrive ready: Null Vector Execution');
+    }
+  }
+  function overdriveReady(){ ensureOverdrive(); return (state.player.overdrive || 0) >= (state.player.maxOverdrive || 100); }
+  function overdrivePct(){ ensureOverdrive(); return Math.max(0, Math.min(100, Math.floor(100 * (state.player.overdrive || 0) / (state.player.maxOverdrive || 100)))); }
+  function useOverdriveBattle(){
+    if(!battle || battle.turn !== 'player') return;
+    ensureBattleStatus(); ensureOverdrive();
+    if(!overdriveReady()){ toast(`Overdrive ${state.player.overdrive}/${state.player.maxOverdrive}`); return; }
+    const stats = combatStatBlock();
+    const skill = skillLevel('attack') + skillLevel('strength') + skillLevel('magic');
+    const dmg = Math.max(35, 32 + stats.atk + stats.strBonus + Math.floor(skill / 4) + gearPower() % 18);
+    state.player.overdrive = 0;
+    SfxManager.slash();
+    setTimeout(()=>SfxManager.slash(), 110);
+    setTimeout(()=>SfxManager.slash(), 220);
+    battle.enemy.hp = Math.max(0, battle.enemy.hp - dmg);
+    const bleed = addBattleStatus('enemy','bleed',3,Math.max(4,Math.floor(dmg/12)));
+    const corrosion = addBattleStatus('enemy','corrosion',3,Math.max(4,Math.floor(dmg/14)));
+    const shock = addBattleStatus('enemy','shock',2,Math.max(3,Math.floor(dmg/16)));
+    $('battleText').textContent = `OVERDRIVE: Null Vector Execution hits for -${dmg} HP. ${bleed} ${corrosion} ${shock}`;
+    showDamage('enemy', `OVERDRIVE -${dmg}`, 'crit');
+    flashCombatant('battleEnemy');
+    shakeBattle(560);
+    grantStyleXp('attack', 14);
+    grantStyleXp('strength', 14);
+    grantStyleXp('magic', 10);
+    renderBattle();
+    if(battle.enemy.hp<=0){ setTimeout(winBattle,420); return; }
+    battle.turn='enemy';
+    setTimeout(enemyTurn, 900);
+  }
+
   // Reused/adapted from Cryptic Idle Worlds: RuneScape-style XP table + skill matrix.
   const xpTable = Array(100).fill(0).map((_, level) => {
     let xp = 0;
@@ -987,6 +1031,7 @@
     ensureStoryFlags();
     ensureUpgrades();
     ensureEquipment();
+    ensureOverdrive();
     ensureRespawnState();
     ensureNpcState();
   }
@@ -1432,7 +1477,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, npcTalks:{}, npcRewards:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, npcTalks:{}, npcRewards:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1790,6 +1835,7 @@
       <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}${enemyStatusText?' // '+enemyStatusText:''}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
       <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}${playerStatusText?' // '+playerStatusText:''}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
+      <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>`;
     $('attackButtons').innerHTML='';
     attacks.forEach((a,i)=>{
@@ -1814,6 +1860,13 @@
     guard.disabled=battle.turn!=='player';
     guard.onclick=guardBattle;
     $('attackButtons').appendChild(guard);
+
+    const overdrive=document.createElement('button');
+    overdrive.className='battle-overdrive-button';
+    overdrive.innerHTML=`<b>Null Vector Execution</b><span>5/U // Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}</span>`;
+    overdrive.disabled=battle.turn!=='player' || !overdriveReady();
+    overdrive.onclick=useOverdriveBattle;
+    $('attackButtons').appendChild(overdrive);
   }
   function playerAttack(i){
     if(!battle||battle.turn!=='player')return;
@@ -1826,6 +1879,7 @@
       const cleansed = cleansePlayerStatuses();
       $('battleText').textContent=a.text + (cleansed ? ` Cleansed ${cleansed} status effect${cleansed>1?'s':''}.` : '');
       showDamage('hero', `+${heal}`, 'heal');
+      chargeOverdrive(5, 'recovery');
       grantStyleXp(mod.focus, 3);
     } else {
       SfxManager.slash();
@@ -1836,6 +1890,7 @@
       showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
       flashCombatant('battleEnemy');
       shakeBattle(crit ? 420 : 260);
+      chargeOverdrive(8 + (crit ? 5 : 0), 'attack');
       grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3))); grantStyleXp('health', Math.max(1, Math.floor(dmg/5)));
     }
     renderBattle();
@@ -1848,6 +1903,7 @@
     state.player.ep = Math.min(epMax, state.player.ep + 2);
     $('battleText').textContent = 'Vyra braces behind a Vector Guard. Next incoming hit is reduced.';
     showDamage('hero', 'GUARD', 'dodge');
+    chargeOverdrive(12, 'guard');
     grantStyleXp('defense', 5);
     battle.turn='enemy';
     renderBattle();
@@ -1884,8 +1940,8 @@
     const playerTicks = tickBattleStatus('player');
     const tickText = playerTicks.length ? ' ' + playerTicks.join(' ') : '';
     $('battleText').textContent = dodge ? (evadedByDash ? 'Phantom Dash avoided the incoming hit.' : 'Vyra dodged. The anomaly looked personally offended.') : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}.${enemyStatusNote?' '+enemyStatusNote:''}${tickText}`;
-    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?320:220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
-    else showDamage('hero', evadedByDash ? 'PHANTOM' : 'DODGE', 'dodge');
+    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?320:220); chargeOverdrive(Math.min(18, 6 + Math.floor(dmg/3)), 'damage taken'); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
+    else { chargeOverdrive(6, 'dodge'); showDamage('hero', evadedByDash ? 'PHANTOM' : 'DODGE', 'dodge'); }
     if(playerTicks.length) showDamage('hero', 'STATUS', 'hit');
     if(state.player.hp<=0){
       handlePlayerDeath();
@@ -2526,6 +2582,7 @@
         const key = String(e.key || '').toLowerCase();
         if(!typingTarget){
           if(['1','2','3','4'].includes(key)){ e.preventDefault(); playerAttack(Number(key)-1); return; }
+          if(key==='5' || key==='u'){ e.preventDefault(); useOverdriveBattle(); return; }
           if(key==='r'){ e.preventDefault(); useVectorCellBattle(); return; }
           if(key==='g'){ e.preventDefault(); guardBattle(); return; }
         }
@@ -2574,7 +2631,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
