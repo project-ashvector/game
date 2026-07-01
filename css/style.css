@@ -812,3 +812,121 @@ body.story-open #game{filter:saturate(.9) brightness(.8);}
 .chapter-clear-card h2{font-size:clamp(2rem,6vw,4.5rem);margin:.2em 0;color:#ffec9d;text-shadow:0 0 22px rgba(255,236,157,.35);}
 .chapter-rewards{justify-content:center;margin:16px 0;}
 @media (max-width:640px){.story-body{grid-template-columns:72px 1fr}.story-card{padding:14px}.story-actions{justify-content:stretch}.story-actions button{flex:1}}
+
+
+/* v61: compact title menu so the new background title art stays visible */
+#mainMenu:not(.hidden){
+  place-items:end center!important;
+  padding:clamp(14px,2vw,26px)!important;
+  padding-top:clamp(250px,43vh,430px)!important;
+  background:
+    linear-gradient(180deg,rgba(3,5,8,.18) 0%,rgba(3,5,8,.30) 34%,rgba(3,5,8,.82) 100%),
+    url("../assets/ui/menu_background.png"),
+    radial-gradient(circle at 70% 0,rgba(189,31,45,.22),transparent 45%)!important;
+  background-size:cover,cover,auto!important;
+  background-position:center,center,center!important;
+}
+#mainMenu .menu-card{
+  width:min(840px,calc(100vw - 36px))!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:calc(100dvh - clamp(260px,44vh,430px))!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-rows:auto auto auto auto!important;
+  align-content:center!important;
+  justify-content:stretch!important;
+  align-items:stretch!important;
+  gap:clamp(7px,1vh,10px)!important;
+  padding:clamp(12px,1.7vh,18px) clamp(16px,2.3vw,26px)!important;
+  margin:0 auto!important;
+  border-color:rgba(112,215,255,.26)!important;
+  background:linear-gradient(145deg,rgba(5,8,13,.72),rgba(10,14,21,.64))!important;
+  box-shadow:0 0 34px rgba(189,31,45,.20),inset 0 0 42px rgba(0,0,0,.48)!important;
+  backdrop-filter:blur(7px)!important;
+  -webkit-backdrop-filter:blur(7px)!important;
+  text-align:center!important;
+}
+#mainMenu .menu-logo,
+#mainMenu .menu-card h1,
+#mainMenu .menu-subtitle{
+  display:none!important;
+}
+#mainMenu .menu-kicker{
+  margin:0!important;
+  font-size:clamp(11px,1.25vh,14px)!important;
+  letter-spacing:.08em!important;
+  color:rgba(236,239,244,.92)!important;
+}
+#mainMenu .menu-buttons{
+  width:100%!important;
+  max-width:780px!important;
+  margin:0 auto!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:clamp(5px,.8vh,8px)!important;
+  overflow:visible!important;
+}
+#mainMenu .menu-buttons button,
+#mainMenu:not(.hidden) #newGameBtn{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-width:0!important;
+  min-height:clamp(34px,4.2dvh,42px)!important;
+  padding:clamp(5px,.75vh,8px) 8px!important;
+  font-size:clamp(10px,1.22dvh,13px)!important;
+  line-height:1.08!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  z-index:9600!important;
+}
+#mainMenu:not(.hidden) #newGameBtn{
+  background:linear-gradient(90deg,#7a1019,#bd1f2d)!important;
+  border-color:#ff3048!important;
+  box-shadow:0 0 18px rgba(255,48,72,.38)!important;
+  font-weight:800!important;
+}
+#mainMenu:not(.hidden) #newGameBtn::after{
+  content:""!important;
+}
+#mainMenu .quick-start-hint{
+  width:100%!important;
+  max-width:780px!important;
+  margin:0 auto!important;
+  padding:6px 10px!important;
+  font-size:clamp(10px,1.18dvh,12px)!important;
+  line-height:1.15!important;
+}
+#mainMenu .menu-info,
+#mainMenu .ui-kit-note{
+  margin:0!important;
+  padding:0!important;
+  font-size:clamp(10px,1.12dvh,12px)!important;
+  line-height:1.15!important;
+}
+@media(max-width:1100px){
+  #mainMenu .menu-buttons{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:700px){
+  #mainMenu:not(.hidden){padding-top:clamp(210px,38vh,320px)!important;}
+  #mainMenu .menu-card{max-height:calc(100dvh - clamp(220px,39vh,330px))!important;}
+  #mainMenu .menu-buttons{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-height:720px){
+  #mainMenu:not(.hidden){padding-top:clamp(190px,37vh,270px)!important;}
+  #mainMenu .menu-card{max-height:calc(100dvh - clamp(205px,38vh,285px))!important;}
+  #mainMenu .quick-start-hint,#mainMenu .menu-info,#mainMenu .ui-kit-note{font-size:10px!important;}
+}
+@media(max-height:560px){
+  #mainMenu:not(.hidden){padding-top:148px!important;}
+  #mainMenu .menu-card{max-height:calc(100dvh - 160px)!important;overflow:auto!important;}
+  #mainMenu .menu-buttons button,#mainMenu:not(.hidden) #newGameBtn{min-height:30px!important;font-size:10px!important;padding:4px 6px!important;}
+}
