@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.7.7 // ENEMY SFX + COMBAT HOTKEYS',
+    'Version 0.7.8 // STATUS EFFECTS + COUNTER FLOW',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.7.7';
+  const BUILD_VERSION = '0.7.8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -753,6 +753,82 @@
     {name:'Emergency Flex', dmg:-18, ep:6, heal:true, text:'Weaponized ego restores HP.'}
   ];
 
+  // v78: lightweight battle status system. No new assets required.
+  // Status effects make fights less repetitive and give Guard / Vector Cell more value.
+  const STATUS_DEFS = {
+    bleed: {label:'Bleed', icon:'🩸', tick:'bleeds', color:'crimson'},
+    corrosion: {label:'Corrosion', icon:'☣', tick:'corrodes', color:'toxic'},
+    poison: {label:'Poison', icon:'☠', tick:'poison burns', color:'toxic'},
+    burn: {label:'Burn', icon:'🔥', tick:'burns', color:'fire'},
+    shock: {label:'Shock', icon:'⚡', tick:'short-circuits', color:'shock'}
+  };
+
+  function ensureBattleStatus(){
+    if(!battle) return;
+    battle.enemyStatus ||= {};
+    battle.playerStatus ||= {};
+    battle.evadeNext ||= false;
+  }
+  function statusSummary(box={}){
+    const entries=Object.entries(box||{}).filter(([,s])=>s && s.turns>0);
+    if(!entries.length) return '';
+    return entries.map(([key,s])=>`${STATUS_DEFS[key]?.icon||'•'} ${STATUS_DEFS[key]?.label||key} ${s.turns}t`).join(' // ');
+  }
+  function addBattleStatus(target,key,turns=2,potency=3){
+    ensureBattleStatus(); if(!battle || !STATUS_DEFS[key]) return '';
+    const box = target === 'enemy' ? battle.enemyStatus : battle.playerStatus;
+    const old = box[key] || {turns:0,potency:0};
+    box[key] = {turns:Math.max(old.turns||0, turns), potency:Math.max(old.potency||0, potency)};
+    const who = target === 'enemy' ? battle.enemy.name : 'Vyra';
+    return `${who} afflicted with ${STATUS_DEFS[key].label}.`;
+  }
+  function tickBattleStatus(target){
+    ensureBattleStatus();
+    const out=[]; if(!battle) return out;
+    const box = target === 'enemy' ? battle.enemyStatus : battle.playerStatus;
+    const owner = target === 'enemy' ? battle.enemy : state.player;
+    Object.entries({...box}).forEach(([key,s])=>{
+      if(!s || s.turns<=0){ delete box[key]; return; }
+      let dmg=Math.max(1, Number(s.potency||2));
+      if(key==='shock') dmg=Math.max(1, Math.ceil(dmg*0.7));
+      if(key==='corrosion') dmg=Math.max(2, dmg+1);
+      if(target === 'enemy') battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
+      else state.player.hp=Math.max(0,state.player.hp-dmg);
+      out.push(`${owner.name || 'Vyra'} ${STATUS_DEFS[key].tick} for ${dmg}.`);
+      s.turns -= 1;
+      if(s.turns<=0) delete box[key]; else box[key]=s;
+    });
+    return out;
+  }
+  function applyPlayerStatusFromAttack(index,dmg){
+    ensureBattleStatus(); if(!battle || dmg<=0) return '';
+    const level = skillLevel(state.combatStyle || 'attack');
+    const power = Math.max(2, Math.floor(dmg/7) + Math.floor(level/18));
+    if(index===0 && Math.random()<0.28) return addBattleStatus('enemy','bleed',2,power);
+    if(index===1){ battle.evadeNext = true; if(Math.random()<0.18) return addBattleStatus('enemy','shock',1,Math.max(2,power-1)); return 'Vyra is primed to evade the next strike.'; }
+    if(index===2 && Math.random()<0.38) return addBattleStatus('enemy','corrosion',3,power+1);
+    return '';
+  }
+  function enemyStatusForStage(){
+    const key=currentStageKey();
+    if(key==='f001') return {key:'poison', chance:battle?.code==='B'?0.32:0.20, turns:2, potency:3, text:'toxic sludge'};
+    if(key==='f002') return {key:'burn', chance:battle?.code==='B'?0.34:0.22, turns:2, potency:4, text:'ash burn'};
+    if(key==='f003') return {key:'shock', chance:battle?.code==='B'?0.38:0.24, turns:2, potency:4, text:'dead-frequency shock'};
+    return {key:'poison', chance:0.18, turns:2, potency:3, text:'fracture sickness'};
+  }
+  function applyEnemyStatusAfterHit(dmg,dodged){
+    ensureBattleStatus(); if(!battle || dodged || dmg<=0) return '';
+    const hazard=enemyStatusForStage();
+    if(Math.random() < hazard.chance) return addBattleStatus('player', hazard.key, hazard.turns, hazard.potency + Math.floor((battle.enemy.atk||0)/18));
+    return '';
+  }
+  function cleansePlayerStatuses(){
+    ensureBattleStatus(); if(!battle) return 0;
+    const count=Object.keys(battle.playerStatus||{}).length;
+    battle.playerStatus = {};
+    return count;
+  }
+
   // Reused/adapted from Cryptic Idle Worlds: RuneScape-style XP table + skill matrix.
   const xpTable = Array(100).fill(0).map((_, level) => {
     let xp = 0;
@@ -1440,7 +1516,7 @@
     $('preBattleKicker').textContent=`${stage.id} // ${code==='B'?'BOSS CLASS':'HOSTILE ENTITY'}`;
     $('preBattleName').textContent=def.name;
     $('preBattleText').textContent=def.note || (code==='B'?'AVOS: Boss-class signature confirmed. This is where confidence gets expensive.':'AVOS: Hostile signature ahead. Verify HP, pick a training focus, then make it regret spawning.');
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
   }
@@ -1687,7 +1763,7 @@
     const loc=document.querySelector('.battle-location'); if(loc) loc.textContent=`${stage.id} // ${stage.title.toUpperCase()}`;
     const scale = Math.max(1, stage.levelReq);
     if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
-    battle={code,x,y,enemy:def,turn:'player',guard:false};
+    battle={code,x,y,enemy:def,turn:'player',guard:false,enemyStatus:{},playerStatus:{},evadeNext:false};
     uiState.mode='combat'; AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
     if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
@@ -1708,11 +1784,13 @@
     const enemyPct = Math.max(0, Math.min(100, 100*battle.enemy.hp/battle.enemy.maxHp));
     const heroMax = combatStatBlock().maxHp; const heroPct = Math.max(0, Math.min(100, 100*state.player.hp/heroMax));
     const epMax = combatStatBlock().maxEp || state.player.maxEp; const epPct = Math.max(0, Math.min(100, 100*state.player.ep/epMax));
+    const enemyStatusText = statusSummary(battle.enemyStatus);
+    const playerStatusText = statusSummary(battle.playerStatus);
     $('battleHp').innerHTML=`
-      <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
-      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
+      <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}${enemyStatusText?' // '+enemyStatusText:''}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
+      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}${playerStatusText?' // '+playerStatusText:''}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
-      <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level}</span></div>`;
+      <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>`;
     $('attackButtons').innerHTML='';
     attacks.forEach((a,i)=>{
       let b=document.createElement('button');
@@ -1745,14 +1823,16 @@
     if(a.heal){
       const heal = 18+Math.floor(mod.level/4);
       state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal);
-      $('battleText').textContent=a.text;
+      const cleansed = cleansePlayerStatuses();
+      $('battleText').textContent=a.text + (cleansed ? ` Cleansed ${cleansed} status effect${cleansed>1?'s':''}.` : '');
       showDamage('hero', `+${heal}`, 'heal');
       grantStyleXp(mod.focus, 3);
     } else {
       SfxManager.slash();
       const stats=combatStatBlock(); let crit=Math.random()<(stats.crit+mod.critBonus); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
       battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
-      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.`;
+      const statusNote = applyPlayerStatusFromAttack(i,dmg);
+      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.${statusNote?' '+statusNote:''}`;
       showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
       flashCombatant('battleEnemy');
       shakeBattle(crit ? 420 : 260);
@@ -1775,8 +1855,18 @@
   }
   function enemyTurn(){
     if(!battle)return;
+    ensureBattleStatus();
+    const enemyTicks = tickBattleStatus('enemy');
+    if(enemyTicks.length){
+      $('battleText').textContent = enemyTicks.join(' ');
+      showDamage('enemy', 'STATUS', 'hit');
+      renderBattle();
+      if(battle.enemy.hp<=0){ setTimeout(winBattle,420); return; }
+    }
     const mod=combatModifiers();
-    let dodge = Math.random()<(0.08+mod.dodgeBonus);
+    let dodge = battle.evadeNext || Math.random()<(0.08+mod.dodgeBonus);
+    const evadedByDash = !!battle.evadeNext;
+    battle.evadeNext = false;
     SfxManager.enemyAttack(battle.code === 'B', dodge);
     const stats=combatStatBlock(); let dmg = dodge?0:Math.max(1,battle.enemy.atk-stats.def+Math.floor(Math.random()*5)-mod.damageReduction-stats.block);
     let guardText = '';
@@ -1790,9 +1880,13 @@
       battle.guard = false;
     }
     if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg);
-    $('battleText').textContent = dodge ? 'Vyra dodged. The anomaly looked personally offended.' : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}.`;
+    const enemyStatusNote = applyEnemyStatusAfterHit(dmg,dodge);
+    const playerTicks = tickBattleStatus('player');
+    const tickText = playerTicks.length ? ' ' + playerTicks.join(' ') : '';
+    $('battleText').textContent = dodge ? (evadedByDash ? 'Phantom Dash avoided the incoming hit.' : 'Vyra dodged. The anomaly looked personally offended.') : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}.${enemyStatusNote?' '+enemyStatusNote:''}${tickText}`;
     if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?320:220); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
-    else showDamage('hero', battle.guard ? 'GUARD' : 'DODGE', 'dodge');
+    else showDamage('hero', evadedByDash ? 'PHANTOM' : 'DODGE', 'dodge');
+    if(playerTicks.length) showDamage('hero', 'STATUS', 'hit');
     if(state.player.hp<=0){
       handlePlayerDeath();
       return;
