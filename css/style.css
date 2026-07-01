@@ -773,3 +773,42 @@ html, body{
   #mainMenu .menu-buttons button{min-height:30px!important;font-size:10px!important;padding:4px 6px!important;}
   #mainMenu .menu-subtitle,.quick-start-hint,#mainMenu .menu-info,#mainMenu .ui-kit-note{font-size:10px!important;}
 }
+
+
+/* v60 Chapter 1 story flow */
+.story-overlay{
+  position:fixed;
+  inset:0;
+  z-index:9500;
+  display:grid;
+  place-items:end center;
+  padding:clamp(14px,3vw,34px);
+  background:linear-gradient(180deg, rgba(3,6,10,.18), rgba(3,6,10,.62));
+  pointer-events:auto;
+}
+.story-overlay.hidden{display:none!important;}
+.story-card{
+  width:min(980px, 96vw);
+  border:1px solid rgba(112,215,255,.34);
+  background:linear-gradient(135deg, rgba(5,12,18,.95), rgba(15,27,36,.92));
+  box-shadow:0 24px 90px rgba(0,0,0,.62), inset 0 0 35px rgba(83,227,255,.05);
+  border-radius:18px;
+  padding:18px;
+}
+.story-kicker{color:#70d7ff;letter-spacing:.18em;text-transform:uppercase;font-size:.78rem;margin-bottom:12px;}
+.story-body{display:grid;grid-template-columns:minmax(72px,110px) 1fr;gap:16px;align-items:center;}
+.story-body img{width:100%;max-height:120px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(73,220,255,.35));}
+.story-speaker{color:#ffec9d;font-weight:800;letter-spacing:.12em;margin-bottom:8px;}
+.story-body p{font-size:clamp(1rem,2.1vw,1.25rem);line-height:1.45;margin:0;color:#ecfbff;}
+.story-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+.story-actions button{min-width:130px;}
+body.story-open #game{filter:saturate(.9) brightness(.8);}
+.objective-tracker.objective-pulse{animation:objectivePulse .9s ease both;}
+@keyframes objectivePulse{0%{box-shadow:0 0 0 rgba(112,215,255,0);transform:translateY(0)}35%{box-shadow:0 0 28px rgba(112,215,255,.34);transform:translateY(-2px)}100%{box-shadow:0 0 0 rgba(112,215,255,0);transform:translateY(0)}}
+.mission-active-hint{border:1px solid rgba(112,215,255,.28);background:rgba(112,215,255,.08);padding:10px 12px;border-radius:12px;color:#ecfbff;margin:12px 0;font-weight:800;}
+.chapter-clear-overlay{display:grid;place-items:center;z-index:9400;background:radial-gradient(circle at 50% 40%, rgba(112,215,255,.18), rgba(0,0,0,.76));}
+.chapter-clear-overlay.hidden{display:none!important;}
+.chapter-clear-card{width:min(760px,94vw);border:1px solid rgba(255,236,157,.42);background:linear-gradient(145deg,rgba(10,18,26,.96),rgba(30,22,12,.92));border-radius:20px;padding:24px;box-shadow:0 24px 100px rgba(0,0,0,.72),0 0 55px rgba(255,236,157,.16);text-align:center;}
+.chapter-clear-card h2{font-size:clamp(2rem,6vw,4.5rem);margin:.2em 0;color:#ffec9d;text-shadow:0 0 22px rgba(255,236,157,.35);}
+.chapter-rewards{justify-content:center;margin:16px 0;}
+@media (max-width:640px){.story-body{grid-template-columns:72px 1fr}.story-card{padding:14px}.story-actions{justify-content:stretch}.story-actions button{flex:1}}

@@ -1,4 +1,12 @@
 
+## v60 — Chapter 1 Flow
+- Added story popups and dialogue beats for Chapter 1.
+- Added current objective tracker text.
+- Added boss-defeated and chapter-reward flags.
+- Added Chapter Complete reward panel.
+- No new assets required.
+
+
 ## v59 — Music Watchdog + Title Resize Stabilization
 - Removed old recovery script from HTML to stop conflicting menu/version behavior.
 - Added resilient music watchdog and pause/stall recovery.
