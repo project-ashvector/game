@@ -1143,3 +1143,48 @@ body.battle-mode .mobile-action-pad{display:none!important;}
   body.battle-mode .mobile-battle-pad{grid-template-columns:repeat(4,minmax(44px,1fr));}
   body.battle-mode .mobile-battle-pad button{height:38px;}
 }
+
+
+/* v84: objective beacon + mobile path ping */
+.objective-compass{
+  display:none;
+  position:fixed;
+  top:118px;
+  right:16px;
+  z-index:5660;
+  min-width:170px;
+  max-width:230px;
+  padding:9px 12px;
+  border-radius:16px;
+  border:1px solid rgba(0,217,255,.34);
+  background:linear-gradient(145deg,rgba(3,7,12,.82),rgba(10,18,28,.68));
+  backdrop-filter:blur(10px);
+  box-shadow:0 14px 34px rgba(0,0,0,.38), inset 0 0 18px rgba(0,217,255,.05);
+  color:#e8fbff;
+  text-align:left;
+  grid-template-columns:auto 1fr;
+  gap:1px 9px;
+  align-items:center;
+  pointer-events:auto;
+}
+body.game-active .objective-compass:not(.hidden){display:grid;}
+.objective-compass b{grid-row:1/3;font-size:28px;line-height:1;color:#00d9ff;text-shadow:0 0 14px rgba(0,217,255,.65);}
+.objective-compass span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.objective-compass em{font-style:normal;font-size:11px;color:#a9dff0;}
+.objective-compass[data-kind="boss"]{border-color:rgba(255,48,72,.45);box-shadow:0 14px 34px rgba(0,0,0,.38), inset 0 0 22px rgba(255,48,72,.07);}
+.objective-compass[data-kind="boss"] b{color:#ff3048;text-shadow:0 0 14px rgba(255,48,72,.65);}
+.objective-compass[data-kind="exit"] b,.objective-compass[data-kind="complete"] b{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.55);}
+.objective-compass.objective-ping{animation:objectivePing .65s ease-out 1;}
+@keyframes objectivePing{0%{transform:scale(1);filter:brightness(1)}45%{transform:scale(1.06);filter:brightness(1.55)}100%{transform:scale(1);filter:brightness(1)}}
+body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{display:none!important;}
+@media (max-width:900px), (pointer:coarse){
+  body.game-active .objective-compass{top:calc(env(safe-area-inset-top) + 106px)!important;right:8px!important;min-width:132px!important;max-width:40vw!important;padding:7px 9px!important;border-radius:14px!important;background:rgba(3,7,12,.60)!important;}
+  .objective-compass b{font-size:21px!important;}
+  .objective-compass span,.objective-compass em{font-size:9px!important;}
+  .mobile-action-pad{grid-template-columns:repeat(2,58px);}
+}
+@media (max-width:420px) and (orientation:portrait){
+  body.game-active .objective-compass{top:calc(env(safe-area-inset-top) + 82px)!important;right:6px!important;max-width:34vw!important;min-width:112px!important;padding:6px 7px!important;}
+  .objective-compass b{font-size:18px!important;}
+  .objective-compass span{max-width:82px;}
+}

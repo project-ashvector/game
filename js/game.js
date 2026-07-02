@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.3 // MOBILE CONTROL POLISH',
+    'Version 0.8.4 // OBJECTIVE BEACON + PATH PING',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.3';
+  const BUILD_VERSION = '0.8.4';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -1914,6 +1914,96 @@
     if(!state.flags.chapterComplete) return 'Objective: Extract through the white exit marker.';
     return `${def.id} complete. Use Fracture Index to select the next stage.`;
   }
+
+
+  // v84: objective beacon for mobile/desktop navigation.
+  // It finds the next main mission target and shows a compass/ping without adding new assets.
+  function findTilesByCode(code){
+    const results=[];
+    if(!state || !state.map) return results;
+    for(let y=0;y<state.map.length;y++){
+      for(let x=0;x<(state.map[y]||[]).length;x++){
+        if(tileAt(x,y)===code) results.push({x,y,code});
+      }
+    }
+    return results;
+  }
+  function nearestTile(code){
+    const tiles=findTilesByCode(code);
+    if(!tiles.length) return null;
+    return tiles.sort((a,b)=>(Math.abs(a.x-state.player.x)+Math.abs(a.y-state.player.y))-(Math.abs(b.x-state.player.x)+Math.abs(b.y-state.player.y)))[0];
+  }
+  function objectiveTarget(){
+    if(!state || !state.player || battle) return null;
+    const def=stageDef();
+    let target=null;
+    if(!state.flags.terminal) target={...nearestTile('S'), label:'Recovery Terminal', kind:'terminal'};
+    else if(Math.min(3,state.flags.anomaliesCleared||0) < 3) target={...nearestTile('E'), label:'Nearest Anomaly', kind:'anomaly'};
+    else if(!state.flags.bossDefeated) target={...nearestTile('B'), label:'Boss Gate', kind:'boss'};
+    else if(!state.flags.chapterComplete) target={...nearestTile('X'), label:'Extraction', kind:'exit'};
+    else {
+      const nextKey=def.nextKey;
+      const next=nextKey ? STAGE_DEFS[nextKey] : null;
+      return {x:state.player.x,y:state.player.y,label:next?`${next.id} available in Fracture Index`:'Stage complete',kind:'complete',distance:0,arrow:'✓'};
+    }
+    if(!target || target.x == null || target.y == null) return null;
+    const dx=target.x-state.player.x, dy=target.y-state.player.y;
+    target.distance=Math.abs(dx)+Math.abs(dy);
+    target.arrow=directionArrow(dx,dy);
+    target.stage=def.id;
+    return target;
+  }
+  function directionArrow(dx,dy){
+    if(dx===0 && dy===0) return '●';
+    const ax=Math.abs(dx), ay=Math.abs(dy);
+    if(ax > ay*1.7) return dx>0?'→':'←';
+    if(ay > ax*1.7) return dy>0?'↓':'↑';
+    if(dx>0 && dy>0) return '↘';
+    if(dx>0 && dy<0) return '↗';
+    if(dx<0 && dy>0) return '↙';
+    return '↖';
+  }
+  function ensureObjectiveCompass(){
+    let c=$('objectiveCompass');
+    if(c) return c;
+    c=document.createElement('button');
+    c.id='objectiveCompass';
+    c.className='objective-compass';
+    c.type='button';
+    c.innerHTML='<b>?</b><span>Target</span><em>--</em>';
+    c.onclick=()=>showObjectivePing();
+    document.body.appendChild(c);
+    return c;
+  }
+  function renderObjectiveCompass(){
+    const c=ensureObjectiveCompass();
+    const target=objectiveTarget();
+    if(!target || $('app').classList.contains('hidden') || battle){ c.classList.add('hidden'); return; }
+    c.classList.remove('hidden');
+    c.dataset.kind=target.kind || 'target';
+    c.innerHTML=`<b>${safeHtml(target.arrow||'•')}</b><span>${safeHtml(target.label)}</span><em>${Number(target.distance||0)} tiles</em>`;
+  }
+  function showObjectivePing(){
+    const target=objectiveTarget();
+    if(!target){ toast('No active target.'); return; }
+    toast(`${target.label}: ${target.arrow} ${target.distance||0} tiles`);
+    const c=ensureObjectiveCompass();
+    c.classList.remove('objective-ping'); void c.offsetWidth; c.classList.add('objective-ping');
+  }
+  function drawObjectiveBeacon(){
+    const target=objectiveTarget();
+    if(!target || target.x == null || target.y == null || target.kind==='complete') return;
+    const cx=target.x*TILE + TILE/2;
+    const cy=target.y*TILE + TILE/2;
+    const pulse=(Math.sin(Date.now()/180)+1)/2;
+    ctx.save();
+    ctx.strokeStyle=target.kind==='boss'?'rgba(255,48,72,.95)':target.kind==='exit'?'rgba(255,255,255,.95)':'rgba(0,217,255,.95)';
+    ctx.fillStyle=target.kind==='boss'?'rgba(255,48,72,.14)':target.kind==='exit'?'rgba(255,255,255,.12)':'rgba(0,217,255,.14)';
+    ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(cx,cy,15+pulse*7,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy,24+pulse*9,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+  }
   function pulseObjective(msg){
     if(!msg) msg=currentObjectiveText();
     const tracker=$('objectiveTracker');
@@ -2253,6 +2343,7 @@
     drawNpcs();
     // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
+    drawObjectiveBeacon();
     ctx.restore();
     drawMapAtmosphere();
   }
@@ -2370,6 +2461,8 @@
     const w=state.map[0].length,h=state.map.length; mctx.clearRect(0,0,mini.width,mini.height); const sx=mini.width/w, sy=mini.height/h;
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){const c=tileAt(x,y); mctx.fillStyle=c==='#'?'#111':c==='C'?'#e0b64b':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#303842'; mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
     stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
+    const navTarget=objectiveTarget();
+    if(navTarget && navTarget.x != null){ mctx.strokeStyle='#00d9ff'; mctx.lineWidth=2; mctx.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.ceil(sx*3),Math.ceil(sy*3)); }
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
   function renderUI(){
@@ -2405,6 +2498,7 @@
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
     renderFullscreenHud();
+    renderObjectiveCompass();
     renderOperatorDb();
   }
   function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
@@ -2686,6 +2780,7 @@
       <button type="button" data-mobile-action="talk"><b>E</b><span>Talk</span></button>
       <button type="button" data-mobile-action="med"><b>Q</b><span>HP</span></button>
       <button type="button" data-mobile-action="cell"><b>R</b><span>EP</span></button>
+      <button type="button" data-mobile-action="track"><b>N</b><span>Target</span></button>
       <button type="button" data-mobile-action="inv"><b>I</b><span>Inv</span></button>
       <button type="button" data-mobile-action="map"><b>M</b><span>Map</span></button>`;
     document.body.appendChild(pad);
@@ -2697,6 +2792,7 @@
         if(action==='talk') interactNearbyNpc();
         if(action==='med') useMedPatch();
         if(action==='cell') useVectorCell();
+        if(action==='track') showObjectivePing();
         if(action==='inv') openOverlay('inventoryOverlay');
         if(action==='map') toggleSideHud();
       }, {passive:false});
@@ -2798,7 +2894,7 @@
       const help=document.createElement('div');
       help.id='fsHelp';
       help.className='fullscreen-help hidden';
-      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd>/<kbd>WASD</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>V</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>Q</kbd> Med Patch <kbd>R</kbd> Vector Cell <kbd>Esc</kbd> Close panels`;
+      help.innerHTML=`<b>ASH VECTOR HOTKEYS</b><br><kbd>Arrow Keys</kbd>/<kbd>WASD</kbd> Move <kbd>M</kbd> Map/HUD <kbd>I</kbd> Inventory <kbd>V</kbd> Anomaly Database <kbd>O</kbd> Operator <kbd>P</kbd> Progress <kbd>B</kbd> Mission <kbd>F</kbd> Fullscreen <kbd>N</kbd> Target Ping <kbd>Q</kbd> Med Patch <kbd>R</kbd> Vector Cell <kbd>Esc</kbd> Close panels`;
       document.body.appendChild(help);
     }
   }
@@ -2816,6 +2912,8 @@
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
     for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
+    const navTarget=objectiveTarget();
+    if(navTarget && navTarget.x != null){ x.strokeStyle='#00d9ff'; x.lineWidth=2; x.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.max(4,sx*3),Math.max(4,sy*3)); }
     x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
   }
   function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
@@ -2911,6 +3009,7 @@
           return;
         }
         if(key==='e'){ e.preventDefault(); interactNearbyNpc(); return; }
+        if(key==='n'){ e.preventDefault(); showObjectivePing(); return; }
         if(key==='m'){ e.preventDefault(); toggleSideHud(); return; }
         if(key==='i'){ e.preventDefault(); openOverlay('inventoryOverlay'); return; }
         if(key==='v'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
@@ -2935,7 +3034,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
