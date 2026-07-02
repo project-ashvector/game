@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.9 // MAP CLARITY PASS',
+    'Version 0.9.0 // LEVEL LAYOUT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.9';
+  const BUILD_VERSION = '0.9.0';
+  const MAP_VERSION = 'sector_stage_v6';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -357,90 +358,92 @@
   function testMusicSetting(){ AudioManager.force(activeMusicForState()); }
 
   // v53: Maze-first F-001 layout. Walls are collision first, art second.
-  // This replaces the wide-open test field with corridors, rooms, gates, and side paths.
+  // v90: proper level layout pass.
+  // The old routes were functional, but they read like maze noise after the tileset swap.
+  // These maps use bigger rooms, clear corridors, locked boss yards, and obvious landmarks.
   const baseMap = [
     '########################################',
-    '#P....................................##',
-    '###.#.###.#.#......####.###.#####.###.##',
-    '#.#.......##.....C....#.#.......#.#...##',
-    '#.#...S..####......##.###.......###.#.##',
-    '#.#.................#.#.#....E.##...#.##',
-    '#.#.#.###.###.#.#.#.#.#.#.......#.###.##',
-    '#...#.....#.#.###.#...#.#.#.#...#.....##',
-    '#.#####.###.#.###.#####.#.#.#.###.###.##',
-    '#.....#...C.#...#...#.#...#.#...#...#.##',
-    '#####.###.#.###........####.###.#####.##',
-    '#...#.#...#...#.........#...#.........##',
-    '###.#......##.##...##...#.###.#######.##',
-    '#...#..............E....#.#.........#.##',
-    '#.###L#....##.##.......##.##......#.#.##',
-    '#.............#...#...#...#...#C#.#.#.##',
-    '#.###.#.#######.#####.#.##........#.#.##',
-    '#...#.#.......#.....#...#.......#...#.##',
-    '#####.###########.#.#####..######.###.##',
-    '#...#.......#...#.#.........#....E..#.##',
-    '#.#.#.#####H###.##########.##......##.##',
-    '#.#...#...#...#.........#.D.#.......#.##',
-    '#.#####.#.#############.#........B...X##',
-    '#.......#.................#...#.......##',
+    '#........###############################',
+    '#.P................#####################',
+    '#....S.........C...#####################',
+    '#..................#####################',
+    '#.........#........#####################',
+    '#######...#...E....#####################',
+    '#######...#........#####################',
+    '#######...###...########################',
+    '#######...###...#...........############',
+    '####............#...........############',
+    '####................C.......############',
+    '####........................############',
+    '####....E................E..############',
+    '####........H.###...........############',
+    '####..........###...........############',
+    '####..........#######...################',
+    '#######...###########...################',
+    '#######...###########...########.......#',
+    '#######...###########...########.......#',
+    '##.............................D..B..X.#',
+    '##...L.....................#####.......#',
+    '##.......................C.#####.......#',
+    '##.........................#####.......#',
     '########################################'
   ];
 
   // v66: stage definitions now drive a real multi-map route.
-  // F-002 is playable after F-001 completion. F-003 is a locked preview route.
+  // v90: F-002 and F-003 were rebuilt from maze corridors into readable encounter arenas.
   const stage2Map = [
     '########################################',
-    '#P...........###########################',
-    '#............###########################',
-    '#..S.................................###',
-    '#............#....C..................###',
-    '#............#..##.###########.E###..###',
-    '##########.###.......................###',
-    '##########.###.......................###',
-    '##########.#######.###########.#########',
-    '####................................####',
-    '####................#...............####',
-    '####.....................E..........####',
-    '####................#...............####',
-    '####................#...............####',
-    '####....C...........................####',
-    '####........L.......#...............####',
-    '####................................####',
-    '########.################.##############',
-    '###..###.#####.##########.#####.########',
-    '###..........E........#..........#######',
-    '###........................H.....D.B.X##',
-    '###...................#..........#######',
-    '###..............................#######',
-    '########################################',
+    '#...........############################',
+    '#...........#.............##############',
+    '#.P....S..................#...........##',
+    '#.................C.......#...........##',
+    '#.....................................##',
+    '#...........#.........................##',
+    '#########...#.........E...............##',
+    '#########...#.............#...........##',
+    '#########...###########...#...........##',
+    '#########...###########...##############',
+    '#####.............#............#########',
+    '#####.............#..........E.#########',
+    '#####..........................#########',
+    '#####.....E...............H....#########',
+    '#####..........................#########',
+    '#####..........C..#............#########',
+    '#####.............#............#########',
+    '########...############...######.......#',
+    '########...############...######.......#',
+    '####...........................D..B..X.#',
+    '####...L.................#######.......#',
+    '####...................C.#######.......#',
+    '####.....................#######.......#',
     '########################################'
   ];
 
   const stage3Map = [
     '########################################',
-    '#P....#.............#.................##',
-    '####.###.##########.#.#########.#######',
-    '#....#...#....C...#.#.....E...#......##',
-    '#.S..#.###.######.#.#####.###.#####..#',
-    '#....#.....#....#.#.....#.#.#.....#..#',
-    '####.#####.#.##.#.#####.#.#.#####.#..#',
-    '#....#.....#..#.#.....#.#.#.....#.#..#',
-    '#.####.########.#####.#.#.#####.#.#..#',
-    '#.#....#......#.....#.#.#.....#.#...##',
-    '#.#.####.####.#####.#.#.###.#.#.#####',
-    '#.#......#..#.....#.#.#...#.#.#.....#',
-    '#.#########.#####.#.#.###.#.#.###.#.#',
-    '#.....E.....#...#.#.#.....#.#.....#.#',
-    '#####.#######.#.#.#.#######.#######.#',
-    '#.....#.....#.#.#.#.......#.......#.#',
-    '#.#####.###.#.#.#.#######.####.#.#.#',
-    '#.....#...#.#.#.#.....C.#......#.#.#',
-    '#####.###.#.#.#.#####.##########.#.#',
-    '#...#...#.#.#.#.....#........E...#.#',
-    '#.#.###.#.#.#.#####.###########D##.#',
-    '#.#...#.#...#.....#.......H..B..X..#',
-    '#.###.#.#########.##################',
-    '#.....#.........L..................##',
+    '#.........##...........#################',
+    '#.P....................##..............#',
+    '#.....S.........C......................#',
+    '#......................................#',
+    '#.........##........E..................#',
+    '######...###...........##..............#',
+    '######...#############.................#',
+    '######...########.............##########',
+    '###............##.............##########',
+    '###...........................##########',
+    '###........................E..##########',
+    '###.......E...................##########',
+    '###............##.............##########',
+    '###............##.............##########',
+    '###............##.............##########',
+    '###########...########...###############',
+    '###########...########...###############',
+    '####.................#..........#......#',
+    '####.........................C..#......#',
+    '####.L..........................D..B..X#',
+    '####.....................H......#......#',
+    '####...........C.....##.........#......#',
+    '####.................##.........#......#',
     '########################################'
   ];
 
@@ -837,18 +840,35 @@
     const alpha = c === '.' ? .18 : .10;
     ctx.fillStyle = (pack && pack.pathTint) || `rgba(0,217,255,${alpha})`;
     ctx.fillRect(x+2,y+2,TILE-4,TILE-4);
+    const openN = tileAt(tx,ty-1) !== '#';
+    const openS = tileAt(tx,ty+1) !== '#';
+    const openW = tileAt(tx-1,ty) !== '#';
+    const openE = tileAt(tx+1,ty) !== '#';
+    ctx.strokeStyle='rgba(255,255,255,.055)';
+    ctx.lineWidth=1;
+    if(!openN){ ctx.beginPath(); ctx.moveTo(x+5,y+5); ctx.lineTo(x+TILE-5,y+5); ctx.stroke(); }
+    if(!openS){ ctx.beginPath(); ctx.moveTo(x+5,y+TILE-5); ctx.lineTo(x+TILE-5,y+TILE-5); ctx.stroke(); }
+    if(!openW){ ctx.beginPath(); ctx.moveTo(x+5,y+5); ctx.lineTo(x+5,y+TILE-5); ctx.stroke(); }
+    if(!openE){ ctx.beginPath(); ctx.moveTo(x+TILE-5,y+5); ctx.lineTo(x+TILE-5,y+TILE-5); ctx.stroke(); }
     if((tx + ty) % 2 === 0){
-      ctx.fillStyle='rgba(255,255,255,.035)';
-      ctx.fillRect(x+5,y+5,TILE-10,TILE-10);
+      ctx.fillStyle='rgba(255,255,255,.032)';
+      ctx.fillRect(x+7,y+7,TILE-14,TILE-14);
     }
   }
   function drawWallBase(x,y,tx,ty){
     const pack = stageVisualPack();
+    const edge = hasWalkableNeighbor(tx,ty);
     ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.76)';
     ctx.fillRect(x,y,TILE,TILE);
-    ctx.strokeStyle = (pack && pack.wallEdge) || 'rgba(0,217,255,.18)';
-    ctx.lineWidth = hasWalkableNeighbor(tx,ty) ? 2 : 1;
+    ctx.strokeStyle = edge ? ((pack && pack.wallEdge) || 'rgba(0,217,255,.18)') : 'rgba(0,0,0,.24)';
+    ctx.lineWidth = edge ? 2 : 1;
     ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
+    if(edge){
+      ctx.fillStyle='rgba(255,255,255,.045)';
+      ctx.fillRect(x+3,y+3,TILE-6,3);
+      ctx.fillStyle='rgba(0,0,0,.22)';
+      ctx.fillRect(x+3,y+TILE-7,TILE-6,4);
+    }
   }
   function drawInteractMarker(label,x,y,color='rgba(0,217,255,.9)'){
     const {cx,cy}=tileCenter(x,y);
@@ -1591,7 +1611,7 @@
     }
     const parsed=parseStageMap(key);
     state.currentStage=key;
-    state.mapVersion='sector_stage_v5';
+    state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
     clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
@@ -1857,7 +1877,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1882,7 +1902,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.0 level layout pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2764,7 +2784,7 @@
     if(c==='#'){
       drawWallBase(x,y,tx,ty);
       const edgeWall = hasWalkableNeighbor(tx,ty);
-      const shouldDecorate = edgeWall || ((tx*17 + ty*23) % 7 === 0);
+      const shouldDecorate = (edgeWall && ((tx*13 + ty*19) % 4 === 0)) || (!edgeWall && ((tx*17 + ty*23) % 11 === 0));
       if(shouldDecorate){
         const blockList = (pack && pack.blocked && pack.blocked.length) ? pack.blocked : mapArt.blocked;
         const block = pickAsset(blockList,tx,ty);
