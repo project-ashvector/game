@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.0 // LEVEL LAYOUT PASS',
+    'Version 0.9.1 // TILE FLOOR PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,8 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.0';
-  const MAP_VERSION = 'sector_stage_v6';
+  const BUILD_VERSION = '0.9.1';
+  const MAP_VERSION = 'sector_stage_v7';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -747,7 +747,7 @@
       exit: 'assets/tilesets/forbidden/signpost_01.png',
       floorTint: 'rgba(24, 18, 32, .22)',
       pathTint: 'rgba(86, 55, 122, .16)',
-      wallTint: 'rgba(13, 9, 18, .78)',
+      wallTint: 'rgba(13, 9, 18, .96)',
       wallEdge: 'rgba(160, 118, 255, .30)',
       props: [
         {x:3,y:3,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},
@@ -776,7 +776,7 @@
       ],
       floorTint: 'rgba(70, 19, 24, .18)',
       pathTint: 'rgba(255, 120, 62, .13)',
-      wallTint: 'rgba(24, 9, 12, .78)',
+      wallTint: 'rgba(24, 9, 12, .96)',
       wallEdge: 'rgba(255, 122, 66, .28)',
       props: [
         {x:5,y:4,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},
@@ -803,7 +803,7 @@
       ],
       floorTint: 'rgba(18, 22, 34, .20)',
       pathTint: 'rgba(95, 140, 255, .13)',
-      wallTint: 'rgba(8, 11, 18, .80)',
+      wallTint: 'rgba(8, 11, 18, .96)',
       wallEdge: 'rgba(120, 170, 255, .26)',
       props: [
         {x:5,y:3,img:'assets/tilesets/undead/bones_01.png',w:44,h:34},
@@ -823,6 +823,43 @@
       pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit,
       ...((pack.props || []).map(p => p.img))
     ]).filter(Boolean);
+  }
+
+  // v91: the imported ground PNGs include edge/corner/platform pieces.
+  // Drawing those randomly made the map look like broken floating blocks.
+  // Walkable tiles now use one consistent procedural ground per stage, while props/interactables still use the imported art.
+  const stageFloorStyles = {
+    f001: {base:'#1b1721', alt:'#211b2a', grit:'rgba(202,184,255,.085)', line:'rgba(255,255,255,.045)'},
+    f002: {base:'#22130f', alt:'#2b1710', grit:'rgba(255,180,112,.08)', line:'rgba(255,163,77,.045)'},
+    f003: {base:'#101722', alt:'#141d2b', grit:'rgba(130,180,255,.08)', line:'rgba(112,215,255,.045)'}
+  };
+  function hashTile(tx,ty,salt=0){
+    let n = ((tx+31) * 73856093) ^ ((ty+47) * 19349663) ^ (salt * 83492791);
+    n = (n << 13) ^ n;
+    return Math.abs((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff);
+  }
+  function drawUniformGround(x,y,tx,ty,c){
+    const s = stageFloorStyles[currentStageKey()] || stageFloorStyles.f001;
+    ctx.fillStyle = ((tx + ty) & 1) ? s.alt : s.base;
+    ctx.fillRect(x,y,TILE,TILE);
+    const h1 = hashTile(tx,ty,1);
+    const h2 = hashTile(tx,ty,2);
+    ctx.fillStyle = s.grit;
+    ctx.fillRect(x + 6 + (h1 % 25), y + 7 + ((h1 >> 5) % 24), 2, 2);
+    ctx.fillRect(x + 8 + (h2 % 23), y + 9 + ((h2 >> 4) % 22), 1, 1);
+    if((h1 % 5) === 0){
+      ctx.strokeStyle = s.line;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + 8, y + 12 + (h2 % 19));
+      ctx.lineTo(x + TILE - 9, y + 13 + (h2 % 19));
+      ctx.stroke();
+    }
+    // Important tiles get a slightly brighter floor pad so they read as grounded, not pasted on.
+    if(c !== '.'){
+      ctx.fillStyle='rgba(255,255,255,.035)';
+      ctx.fillRect(x+4,y+4,TILE-8,TILE-8);
+    }
   }
 
   // v89: readability helpers. The imported tilesets look good, but random large props
@@ -858,7 +895,7 @@
   function drawWallBase(x,y,tx,ty){
     const pack = stageVisualPack();
     const edge = hasWalkableNeighbor(tx,ty);
-    ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.76)';
+    ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.96)';
     ctx.fillRect(x,y,TILE,TILE);
     ctx.strokeStyle = edge ? ((pack && pack.wallEdge) || 'rgba(0,217,255,.18)') : 'rgba(0,0,0,.24)';
     ctx.lineWidth = edge ? 2 : 1;
@@ -1602,10 +1639,13 @@
     ensureProgression();
     return key === 'f001' || (state.player.level >= def.levelReq && !!state.stages[key]?.unlocked);
   }
-  function loadStage(key){
-    ensureProgression(); unlockNextStages();
+  function loadStage(key, opts={}){
+    ensureProgression();
+    const force=!!opts.force;
+    if(!force) unlockNextStages();
     const def=stageDef(key);
-    if(!playerMeetsStageRequirement(key)){
+    if(force){ state.stages ||= {}; state.stages[key] ||= {unlocked:true,complete:false}; state.stages[key].unlocked = true; }
+    if(!force && !playerMeetsStageRequirement(key)){
       toast(`${def.id} locked. Requires Player Lv. ${def.levelReq} and previous mission clear.`);
       return false;
     }
@@ -1621,11 +1661,40 @@
     state.visited={[`${parsed.px},${parsed.py}`]:1};
     battle=null;
     setCheckpoint(`${def.id} Entry`);
-    log(`${def.id} // ${def.title} loaded.`);
+    log(`${def.id} // ${def.title} loaded${force?' from QA console':''}.`);
     save(true);
     hideAll(); uiState.mode='game'; gameStarted=true; document.body.classList.add('game-active','fullscreen-mode'); $('app').classList.remove('hidden');
     document.body.dataset.stage=def.key; ensureMobileActionPad(); setMobilePlayMode(); renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
     return true;
+  }
+  function qaLoadStage(key){
+    ensureProgression();
+    const def=stageDef(key);
+    state.stages ||= {};
+    state.stages[key] ||= {unlocked:true,complete:false};
+    state.stages[key].unlocked = true;
+    state.player.level = Math.max(state.player.level || 1, def.levelReq || 1);
+    syncHpCap();
+    const ok = loadStage(key, {force:true});
+    if(ok) toast(`QA loaded ${def.id}.`);
+    return ok;
+  }
+  function qaUnlockAllStages(){
+    ensureProgression();
+    Object.keys(STAGE_DEFS).forEach(key => {
+      state.stages[key] ||= {unlocked:true,complete:false};
+      state.stages[key].unlocked = true;
+    });
+    toast('QA stages unlocked.');
+    renderAll();
+    queueAutosave();
+  }
+  function renderQaStagePicker(){
+    const select=$('qaStageSelect');
+    if(!select || !state) return;
+    const current=currentStageKey();
+    select.innerHTML=Object.entries(STAGE_DEFS).map(([key,d])=>`<option value="${key}">${d.id} // ${d.title} // Req Lv ${d.levelReq}</option>`).join('');
+    select.value=current;
   }
   function unlockNextStages(){
     state.stages ||= {};
@@ -1902,7 +1971,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.0 level layout pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.1 tile floor pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2769,18 +2838,9 @@
 
   function drawTile(c,x,y,tx,ty){
     const pack = stageVisualPack();
-    const groundList = (pack && pack.ground && pack.ground.length) ? pack.ground : mapArt.ground;
-    const g = pickAsset(groundList,tx,ty);
-    if(!drawAsset(g,x,y,TILE+1,TILE+1,false)){
-      const floor=((tx+ty)%2)?'#263421':'#304028'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE);
-    }
-    if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
 
-    // v89: make the route readable first, then draw art on top.
-    // Walkable spaces now have a subtle path overlay; walls use a consistent dark base.
-    if(c !== '#') drawPathOverlay(x,y,tx,ty,c);
-    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.strokeRect(x,y,TILE,TILE);
-
+    // v91: blocked tiles no longer draw the random floor/platform art underneath.
+    // That was the main reason the graveyard looked like mismatched slopes instead of solid ground.
     if(c==='#'){
       drawWallBase(x,y,tx,ty);
       const edgeWall = hasWalkableNeighbor(tx,ty);
@@ -2799,6 +2859,11 @@
       ctx.fillStyle='rgba(0,0,0,.20)'; ctx.fillRect(x,y,TILE,TILE);
       return;
     }
+
+    drawUniformGround(x,y,tx,ty,c);
+    if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
+    drawPathOverlay(x,y,tx,ty,c);
+    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.strokeRect(x,y,TILE,TILE);
 
     if(c==='C'){
       if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
@@ -2881,7 +2946,7 @@
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
-    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`);
+    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
     renderFullscreenHud();
     renderObjectiveCompass();
     renderOperatorDb();
@@ -3418,9 +3483,9 @@
     bindMobileMoveButtons(); setupMobilePlayability();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

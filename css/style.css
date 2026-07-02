@@ -1218,3 +1218,20 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
 
 
 /* v90: mobile control polish — smaller pads moved inward/up so they cover less map art. */
+
+
+/* v91: QA level picker + mobile top HUD placement */
+.qa-stage-picker{display:grid;gap:9px;margin:10px 0 14px;padding:10px;border:1px solid rgba(112,215,255,.22);border-radius:14px;background:rgba(3,7,12,.55)}
+.qa-stage-picker label{display:grid;gap:3px;color:#eafcff}
+.qa-stage-picker label span{color:var(--muted);font-size:.82rem}
+.qa-stage-picker select{width:100%;min-height:42px;background:#05080d;color:#edfaff;border:1px solid rgba(112,215,255,.35);border-radius:10px;padding:8px;font:inherit}
+@media (max-width:900px), (pointer:coarse){
+  body.game-active .fs-persistent-stats{top:calc(env(safe-area-inset-top) + 2px)!important;left:auto!important;right:calc(env(safe-area-inset-right) + 6px)!important;width:auto!important;max-width:calc(100vw - 12px)!important;justify-content:flex-end!important;flex-wrap:nowrap!important;font-size:10px!important;padding:4px 7px!important;border-radius:11px!important;background:rgba(3,7,12,.58)!important;backdrop-filter:blur(7px)!important;opacity:.92!important;line-height:1!important}
+  body.game-active .fs-persistent-stats span,body.game-active .fs-persistent-stats em,body.game-active .fs-persistent-stats b{white-space:nowrap}
+  body.game-active .fullscreen-quickbar{top:calc(env(safe-area-inset-top) + 40px)!important}
+  body.game-active .objective-tracker{top:calc(env(safe-area-inset-top) + 34px)!important;max-height:44px!important}
+}
+@media (max-width:420px) and (orientation:portrait){
+  body.game-active .fs-persistent-stats{font-size:9px!important;gap:5px!important;padding:4px 6px!important}
+  body.game-active .objective-tracker{display:none!important}
+}
