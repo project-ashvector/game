@@ -1327,7 +1327,7 @@ select.controller-menu-selected,input.controller-menu-selected{background:#10192
 body.game-active canvas#game{filter:brightness(.98) saturate(.88) contrast(1.05)!important;}
 body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0 0 42px rgba(112,215,255,.11)}
 
-/* v97: forced new-game opening story pass */
+/* v98: forced new-game opening story pass */
 .story-overlay[data-variant="opening"]{
   place-items:center;
   background:
@@ -1416,6 +1416,6 @@ body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0
   .story-controller-tip{font-size:10px;}
 }
 
-/* v97 story replay menu helper */
+/* v98 story replay menu helper */
 #openingStoryBtn{border-color:rgba(255,48,72,.55);box-shadow:0 0 16px rgba(255,48,72,.12);}
 #openingStoryBtn:before{content:"STORY ";color:#ffec9d;}
