@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.2 // MOBILE PLAYABLE',
+    'Version 0.8.3 // MOBILE CONTROL POLISH',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.2';
+  const BUILD_VERSION = '0.8.3';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -2126,6 +2126,7 @@
   function handlePlayerDeath(){
     if(!battle) return;
     battle.turn='defeated';
+    setBattleMobileMode(false);
     state.player.hp = 0;
     SfxManager.death();
     AudioManager.stopMusic();
@@ -2137,8 +2138,8 @@
     panel.classList.remove('hidden');
     const retry=$('deathRetryBtn');
     const menu=$('deathMenuBtn');
-    if(retry) retry.onclick=()=>{ const restored=restoreCheckpoint(); battle=null; if(!restored) state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
-    if(menu) menu.onclick=()=>{ battle=null; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
+    if(retry) retry.onclick=()=>{ const restored=restoreCheckpoint(); battle=null; setBattleMobileMode(false); if(!restored) state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
+    if(menu) menu.onclick=()=>{ battle=null; setBattleMobileMode(false); panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
   }
 
   function winBattle(){
@@ -2202,7 +2203,7 @@
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
     if(btn) btn.onclick=()=>{
-      battle=null; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play(activeMusicForState());
+      battle=null; setBattleMobileMode(false); uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play(activeMusicForState());
       if(meta.wasBoss){showStoryOnce(stageStoryKey('bossDefeated')); pulseObjective(currentObjectiveText());}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared===1){showStoryOnce('firstAnomaly');}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared>=3){showStoryOnce('allAnomalies');}
@@ -2704,11 +2705,47 @@
   function setupMobilePlayability(){
     bindMobileMoveButtons();
     ensureMobileActionPad();
+    ensureMobileBattlePad();
     setMobilePlayMode();
     window.addEventListener('resize', setMobilePlayMode, {passive:true});
     window.addEventListener('orientationchange', () => setTimeout(setMobilePlayMode, 220), {passive:true});
     window.addEventListener('blur', stopMobileMove, {passive:true});
     document.addEventListener('visibilitychange', () => { if(document.hidden) stopMobileMove(); });
+  }
+
+
+  // v83: mobile battle quick pad. Gives phone players tappable combat shortcuts
+  // without relying on tiny keyboard-style hotkeys during fights.
+  function setBattleMobileMode(on){
+    document.body.classList.toggle('battle-mode', !!on);
+    if(on) ensureMobileBattlePad();
+  }
+  function ensureMobileBattlePad(){
+    if(document.getElementById('mobileBattlePad')) return;
+    const pad=document.createElement('div');
+    pad.id='mobileBattlePad';
+    pad.className='mobile-battle-pad';
+    pad.innerHTML=`
+      <button type="button" data-battle-action="atk1"><b>1</b><span>Slash</span></button>
+      <button type="button" data-battle-action="atk2"><b>2</b><span>Dash</span></button>
+      <button type="button" data-battle-action="atk3"><b>3</b><span>Crimson</span></button>
+      <button type="button" data-battle-action="atk4"><b>4</b><span>Flex</span></button>
+      <button type="button" data-battle-action="over"><b>U</b><span>Ultra</span></button>
+      <button type="button" data-battle-action="guard"><b>G</b><span>Guard</span></button>
+      <button type="button" data-battle-action="cell"><b>R</b><span>EP</span></button>`;
+    document.body.appendChild(pad);
+    pad.querySelectorAll('button').forEach(btn=>{
+      btn.addEventListener('pointerdown', e=>{
+        e.preventDefault(); e.stopPropagation();
+        AudioManager.unlock();
+        if(!battle || battle.turn !== 'player') return;
+        const action=btn.dataset.battleAction;
+        if(action && action.startsWith('atk')) playerAttack(Number(action.slice(3))-1);
+        if(action==='over') useOverdriveBattle();
+        if(action==='guard') guardBattle();
+        if(action==='cell') useVectorCellBattle();
+      }, {passive:false});
+    });
   }
 
   function showFullscreenHint(msg){
