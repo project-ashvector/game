@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.7 // TILESET VISUAL PASS',
+    'Version 0.8.8 // F-001 FORBIDDEN GRAVEYARD',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.7';
+  const BUILD_VERSION = '0.8.8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -449,7 +449,7 @@
     return rows.map(r => (r + '#'.repeat(width)).slice(0,width));
   }
   const STAGE_DEFS = {
-    f001: {key:'f001', id:'F-001', title:'Toxic Sewers', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards', rewardCredits:40, rewardShards:3, clearXp:220, nextKey:'f002', bg:'assets/battle_backgrounds/toxic_sewers_battle.png'},
+    f001: {key:'f001', id:'F-001', title:'Forbidden Graveyard', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'grave terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards', rewardCredits:40, rewardShards:3, clearXp:220, nextKey:'f002', bg:'assets/battle_backgrounds/toxic_sewers_battle.png'},
     f002: {key:'f002', id:'F-002', title:'Ash Wastes Outpost', chapter:'Chapter 2 // Broken Signal', levelReq:5, map:normalizeMapRows(stage2Map), threat:'MEDIUM // OUTPOST CLASS', objective:'outpost terminal → three imported anomalies → existing boss → extraction', reward:'95 Credits, Burnt Alloy, Outpost Access Chip, Ashveil Mother Core chance, Vyra Shards', rewardCredits:95, rewardShards:6, clearXp:360, nextKey:'f003', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
     f003: {key:'f003', id:'F-003', title:'Neon Graveyard', chapter:'Chapter 3 // Dead Frequencies', levelReq:12, map:normalizeMapRows(stage3Map), threat:'HIGH // GRAVEYARD CLASS', objective:'grave terminal → 3 existing-library anomalies → shade boss → extraction', reward:'120 Credits, 2 Rust Cores, 2 Catalysts, 7 Vyra Shards', rewardCredits:120, rewardShards:7, clearXp:550, nextKey:null, bg:'assets/battle_backgrounds/neon_graveyard_battle.png'}
   };
@@ -486,7 +486,7 @@
   // v81: lightweight side quest journal. Fermilat now offers a small optional
   // grind objective per stage after you find him near the boss route.
   const FERMILAT_FAVOR_DEFS = {
-    f001:{title:"Fermilat\'s Suspicious Favor", target:3, credits:35, syncXp:70, skillXp:120, items:{'Vector Cell':1,'Med Patch':1}, ask:'Fermilat wants you to defeat 3 anomalies before he "trusts your footwork."', done:'Fermilat is weirdly proud of your sewer footwork.'},
+    f001:{title:"Fermilat\'s Suspicious Favor", target:3, credits:35, syncXp:70, skillXp:120, items:{'Vector Cell':1,'Med Patch':1}, ask:'Fermilat wants you to defeat 3 anomalies before he "trusts your footwork."', done:'Fermilat is weirdly proud of your graveyard footwork.'},
     f002:{title:'Ash Wastes Footwork', target:4, credits:65, syncXp:115, skillXp:180, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Fermilat wants proof you can survive the dry outpost without sending evidence.', done:'Fermilat says the ash is terrible for "collectible preservation."'},
     f003:{title:'Graveyard Toe-tal Chaos', target:5, credits:95, syncXp:165, skillXp:260, items:{'Vector Cell':2,'Corrupted Catalyst':1}, ask:'Fermilat wants 5 graveyard anomalies deleted. He calls it "spooky foot traffic control."', done:'Fermilat congratulates you in the least normal way possible.'}
   };
@@ -713,10 +713,48 @@
   };
 
 
-  // v87: selected CraftPix tileset integration.
+  // v88: selected CraftPix tileset integration.
   // Only the PNGs actually used by the game are shipped in the patch.
-  // F-002 gets cursed-land corruption props; F-003 gets undead/graveyard props.
+  // F-001 now uses the Forbidden Graveyard pack; F-002 uses cursed land; F-003 uses undead graveyard.
   const stageVisualPacks = {
+    f001: {
+      ground: [
+        'assets/tilesets/forbidden/ground_01.png',
+        'assets/tilesets/forbidden/ground_02.png',
+        'assets/tilesets/forbidden/ground_03.png',
+        'assets/tilesets/forbidden/ground_04.png',
+        'assets/tilesets/forbidden/ground_05.png'
+      ],
+      blocked: [
+        'assets/tilesets/forbidden/tree_01.png',
+        'assets/tilesets/forbidden/tree_02.png',
+        'assets/tilesets/forbidden/crypt_01.png',
+        'assets/tilesets/forbidden/stone_fence_01.png',
+        'assets/tilesets/forbidden/stone_fence_02.png',
+        'assets/tilesets/forbidden/headstone_01.png',
+        'assets/tilesets/forbidden/headstone_02.png',
+        'assets/tilesets/forbidden/rock_01.png',
+        'assets/tilesets/forbidden/rock_02.png'
+      ],
+      chest: 'assets/tilesets/forbidden/locked_chest_01.png',
+      med: 'assets/tilesets/forbidden/life_01.png',
+      lore: 'assets/tilesets/forbidden/signpost_02.png',
+      terminal: 'assets/tilesets/forbidden/lantern_01.png',
+      door: 'assets/tilesets/forbidden/stone_fence_01.png',
+      exit: 'assets/tilesets/forbidden/signpost_01.png',
+      floorTint: 'rgba(24, 18, 32, .30)',
+      props: [
+        {x:3,y:3,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},
+        {x:8,y:4,img:'assets/tilesets/forbidden/headstone_03.png',w:36,h:40},
+        {x:17,y:6,img:'assets/tilesets/forbidden/bone_01.png',w:44,h:38},
+        {x:25,y:9,img:'assets/tilesets/forbidden/coffin_01.png',w:64,h:62},
+        {x:10,y:12,img:'assets/tilesets/forbidden/fire_01.png',w:34,h:34},
+        {x:28,y:14,img:'assets/tilesets/forbidden/bush_01.png',w:44,h:40},
+        {x:6,y:18,img:'assets/tilesets/forbidden/rock_03.png',w:38,h:34},
+        {x:30,y:20,img:'assets/tilesets/forbidden/bush_02.png',w:44,h:40},
+        {x:35,y:22,img:'assets/tilesets/forbidden/spike_01.png',w:42,h:26}
+      ]
+    },
     f002: {
       ground: [
         'assets/tilesets/cursed/ground_01.png',
@@ -770,8 +808,9 @@
     return Object.values(stageVisualPacks).flatMap(pack => [
       ...(pack.ground || []),
       ...(pack.blocked || []),
+      pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit,
       ...((pack.props || []).map(p => p.img))
-    ]);
+    ]).filter(Boolean);
   }
 
   function imgFor(path){ return images[path]; }
@@ -1005,7 +1044,7 @@
   }
   function enemyStatusForStage(){
     const key=currentStageKey();
-    if(key==='f001') return {key:'poison', chance:battle?.code==='B'?0.32:0.20, turns:2, potency:3, text:'toxic sludge'};
+    if(key==='f001') return {key:'poison', chance:battle?.code==='B'?0.32:0.20, turns:2, potency:3, text:'grave rot'};
     if(key==='f002') return {key:'burn', chance:battle?.code==='B'?0.34:0.22, turns:2, potency:4, text:'ash burn'};
     if(key==='f003') return {key:'shock', chance:battle?.code==='B'?0.38:0.24, turns:2, potency:4, text:'dead-frequency shock'};
     return {key:'poison', chance:0.18, turns:2, potency:3, text:'fracture sickness'};
@@ -1179,7 +1218,7 @@
   // Contracts use the existing imported creature roster and do not add new monster names/assets.
   const CONTRACT_POOLS = {
     f001: [
-      {title:'Sewer Sweep', desc:'Neutralize repeat anomaly signatures inside Toxic Sewers.', target:5, credits:28, syncXp:24, skillXp:90, item:'Scrap Metal', itemQty:2},
+      {title:'Grave Sweep', desc:'Neutralize repeat anomaly signatures inside Forbidden Graveyard.', target:5, credits:28, syncXp:24, skillXp:90, item:'Scrap Metal', itemQty:2},
       {title:'Overflow Cleanup', desc:'Farm respawns until AVOS stops screaming about biohazards.', target:8, credits:46, syncXp:38, skillXp:140, item:'Med Patch', itemQty:1},
       {title:'Shard Static', desc:'Collect enough anomaly readings to stabilize Vyra sync fragments.', target:10, credits:64, syncXp:55, skillXp:190, item:'Operator Shard: Vyra', itemQty:1}
     ],
@@ -1531,7 +1570,7 @@
     {id:'IT-005', name:'Archive Log 001', type:'Archive', category:'Lore', slot:'Database', rarity:'Rare', stackSize:1, sellPrice:0, asset:'assets/items/archive_log_001.png', source:'assets/source/items/archive_log_001.png', status:'production-icon', desc:'Recovered classified AVOS archive fragment.'},
     {id:'IT-006', name:'Operator Shard: Vyra', type:'Shard', category:'Operator', slot:'Recruitment', rarity:'Legendary', stackSize:999, sellPrice:75, asset:'assets/items/operator_shard_vyra.png', source:'assets/source/items/operator_shard_vyra.png', status:'production-icon', desc:'A synchronization shard keyed to Operator AV-001.'},
     {id:'IT-007', name:'Rust Core', type:'Material', category:'Anomaly Core', slot:'Stack', rarity:'Rare', stackSize:99, sellPrice:25, asset:'assets/items/rust_core.png', source:'assets/source/items/rust_core.png', status:'production-icon', desc:'Dense anomaly core used in future crafting and operator growth.'},
-    {id:'EQ-001', name:'Vector Training Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Common', stackSize:1, sellPrice:12, asset:'assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png', status:'gameplay-gear', levelReq:1, stats:{atk:3,str:1}, desc:'Starter blade tuned for Vyra. Good enough to make sewer monsters sign medical waivers.'},
+    {id:'EQ-001', name:'Vector Training Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Common', stackSize:1, sellPrice:12, asset:'assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png', status:'gameplay-gear', levelReq:1, stats:{atk:3,str:1}, desc:'Starter blade tuned for Vyra. Good enough to make graveyard monsters sign medical waivers.'},
     {id:'EQ-002', name:'Sewer Guard Vest', type:'Equipment', category:'Armor', slot:'Chest', rarity:'Common', stackSize:1, sellPrice:10, asset:'assets/items/imported/armor/chest/common/it-1007_chest_common.png', status:'gameplay-gear', levelReq:1, stats:{def:2,hp:8}, desc:'A cleaned-up vest from an unlucky guard. Smells like plot progression.'},
     {id:'EQ-003', name:'Rustcore Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Rare', stackSize:1, sellPrice:55, asset:'assets/items/imported/weapons/weapons/rare/it-1108_duskhowl_blade.png', status:'crafted-gear', levelReq:3, stats:{atk:8,str:4,crit:0.03}, desc:'Crafted from anomaly metal. The edge hums like it knows your browser history.'},
     {id:'EQ-004', name:'Catalyst Core', type:'Equipment', category:'Core', slot:'Core', rarity:'Epic', stackSize:1, sellPrice:90, asset:'assets/items/corrupted_catalyst.png', status:'crafted-gear', levelReq:5, stats:{atk:3,def:2,hp:20,ep:10}, desc:'A dangerous core module that boosts every important stat and probably voids warranties.'},
@@ -1939,7 +1978,7 @@
     ensureStoryFlags();
     if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.');}
     if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal')); pulseObjective(currentObjectiveText());}
-    if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, sewer champion.');}
+    if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, graveyard champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce(stageStoryKey('lore'));}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
     if(c==='X'){ if(state.flags.chapterComplete){showChapterClearPanel();} else if(state.flags.bossDefeated && state.flags.bossUnlocked && state.flags.anomaliesCleared>=3){completeChapter();} else toast('Exit protocol denied. Finish the objective.');}
@@ -1984,11 +2023,11 @@
   const STORY_SCENES = {
     intro: {
       kicker:'CHAPTER 1 // THE AWAKENING', speaker:'AVOS',
-      lines:['Operator AV-001 online. Memory integrity is... disgusting.', 'Vyra, you are inside Fracture 001: Toxic Sewers. Find the recovery terminal before reality finishes buffering.', 'Mission route: sync terminal, clear three anomalies, breach the boss gate, extract the Toxic Core. Try not to die in sewage. It\'s bad branding.']
+      lines:['Operator AV-001 online. Memory integrity is... disgusting.', 'Vyra, you are inside Fracture 001: Forbidden Graveyard. Find the lantern terminal before reality finishes buffering.', 'Mission route: sync terminal, clear three anomalies, breach the boss gate, extract the Toxic Core. Try not to die in sewage. It\'s bad branding.']
     },
     terminal: {
       kicker:'RECOVERY TERMINAL // SYNCED', speaker:'VYRA',
-      lines:['Archive link restored. I remember blades. I remember fire. I do not remember signing up for a sewer tour.', 'AVOS: Great news. You are cleared for violence. Three anomaly signatures are locking the boss route. Remove them. Politely, with swords.']
+      lines:['Archive link restored. I remember blades. I remember fire. I do not remember signing up for a haunted graveyard tour.', 'AVOS: Great news. You are cleared for violence. Three anomaly signatures are locking the boss route. Remove them. Politely, with swords.']
     },
     lore: {
       kicker:'ARCHIVE LOG 001', speaker:'AVOS',
@@ -2003,8 +2042,8 @@
       lines:['Three anomaly signatures erased. Boss gate override accepted.', 'Warning: boss-class entity ahead. Also warning: it smells worse than the rest of this place, somehow.']
     },
     bossIntro: {
-      kicker:'BOSS ENCOUNTER // TOXIC CORE', speaker:'VYRA',
-      lines:['That thing is carrying the Toxic Core.', 'AVOS: Correct. Recommended tactic: hit it until the health bar experiences a personal tragedy.']
+      kicker:'BOSS ENCOUNTER // GRAVE CORE', speaker:'VYRA',
+      lines:['That thing is carrying the Grave Core.', 'AVOS: Correct. Recommended tactic: hit it until the health bar experiences a personal tragedy.']
     },
     f002Intro: {
       kicker:'CHAPTER 2 // BROKEN SIGNAL', speaker:'AVOS',
@@ -2047,10 +2086,10 @@
       lines:['The gate is down. Core secured.', 'AVOS: Excellent. You have defeated a trash king. The resume writes itself. Extraction route is open.']
     },
     fermilatF001: {
-      kicker:'NPC CONTACT // F-001 TOXIC SEWERS', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-001 FORBIDDEN GRAVEYARD', speaker:'FERMILAT',
       lines:[
         {speaker:'FERMILAT', portrait:'fermilat', text:'hey got any feet pics i can sniff—i mean have?'},
-        {speaker:'VYRA', portrait:'vyra', text:'I fought through a sewer and the hidden NPC near the boss is asking for feet pics?'},
+        {speaker:'VYRA', portrait:'vyra', text:'I fought through a haunted graveyard and the hidden NPC near the boss is asking for feet pics?'},
         {speaker:'FERMILAT', portrait:'fermilat', text:'Hidden? No. Strategically stationed. Also the word is “collectibles.”'},
         {speaker:'VYRA', portrait:'vyra', text:'Ask again and I am marking you as a hostile object on the minimap.'}
       ]
@@ -2074,8 +2113,8 @@
       ]
     },
     bossDefeated: {
-      kicker:'TOXIC CORE RECOVERED', speaker:'AVOS',
-      lines:['Boss-class entity deleted. Toxic Core stabilized.', 'Extraction route is now authorized. Head to the white exit marker before the sewer develops opinions again.']
+      kicker:'GRAVE CORE RECOVERED', speaker:'AVOS',
+      lines:['Boss-class entity deleted. Grave Core stabilized.', 'Extraction route is now authorized. Head to the white exit marker before the graveyard develops opinions again.']
     }
   };
   function safeHtml(v){return String(v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
@@ -2521,7 +2560,7 @@
   function showVictoryPanel(enemy, loot, meta={}){
     const panel=$('battleVictory');
     const uniqueLoot = [...new Set(loot)];
-    const nextLabel = meta.wasBoss ? 'Recover Toxic Core' : 'Return to Fracture';
+    const nextLabel = meta.wasBoss ? 'Recover Grave Core' : 'Return to Fracture';
     const research = researchLineForCreature({id:enemy.id, name:enemy.name, type:meta.wasBoss?'Boss':'Anomaly'});
     panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)))} // Credits +${enemy.credits}</p><p class="fineprint">Research Rank ${research.rank} // ${research.text}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
@@ -2583,7 +2622,7 @@
   }
 
   function drawMapAtmosphere(){
-    // v53: global fog/tint pass. Keeps bright imported tiles but makes F-001 feel toxic.
+    // v88: global fog/tint pass. Keeps imported tiles readable while making F-001 feel haunted.
     const t = Date.now() * 0.00025;
     ctx.save();
     ctx.fillStyle='rgba(5,10,15,.34)';
@@ -2660,21 +2699,21 @@
     if(c==='#'){
       const blockList = (pack && pack.blocked && pack.blocked.length) ? pack.blocked : mapArt.blocked;
       const block = pickAsset(blockList,tx,ty);
-      const big = /tree|ruins|plant|jaws|tentacle|dead/i.test(block);
+      const big = /tree|ruins|plant|jaws|tentacle|dead|crypt|fence|headstone/i.test(block);
       drawAsset(block,x,y,big?70:48,big?82:42,true) || (ctx.fillStyle='rgba(60,70,50,.55)',ctx.beginPath(),ctx.arc(x+TILE/2,y+TILE/2,16,0,Math.PI*2),ctx.fill());
     }
     if(c==='C'){
-      if(!drawAsset(mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
+      if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
     }
     if(c==='S'){
-      if(!drawAsset(mapArt.terminal,x,y,46,64,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
+      if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,46,64,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
       ctx.fillStyle='rgba(112,215,255,.85)'; ctx.fillRect(x+15,y+31,12,3);
     }
     if(c==='H'){
-      if(!drawAsset(mapArt.med,x,y,34,34,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
+      if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,34,34,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
     }
     if(c==='L'){
-      if(!drawAsset(mapArt.lore,x,y,34,52,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+      if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,34,52,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
     }
     if(c==='E'||c==='B'){
       const im = getMapCreatureImage(c,tx,ty);
@@ -2692,10 +2731,10 @@
       }
     }
     if(c==='D'){
-      if(!drawAsset(mapArt.door,x,y,52,24,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
+      if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,52,24,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
     }
     if(c==='X'){
-      if(!drawAsset(mapArt.exit,x,y,34,54,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,34,54,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
     }
   }
   function renderMini(){
