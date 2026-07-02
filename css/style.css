@@ -1203,3 +1203,15 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
 #saveCodeText{width:100%;min-height:240px;resize:vertical;background:#030609;color:#d7f7ff;border:1px solid rgba(112,215,255,.28);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;line-height:1.35;box-sizing:border-box;}
 .save-code-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 @media(max-width:900px),(pointer:coarse){.save-slot-grid{grid-template-columns:1fr}.save-slot>div{grid-template-columns:1fr 1fr 1fr}.save-code-modal{max-height:88vh!important}#saveCodeText{min-height:180px;font-size:10px}}
+
+
+/* v86: audio mixer + persistent sound settings */
+.audio-mixer-panel{grid-column:1/-1;border-color:rgba(0,217,255,.26)!important;background:linear-gradient(145deg,rgba(3,9,15,.94),rgba(8,18,28,.88))!important;}
+.audio-mixer-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.audio-row{display:grid;grid-template-columns:118px 1fr 48px;align-items:center;gap:10px;background:#070b10;border:1px solid rgba(112,215,255,.18);border-radius:12px;padding:10px;}
+.audio-row span{font-size:12px;color:#dff8ff;text-transform:uppercase;letter-spacing:.06em;font-weight:900;}
+.audio-row b{font-size:12px;color:#7ce7ff;text-align:right;}
+.audio-row input[type="range"]{width:100%;accent-color:#00d9ff;}
+.audio-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.audio-actions button{min-height:34px;padding:7px 10px;font-size:11px;}
+@media(max-width:900px),(pointer:coarse){.audio-mixer-grid{grid-template-columns:1fr}.audio-row{grid-template-columns:94px 1fr 42px;padding:8px}.audio-row span,.audio-row b{font-size:10px}.audio-actions button{flex:1 1 130px}}
