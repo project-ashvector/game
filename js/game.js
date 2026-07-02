@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.1 // TILE FLOOR PASS',
+    'Version 0.9.2 // CONTROLLER QA PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,8 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.1';
-  const MAP_VERSION = 'sector_stage_v7';
+  const BUILD_VERSION = '0.9.2';
+  const MAP_VERSION = 'sector_stage_v8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -1459,10 +1459,12 @@
     state.skillData.health ||= {xp:0, level:Math.max(1, state.player?.level || 1)};
     state.combatStyle ||= 'attack';
     state.currentStage ||= 'f001';
-    state.stages ||= {f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}};
+    state.stages ||= {f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}};
     state.stages.f001 ||= {unlocked:true,complete:false};
     state.stages.f001.unlocked = true;
     state.stages.f002 ||= {unlocked:false,complete:false};
+    state.stages.f003 ||= {unlocked:false,complete:false};
+    state.qaUnlockAllStages = !!state.qaUnlockAllStages;
     if(state.flags?.chapterComplete && state.player?.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
     ensureStoryFlags();
     ensureUpgrades();
@@ -1637,7 +1639,7 @@
   function playerMeetsStageRequirement(key){
     const def=stageDef(key);
     ensureProgression();
-    return key === 'f001' || (state.player.level >= def.levelReq && !!state.stages[key]?.unlocked);
+    return key === 'f001' || !!state.qaUnlockAllStages || (state.player.level >= def.levelReq && !!state.stages[key]?.unlocked);
   }
   function loadStage(key, opts={}){
     ensureProgression();
@@ -1681,11 +1683,49 @@
   }
   function qaUnlockAllStages(){
     ensureProgression();
+    state.qaUnlockAllStages = true;
     Object.keys(STAGE_DEFS).forEach(key => {
       state.stages[key] ||= {unlocked:true,complete:false};
       state.stages[key].unlocked = true;
     });
-    toast('QA stages unlocked.');
+    toast('QA bypass enabled: all levels unlocked.');
+    renderAll();
+    queueAutosave();
+  }
+  function syncPlayerLevelStats(oldLevel, newLevel){
+    const baseFor = lvl => ({maxHp:60 + 8*(lvl-1), maxEp:20 + 4*(lvl-1), atk:10 + (lvl-1), def:3 + (lvl-1)});
+    const oldBase = baseFor(Math.max(1, oldLevel || 1));
+    const newBase = baseFor(Math.max(1, newLevel || 1));
+    const bonus = {
+      maxHp: Math.max(0, (state.player.maxHp || oldBase.maxHp) - oldBase.maxHp),
+      maxEp: Math.max(0, (state.player.maxEp || oldBase.maxEp) - oldBase.maxEp),
+      atk: Math.max(0, (state.player.atk || oldBase.atk) - oldBase.atk),
+      def: Math.max(0, (state.player.def || oldBase.def) - oldBase.def)
+    };
+    state.player.maxHp = newBase.maxHp + bonus.maxHp;
+    state.player.maxEp = newBase.maxEp + bonus.maxEp;
+    state.player.atk = newBase.atk + bonus.atk;
+    state.player.def = newBase.def + bonus.def;
+    const caps = combatStatBlock();
+    state.player.hp = caps.maxHp;
+    state.player.ep = caps.maxEp || state.player.maxEp;
+  }
+  function nextXpForPlayerLevel(level){
+    let n=45;
+    for(let i=1;i<Math.max(1, level);i++) n=Math.floor(n*1.35);
+    return n;
+  }
+  function qaSetPlayerLevel(level){
+    ensureProgression();
+    const lvl=Math.max(1, Math.min(99, parseInt(level,10)||1));
+    const old=state.player.level || 1;
+    state.player.level = lvl;
+    state.player.xp = 0;
+    state.player.nextXp = nextXpForPlayerLevel(lvl);
+    syncPlayerLevelStats(old,lvl);
+    if(state.skillData?.health) state.skillData.health.level = Math.max(state.skillData.health.level || 1, lvl);
+    unlockNextStages();
+    toast(`QA Player Level set to ${lvl}.`);
     renderAll();
     queueAutosave();
   }
@@ -1695,10 +1735,19 @@
     const current=currentStageKey();
     select.innerHTML=Object.entries(STAGE_DEFS).map(([key,d])=>`<option value="${key}">${d.id} // ${d.title} // Req Lv ${d.levelReq}</option>`).join('');
     select.value=current;
+    const levelInput=$('qaPlayerLevel');
+    if(levelInput && document.activeElement !== levelInput) levelInput.value = state.player?.level || 1;
   }
   function unlockNextStages(){
     state.stages ||= {};
     const order=Object.keys(STAGE_DEFS);
+    if(state.qaUnlockAllStages){
+      order.forEach(key => {
+        state.stages[key] ||= {unlocked:true,complete:false};
+        state.stages[key].unlocked = true;
+      });
+      return;
+    }
     order.forEach((key,i)=>{
       state.stages[key] ||= {unlocked:i===0,complete:false};
       if(i===0) state.stages[key].unlocked=true;
@@ -1946,7 +1995,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1971,7 +2020,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.1 tile floor pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.2 controller QA pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2867,19 +2916,19 @@
 
     if(c==='C'){
       if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
-      drawInteractMarker('C',x,y,'rgba(255,202,69,.95)');
+      // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='S'){
       if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,38,48,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
-      drawInteractMarker('S',x,y,'rgba(112,215,255,.95)');
+      // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='H'){
       if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,32,32,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
-      drawInteractMarker('H',x,y,'rgba(89,255,160,.95)');
+      // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='L'){
       if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,32,44,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
-      drawInteractMarker('L',x,y,'rgba(210,168,255,.95)');
+      // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='E'||c==='B'){
       const im = getMapCreatureImage(c,tx,ty);
@@ -2892,15 +2941,15 @@
       } else {
         ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+21,y+21,c==='B'?18:14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
       }
-      drawInteractMarker(c==='B'?'B':'E',x,y,c==='B'?'rgba(255,48,72,.98)':'rgba(255,87,112,.94)');
+      // v92: field letter rings are hidden; anomaly/boss markers stay on the minimap only.
     }
     if(c==='D'){
       if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,42,32,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
-      drawInteractMarker('D',x,y,'rgba(255,184,64,.95)');
+      // v92: field letter rings are hidden; door marker stays on the minimap only.
     }
     if(c==='X'){
       if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,32,46,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
-      drawInteractMarker('X',x,y,'rgba(255,255,255,.98)');
+      // v92: field letter rings are hidden; exit marker stays on the minimap only.
     }
   }
   function renderMini(){
@@ -2946,7 +2995,7 @@
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
-    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
+    $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Player Level: ${p.level} // QA Bypass: ${state.qaUnlockAllStages?'ON':'OFF'}</div><div class="statrow">Level Locks: ${Object.entries(STAGE_DEFS).map(([k,d])=>d.id+': '+(playerMeetsStageRequirement(k)?'open':'locked')).join(' // ')}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Controller: ${ControllerManager.statusText()}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
     renderFullscreenHud();
     renderObjectiveCompass();
     renderOperatorDb();
@@ -3367,6 +3416,154 @@
     if(navTarget && navTarget.x != null){ x.strokeStyle='#00d9ff'; x.lineWidth=2; x.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.max(4,sx*3),Math.max(4,sy*3)); }
     x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
   }
+
+
+  // v92: Gamepad API support for Xbox / PlayStation / Switch-style controllers.
+  // Browsers expose most modern pads through the standard mapping, so this auto-detects
+  // the controller name for labels while keeping a safe universal fallback.
+  const ControllerManager = {
+    activeIndex: null,
+    profile: 'Generic Controller',
+    id: '',
+    connected: false,
+    ready: false,
+    lastButtons: {},
+    lastMoveAt: 0,
+    lastMoveDir: '',
+    deadzone: 0.42,
+    moveDelay: 170,
+    init(){
+      if(this.ready) return;
+      this.ready = true;
+      if(!('getGamepads' in navigator)) return;
+      window.addEventListener('gamepadconnected', e => this.connect(e.gamepad));
+      window.addEventListener('gamepaddisconnected', e => {
+        if(this.activeIndex === e.gamepad.index){
+          this.connected = false;
+          this.activeIndex = null;
+          this.id = '';
+          this.profile = 'Generic Controller';
+          toast('Controller disconnected.');
+          renderAll();
+        }
+      });
+      this.scan();
+      requestAnimationFrame(() => this.loop());
+    },
+    scan(){
+      const pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
+      const pad = pads.find(p => p.connected);
+      if(pad) this.connect(pad, true);
+    },
+    connect(pad, quiet=false){
+      if(!pad) return;
+      this.activeIndex = pad.index;
+      this.connected = true;
+      this.id = pad.id || 'Controller';
+      this.profile = this.detectProfile(this.id);
+      if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); }
+    },
+    detectProfile(id=''){
+      const name = id.toLowerCase();
+      if(/dualsense|dualshock|playstation|wireless controller|ps4|ps5/.test(name)) return 'PlayStation Controller';
+      if(/xbox|xinput|microsoft/.test(name)) return 'Xbox Controller';
+      if(/switch|joy-con|joycon|pro controller|nintendo/.test(name)) return 'Switch Controller';
+      return 'Generic Controller';
+    },
+    labels(){
+      const p=this.profile;
+      if(/PlayStation/.test(p)) return {south:'Cross', east:'Circle', west:'Square', north:'Triangle', start:'Options', select:'Share'};
+      if(/Switch/.test(p)) return {south:'B', east:'A', west:'Y', north:'X', start:'+', select:'-'};
+      if(/Xbox/.test(p)) return {south:'A', east:'B', west:'X', north:'Y', start:'Menu', select:'View'};
+      return {south:'Button 1', east:'Button 2', west:'Button 3', north:'Button 4', start:'Start', select:'Select'};
+    },
+    statusText(){
+      if(!('getGamepads' in navigator)) return 'Not supported by this browser';
+      const pad=this.currentPad();
+      if(!pad) return 'No controller detected';
+      const l=this.labels();
+      return `${this.profile} // Move: left stick/D-pad // ${l.south}: interact/attack // ${l.east}: back/guard/med // ${l.west}: EP cell // ${l.north}: ping/overdrive // ${l.select}: QA console`;
+    },
+    currentPad(){
+      const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+      if(this.activeIndex != null && pads[this.activeIndex]) return pads[this.activeIndex];
+      const pad = Array.from(pads).find(Boolean);
+      if(pad) this.connect(pad, true);
+      return pad || null;
+    },
+    pressed(pad, index){
+      const b = pad && pad.buttons && pad.buttons[index];
+      return !!b && (b.pressed || b.value > 0.55);
+    },
+    justPressed(pad, index){
+      const now = this.pressed(pad,index);
+      const was = !!this.lastButtons[index];
+      this.lastButtons[index] = now;
+      return now && !was;
+    },
+    movement(pad){
+      let dx=0, dy=0;
+      if(this.pressed(pad,14)) dx=-1;
+      else if(this.pressed(pad,15)) dx=1;
+      if(this.pressed(pad,12)) dy=-1;
+      else if(this.pressed(pad,13)) dy=1;
+      const ax = pad.axes?.[0] || 0;
+      const ay = pad.axes?.[1] || 0;
+      if(!dx && Math.abs(ax) > this.deadzone) dx = ax > 0 ? 1 : -1;
+      if(!dy && Math.abs(ay) > this.deadzone) dy = ay > 0 ? 1 : -1;
+      if(dx && dy){ if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0; }
+      return {dx,dy,key:`${dx},${dy}`};
+    },
+    loop(){
+      const pad=this.currentPad();
+      if(pad){
+        if(!this.connected) this.connect(pad, true);
+        this.handle(pad);
+      }
+      requestAnimationFrame(() => this.loop());
+    },
+    handle(pad){
+      const bootOpen = !$('bootScreen').classList.contains('hidden');
+      const menuOpen = !$('mainMenu').classList.contains('hidden');
+      const appOpen = !$('app').classList.contains('hidden');
+      const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
+      const battleOpen = battle && !$('battleOverlay').classList.contains('hidden');
+      const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3);
+      const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
+
+      if(bootOpen && (south || start)){ showMenu(); return; }
+      if(menuOpen && (south || start)){ startGame(false); return; }
+      if(select){ openOverlay('playtestOverlay'); return; }
+      if(overlayOpen && (east || start)){ closeOverlays(); return; }
+
+      if(battleOpen){
+        if(south){ playerAttack(0); return; }
+        if(west || lb){ playerAttack(1); return; }
+        if(north || rb){ useOverdriveBattle(); return; }
+        if(east){ guardBattle(); return; }
+        if(this.justPressed(pad,6)){ playerAttack(2); return; }
+        if(this.justPressed(pad,7)){ useVectorCellBattle(); return; }
+        return;
+      }
+      if(!appOpen || overlayOpen || storyActive) return;
+
+      const mv=this.movement(pad);
+      const now=performance.now();
+      if((mv.dx || mv.dy) && (mv.key !== this.lastMoveDir || now-this.lastMoveAt > this.moveDelay)){
+        this.lastMoveDir = mv.key;
+        this.lastMoveAt = now;
+        tryMove(mv.dx,mv.dy);
+        return;
+      }
+      if(!mv.dx && !mv.dy){ this.lastMoveDir=''; }
+      if(south){ interactNearbyNpc(); return; }
+      if(east){ useMedPatch(); return; }
+      if(west){ useVectorCell(); return; }
+      if(north){ showObjectivePing(); return; }
+      if(start){ openOverlay('missionOverlay'); return; }
+    }
+  };
+
   function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); applyAudioSettings(); }
   let autosaveStarted=false;
   function startAutosave(){
@@ -3480,12 +3677,12 @@
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
-    bindMobileMoveButtons(); setupMobilePlayability();
+    bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

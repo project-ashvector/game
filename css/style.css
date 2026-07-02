@@ -1235,3 +1235,18 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
   body.game-active .fs-persistent-stats{font-size:9px!important;gap:5px!important;padding:4px 6px!important}
   body.game-active .objective-tracker{display:none!important}
 }
+
+/* v92: controller QA, level testing, and tighter mobile HUD */
+.qa-level-picker{display:grid;gap:9px;margin:10px 0 14px;padding:10px;border:1px solid rgba(112,215,255,.22);border-radius:14px;background:rgba(3,7,12,.55)}
+.qa-level-picker label{display:grid;gap:3px;color:#eafcff}
+.qa-level-picker label span{color:var(--muted);font-size:.82rem}
+.qa-level-row{display:grid;grid-template-columns:minmax(80px,1fr) auto;gap:8px;align-items:center}
+.qa-level-row input{width:100%;min-height:42px;background:#05080d;color:#edfaff;border:1px solid rgba(112,215,255,.35);border-radius:10px;padding:8px;font:inherit}
+@media (max-width:900px), (pointer:coarse){
+  body.game-active .fs-persistent-stats{top:env(safe-area-inset-top)!important;right:calc(env(safe-area-inset-right) + 4px)!important;left:auto!important;transform:scale(.94)!important;transform-origin:top right!important;opacity:.82!important;padding:3px 6px!important;gap:5px!important;border-radius:10px!important;pointer-events:none!important;background:rgba(3,7,12,.46)!important}
+  body.game-active .fullscreen-quickbar{top:calc(env(safe-area-inset-top) + 31px)!important}
+  body.game-active .objective-tracker{top:calc(env(safe-area-inset-top) + 28px)!important}
+}
+@media (max-width:420px) and (orientation:portrait){
+  body.game-active .fs-persistent-stats{transform:scale(.88)!important;font-size:8px!important;max-width:calc(100vw - 8px)!important}
+}
