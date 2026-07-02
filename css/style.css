@@ -1250,3 +1250,72 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
 @media (max-width:420px) and (orientation:portrait){
   body.game-active .fs-persistent-stats{transform:scale(.88)!important;font-size:8px!important;max-width:calc(100vw - 8px)!important}
 }
+
+/* v93: controller-readable combat / pre-battle menu focus */
+.controller-glyph{
+  display:inline-grid;
+  place-items:center;
+  min-width:30px;
+  height:24px;
+  margin-right:8px;
+  padding:0 7px;
+  border:1px solid rgba(112,215,255,.55);
+  border-radius:999px;
+  background:rgba(0,217,255,.10);
+  color:#8ff0ff;
+  font-weight:800;
+  font-size:11px;
+  line-height:1;
+  box-shadow:0 0 10px rgba(0,217,255,.15);
+}
+.attacks button{
+  position:relative;
+  display:grid!important;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:auto auto;
+  align-items:center;
+  column-gap:4px;
+}
+.attacks button .controller-glyph{grid-row:1 / span 2;}
+.attacks button.controller-selected,
+.story-actions button.controller-selected{
+  border-color:#70d7ff!important;
+  box-shadow:0 0 0 2px rgba(112,215,255,.25),0 0 22px rgba(112,215,255,.32)!important;
+  transform:translateY(-1px);
+}
+.attacks button.controller-selected:before,
+.story-actions button.controller-selected:before{
+  content:'▶';
+  position:absolute;
+  left:-18px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#70d7ff;
+  text-shadow:0 0 12px rgba(112,215,255,.9);
+}
+.battle-controller-hint,
+.controller-menu-hint{
+  grid-column:1 / -1;
+  margin:4px 0 0;
+  padding:8px 10px;
+  border:1px solid rgba(112,215,255,.18);
+  background:rgba(0,217,255,.06);
+  color:#b9d8e6;
+  font-size:11px;
+  line-height:1.35;
+}
+.controller-menu-hint b,
+.battle-controller-hint b{color:#70d7ff;}
+.pre-battle-actions button{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.pre-battle-actions button b{font-size:inherit;}
+@media(max-width:760px){
+  .controller-glyph{min-width:25px;height:21px;font-size:9px;margin-right:4px;padding:0 5px;}
+  .battle-controller-hint,.controller-menu-hint{font-size:10px;padding:6px;}
+  .attacks button.controller-selected:before,.story-actions button.controller-selected:before{left:-12px;}
+}

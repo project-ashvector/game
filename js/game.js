@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.2 // CONTROLLER QA PASS',
+    'Version 0.9.3 // CONTROLLER BATTLE MENU PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.2';
+  const BUILD_VERSION = '0.9.3';
   const MAP_VERSION = 'sector_stage_v8';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
@@ -1992,6 +1992,8 @@
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
+  let battleCommandIndex = 0;
+  let preBattleCommandIndex = 0;
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
@@ -2020,7 +2022,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.2 controller QA pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.3 controller battle menu pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2194,20 +2196,58 @@
     let overlay=$('preBattleOverlay');
     if(!overlay){
       overlay=document.createElement('div'); overlay.id='preBattleOverlay'; overlay.className='overlay pre-battle-overlay hidden';
-      overlay.innerHTML=`<div class="pre-battle-card avos-crt"><button id="preBattleBack" class="modal-close">Back Out</button><div class="db-header"><div id="preBattleHeader">ANOMALY CONTACT</div><div>PRE-BATTLE SCAN</div></div><div class="pre-battle-layout"><img id="preBattleImg" alt="enemy preview"><section><div class="record-kicker" id="preBattleKicker"></div><h2 id="preBattleName"></h2><p id="preBattleText"></p><div id="preBattleStats" class="record-grid"></div><div class="story-actions"><button id="preBattleStart">Engage</button><button id="preBattleCancel">Retreat</button></div></section></div></div>`;
+      overlay.innerHTML=`<div class="pre-battle-card avos-crt"><button id="preBattleBack" class="modal-close">Back Out</button><div class="db-header"><div id="preBattleHeader">ANOMALY CONTACT</div><div>PRE-BATTLE SCAN</div></div><div class="pre-battle-layout"><img id="preBattleImg" alt="enemy preview"><section><div class="record-kicker" id="preBattleKicker"></div><h2 id="preBattleName"></h2><p id="preBattleText"></p><p id="preBattleControllerHint" class="controller-menu-hint"></p><div id="preBattleStats" class="record-grid"></div><div class="story-actions pre-battle-actions"><button id="preBattleStart" data-controller-select="0">Engage</button><button id="preBattleCancel" data-controller-select="1">Retreat</button></div></section></div></div>`;
       document.body.appendChild(overlay);
-      $('preBattleBack').onclick=$('preBattleCancel').onclick=()=>{overlay.classList.add('hidden'); uiState.mode='game'; AudioManager.play(activeMusicForState()); renderAll();};
+      $('preBattleBack').onclick=$('preBattleCancel').onclick=closePreBattleDialog;
     }
     const s=combatStatBlock();
+    const labels=safeControllerLabels();
     $('preBattleHeader').textContent=code==='B'?'BOSS CONTACT':'ANOMALY CONTACT';
     $('preBattleImg').src=def.img;
     $('preBattleKicker').textContent=`${stage.id} // ${code==='B'?'BOSS CLASS':'HOSTILE ENTITY'}`;
     $('preBattleName').textContent=def.name;
     $('preBattleText').textContent=def.note || (code==='B'?'AVOS: Boss-class signature confirmed. This is where confidence gets expensive.':'AVOS: Hostile signature ahead. Verify HP, pick a training focus, then make it regret spawning.');
+    if($('preBattleControllerHint')) $('preBattleControllerHint').innerHTML=`Controller: <b>D-pad / left stick</b> selects // <b>${safeHtml(labels.south)}</b> confirm // <b>${safeHtml(labels.east)}</b> retreat`;
+    $('preBattleStart').innerHTML=`<span class="controller-glyph">${safeHtml(labels.south)}</span><b>Engage</b>`;
+    $('preBattleCancel').innerHTML=`<span class="controller-glyph">${safeHtml(labels.east)}</span><b>Retreat</b>`;
     const research=researchLineForCreature({id:def.id,name:def.name,type:code==='B'?'Boss':'Anomaly'});
     $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
-    $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); startBattle(code,x,y);};
+    $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); overlay.style.display=''; startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
+    preBattleCommandIndex = 0;
+    updatePreBattleCommandFocus();
+  }
+  function closePreBattleDialog(){
+    const overlay=$('preBattleOverlay');
+    if(overlay){ overlay.classList.add('hidden'); overlay.style.display=''; }
+    uiState.mode='game';
+    AudioManager.play(activeMusicForState());
+    renderAll();
+  }
+  function preBattleButtons(){
+    const overlay=$('preBattleOverlay');
+    if(!overlay || overlay.classList.contains('hidden')) return [];
+    return Array.from(overlay.querySelectorAll('#preBattleStart,#preBattleCancel'));
+  }
+  function updatePreBattleCommandFocus(){
+    const buttons=preBattleButtons();
+    if(!buttons.length) return;
+    preBattleCommandIndex=Math.max(0, Math.min(buttons.length-1, preBattleCommandIndex));
+    buttons.forEach((btn,i)=>{ btn.classList.toggle('controller-selected', i===preBattleCommandIndex); btn.setAttribute('aria-selected', i===preBattleCommandIndex?'true':'false'); });
+    try{ buttons[preBattleCommandIndex].focus({preventScroll:true}); }catch(err){}
+  }
+  function movePreBattleCommand(dx=0,dy=0){
+    const buttons=preBattleButtons();
+    if(!buttons.length) return;
+    const delta = dx || dy;
+    if(!delta) return;
+    preBattleCommandIndex = (preBattleCommandIndex + (delta>0?1:-1) + buttons.length) % buttons.length;
+    updatePreBattleCommandFocus();
+  }
+  function selectPreBattleCommand(){
+    const buttons=preBattleButtons();
+    if(!buttons.length) return;
+    buttons[preBattleCommandIndex]?.click();
   }
   function addItem(name,n=1){state.inventory[name]=(state.inventory[name]||0)+n; SfxManager.item(); queueAutosave();}
   function addCredits(n){state.player.credits+=n; queueAutosave();}
@@ -2543,6 +2583,7 @@
     const scale = Math.max(1, stage.levelReq);
     if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
     battle={code,x,y,enemy:def,turn:'player',guard:false,enemyStatus:{},playerStatus:{},evadeNext:false};
+    battleCommandIndex = 0;
     uiState.mode='combat'; AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
     if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
@@ -2572,35 +2613,77 @@
       <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>`;
     $('attackButtons').innerHTML='';
-    attacks.forEach((a,i)=>{
-      let b=document.createElement('button');
-      const cost=Math.max(0,a.ep-mod.epDiscount);
-      b.innerHTML=`<b>${a.name}</b><span>${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}</span>`;
-      b.disabled=state.player.ep<cost;
-      b.onclick=()=>playerAttack(i);
+    const labels=safeControllerLabels();
+    const controllerDirect=[labels.south, labels.west, 'L2/ZL/LT', 'D-pad + '+labels.south];
+    const addCommandButton=(className, glyph, title, meta, disabled, action)=>{
+      const b=document.createElement('button');
+      if(className) b.className=className;
+      b.innerHTML=`<span class="controller-glyph">${safeHtml(glyph)}</span><b>${safeHtml(title)}</b><span>${safeHtml(meta)}</span>`;
+      b.disabled=!!disabled;
+      b.onclick=action;
       $('attackButtons').appendChild(b);
+      return b;
+    };
+    attacks.forEach((a,i)=>{
+      const cost=Math.max(0,a.ep-mod.epDiscount);
+      addCommandButton('', controllerDirect[i], a.name, `${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}`, state.player.ep<cost || battle.turn!=='player', ()=>playerAttack(i));
     });
     const cellQty=state.inventory['Vector Cell']||0;
-    const cell=document.createElement('button');
-    cell.className='battle-item-button';
-    cell.innerHTML=`<b>Use Vector Cell</b><span>${cellQty} owned // Restore EP</span>`;
-    cell.disabled=!cellQty || state.player.ep>=epMax || battle.turn!=='player';
-    cell.onclick=useVectorCellBattle;
-    $('attackButtons').appendChild(cell);
-
-    const guard=document.createElement('button');
-    guard.className='battle-guard-button';
-    guard.innerHTML=`<b>Guard</b><span>G // block next hit + regain 2 EP</span>`;
-    guard.disabled=battle.turn!=='player';
-    guard.onclick=guardBattle;
-    $('attackButtons').appendChild(guard);
-
-    const overdrive=document.createElement('button');
-    overdrive.className='battle-overdrive-button';
-    overdrive.innerHTML=`<b>Null Vector Execution</b><span>5/U // Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}</span>`;
-    overdrive.disabled=battle.turn!=='player' || !overdriveReady();
-    overdrive.onclick=useOverdriveBattle;
-    $('attackButtons').appendChild(overdrive);
+    addCommandButton('battle-item-button', 'R2/ZR/RT', 'Use Vector Cell', `${cellQty} owned // Restore EP`, !cellQty || state.player.ep>=epMax || battle.turn!=='player', useVectorCellBattle);
+    addCommandButton('battle-guard-button', labels.east, 'Guard', `block next hit + regain 2 EP`, battle.turn!=='player', guardBattle);
+    addCommandButton('battle-overdrive-button', labels.north, 'Null Vector Execution', `Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}`, battle.turn!=='player' || !overdriveReady(), useOverdriveBattle);
+    const hint=document.createElement('div');
+    hint.id='battleControllerHint';
+    hint.className='battle-controller-hint';
+    hint.innerHTML=`<b>D-pad / left stick</b> move cursor // <b>${safeHtml(labels.south)}</b> choose highlighted // shortcuts still work`;
+    $('attackButtons').appendChild(hint);
+    updateBattleCommandFocus();
+  }
+  function safeControllerLabels(){
+    const fallback={south:'A', east:'B', west:'X', north:'Y', start:'Start', select:'View'};
+    const mgr=window.AV && window.AV.ControllerManager;
+    try{ return (mgr && mgr.labels) ? mgr.labels() : fallback; }catch(err){ return fallback; }
+  }
+  function battleCommandButtons(){
+    const root=$('attackButtons');
+    if(!root) return [];
+    return Array.from(root.querySelectorAll('button'));
+  }
+  function updateBattleCommandFocus(){
+    const buttons=battleCommandButtons();
+    if(!buttons.length) return;
+    if(battleCommandIndex >= buttons.length) battleCommandIndex = Math.max(0, buttons.length-1);
+    if(battleCommandIndex < 0) battleCommandIndex = 0;
+    buttons.forEach((btn,i)=>{ btn.classList.toggle('controller-selected', i===battleCommandIndex); btn.setAttribute('aria-selected', i===battleCommandIndex?'true':'false'); });
+    if(battle && battle.turn === 'player'){
+      try{ buttons[battleCommandIndex]?.focus({preventScroll:true}); }catch(err){}
+    }
+  }
+  function moveBattleCommand(dx=0,dy=0){
+    const buttons=battleCommandButtons();
+    if(!buttons.length || !battle || battle.turn!=='player') return;
+    const cols=2;
+    let next=battleCommandIndex;
+    if(dx) next += dx;
+    if(dy) next += dy*cols;
+    next = (next % buttons.length + buttons.length) % buttons.length;
+    for(let attempts=0; attempts<buttons.length; attempts++){
+      if(!buttons[next].disabled) break;
+      next = (next + (dx<0 || dy<0 ? -1 : 1) + buttons.length) % buttons.length;
+    }
+    battleCommandIndex=next;
+    updateBattleCommandFocus();
+  }
+  function selectBattleCommand(){
+    const buttons=battleCommandButtons();
+    const btn=buttons[battleCommandIndex];
+    if(!btn) return;
+    if(btn.disabled){ toast('That combat protocol is unavailable.'); updateBattleCommandFocus(); return; }
+    btn.click();
+  }
+  function triggerBattleCommand(index){
+    const buttons=battleCommandButtons();
+    if(buttons[index]){ battleCommandIndex=index; updateBattleCommandFocus(); selectBattleCommand(); }
   }
   function playerAttack(i){
     if(!battle||battle.turn!=='player')return;
@@ -3430,8 +3513,11 @@
     lastButtons: {},
     lastMoveAt: 0,
     lastMoveDir: '',
+    lastNavAt: 0,
+    lastNavDir: '',
     deadzone: 0.42,
     moveDelay: 170,
+    navDelay: 165,
     init(){
       if(this.ready) return;
       this.ready = true;
@@ -3461,6 +3547,7 @@
       this.connected = true;
       this.id = pad.id || 'Controller';
       this.profile = this.detectProfile(this.id);
+      if(battle) renderBattle();
       if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); }
     },
     detectProfile(id=''){
@@ -3482,7 +3569,7 @@
       const pad=this.currentPad();
       if(!pad) return 'No controller detected';
       const l=this.labels();
-      return `${this.profile} // Move: left stick/D-pad // ${l.south}: interact/attack // ${l.east}: back/guard/med // ${l.west}: EP cell // ${l.north}: ping/overdrive // ${l.select}: QA console`;
+      return `${this.profile} // Move: left stick/D-pad // ${l.south}: choose/interact // ${l.east}: back/guard/med // ${l.west}: second attack/EP // ${l.north}: ping/overdrive // ${l.select}: QA console`;
     },
     currentPad(){
       const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -3514,6 +3601,17 @@
       if(dx && dy){ if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0; }
       return {dx,dy,key:`${dx},${dy}`};
     },
+    navMove(pad){
+      const mv=this.movement(pad);
+      const now=performance.now();
+      if((mv.dx || mv.dy) && (mv.key !== this.lastNavDir || now-this.lastNavAt > this.navDelay)){
+        this.lastNavDir = mv.key;
+        this.lastNavAt = now;
+        return mv;
+      }
+      if(!mv.dx && !mv.dy) this.lastNavDir='';
+      return null;
+    },
     loop(){
       const pad=this.currentPad();
       if(pad){
@@ -3527,24 +3625,36 @@
       const menuOpen = !$('mainMenu').classList.contains('hidden');
       const appOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
+      const preBattleOpen = $('preBattleOverlay') && !$('preBattleOverlay').classList.contains('hidden');
       const battleOpen = battle && !$('battleOverlay').classList.contains('hidden');
       const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3);
-      const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
+      const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), lt=this.justPressed(pad,6), rt=this.justPressed(pad,7), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
 
       if(bootOpen && (south || start)){ showMenu(); return; }
       if(menuOpen && (south || start)){ startGame(false); return; }
-      if(select){ openOverlay('playtestOverlay'); return; }
-      if(overlayOpen && (east || start)){ closeOverlays(); return; }
+      if(select && !battleOpen && !preBattleOpen){ openOverlay('playtestOverlay'); return; }
 
-      if(battleOpen){
-        if(south){ playerAttack(0); return; }
-        if(west || lb){ playerAttack(1); return; }
-        if(north || rb){ useOverdriveBattle(); return; }
-        if(east){ guardBattle(); return; }
-        if(this.justPressed(pad,6)){ playerAttack(2); return; }
-        if(this.justPressed(pad,7)){ useVectorCellBattle(); return; }
+      if(preBattleOpen){
+        const nav=this.navMove(pad);
+        if(nav){ movePreBattleCommand(nav.dx, nav.dy); return; }
+        if(south || start){ selectPreBattleCommand(); return; }
+        if(east){ closePreBattleDialog(); return; }
         return;
       }
+
+      if(battleOpen){
+        const nav=this.navMove(pad);
+        if(nav){ moveBattleCommand(nav.dx, nav.dy); return; }
+        if(south || start){ selectBattleCommand(); return; }
+        if(west || lb){ triggerBattleCommand(1); return; }
+        if(lt){ triggerBattleCommand(2); return; }
+        if(rt){ triggerBattleCommand(4); return; }
+        if(north || rb){ triggerBattleCommand(6); return; }
+        if(east){ triggerBattleCommand(5); return; }
+        return;
+      }
+
+      if(overlayOpen && (east || start)){ closeOverlays(); return; }
       if(!appOpen || overlayOpen || storyActive) return;
 
       const mv=this.movement(pad);
