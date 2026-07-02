@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.8 // F-001 FORBIDDEN GRAVEYARD',
+    'Version 0.8.9 // MAP CLARITY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.8';
+  const BUILD_VERSION = '0.8.9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -742,7 +742,10 @@
       terminal: 'assets/tilesets/forbidden/lantern_01.png',
       door: 'assets/tilesets/forbidden/stone_fence_01.png',
       exit: 'assets/tilesets/forbidden/signpost_01.png',
-      floorTint: 'rgba(24, 18, 32, .30)',
+      floorTint: 'rgba(24, 18, 32, .22)',
+      pathTint: 'rgba(86, 55, 122, .16)',
+      wallTint: 'rgba(13, 9, 18, .78)',
+      wallEdge: 'rgba(160, 118, 255, .30)',
       props: [
         {x:3,y:3,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},
         {x:8,y:4,img:'assets/tilesets/forbidden/headstone_03.png',w:36,h:40},
@@ -768,7 +771,10 @@
         'assets/tilesets/cursed/jaws_plant_01.png',
         'assets/tilesets/cursed/spike_plant_01.png'
       ],
-      floorTint: 'rgba(70, 19, 24, .22)',
+      floorTint: 'rgba(70, 19, 24, .18)',
+      pathTint: 'rgba(255, 120, 62, .13)',
+      wallTint: 'rgba(24, 9, 12, .78)',
+      wallEdge: 'rgba(255, 122, 66, .28)',
       props: [
         {x:5,y:4,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},
         {x:20,y:6,img:'assets/tilesets/cursed/tentacle_plant_01.png',w:52,h:48},
@@ -792,7 +798,10 @@
         'assets/tilesets/undead/grave_01.png',
         'assets/tilesets/undead/grave_02.png'
       ],
-      floorTint: 'rgba(18, 22, 34, .30)',
+      floorTint: 'rgba(18, 22, 34, .20)',
+      pathTint: 'rgba(95, 140, 255, .13)',
+      wallTint: 'rgba(8, 11, 18, .80)',
+      wallEdge: 'rgba(120, 170, 255, .26)',
       props: [
         {x:5,y:3,img:'assets/tilesets/undead/bones_01.png',w:44,h:34},
         {x:16,y:3,img:'assets/tilesets/undead/grave_01.png',w:38,h:40},
@@ -811,6 +820,57 @@
       pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit,
       ...((pack.props || []).map(p => p.img))
     ]).filter(Boolean);
+  }
+
+  // v89: readability helpers. The imported tilesets look good, but random large props
+  // on every wall made the maps feel messy. These helpers keep walkable paths,
+  // blocked tiles, and interactables visually obvious on every stage.
+  function hasWalkableNeighbor(tx,ty){
+    return [[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy]) => {
+      const c = tileAt(tx+dx, ty+dy);
+      return c && c !== '#' && c !== 'D';
+    });
+  }
+  function tileCenter(x,y){ return {cx:x+TILE/2, cy:y+TILE/2}; }
+  function drawPathOverlay(x,y,tx,ty,c){
+    const pack = stageVisualPack();
+    const alpha = c === '.' ? .18 : .10;
+    ctx.fillStyle = (pack && pack.pathTint) || `rgba(0,217,255,${alpha})`;
+    ctx.fillRect(x+2,y+2,TILE-4,TILE-4);
+    if((tx + ty) % 2 === 0){
+      ctx.fillStyle='rgba(255,255,255,.035)';
+      ctx.fillRect(x+5,y+5,TILE-10,TILE-10);
+    }
+  }
+  function drawWallBase(x,y,tx,ty){
+    const pack = stageVisualPack();
+    ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.76)';
+    ctx.fillRect(x,y,TILE,TILE);
+    ctx.strokeStyle = (pack && pack.wallEdge) || 'rgba(0,217,255,.18)';
+    ctx.lineWidth = hasWalkableNeighbor(tx,ty) ? 2 : 1;
+    ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
+  }
+  function drawInteractMarker(label,x,y,color='rgba(0,217,255,.9)'){
+    const {cx,cy}=tileCenter(x,y);
+    ctx.save();
+    ctx.shadowColor=color;
+    ctx.shadowBlur=12;
+    ctx.strokeStyle=color;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.arc(cx,cy,17,0,Math.PI*2);
+    ctx.stroke();
+    ctx.fillStyle='rgba(3,7,12,.72)';
+    ctx.beginPath();
+    ctx.arc(cx,cy,12,0,Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.font='700 11px Orbitron, Arial, sans-serif';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillStyle='#f6fbff';
+    ctx.fillText(label,cx,cy+1);
+    ctx.restore();
   }
 
   function imgFor(path){ return images[path]; }
@@ -2695,25 +2755,46 @@
       const floor=((tx+ty)%2)?'#263421':'#304028'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE);
     }
     if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
-    ctx.strokeStyle='rgba(0,0,0,.16)'; ctx.strokeRect(x,y,TILE,TILE);
+
+    // v89: make the route readable first, then draw art on top.
+    // Walkable spaces now have a subtle path overlay; walls use a consistent dark base.
+    if(c !== '#') drawPathOverlay(x,y,tx,ty,c);
+    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.strokeRect(x,y,TILE,TILE);
+
     if(c==='#'){
-      const blockList = (pack && pack.blocked && pack.blocked.length) ? pack.blocked : mapArt.blocked;
-      const block = pickAsset(blockList,tx,ty);
-      const big = /tree|ruins|plant|jaws|tentacle|dead|crypt|fence|headstone/i.test(block);
-      drawAsset(block,x,y,big?70:48,big?82:42,true) || (ctx.fillStyle='rgba(60,70,50,.55)',ctx.beginPath(),ctx.arc(x+TILE/2,y+TILE/2,16,0,Math.PI*2),ctx.fill());
+      drawWallBase(x,y,tx,ty);
+      const edgeWall = hasWalkableNeighbor(tx,ty);
+      const shouldDecorate = edgeWall || ((tx*17 + ty*23) % 7 === 0);
+      if(shouldDecorate){
+        const blockList = (pack && pack.blocked && pack.blocked.length) ? pack.blocked : mapArt.blocked;
+        const block = pickAsset(blockList,tx,ty);
+        // Keep blockers inside/near their own tile so trees/crypts do not hide paths or caches.
+        const wide = /tree|crypt|ruins|jaws|plant|dead/i.test(block);
+        const w = wide ? 48 : 42;
+        const h = wide ? 52 : 42;
+        if(!drawAsset(block,x,y,w,h,true)){
+          ctx.fillStyle='rgba(35,42,50,.88)';ctx.fillRect(x+5,y+5,TILE-10,TILE-10);
+        }
+      }
+      ctx.fillStyle='rgba(0,0,0,.20)'; ctx.fillRect(x,y,TILE,TILE);
+      return;
     }
+
     if(c==='C'){
-      if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
+      if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
+      drawInteractMarker('C',x,y,'rgba(255,202,69,.95)');
     }
     if(c==='S'){
-      if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,46,64,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
-      ctx.fillStyle='rgba(112,215,255,.85)'; ctx.fillRect(x+15,y+31,12,3);
+      if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,38,48,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
+      drawInteractMarker('S',x,y,'rgba(112,215,255,.95)');
     }
     if(c==='H'){
-      if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,34,34,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
+      if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,32,32,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
+      drawInteractMarker('H',x,y,'rgba(89,255,160,.95)');
     }
     if(c==='L'){
-      if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,34,52,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+      if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,32,44,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+      drawInteractMarker('L',x,y,'rgba(210,168,255,.95)');
     }
     if(c==='E'||c==='B'){
       const im = getMapCreatureImage(c,tx,ty);
@@ -2721,25 +2802,29 @@
         ctx.save();
         ctx.shadowColor = c==='B' ? '#ff3048' : '#bd1f2d';
         ctx.shadowBlur = c==='B' ? 16 : 10;
-        ctx.drawImage(im, x+4, y+4, TILE-8, TILE-8);
+        ctx.drawImage(im, x+5, y+5, TILE-10, TILE-10);
         ctx.restore();
-        ctx.strokeStyle = c==='B' ? '#ff3048' : '#bd1f2d';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x+3,y+3,TILE-6,TILE-6);
       } else {
         ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+21,y+21,c==='B'?18:14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
       }
+      drawInteractMarker(c==='B'?'B':'E',x,y,c==='B'?'rgba(255,48,72,.98)':'rgba(255,87,112,.94)');
     }
     if(c==='D'){
-      if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,52,24,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
+      if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,42,32,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
+      drawInteractMarker('D',x,y,'rgba(255,184,64,.95)');
     }
     if(c==='X'){
-      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,34,54,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,32,46,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+      drawInteractMarker('X',x,y,'rgba(255,255,255,.98)');
     }
   }
   function renderMini(){
     const w=state.map[0].length,h=state.map.length; mctx.clearRect(0,0,mini.width,mini.height); const sx=mini.width/w, sy=mini.height/h;
-    for(let y=0;y<h;y++) for(let x=0;x<w;x++){const c=tileAt(x,y); mctx.fillStyle=c==='#'?'#111':c==='C'?'#e0b64b':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#303842'; mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));}
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+      const c=tileAt(x,y);
+      mctx.fillStyle=c==='#'?'#05080c':c==='C'?'#e0b64b':c==='S'?'#70d7ff':c==='H'?'#59ffa0':c==='L'?'#d2a8ff':c==='D'?'#ffb840':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#31424c';
+      mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));
+    }
     stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
     const navTarget=objectiveTarget();
     if(navTarget && navTarget.x != null){ mctx.strokeStyle='#00d9ff'; mctx.lineWidth=2; mctx.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.ceil(sx*3),Math.ceil(sy*3)); }
