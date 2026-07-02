@@ -1327,7 +1327,7 @@ select.controller-menu-selected,input.controller-menu-selected{background:#10192
 body.game-active canvas#game{filter:brightness(.98) saturate(.88) contrast(1.05)!important;}
 body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0 0 42px rgba(112,215,255,.11)}
 
-/* v95: cinematic new-game opening story pass */
+/* v96: cinematic new-game opening story pass */
 .story-overlay[data-variant="opening"]{
   place-items:center;
   background:
