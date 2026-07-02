@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.3 // CONTROLLER BATTLE MENU PASS',
+    'Version 0.9.4 // CONTROLLER QA + LIGHTING PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,8 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.3';
-  const MAP_VERSION = 'sector_stage_v8';
+  const BUILD_VERSION = '0.9.4';
+  const MAP_VERSION = 'sector_stage_v9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -479,9 +479,11 @@
       stages: {
         // v75: Fermilat is deeper in each route now, closer to the boss side-path.
         // He is meant to feel like a weird optional NPC you find, not a spawn greeter.
-        f001: {x:30, y:22, scene:'fermilatF001'},
-        f002: {x:31, y:20, scene:'fermilatF002'},
-        f003: {x:27, y:21, scene:'fermilatF003'}
+        // v94: pulled Fermilat off critical one-tile routes. He is reachable from the main path
+        // without blocking the boss corridor or spawning inside wall art.
+        f001: {x:23, y:21, scene:'fermilatF001'},
+        f002: {x:24, y:21, scene:'fermilatF002'},
+        f003: {x:22, y:21, scene:'fermilatF003'}
       }
     }
   };
@@ -1678,7 +1680,12 @@
     state.player.level = Math.max(state.player.level || 1, def.levelReq || 1);
     syncHpCap();
     const ok = loadStage(key, {force:true});
-    if(ok) toast(`QA loaded ${def.id}.`);
+    if(ok){
+      state.qaUnlockAllStages = true;
+      Object.keys(STAGE_DEFS).forEach(k => { state.stages[k] ||= {unlocked:true,complete:false}; state.stages[k].unlocked = true; });
+      toast(`QA loaded ${def.id}. Level bypass is ON.`);
+      save(true);
+    }
     return ok;
   }
   function qaUnlockAllStages(){
@@ -1688,6 +1695,8 @@
       state.stages[key] ||= {unlocked:true,complete:false};
       state.stages[key].unlocked = true;
     });
+    const maxReq = Math.max(...Object.values(STAGE_DEFS).map(d => d.levelReq || 1));
+    if((state.player?.level || 1) < maxReq) qaSetPlayerLevel(maxReq);
     toast('QA bypass enabled: all levels unlocked.');
     renderAll();
     queueAutosave();
@@ -2022,7 +2031,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.3 controller battle menu pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.4 controller QA + lighting pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2172,7 +2181,7 @@
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
   function isBlocked(c){return c==='#' || c==='D';}
-  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); const npcBlock=npcAt(nx,ny); if(npcBlock){toast('Fermilat is blocking the route. Press E to talk.'); renderAll(); return;} if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll(); queueAutosave();}
+  function tryMove(dx,dy){if(storyActive) return; if(battle) return; state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down'; const nx=state.player.x+dx, ny=state.player.y+dy; const c=tileAt(nx,ny); const npcBlock=npcAt(nx,ny); if(npcBlock){toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return;} if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;} state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); renderAll(); queueAutosave();}
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
@@ -2614,7 +2623,8 @@
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>`;
     $('attackButtons').innerHTML='';
     const labels=safeControllerLabels();
-    const controllerDirect=[labels.south, labels.west, 'L2/ZL/LT', 'D-pad + '+labels.south];
+    // v94: four main battle attacks map to the four face buttons (Xbox A/B/X/Y, PS Cross/Circle/Square/Triangle, Switch B/A/Y/X).
+    const controllerDirect=[labels.south, labels.east, labels.west, labels.north];
     const addCommandButton=(className, glyph, title, meta, disabled, action)=>{
       const b=document.createElement('button');
       if(className) b.className=className;
@@ -2629,13 +2639,13 @@
       addCommandButton('', controllerDirect[i], a.name, `${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}`, state.player.ep<cost || battle.turn!=='player', ()=>playerAttack(i));
     });
     const cellQty=state.inventory['Vector Cell']||0;
-    addCommandButton('battle-item-button', 'R2/ZR/RT', 'Use Vector Cell', `${cellQty} owned // Restore EP`, !cellQty || state.player.ep>=epMax || battle.turn!=='player', useVectorCellBattle);
-    addCommandButton('battle-guard-button', labels.east, 'Guard', `block next hit + regain 2 EP`, battle.turn!=='player', guardBattle);
-    addCommandButton('battle-overdrive-button', labels.north, 'Null Vector Execution', `Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}`, battle.turn!=='player' || !overdriveReady(), useOverdriveBattle);
+    addCommandButton('battle-item-button', 'LT/L2/ZL', 'Use Vector Cell', `${cellQty} owned // Restore EP`, !cellQty || state.player.ep>=epMax || battle.turn!=='player', useVectorCellBattle);
+    addCommandButton('battle-guard-button', 'RB/R1/R', 'Guard', `block next hit + regain 2 EP`, battle.turn!=='player', guardBattle);
+    addCommandButton('battle-overdrive-button', 'RT/R2/ZR', 'Null Vector Execution', `Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}`, battle.turn!=='player' || !overdriveReady(), useOverdriveBattle);
     const hint=document.createElement('div');
     hint.id='battleControllerHint';
     hint.className='battle-controller-hint';
-    hint.innerHTML=`<b>D-pad / left stick</b> move cursor // <b>${safeHtml(labels.south)}</b> choose highlighted // shortcuts still work`;
+    hint.innerHTML=`Face buttons launch attacks: <b>${safeHtml(labels.south)}</b>/<b>${safeHtml(labels.east)}</b>/<b>${safeHtml(labels.west)}</b>/<b>${safeHtml(labels.north)}</b> // D-pad moves cursor // <b>${safeHtml(labels.start)}</b> chooses highlighted`;
     $('attackButtons').appendChild(hint);
     updateBattleCommandFocus();
   }
@@ -2903,26 +2913,46 @@
   }
 
   function drawMapAtmosphere(){
-    // v88: global fog/tint pass. Keeps imported tiles readable while making F-001 feel haunted.
-    const t = Date.now() * 0.00025;
+    // v94: brighter, directional lighting. The map keeps the horror mood, but the playable floor
+    // is no longer crushed into black and the player gets a readable light radius.
+    const t = Date.now() * 0.00032;
+    const stage = currentStageKey();
+    const tint = stage === 'f002'
+      ? {fog:'rgba(70,42,20,.18)', beam:'rgba(255,170,80,.075)', glow:'rgba(255,148,64,.22)'}
+      : stage === 'f003'
+        ? {fog:'rgba(16,22,54,.16)', beam:'rgba(130,190,255,.08)', glow:'rgba(112,215,255,.22)'}
+        : {fog:'rgba(16,18,34,.16)', beam:'rgba(160,230,210,.07)', glow:'rgba(150,255,210,.20)'};
     ctx.save();
-    ctx.fillStyle='rgba(5,10,15,.34)';
+    ctx.fillStyle=tint.fog;
     ctx.fillRect(0,0,VIEW_W,VIEW_H);
-    const vignette = ctx.createRadialGradient(VIEW_W/2, VIEW_H/2, VIEW_W*0.18, VIEW_W/2, VIEW_H/2, VIEW_W*0.72);
-    vignette.addColorStop(0,'rgba(0,0,0,0)');
-    vignette.addColorStop(0.62,'rgba(0,0,0,.18)');
-    vignette.addColorStop(1,'rgba(0,0,0,.58)');
-    ctx.fillStyle=vignette;
+
+    const px = state.player.x*TILE + TILE/2 - camera.x;
+    const py = state.player.y*TILE + TILE/2 - camera.y;
+    const light = ctx.createRadialGradient(px, py, 26, px, py, 250);
+    light.addColorStop(0,'rgba(255,255,255,.18)');
+    light.addColorStop(.32,tint.glow);
+    light.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.globalCompositeOperation='screen';
+    ctx.fillStyle=light;
     ctx.fillRect(0,0,VIEW_W,VIEW_H);
-    for(let i=0;i<7;i++){
-      const y=(i*91 + (t*70)%91) % (VIEW_H+80) - 40;
-      const grd=ctx.createLinearGradient(0,y,VIEW_W,y+42);
+
+    for(let i=0;i<8;i++){
+      const y=(i*83 + (t*90)%83) % (VIEW_H+80) - 40;
+      const grd=ctx.createLinearGradient(0,y,VIEW_W,y+46);
       grd.addColorStop(0,'rgba(120,190,190,0)');
-      grd.addColorStop(0.5,'rgba(120,190,190,.055)');
+      grd.addColorStop(0.5,tint.beam);
       grd.addColorStop(1,'rgba(120,190,190,0)');
       ctx.fillStyle=grd;
-      ctx.fillRect(0,y,VIEW_W,42);
+      ctx.fillRect(0,y,VIEW_W,46);
     }
+
+    ctx.globalCompositeOperation='source-over';
+    const vignette = ctx.createRadialGradient(VIEW_W/2, VIEW_H/2, VIEW_W*0.25, VIEW_W/2, VIEW_H/2, VIEW_W*0.78);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');
+    vignette.addColorStop(0.70,'rgba(0,0,0,.10)');
+    vignette.addColorStop(1,'rgba(0,0,0,.42)');
+    ctx.fillStyle=vignette;
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
     ctx.restore();
   }
 
@@ -3501,6 +3531,44 @@
   }
 
 
+
+  // v94: controller hover/confirm helpers for non-battle menus.
+  function isElementVisible(el){
+    if(!el || el.disabled) return false;
+    if(el.closest('.hidden')) return false;
+    const style = window.getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length > 0;
+  }
+  function visibleOverlayRoot(){
+    return Array.from(document.querySelectorAll('.overlay')).find(o => !o.classList.contains('hidden') && o.id !== 'battleOverlay' && o.id !== 'preBattleOverlay') || null;
+  }
+  function controllerMenuElements(root){
+    if(!root) return [];
+    const selector = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), [data-controller-menu]';
+    return Array.from(root.querySelectorAll(selector)).filter(isElementVisible);
+  }
+  function updateControllerMenuFocus(root, index=0){
+    const items = controllerMenuElements(root);
+    document.querySelectorAll('.controller-menu-selected').forEach(el => el.classList.remove('controller-menu-selected'));
+    if(!items.length) return {items, index:0};
+    const safeIndex = Math.max(0, Math.min(items.length-1, index));
+    const el = items[safeIndex];
+    el.classList.add('controller-menu-selected');
+    try{ el.focus({preventScroll:true}); }catch(err){}
+    return {items, index:safeIndex};
+  }
+  function activateControllerMenuElement(el){
+    if(!el) return false;
+    const tag = (el.tagName || '').toLowerCase();
+    if(tag === 'button' || el.getAttribute('role') === 'button'){ el.click(); return true; }
+    if(tag === 'select' || tag === 'input'){
+      try{ el.focus({preventScroll:true}); }catch(err){}
+      return true;
+    }
+    if(typeof el.click === 'function'){ el.click(); return true; }
+    return false;
+  }
+
   // v92: Gamepad API support for Xbox / PlayStation / Switch-style controllers.
   // Browsers expose most modern pads through the standard mapping, so this auto-detects
   // the controller name for labels while keeping a safe universal fallback.
@@ -3515,6 +3583,8 @@
     lastMoveDir: '',
     lastNavAt: 0,
     lastNavDir: '',
+    menuRoot: null,
+    menuIndex: 0,
     deadzone: 0.42,
     moveDelay: 170,
     navDelay: 165,
@@ -3569,7 +3639,7 @@
       const pad=this.currentPad();
       if(!pad) return 'No controller detected';
       const l=this.labels();
-      return `${this.profile} // Move: left stick/D-pad // ${l.south}: choose/interact // ${l.east}: back/guard/med // ${l.west}: second attack/EP // ${l.north}: ping/overdrive // ${l.select}: QA console`;
+      return `${this.profile} // Menus: D-pad hover + ${l.south} confirm // Battle: face buttons attack // ${l.select}: QA console`;
     },
     currentPad(){
       const pads = navigator.getGamepads ? navigator.getGamepads() : [];
@@ -3612,6 +3682,33 @@
       if(!mv.dx && !mv.dy) this.lastNavDir='';
       return null;
     },
+
+    controllerRootForState(menuOpen){
+      if(menuOpen) return $('mainMenu')?.querySelector('.menu-buttons') || $('mainMenu');
+      return visibleOverlayRoot();
+    },
+    moveMenuCursor(root, dy=1){
+      if(!root) return;
+      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
+      const items = controllerMenuElements(root);
+      if(!items.length) return;
+      this.menuIndex = (this.menuIndex + (dy >= 0 ? 1 : -1) + items.length) % items.length;
+      updateControllerMenuFocus(root, this.menuIndex);
+    },
+    confirmMenuCursor(root){
+      if(!root) return false;
+      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
+      const result = updateControllerMenuFocus(root, this.menuIndex);
+      this.menuIndex = result.index;
+      return activateControllerMenuElement(result.items[this.menuIndex]);
+    },
+    ensureMenuCursor(root){
+      if(!root) return;
+      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
+      const result = updateControllerMenuFocus(root, this.menuIndex);
+      this.menuIndex = result.index;
+    },
+
     loop(){
       const pad=this.currentPad();
       if(pad){
@@ -3631,8 +3728,15 @@
       const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), lt=this.justPressed(pad,6), rt=this.justPressed(pad,7), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
 
       if(bootOpen && (south || start)){ showMenu(); return; }
-      if(menuOpen && (south || start)){ startGame(false); return; }
-      if(select && !battleOpen && !preBattleOpen){ openOverlay('playtestOverlay'); return; }
+      if(menuOpen){
+        const root=this.controllerRootForState(true);
+        this.ensureMenuCursor(root);
+        const nav=this.navMove(pad);
+        if(nav){ this.moveMenuCursor(root, nav.dy || nav.dx || 1); return; }
+        if(south || start){ this.confirmMenuCursor(root); return; }
+        return;
+      }
+      if(select && !battleOpen && !preBattleOpen){ openOverlay('playtestOverlay'); this.menuRoot=null; this.menuIndex=0; return; }
 
       if(preBattleOpen){
         const nav=this.navMove(pad);
@@ -3645,17 +3749,28 @@
       if(battleOpen){
         const nav=this.navMove(pad);
         if(nav){ moveBattleCommand(nav.dx, nav.dy); return; }
-        if(south || start){ selectBattleCommand(); return; }
-        if(west || lb){ triggerBattleCommand(1); return; }
-        if(lt){ triggerBattleCommand(2); return; }
-        if(rt){ triggerBattleCommand(4); return; }
-        if(north || rb){ triggerBattleCommand(6); return; }
-        if(east){ triggerBattleCommand(5); return; }
+        // Battle is direct: the four face buttons map to the four main combat attacks.
+        if(south){ triggerBattleCommand(0); return; }
+        if(east){ triggerBattleCommand(1); return; }
+        if(west){ triggerBattleCommand(2); return; }
+        if(north){ triggerBattleCommand(3); return; }
+        if(lt || lb){ triggerBattleCommand(4); return; }
+        if(rb){ triggerBattleCommand(5); return; }
+        if(rt){ triggerBattleCommand(6); return; }
+        if(start){ selectBattleCommand(); return; }
         return;
       }
 
-      if(overlayOpen && (east || start)){ closeOverlays(); return; }
-      if(!appOpen || overlayOpen || storyActive) return;
+      if(overlayOpen){
+        const root=this.controllerRootForState(false);
+        this.ensureMenuCursor(root);
+        const nav=this.navMove(pad);
+        if(nav){ this.moveMenuCursor(root, nav.dy || nav.dx || 1); return; }
+        if(south){ this.confirmMenuCursor(root); return; }
+        if(east || start){ closeOverlays(); this.menuRoot=null; this.menuIndex=0; return; }
+        return;
+      }
+      if(!appOpen || storyActive) return;
 
       const mv=this.movement(pad);
       const now=performance.now();
@@ -3790,7 +3905,7 @@
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
   window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.

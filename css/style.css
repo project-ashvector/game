@@ -608,8 +608,8 @@ body{overflow:hidden!important;}
 #app{height:100dvh;overflow:hidden!important;}
 .layout{max-width:none!important;width:100vw!important;height:calc(100dvh - 55px)!important;margin:0!important;padding:10px!important;overflow:hidden!important;}
 .game-card{overflow:hidden!important;}
-canvas#game{filter:brightness(.78) saturate(.62) contrast(1.08);}
-.game-card:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,14,20,.18),rgba(7,14,20,.05) 50%,rgba(0,0,0,.20));mix-blend-mode:multiply;}
+canvas#game{filter:brightness(.94) saturate(.82) contrast(1.04);}
+.game-card:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(7,14,20,.08),rgba(7,14,20,.02) 50%,rgba(0,0,0,.10));mix-blend-mode:multiply;}
 .game-card{position:relative;}
 
 /* Main menu: no scrollbar, logo fully contained, protocol buttons always visible. */
@@ -1319,3 +1319,10 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
   .battle-controller-hint,.controller-menu-hint{font-size:10px;padding:6px;}
   .attacks button.controller-selected:before,.story-actions button.controller-selected:before{left:-12px;}
 }
+
+/* v94: controller hover focus for non-battle menus + brighter map readability */
+.controller-menu-selected{border-color:#70d7ff!important;box-shadow:0 0 0 2px rgba(112,215,255,.28),0 0 18px rgba(112,215,255,.30)!important;outline:none!important;transform:translateY(-1px);}
+select.controller-menu-selected,input.controller-menu-selected{background:#101924!important;color:#f6fbff!important;}
+.qa-direct-stage-actions button{border-color:rgba(112,215,255,.28);}
+body.game-active canvas#game{filter:brightness(.98) saturate(.88) contrast(1.05)!important;}
+body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0 0 42px rgba(112,215,255,.11)}
