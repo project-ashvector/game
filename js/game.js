@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.6 // AUDIO MIXER + SETTINGS',
+    'Version 0.8.7 // TILESET VISUAL PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.6';
+  const BUILD_VERSION = '0.8.7';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -711,6 +711,69 @@
     // Map blockers now come from # tiles only, so visuals match collision.
     props: []
   };
+
+
+  // v87: selected CraftPix tileset integration.
+  // Only the PNGs actually used by the game are shipped in the patch.
+  // F-002 gets cursed-land corruption props; F-003 gets undead/graveyard props.
+  const stageVisualPacks = {
+    f002: {
+      ground: [
+        'assets/tilesets/cursed/ground_01.png',
+        'assets/tilesets/cursed/ground_02.png',
+        'assets/tilesets/cursed/ground_03.png',
+        'assets/tilesets/cursed/ground_04.png'
+      ],
+      blocked: [
+        'assets/tilesets/cursed/rock_eyes_01.png',
+        'assets/tilesets/cursed/ruins_01.png',
+        'assets/tilesets/cursed/jaws_plant_01.png',
+        'assets/tilesets/cursed/spike_plant_01.png'
+      ],
+      floorTint: 'rgba(70, 19, 24, .22)',
+      props: [
+        {x:5,y:4,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},
+        {x:20,y:6,img:'assets/tilesets/cursed/tentacle_plant_01.png',w:52,h:48},
+        {x:18,y:12,img:'assets/tilesets/cursed/meat_flower_01.png',w:48,h:48},
+        {x:8,y:15,img:'assets/tilesets/cursed/bones_01.png',w:54,h:42},
+        {x:29,y:17,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},
+        {x:31,y:20,img:'assets/tilesets/cursed/spike_plant_01.png',w:54,h:48}
+      ]
+    },
+    f003: {
+      ground: [
+        'assets/tilesets/undead/ground_01.png',
+        'assets/tilesets/undead/ground_02.png',
+        'assets/tilesets/undead/ground_03.png',
+        'assets/tilesets/undead/ground_04.png'
+      ],
+      blocked: [
+        'assets/tilesets/undead/dead_tree_01.png',
+        'assets/tilesets/undead/dead_tree_02.png',
+        'assets/tilesets/undead/broken_tree_01.png',
+        'assets/tilesets/undead/grave_01.png',
+        'assets/tilesets/undead/grave_02.png'
+      ],
+      floorTint: 'rgba(18, 22, 34, .30)',
+      props: [
+        {x:5,y:3,img:'assets/tilesets/undead/bones_01.png',w:44,h:34},
+        {x:16,y:3,img:'assets/tilesets/undead/grave_01.png',w:38,h:40},
+        {x:3,y:11,img:'assets/tilesets/undead/bones_02.png',w:48,h:34},
+        {x:14,y:17,img:'assets/tilesets/undead/crystal_01.png',w:44,h:44},
+        {x:24,y:20,img:'assets/tilesets/undead/dead_tree_02.png',w:58,h:66},
+        {x:34,y:21,img:'assets/tilesets/undead/grave_02.png',w:38,h:40}
+      ]
+    }
+  };
+  function stageVisualPack(){ return stageVisualPacks[state?.currentStage || ''] || null; }
+  function stageVisualAssetPaths(){
+    return Object.values(stageVisualPacks).flatMap(pack => [
+      ...(pack.ground || []),
+      ...(pack.blocked || []),
+      ...((pack.props || []).map(p => p.img))
+    ]);
+  }
+
   function imgFor(path){ return images[path]; }
   function drawAsset(path,x,y,w,h,anchorBottom=false){
     const im=imgFor(path);
@@ -1707,6 +1770,7 @@
       ...mapArt.blocked,
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit,
       ...mapArt.props.map(p => p.img),
+      ...stageVisualAssetPaths(),
       ...importedAnomalyRoster.slice(0,80).flatMap(c => [c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)])
     ];
@@ -2574,23 +2638,30 @@
 
 
   function drawMapProps(){
-    mapArt.props.forEach(p=>{
+    const pack = stageVisualPack();
+    const props = [...mapArt.props, ...((pack && pack.props) || [])];
+    props.forEach(p=>{
       const tile = tileAt(p.x,p.y);
-      if(tile === '#' || tile === 'E' || tile === 'B') return;
+      // Only draw decorative props on open floor so they never cover caches, NPCs, doors, or exits.
+      if(tile !== '.') return;
       drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true);
     });
   }
 
   function drawTile(c,x,y,tx,ty){
-    const g = pickAsset(mapArt.ground,tx,ty);
+    const pack = stageVisualPack();
+    const groundList = (pack && pack.ground && pack.ground.length) ? pack.ground : mapArt.ground;
+    const g = pickAsset(groundList,tx,ty);
     if(!drawAsset(g,x,y,TILE+1,TILE+1,false)){
       const floor=((tx+ty)%2)?'#263421':'#304028'; ctx.fillStyle=floor; ctx.fillRect(x,y,TILE,TILE);
     }
+    if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
     ctx.strokeStyle='rgba(0,0,0,.16)'; ctx.strokeRect(x,y,TILE,TILE);
     if(c==='#'){
-      const block = pickAsset(mapArt.blocked,tx,ty);
-      const big = block.includes('tree');
-      drawAsset(block,x,y,big?70:44,big?82:38,true) || (ctx.fillStyle='rgba(60,70,50,.55)',ctx.beginPath(),ctx.arc(x+TILE/2,y+TILE/2,16,0,Math.PI*2),ctx.fill());
+      const blockList = (pack && pack.blocked && pack.blocked.length) ? pack.blocked : mapArt.blocked;
+      const block = pickAsset(blockList,tx,ty);
+      const big = /tree|ruins|plant|jaws|tentacle|dead/i.test(block);
+      drawAsset(block,x,y,big?70:48,big?82:42,true) || (ctx.fillStyle='rgba(60,70,50,.55)',ctx.beginPath(),ctx.arc(x+TILE/2,y+TILE/2,16,0,Math.PI*2),ctx.fill());
     }
     if(c==='C'){
       if(!drawAsset(mapArt.chest,x,y,46,38,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
