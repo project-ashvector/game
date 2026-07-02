@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.5 // SAVE SLOTS + BACKUP TERMINAL',
+    'Version 0.8.6 // AUDIO MIXER + SETTINGS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.5';
+  const BUILD_VERSION = '0.8.6';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -244,6 +244,7 @@
   const SfxManager = {
     cache: {},
     volume: 0.72,
+    muted: false,
     lastStep: 0,
 
     init(){
@@ -258,15 +259,25 @@
     },
 
     play(src, volume=this.volume, playbackRate=1){
-      if(!src) return;
+      if(!src || this.muted || this.volume <= 0.001) return;
       AudioManager.unlock();
       try{
         const base = this.cache[src] || new Audio(`${src}?v=${BUILD_VERSION}`);
         const a = base.cloneNode(true);
-        a.volume = Math.max(0, Math.min(1, volume));
+        const scale = this.volume / 0.72;
+        a.volume = Math.max(0, Math.min(1, volume * scale));
         a.playbackRate = Math.max(0.55, Math.min(1.55, Number.isFinite(playbackRate) ? playbackRate : 1));
         a.play().catch(()=>{});
       }catch(err){}
+    },
+
+    setVolume(v){
+      this.volume = Math.max(0, Math.min(1, Number.isFinite(v) ? v : 0.72));
+      Object.values(this.cache).forEach(a => { a.volume = this.volume; });
+    },
+
+    setMuted(flag){
+      this.muted = !!flag;
     },
 
     step(){
@@ -309,6 +320,41 @@
     return gameStarted ? 'level1' : 'intro';
   }
   function refreshMusic(){ AudioManager.play(activeMusicForState()); }
+
+  function ensureSettings(){
+    state.settings ||= {};
+    if(typeof state.settings.crt !== 'boolean') state.settings.crt = true;
+    if(typeof state.settings.reducedMotion !== 'boolean') state.settings.reducedMotion = false;
+    if(typeof state.settings.largeText !== 'boolean') state.settings.largeText = false;
+    if(typeof state.settings.musicVolume !== 'number') state.settings.musicVolume = 0.58;
+    if(typeof state.settings.sfxVolume !== 'number') state.settings.sfxVolume = 0.72;
+    if(typeof state.settings.musicMuted !== 'boolean') state.settings.musicMuted = false;
+    if(typeof state.settings.sfxMuted !== 'boolean') state.settings.sfxMuted = false;
+  }
+
+  function applyAudioSettings(){
+    if(!state) return;
+    ensureSettings();
+    AudioManager.setVolume(state.settings.musicMuted ? 0 : state.settings.musicVolume);
+    SfxManager.setVolume(state.settings.sfxVolume);
+    SfxManager.setMuted(state.settings.sfxMuted);
+    if(state.settings.musicMuted) AudioManager.pauseAll();
+    else AudioManager.forceResume();
+  }
+
+  function setAudioSetting(key, value){
+    ensureSettings();
+    if(key === 'musicVolume') state.settings.musicVolume = Math.max(0, Math.min(1, Number(value)));
+    if(key === 'sfxVolume') state.settings.sfxVolume = Math.max(0, Math.min(1, Number(value)));
+    if(key === 'musicMuted') state.settings.musicMuted = !!value;
+    if(key === 'sfxMuted') state.settings.sfxMuted = !!value;
+    applyAudioSettings();
+    renderAudioMixer();
+    queueAutosave();
+  }
+
+  function testSfxSetting(){ SfxManager.item(); }
+  function testMusicSetting(){ AudioManager.force(activeMusicForState()); }
 
   // v53: Maze-first F-001 layout. Walls are collision first, art second.
   // This replaces the wide-open test field with corridors, rooms, gates, and side paths.
@@ -1649,7 +1695,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
+    return {mapVersion:'sector_stage_v5', currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -1756,6 +1802,30 @@
       renderSaveHub();
     }catch(err){ toast(`Import failed: ${err.message || err}`); }
   }
+  function renderAudioMixer(){
+    const grid=document.querySelector('#configOverlay .fracture-grid');
+    if(!grid) return;
+    ensureSettings();
+    let panel=$('audioMixerPanel');
+    if(!panel){
+      panel=document.createElement('section');
+      panel.id='audioMixerPanel';
+      panel.className='fracture-card audio-mixer-panel';
+      const savePanel=$('saveHubPanel');
+      if(savePanel && savePanel.parentElement === grid) savePanel.insertAdjacentElement('afterend', panel);
+      else grid.prepend(panel);
+    }
+    const musicPct=Math.round((state.settings.musicVolume||0)*100);
+    const sfxPct=Math.round((state.settings.sfxVolume||0)*100);
+    panel.innerHTML=`<div class="record-kicker">AUDIO MIXER // LOCAL SETTINGS</div><h2>Music + Sound FX</h2><p>Control music and SFX separately. Settings save with the active archive and backup slots.</p><div class="audio-mixer-grid"><label class="audio-row"><span>Music Volume</span><input id="musicVolumeRange" type="range" min="0" max="100" value="${musicPct}"><b>${musicPct}%</b></label><label class="audio-row"><span>SFX Volume</span><input id="sfxVolumeRange" type="range" min="0" max="100" value="${sfxPct}"><b>${sfxPct}%</b></label></div><div class="audio-actions"><button id="musicMuteToggle">${state.settings.musicMuted?'Unmute Music':'Mute Music'}</button><button id="sfxMuteToggle">${state.settings.sfxMuted?'Unmute SFX':'Mute SFX'}</button><button id="testMusicBtn">Test Music</button><button id="testSfxBtn">Test SFX</button></div><p class="fineprint">Browser audio still starts after the first tap/click. The watchdog will keep the selected track alive after unlock.</p>`;
+    $('musicVolumeRange').oninput=e=>setAudioSetting('musicVolume', Number(e.target.value)/100);
+    $('sfxVolumeRange').oninput=e=>setAudioSetting('sfxVolume', Number(e.target.value)/100);
+    $('musicMuteToggle').onclick=()=>setAudioSetting('musicMuted', !state.settings.musicMuted);
+    $('sfxMuteToggle').onclick=()=>setAudioSetting('sfxMuted', !state.settings.sfxMuted);
+    $('testMusicBtn').onclick=testMusicSetting;
+    $('testSfxBtn').onclick=testSfxSetting;
+  }
+
   function renderSaveHub(){
     const grid=document.querySelector('#configOverlay .fracture-grid');
     if(!grid) return;
@@ -2632,7 +2702,7 @@
       if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); }
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
-      if(id==='configOverlay') renderSaveHub();
+      if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
     }catch(err){
       console.error('Overlay render failed:', id, err);
       target.querySelector('.database-modal')?.insertAdjacentHTML('beforeend', `<p class="menu-info warn">Overlay opened, but a render error occurred: ${String(err.message||err)}</p>`);
@@ -3017,7 +3087,7 @@
     if(navTarget && navTarget.x != null){ x.strokeStyle='#00d9ff'; x.lineWidth=2; x.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.max(4,sx*3),Math.max(4,sy*3)); }
     x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
   }
-  function applySettings(){ document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); }
+  function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); applyAudioSettings(); }
   let autosaveStarted=false;
   function startAutosave(){
     if(autosaveStarted) return;
@@ -3132,10 +3202,10 @@
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     bindMobileMoveButtons(); setupMobilePlayability();
     canvas.addEventListener('click', handleCanvasNpcClick);
-    $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
+    $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
