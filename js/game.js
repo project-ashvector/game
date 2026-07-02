@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.8.4 // OBJECTIVE BEACON + PATH PING',
+    'Version 0.8.5 // SAVE SLOTS + BACKUP TERMINAL',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.8.4';
+  const BUILD_VERSION = '0.8.5';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -1674,6 +1674,106 @@
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
   function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage}; state=newGameState(); Object.assign(state, keep); const parsed=parseStageMap(state.currentStage||'f001'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; } if(state.currentStage==='f002' && state.mapVersion!=='sector_stage_v5'){ const parsed=parseStageMap('f002'); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; log('F-002 route remapped for v0.6.7.'); } state.mapVersion='sector_stage_v5'; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+
+  // v85: save slots + export/import backup terminal.
+  // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
+  function saveSlotKey(n){ return `ashVectorSave_slot${n}`; }
+  function saveSummaryFromData(data){
+    const p=data?.player || {};
+    const stage=STAGE_DEFS[data?.currentStage || 'f001'] || STAGE_DEFS.f001;
+    const when=data?.lastSave ? new Date(data.lastSave).toLocaleString() : 'Never';
+    return {level:p.level||1, credits:p.credits||0, stage:stage.id, title:stage.title, when};
+  }
+  function saveToSlot(n){
+    save(true);
+    localStorage.setItem(saveSlotKey(n), JSON.stringify(state));
+    toast(`Saved to Slot ${n}.`);
+    renderSaveHub();
+  }
+  function loadFromSlot(n){
+    const raw=localStorage.getItem(saveSlotKey(n));
+    if(!raw){ toast(`Slot ${n} is empty.`); return; }
+    localStorage.setItem('ashVectorSave', raw);
+    load();
+    toast(`Loaded Slot ${n}.`);
+    renderSaveHub();
+  }
+  function deleteSaveSlot(n){
+    if(!localStorage.getItem(saveSlotKey(n))){ toast(`Slot ${n} is already empty.`); return; }
+    if(!confirm(`Delete save slot ${n}?`)) return;
+    localStorage.removeItem(saveSlotKey(n));
+    toast(`Slot ${n} deleted.`);
+    renderSaveHub();
+  }
+  function encodeSaveData(data=state){
+    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  }
+  function decodeSaveData(input){
+    const raw=String(input||'').trim();
+    if(!raw) throw new Error('No save code pasted.');
+    if(raw.startsWith('{')) return JSON.parse(raw);
+    return JSON.parse(decodeURIComponent(escape(atob(raw))));
+  }
+  function openSaveCodePanel(mode='export'){
+    let panel=$('saveCodeOverlay');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='saveCodeOverlay';
+      panel.className='overlay save-code-overlay hidden';
+      panel.innerHTML=`<div class="database-modal avos-crt save-code-modal"><button id="closeSaveCode" class="modal-close">Close</button><div class="db-header"><div id="saveCodeTitle">SAVE BACKUP</div><div>LOCAL ARCHIVE // v0.8.5</div></div><p id="saveCodeHelp" class="menu-info"></p><textarea id="saveCodeText" spellcheck="false"></textarea><div class="save-code-actions"><button id="copySaveCode">Copy Code</button><button id="importSaveCodeBtn">Import Pasted Save</button></div></div>`;
+      document.body.appendChild(panel);
+      $('closeSaveCode').onclick=()=>panel.classList.add('hidden');
+      $('copySaveCode').onclick=async()=>{ const txt=$('saveCodeText'); txt.select(); try{ await navigator.clipboard.writeText(txt.value); toast('Save code copied.'); }catch(err){ document.execCommand('copy'); toast('Save code selected.'); } };
+      $('importSaveCodeBtn').onclick=()=>importSaveCodeFromText();
+    }
+    if(mode === 'export'){
+      save(true);
+      $('saveCodeTitle').textContent='EXPORT SAVE BACKUP';
+      $('saveCodeHelp').textContent='Copy this code somewhere safe. You can paste it back on another browser/device to restore progress.';
+      $('saveCodeText').value=encodeSaveData(state);
+      $('copySaveCode').style.display='';
+      $('importSaveCodeBtn').style.display='none';
+    } else {
+      $('saveCodeTitle').textContent='IMPORT SAVE BACKUP';
+      $('saveCodeHelp').textContent='Paste a save code or raw save JSON below. Importing replaces the active local save.';
+      $('saveCodeText').value='';
+      $('copySaveCode').style.display='none';
+      $('importSaveCodeBtn').style.display='';
+    }
+    panel.classList.remove('hidden');
+    $('saveCodeText').focus();
+  }
+  function exportSaveCode(){ openSaveCodePanel('export'); }
+  function importSaveCode(){ openSaveCodePanel('import'); }
+  function importSaveCodeFromText(){
+    try{
+      const imported=decodeSaveData($('saveCodeText').value);
+      if(!imported || !imported.player) throw new Error('Save data is missing player info.');
+      localStorage.setItem('ashVectorSave', JSON.stringify(imported));
+      load();
+      $('saveCodeOverlay')?.classList.add('hidden');
+      toast('Save imported.');
+      renderSaveHub();
+    }catch(err){ toast(`Import failed: ${err.message || err}`); }
+  }
+  function renderSaveHub(){
+    const grid=document.querySelector('#configOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('saveHubPanel');
+    if(!panel){ panel=document.createElement('section'); panel.id='saveHubPanel'; panel.className='fracture-card save-hub-panel'; grid.prepend(panel); }
+    const main=saveSummaryFromData(state);
+    const slotCards=[1,2,3].map(n=>{
+      const raw=localStorage.getItem(saveSlotKey(n));
+      let body='Empty slot';
+      let extra='';
+      if(raw){
+        try{ const s=saveSummaryFromData(JSON.parse(raw)); body=`${s.stage} ${s.title} // Player Lv ${s.level} // ${s.credits} Credits`; extra=`<small>Saved ${safeHtml(s.when)}</small>`; }
+        catch(err){ body='Corrupted / unreadable slot'; }
+      }
+      return `<div class="save-slot"><b>Slot ${n}</b><span>${safeHtml(body)}</span>${extra}<div><button onclick="window.AV.saveToSlot(${n})">Save Here</button><button onclick="window.AV.loadFromSlot(${n})" ${raw?'':'disabled'}>Load</button><button onclick="window.AV.deleteSaveSlot(${n})" ${raw?'':'disabled'}>Delete</button></div></div>`;
+    }).join('');
+    panel.innerHTML=`<div class="record-kicker">ARCHIVE BACKUP TERMINAL</div><h2>Save Slots + Transfer Code</h2><p>Active Save: ${safeHtml(main.stage)} ${safeHtml(main.title)} // Player Lv ${main.level} // ${main.credits} Credits // ${safeHtml(main.when)}</p><div class="save-slot-grid">${slotCards}</div><div class="save-hub-actions"><button onclick="window.AV.exportSaveCode()">Export Save Code</button><button onclick="window.AV.importSaveCode()">Import Save Code</button><button onclick="window.AV.save()">Save Active Archive</button></div><p class="fineprint">Slots and backup codes use browser localStorage. Export a code before clearing cache, switching phones, or testing risky patches.</p>`;
+  }
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
   function boot(){
@@ -2532,6 +2632,7 @@
       if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); }
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
+      if(id==='configOverlay') renderSaveHub();
     }catch(err){
       console.error('Overlay render failed:', id, err);
       target.querySelector('.database-modal')?.insertAdjacentHTML('beforeend', `<p class="menu-info warn">Overlay opened, but a render error occurred: ${String(err.message||err)}</p>`);
@@ -3024,7 +3125,7 @@
     }, {passive:false});
     $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{try{load();}catch(err){} startGame(false)};
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
-    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); toast('Archive purged.');};
+    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
@@ -3034,7 +3135,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings()}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings()}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings()};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit');
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),

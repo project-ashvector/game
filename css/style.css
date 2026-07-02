@@ -1188,3 +1188,18 @@ body:not(.game-active) .objective-compass,body.battle-mode .objective-compass{di
   .objective-compass b{font-size:18px!important;}
   .objective-compass span{max-width:82px;}
 }
+
+
+/* v85: save slots + backup/transfer terminal */
+.save-hub-panel{grid-column:1/-1;border-color:rgba(112,215,255,.22)!important;background:linear-gradient(145deg,rgba(3,9,15,.92),rgba(18,13,20,.88))!important;}
+.save-slot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0;}
+.save-slot{background:#070b10;border:1px solid rgba(112,215,255,.20);border-radius:12px;padding:10px;display:grid;gap:8px;box-shadow:inset 0 0 18px rgba(112,215,255,.03);}
+.save-slot b{color:#fff;letter-spacing:.04em;}
+.save-slot span,.save-slot small{color:#a9b8c8;font-size:12px;line-height:1.35;}
+.save-slot>div{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.save-slot button,.save-hub-actions button,.save-code-actions button{min-height:34px;padding:7px 9px;font-size:11px;}
+.save-hub-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.save-code-modal{width:min(880px,96vw)!important;}
+#saveCodeText{width:100%;min-height:240px;resize:vertical;background:#030609;color:#d7f7ff;border:1px solid rgba(112,215,255,.28);border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;line-height:1.35;box-sizing:border-box;}
+.save-code-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+@media(max-width:900px),(pointer:coarse){.save-slot-grid{grid-template-columns:1fr}.save-slot>div{grid-template-columns:1fr 1fr 1fr}.save-code-modal{max-height:88vh!important}#saveCodeText{min-height:180px;font-size:10px}}
