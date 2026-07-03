@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.40 // MOBILE PLAYABILITY PASS',
+    'Version 0.9.41 // MOBILE BATTLE FIX PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.40';
+  const BUILD_VERSION = '0.9.41';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2883,8 +2883,8 @@
       if(!current) open();
     }catch(err){}
   }
-  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function showMenu(){setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
+  function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -3769,8 +3769,11 @@
     $('battleVictory')?.classList.add('hidden');
     $('battlePanel')?.classList.remove('battle-shake');
     document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) document.body.classList.remove('fullscreen-mode'); });
+    setBattleMobileMode(true);
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     $('battleOverlay').classList.remove('hidden');
+    const enemyImg=$('battleEnemy'), heroImg=$('battleHero');
+    [enemyImg, heroImg].forEach(img=>{ if(img){ img.style.display='block'; img.style.visibility='visible'; img.style.opacity='1'; } });
     renderBattle();
     showTutorialTip('battle-basics','Battle Basics','Use the four main attack buttons to deal damage. Save EP for healing or stronger protocols, and use Guard when HP gets low.','Controller face buttons map to the four attacks. LT/L2 uses Vector Cell, RB/R1 guards, RT/R2 uses Overdrive.');
   }

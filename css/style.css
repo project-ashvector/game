@@ -1871,3 +1871,240 @@ body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0
   }
 }
 
+
+
+/* v131: phone battle sizing + enemy visibility fix */
+@media (max-width: 900px), (pointer: coarse){
+  #battleOverlay{
+    position:fixed!important;
+    inset:0!important;
+    z-index:9400!important;
+    padding:0!important;
+    display:grid!important;
+    place-items:stretch!important;
+    overflow:hidden!important;
+    background:rgba(0,0,0,.96)!important;
+  }
+  #battleOverlay.hidden{display:none!important;}
+  #battlePanel.battle{
+    width:100vw!important;
+    height:100svh!important;
+    max-width:none!important;
+    max-height:none!important;
+    min-height:0!important;
+    aspect-ratio:auto!important;
+    border:0!important;
+    border-radius:0!important;
+    padding:5px!important;
+    display:grid!important;
+    grid-template-rows:38px minmax(112px,26svh) minmax(0,1fr)!important;
+    gap:4px!important;
+    overflow:hidden!important;
+    background-size:cover!important;
+    background-position:center!important;
+  }
+  #battleOverlay .battle-hud-top{
+    min-height:0!important;
+    height:38px!important;
+    padding:4px 7px!important;
+    gap:6px!important;
+    align-items:center!important;
+    border-radius:10px!important;
+    overflow:hidden!important;
+  }
+  #battleOverlay .battle-hud-top b{
+    font-size:12px!important;
+    line-height:1!important;
+    max-width:66vw!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #battleOverlay .battle-kicker,
+  #battleOverlay .battle-location{
+    font-size:7px!important;
+    line-height:1!important;
+    letter-spacing:.06em!important;
+    white-space:nowrap!important;
+  }
+  #battleOverlay .battle-stage{
+    grid-row:2!important;
+    height:100%!important;
+    min-height:0!important;
+    padding:0 7px 2px!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)!important;
+    grid-template-rows:1fr!important;
+    gap:0!important;
+    align-items:end!important;
+    justify-items:center!important;
+    overflow:visible!important;
+  }
+  #battleOverlay .combatant{
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    height:100%!important;
+    display:flex!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+    overflow:visible!important;
+    position:relative!important;
+  }
+  #battleOverlay .hero-side{grid-column:1!important;grid-row:1!important;}
+  #battleOverlay .damage-layer{grid-column:2!important;grid-row:1!important;position:relative!important;z-index:4!important;width:24px!important;height:100%!important;overflow:visible!important;}
+  #battleOverlay .enemy-side{grid-column:3!important;grid-row:1!important;}
+  #battleOverlay .battle-sprite,
+  #battleOverlay #battleEnemy,
+  #battleOverlay #battleHero{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    width:auto!important;
+    height:clamp(82px,22svh,150px)!important;
+    max-width:43vw!important;
+    max-height:100%!important;
+    min-width:0!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    transform:none!important;
+    filter:drop-shadow(0 10px 10px rgba(0,0,0,.78))!important;
+  }
+  #battleOverlay .combatant-name{
+    bottom:0!important;
+    max-width:88%!important;
+    padding:2px 5px!important;
+    border-radius:8px!important;
+    font-size:7px!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #battleOverlay .hero-side .combatant-name{left:4%!important;}
+  #battleOverlay .enemy-side .combatant-name{right:4%!important;}
+  #battleOverlay .battle-ui{
+    grid-row:3!important;
+    margin:0 3px calc(env(safe-area-inset-bottom) + 58px)!important;
+    padding:6px!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto!important;
+    gap:5px!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    border-radius:12px!important;
+  }
+  #battleOverlay .battle-status-panel{
+    display:grid!important;
+    gap:4px!important;
+    min-height:0!important;
+  }
+  #battleHp{
+    display:grid!important;
+    gap:3px!important;
+  }
+  #battleHp .battle-meter{
+    padding:3px 4px!important;
+    gap:2px!important;
+    border-radius:8px!important;
+  }
+  #battleHp .battle-meter b{
+    font-size:9px!important;
+    line-height:1!important;
+  }
+  #battleHp .battle-meter span{
+    font-size:7px!important;
+    line-height:1!important;
+  }
+  #battleHp .bar.big{
+    height:6px!important;
+  }
+  #battleText{
+    min-height:26px!important;
+    max-height:34px!important;
+    overflow:auto!important;
+    padding:5px!important;
+    font-size:9px!important;
+    line-height:1.12!important;
+    border-radius:8px!important;
+  }
+  #battleOverlay .battle-command-panel{
+    display:grid!important;
+    grid-template-rows:auto auto!important;
+    gap:4px!important;
+    min-height:0!important;
+  }
+  #battleOverlay .command-title{
+    font-size:8px!important;
+    line-height:1!important;
+  }
+  #battleOverlay .attacks{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:4px!important;
+  }
+  #battleOverlay .attacks button{
+    min-height:35px!important;
+    height:auto!important;
+    padding:3px 4px!important;
+    border-radius:9px!important;
+    font-size:8px!important;
+    line-height:1!important;
+    align-items:center!important;
+  }
+  #battleOverlay .attacks button b{
+    font-size:9px!important;
+    line-height:1!important;
+  }
+  #battleOverlay .attacks button span{
+    font-size:7px!important;
+    line-height:1!important;
+    margin-top:1px!important;
+  }
+  #battleOverlay .attacks button .controller-glyph{
+    min-width:18px!important;
+    height:16px!important;
+    font-size:7px!important;
+    padding:0 2px!important;
+  }
+  body.battle-mode .mobile-battle-pad{
+    z-index:9500!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:4px!important;
+    padding:5px!important;
+  }
+  body.battle-mode .mobile-battle-pad button{
+    height:34px!important;
+    min-height:0!important;
+    padding:0 2px!important;
+    font-size:7px!important;
+  }
+  body.battle-mode .mobile-battle-pad button b{font-size:11px!important;}
+  body.battle-mode .mobile-battle-pad button span{font-size:6px!important;}
+}
+
+@media (max-width: 390px) and (orientation: portrait){
+  #battlePanel.battle{
+    grid-template-rows:34px minmax(94px,22svh) minmax(0,1fr)!important;
+    padding:4px!important;
+  }
+  #battleOverlay .battle-hud-top{height:34px!important;padding:3px 6px!important;}
+  #battleOverlay .battle-sprite,
+  #battleOverlay #battleEnemy,
+  #battleOverlay #battleHero{
+    height:clamp(70px,19svh,122px)!important;
+    max-width:42vw!important;
+  }
+  #battleOverlay .battle-ui{
+    margin-bottom:calc(env(safe-area-inset-bottom) + 82px)!important;
+    padding:5px!important;
+    gap:4px!important;
+  }
+  #battleOverlay .attacks button{
+    min-height:31px!important;
+    padding:2px 3px!important;
+  }
+}
