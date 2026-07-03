@@ -2255,3 +2255,105 @@ body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0
   .bank-title{align-items:flex-start;flex-direction:column;}
   .quick-bag-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
 }
+
+
+/* V133: medium skill level-up notification and skilling requirements */
+.skill-levelup-notice{
+  position:fixed;
+  left:50%;
+  top:18%;
+  transform:translate(-50%,-20px) scale(.96);
+  width:min(430px, calc(100vw - 28px));
+  z-index:130000;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 18px;
+  border-radius:18px;
+  border:1px solid rgba(148,255,98,.72);
+  background:
+    radial-gradient(circle at 8% 20%, rgba(148,255,98,.20), transparent 38%),
+    linear-gradient(180deg, rgba(9,18,18,.98), rgba(3,8,12,.98));
+  box-shadow:0 0 34px rgba(148,255,98,.25), 0 18px 60px rgba(0,0,0,.52);
+  color:#eafff4;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .28s ease, transform .28s ease;
+}
+.skill-levelup-notice.show{
+  opacity:1;
+  transform:translate(-50%,0) scale(1);
+}
+.levelup-icon{
+  width:72px;
+  height:72px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.075);
+  box-shadow:inset 0 0 16px rgba(255,255,255,.08);
+}
+.levelup-icon img{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  image-rendering:auto;
+}
+.levelup-icon b{
+  font-size:34px;
+  color:#94ff62;
+}
+.levelup-kicker{
+  font-size:11px;
+  letter-spacing:.18em;
+  color:#94ff62;
+  font-weight:900;
+}
+.skill-levelup-notice h2{
+  margin:2px 0 3px;
+  font-size:26px;
+  line-height:1.05;
+  color:#fff;
+}
+.skill-levelup-notice p{
+  margin:0;
+  color:#cceee6;
+}
+.skill-levelup-notice p b{
+  color:#ffe7a3;
+  font-size:20px;
+}
+.xp-float-locked{
+  color:#ff8fa0;
+  border-color:rgba(255,48,72,.45);
+}
+.bank-slot small{
+  font-size:8px;
+  line-height:1.05;
+  text-align:center;
+  max-width:100%;
+}
+.bank-slot small.ok{color:#94ff62;}
+.bank-slot small.warn{color:#ffb840;}
+.skilling-req-panel small.ok{color:#94ff62;}
+.skilling-req-panel small.warn{color:#ffb840;}
+@media (max-width: 720px){
+  .skill-levelup-notice{
+    top:14%;
+    padding:13px 14px;
+    gap:10px;
+  }
+  .levelup-icon{
+    width:58px;
+    height:58px;
+  }
+  .levelup-icon img{
+    width:46px;
+    height:46px;
+  }
+  .skill-levelup-notice h2{
+    font-size:21px;
+  }
+}

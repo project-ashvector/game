@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.42 // MISSION LOOT SKILLING PASS',
+    'Version 0.9.43 // SKILL LEVELUP REQUIREMENTS PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.42';
+  const BUILD_VERSION = '0.9.43';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -822,7 +822,7 @@
       ctx.fillStyle='#b9ff7c';
       ctx.font='10px monospace';
       ctx.textAlign='center';
-      ctx.fillText('PRESS E', x+TILE/2, labelY+10);
+      ctx.fillText(locked?`REQ ${req}`:'PRESS E', x+TILE/2, labelY+10);
     }
     ctx.strokeStyle=near?'rgba(148,255,98,.88)':'rgba(148,255,98,.38)';
     ctx.lineWidth=near?2:1;
@@ -912,6 +912,40 @@
     forgenetics:{label:'Bio Spore Pod', skill:'forgenetics', item:'Mutagen Sample', color:'#d2a8ff', glyph:'✣', verb:'harvested'},
     system_hacking:{label:'Relay Console', skill:'system_hacking', item:'Access Fragment', color:'#ffffff', glyph:'▣', verb:'hacked'}
   };
+  const SKILLING_ITEM_RULES = {
+    'Scrap Metal':       {skill:'codecraft',       baseXp:10, levelBase:1,  zoneStep:1, itemTier:0},
+    'Ash Ore':           {skill:'cryptomining',    baseXp:18, levelBase:1,  zoneStep:2, itemTier:0},
+    'Circuit Scrap':     {skill:'codecraft',       baseXp:22, levelBase:2,  zoneStep:2, itemTier:1},
+    'Encrypted Data':    {skill:'datafishing',     baseXp:26, levelBase:3,  zoneStep:2, itemTier:1},
+    'Access Fragment':   {skill:'system_hacking',  baseXp:32, levelBase:4,  zoneStep:3, itemTier:2},
+    'Burnt Alloy':       {skill:'cryptomining',    baseXp:36, levelBase:5,  zoneStep:3, itemTier:2},
+    'Mutagen Sample':    {skill:'forgenetics',     baseXp:44, levelBase:6,  zoneStep:3, itemTier:3},
+    'Corrupted Catalyst':{skill:'forgenetics',     baseXp:64, levelBase:10, zoneStep:4, itemTier:4},
+    'Rust Core':         {skill:'cryptomining',    baseXp:72, levelBase:12, zoneStep:4, itemTier:4},
+    'Archive Log 001':   {skill:'datafishing',     baseXp:34, levelBase:4,  zoneStep:2, itemTier:2},
+    'Vector Cell':       {skill:'system_hacking',  baseXp:20, levelBase:1,  zoneStep:1, itemTier:1},
+    'Zone Cache Voucher':{skill:'system_hacking',  baseXp:85, levelBase:14, zoneStep:5, itemTier:5}
+  };
+  function skillingRuleForItem(name, fallbackSkill='cryptomining'){
+    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:14, levelBase:1, zoneStep:1, itemTier:0};
+  }
+  function skillingLevelReqForItem(name, stageKey=currentStageKey()){
+    const rule=skillingRuleForItem(name);
+    return Math.max(1, Math.min(99, rule.levelBase + Math.floor((stageNumberFromKey(stageKey)-1) * rule.zoneStep)));
+  }
+  function skillingXpForItem(name, stageKey=currentStageKey(), qty=1){
+    const rule=skillingRuleForItem(name);
+    const stage=stageNumberFromKey(stageKey);
+    const tierBoost=(rule.itemTier || 0) * 6;
+    const stageBoost=Math.floor(stage * (4 + (rule.itemTier || 0)));
+    return Math.max(1, Math.floor((rule.baseXp + tierBoost + stageBoost) * Math.max(1, qty || 1)));
+  }
+  function canTrainFromItem(name, stageKey=currentStageKey()){
+    const rule=skillingRuleForItem(name);
+    const req=skillingLevelReqForItem(name, stageKey);
+    const lvl=skillLevel(rule.skill);
+    return {ok:lvl>=req, req, lvl, skill:rule.skill, xp:skillingXpForItem(name, stageKey, 1)};
+  }
   function ensureTrainingNodeState(){
     if(!state) return;
     state.resourceNodes ||= {};
@@ -955,7 +989,9 @@
       const t=floor[(i*3 + scale.stage) % floor.length];
       const skill=profile.skills[i % profile.skills.length];
       const def=TRAINING_NODE_TYPES[skill];
-      nodes.push({id:`${key}:node:${i}:${skill}`, stage:key, x:t.x, y:t.y, skill, ...def});
+      const req=skillingLevelReqForItem(def.item, key);
+      const xp=skillingXpForItem(def.item, key, 1);
+      nodes.push({id:`${key}:node:${i}:${skill}`, stage:key, x:t.x, y:t.y, skill, levelReq:req, itemXp:xp, ...def});
     }
     return nodes;
   }
@@ -993,21 +1029,38 @@
     if(!node){ toast('No training object close enough. Move next to a node and press E.'); return false; }
     ensureTrainingNodeState();
     const scale=stageMissionScale(node.stage);
-    const skillXp=scale.skillXp + Math.floor(skillLevel(node.skill)*1.5);
+    const req=node.levelReq || skillingLevelReqForItem(node.item,node.stage);
+    const currentSkillLevel=skillLevel(node.skill);
+    const skillName=skillList[node.skill]?.name || node.skill;
+    if(currentSkillLevel < req){
+      toast(`${node.label} requires ${skillName} Lv. ${req}. Current Lv. ${currentSkillLevel}.`);
+      showXpFloat(`Requires Lv ${req} ${skillList[node.skill]?.short || 'SKL'}`, 'locked');
+      return false;
+    }
     const itemQty=1 + (Math.random() < .18 + scale.stage*.01 ? 1 : 0);
     addItem(node.item,itemQty);
-    grantStyleXp(node.skill, skillXp);
+    const itemRule=skillingRuleForItem(node.item,node.skill);
+    const itemXp=skillingXpForItem(node.item,node.stage,itemQty);
+    grantStyleXp(itemRule.skill, itemXp);
+    const gainedLines=[`${itemXp} ${skillList[itemRule.skill]?.short || 'XP'} XP`];
     if(Math.random() < scale.rareChance){
       const profile=zoneProfile(node.stage);
       const bonus=profile.items[(scale.stage + itemQty + node.x + node.y) % profile.items.length];
       addItem(bonus,1);
       recordDrop(bonus, node.label, findItemRecord(bonus).rarity);
+      const bonusCheck=canTrainFromItem(bonus,node.stage);
+      if(bonusCheck.ok){
+        const bonusXp=skillingXpForItem(bonus,node.stage,1);
+        grantStyleXp(bonusCheck.skill, bonusXp);
+        gainedLines.push(`${bonusXp} ${skillList[bonusCheck.skill]?.short || 'XP'} XP`);
+      } else {
+        gainedLines.push(`${bonus} banked (Req ${skillList[bonusCheck.skill]?.short || 'SKL'} Lv ${bonusCheck.req})`);
+      }
     }
     state.resourceNodes[node.id]=Date.now()+scale.resourceRespawn;
     setTimeout(processTrainingNodeRespawns, scale.resourceRespawn+80);
-    const skillName=skillList[node.skill]?.name || node.skill;
-    log(`${node.label} ${node.verb}: +${skillXp} ${skillName} XP, +${itemQty} ${node.item}.`);
-    toast(`${node.label}: +${skillXp} ${skillName} XP`);
+    log(`${node.label} ${node.verb}: ${gainedLines.join(', ')}. +${itemQty} ${node.item}.`);
+    toast(`${node.label}: +${gainedLines[0]}`);
     renderAll();
     queueAutosave();
     return true;
@@ -2220,6 +2273,16 @@
       save(true);
     }
   }
+  function showSkillLevelUp(style, level){
+    const info=skillList[style] || {name:style, short:'SKL', emblem:'★', icon:''};
+    const el=document.createElement('div');
+    el.className=`skill-levelup-notice skill-${style}`;
+    const icon = info.icon ? `<img src="${safeHtml(info.icon)}?v=${BUILD_VERSION}" alt="${safeHtml(info.name)}" onerror="this.remove();this.parentElement.classList.add('missing-icon')">` : `<b>${safeHtml(info.emblem || info.short || '★')}</b>`;
+    el.innerHTML=`<div class="levelup-icon">${icon}</div><div><div class="levelup-kicker">LEVEL UP</div><h2>${safeHtml(info.name)}</h2><p>Reached Level <b>${level}</b></p></div>`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.classList.add('show'), 20);
+    setTimeout(()=>{ el.classList.remove('show'); setTimeout(()=>el.remove(), 420); }, 3000);
+  }
   function grantStyleXp(style, xp){
     ensureProgression();
     if(!skillList[style]) return;
@@ -2234,6 +2297,7 @@
         const skillName = skillList[style]?.name || style;
         log(`${skillName} reached Lv. ${lvl}.`);
         toast(`${skillName} Lv. ${lvl}`);
+        showSkillLevelUp(style, lvl);
       }
     }
     levelBenefit(style, oldLevel, data.level);
@@ -4459,14 +4523,16 @@
     if(tileAt(node.x,node.y) !== '.') return;
     const x=node.x*TILE, y=node.y*TILE;
     const near=Math.abs(node.x-state.player.x)+Math.abs(node.y-state.player.y)<=1;
+    const req=node.levelReq || skillingLevelReqForItem(node.item,node.stage);
+    const locked=skillLevel(node.skill) < req;
     ctx.save();
     ctx.fillStyle='rgba(0,0,0,.42)';
     ctx.beginPath();
     ctx.ellipse(x+TILE/2,y+TILE-6,15,6,0,0,Math.PI*2);
     ctx.fill();
-    ctx.shadowColor=node.color;
+    ctx.shadowColor=locked?'#ff3048':node.color;
     ctx.shadowBlur=near?16:8;
-    ctx.fillStyle=node.color;
+    ctx.fillStyle=locked?'#4f1b24':node.color;
     ctx.globalAlpha=.95;
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x+9,y+8,24,24,6) : ctx.rect(x+9,y+8,24,24);
@@ -4834,7 +4900,9 @@
     const cells=[...entries.map(([name,qty])=>{
       const item=findItemRecord(name);
       const equipped=Object.values(state.equipment||{}).includes(name);
-      return `<button class="bank-slot ${rarityClass(item.rarity)} ${equipped?'equipped':''}" data-item-name="${safeHtml(name)}" title="${safeHtml(item.desc)}">${itemIconHtml(item,qty)}<b>${safeHtml(name)}</b><span>${safeHtml(item.type)}</span>${equipped?'<em>Equipped</em>':''}</button>`;
+      const train=SKILLING_ITEM_RULES[name] ? canTrainFromItem(name,currentStageKey()) : null;
+      const trainLine=train ? `<small class="${train.ok?'ok':'warn'}">${skillList[train.skill]?.short || 'SKL'} Lv ${train.req} // ${skillingXpForItem(name,currentStageKey(),1)} XP</small>` : '';
+      return `<button class="bank-slot ${rarityClass(item.rarity)} ${equipped?'equipped':''}" data-item-name="${safeHtml(name)}" title="${safeHtml(item.desc)}">${itemIconHtml(item,qty)}<b>${safeHtml(name)}</b><span>${safeHtml(item.type)}</span>${trainLine}${equipped?'<em>Equipped</em>':''}</button>`;
     })];
     while(cells.length < Math.min(60, Math.max(24, totalStacks+6))) cells.push('<div class="bank-slot empty"><span>Empty</span></div>');
     return `<section class="bank-panel runebank-panel"><div class="bank-title"><div><div class="record-kicker">FIELD BAG / BANK</div><h3>Stacked Inventory</h3></div><div class="bank-stats"><b>${totalStacks}</b><span>stacks</span><b>${totalItems}</b><span>items</span></div></div><div class="bank-grid-clean">${cells.join('')}</div></section>`;
@@ -4864,7 +4932,9 @@
       <div id="itemRegistryButtons" class="item-grid"></div>`;
     const showItemDetail=(itemNameOrId)=>{
       const item = fullRegistry.find(d=>d.id===itemNameOrId || d.name===itemNameOrId) || findItemRecord(itemNameOrId);
-      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.equipSlot?`// ${item.equipSlot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Req Lv</b><span>${item.levelReq || '-'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${item.equipSlot?`<div class="gear-compare"><b>Stats</b><span>${statSummary(item.stats)}</span><small>Current ${item.equipSlot}: ${state.equipment?.[item.equipSlot] || 'Empty'}</small></div><button onclick="window.AV.equipItem('${safeHtml(item.name)}')">Equip ${item.equipSlot}</button>`:''}${consumableButtonHtml(item.name)}`;
+      const train=SKILLING_ITEM_RULES[item.name] ? canTrainFromItem(item.name,currentStageKey()) : null;
+      const trainPanel=train ? `<div class="gear-compare skilling-req-panel"><b>${safeHtml(skillList[train.skill]?.name || train.skill)} Training</b><span>Gives ${skillingXpForItem(item.name,currentStageKey(),1)} XP per item in ${stageDef().id}</span><small class="${train.ok?'ok':'warn'}">Requires ${skillList[train.skill]?.short || 'Skill'} Lv. ${train.req} // Current Lv. ${train.lvl}</small></div>` : '';
+      $('itemDetailPanel').innerHTML=`<div class="record-kicker">${item.id || 'RECOVERED'} // ${item.rarity}</div><div class="item-detail-top">${itemIconHtml(item)}<div><h2>${item.name}</h2><p>${item.type} ${item.category?`// ${item.category}`:''} ${item.equipSlot?`// ${item.equipSlot}`:''}</p></div></div><p>${item.desc}</p><div class="record-grid"><div><b>Stack</b><span>${item.stackSize}</span></div><div><b>Sell</b><span>${item.sellPrice} credits</span></div><div><b>Req Lv</b><span>${item.levelReq || '-'}</span></div><div><b>Asset</b><span>${item.asset}</span></div></div>${trainPanel}${item.equipSlot?`<div class="gear-compare"><b>Stats</b><span>${statSummary(item.stats)}</span><small>Current ${item.equipSlot}: ${state.equipment?.[item.equipSlot] || 'Empty'}</small></div><button onclick="window.AV.equipItem('${safeHtml(item.name)}')">Equip ${item.equipSlot}</button>`:''}${consumableButtonHtml(item.name)}`;
     };
     const drawItems=()=>{
       const q=($('itemSearch').value||'').toLowerCase();
