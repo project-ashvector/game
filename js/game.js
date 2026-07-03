@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.17 // NAV ASSIST SETTINGS PASS',
+    'Version 0.9.18 // BATTLE SCANNER PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -2267,6 +2267,33 @@
     if(code==='B' && !state.flags.storySeen[stageStoryKey('bossIntro')]){showStoryOnce(stageStoryKey('bossIntro'), engage); return;}
     engage();
   }
+  // v108: Tactical scanner gives simple battle recommendations without changing balance.
+  function encounterThreatScan(def, code='E'){
+    const s=combatStatBlock();
+    const enemyScore=(def.hp||1)/3 + (def.atk||1)*5 + (code==='B'?80:0);
+    const heroScore=(s.maxHp||1)/2 + (s.atk||1)*6 + (s.def||1)*5 + gearPower()*3 + (state.player.level||1)*7;
+    const ratio=enemyScore/Math.max(1,heroScore);
+    if(ratio>1.18) return {level:'HIGH', text:'High threat. Enter with full HP/EP, keep Guard ready, and save Overdrive for the kill window.'};
+    if(ratio>.82) return {level:'MEDIUM', text:'Fair fight. Watch HP, use EP wisely, and heal before enemy damage stacks.'};
+    return {level:'LOW', text:'Manageable threat. Basic strikes should work, but do not waste supplies unless HP drops.'};
+  }
+  function battleTacticalAdvice(){
+    if(!battle) return {title:'Scanner Offline', text:'No active battle.'};
+    const s=combatStatBlock();
+    const epMax=s.maxEp || state.player.maxEp || 1;
+    const hpPct=state.player.hp/Math.max(1,s.maxHp);
+    const epPct=state.player.ep/Math.max(1,epMax);
+    const enemyPct=battle.enemy.hp/Math.max(1,battle.enemy.maxHp);
+    const cellQty=state.inventory['Vector Cell']||0;
+    if(battle.turn!=='player') return {title:'Enemy Turn', text:'Brace for impact. Guard applies only when chosen on your turn.'};
+    if(hpPct<=.28) return {title:'Critical HP', text:'Use Med Patch/Vector Cell support or Guard now. Do not greed damage.'};
+    if(overdriveReady() && enemyPct<=.42) return {title:'Execute Window', text:'Overdrive is ready and the enemy is low. Use Null Vector Execution to finish.'};
+    if(epPct<=.20 && cellQty>0) return {title:'Low EP', text:'Use a Vector Cell if you need energy for recovery or stronger attacks.'};
+    if(enemyPct<=.20) return {title:'Finish It', text:'Enemy is nearly deleted. Use your cheapest reliable strike.'};
+    if(hpPct<=.45) return {title:'Stabilize', text:'Consider Guard or recovery before pushing more damage.'};
+    if(battle.enemy.atk > Math.max(8, s.def*5)) return {title:'Heavy Hitter', text:'Enemy attack is high. Guard before big hits and keep HP above half.'};
+    return {title:'Stable', text:'Keep attacking. Save consumables unless HP or EP drops.'};
+  }
   function showPreBattleDialog(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     const stage=stageDef();
@@ -2288,7 +2315,8 @@
     $('preBattleStart').innerHTML=`<span class="controller-glyph">${safeHtml(labels.south)}</span><b>Engage</b>`;
     $('preBattleCancel').innerHTML=`<span class="controller-glyph">${safeHtml(labels.east)}</span><b>Retreat</b>`;
     const research=researchLineForCreature({id:def.id,name:def.name,type:code==='B'?'Boss':'Anomaly'});
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    const scan=encounterThreatScan(def, code);
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Threat Scan</b><span>${scan.level} // ${safeHtml(scan.text)}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); overlay.style.display=''; startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
     preBattleCommandIndex = 0;
@@ -2899,7 +2927,8 @@
       <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}${playerStatusText?' // '+playerStatusText:''}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
-      <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>`;
+      <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>
+      <div class="battle-meter scanner-meter"><b>AVOS Scanner</b><span>${safeHtml(battleTacticalAdvice().title)} // ${safeHtml(battleTacticalAdvice().text)}</span></div>`;
     $('attackButtons').innerHTML='';
     const labels=safeControllerLabels();
     // v94: four main battle attacks map to the four face buttons (Xbox A/B/X/Y, PS Cross/Circle/Square/Triangle, Switch B/A/Y/X).
@@ -2924,7 +2953,7 @@
     const hint=document.createElement('div');
     hint.id='battleControllerHint';
     hint.className='battle-controller-hint';
-    hint.innerHTML=`Face buttons launch attacks: <b>${safeHtml(labels.south)}</b>/<b>${safeHtml(labels.east)}</b>/<b>${safeHtml(labels.west)}</b>/<b>${safeHtml(labels.north)}</b> // D-pad moves cursor // <b>${safeHtml(labels.start)}</b> chooses highlighted`;
+    hint.innerHTML=`Face buttons launch attacks: <b>${safeHtml(labels.south)}</b>/<b>${safeHtml(labels.east)}</b>/<b>${safeHtml(labels.west)}</b>/<b>${safeHtml(labels.north)}</b> // D-pad moves cursor // <b>${safeHtml(labels.start)}</b> chooses highlighted // <b>T</b> scanner tip`;
     $('attackButtons').appendChild(hint);
     updateBattleCommandFocus();
   }
@@ -4168,6 +4197,7 @@
           if(key==='5' || key==='u'){ e.preventDefault(); useOverdriveBattle(); return; }
           if(key==='r'){ e.preventDefault(); useVectorCellBattle(); return; }
           if(key==='g'){ e.preventDefault(); guardBattle(); return; }
+          if(key==='t'){ e.preventDefault(); const tip=battleTacticalAdvice(); toast(`${tip.title}: ${tip.text}`); return; }
         }
       }
       if(e.key==='Escape' && overlayOpen){ e.preventDefault(); closeOverlays(); return; }
