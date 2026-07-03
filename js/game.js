@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.37 // CLEAN MAP LIGHTING PASS',
+    'Version 0.9.38 // GAME ENTRY VIDEO FIX PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.37';
+  const BUILD_VERSION = '0.9.38';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2842,19 +2842,45 @@
     if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
     showMenu();
   }
+  function stopIntroVideoForGame(){
+    introVideoActive=false;
+    if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
+    document.body.classList.remove('intro-video-active');
+    const video=$('introVideo');
+    const bootScreen=$('bootScreen');
+    const gate=$('introVideoGate');
+    const shade=$('introVideoShade');
+    if(video){
+      try{ video.pause(); }catch(err){}
+      video.controls=false;
+      video.muted=false;
+      video.style.opacity='';
+      try{ video.currentTime=0; }catch(err){}
+    }
+    if(bootScreen){
+      bootScreen.classList.remove('intro-video-playing','intro-video-fading');
+      bootScreen.classList.add('hidden');
+    }
+    if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
+    if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
+  }
   function requestNativeFullscreen(){
-    // Browsers only allow true fullscreen after a click/key press.
-    // We still force CSS fullscreen immediately, then request native fullscreen when allowed.
+    // Never request fullscreen on the hidden intro/boot screen during gameplay.
+    // That was reopening the video layer when Initialize Operator was clicked.
     document.body.classList.add('fullscreen-mode');
     try{
-      const target=$('bootScreen') || document.documentElement;
+      const app=$('app'), menu=$('mainMenu'), boot=$('bootScreen');
+      let target=document.documentElement;
+      if(app && !app.classList.contains('hidden')) target=app;
+      else if(menu && !menu.classList.contains('hidden')) target=menu;
+      else if(boot && !boot.classList.contains('hidden') && boot.classList.contains('intro-video-playing')) target=boot;
       if(!document.fullscreenElement && target.requestFullscreen){
         target.requestFullscreen().catch(()=>{});
       }
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -5076,8 +5102,8 @@
     const info=$('menuInfo');
     if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
     const routes={
-      continueBtn:()=>{ try{load();}catch(err){} startGame(false); },
-      newGameBtn:()=>startGame(true),
+      continueBtn:()=>{ stopIntroVideoForGame(); try{load();}catch(err){} startGame(false); },
+      newGameBtn:()=>{ stopIntroVideoForGame(); startGame(true); },
       openingStoryBtn:()=>startGame(true),
       introVideoReplayBtn:()=>replayIntroVideo(),
       fractureIndexBtn:()=>openOverlay('fractureOverlay'),
