@@ -26,8 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.28';
-  const MAP_VERSION = 'sector_stage_v10_layout_overhaul';
+  const BUILD_VERSION = '0.9.29';
+  const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -569,16 +569,43 @@
       name: 'Fermilat',
       asset: 'assets/npcs/fermilat.png',
       stages: {
-        // v75: Fermilat is deeper in each route now, closer to the boss side-path.
-        // He is meant to feel like a weird optional NPC you find, not a spawn greeter.
-        // v94: pulled Fermilat off critical one-tile routes. He is reachable from the main path
-        // without blocking the boss corridor or spawning inside wall art.
-        f001: {x:23, y:21, scene:'fermilatF001'},
-        f002: {x:24, y:21, scene:'fermilatF002'},
-        f003: {x:30, y:19, scene:'fermilatF003'},
-        f004: {x:26, y:21, scene:'fermilatF004'},
-        f005: {x:24, y:21, scene:'fermilatF005'},
-        f006: {x:25, y:21, scene:'fermilatF006'}
+        f001:{x:23,y:21,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
+        f004:{x:26,y:21,scene:'fermilatF004'}, f005:{x:24,y:21,scene:'fermilatF005'}, f006:{x:25,y:21,scene:'fermilatF006'},
+        f007:{x:28,y:20,scene:'fermilatF006'}, f008:{x:30,y:18,scene:'fermilatF006'}, f009:{x:27,y:23,scene:'fermilatF006'},
+        f010:{x:32,y:21,scene:'fermilatF006'}, f011:{x:29,y:24,scene:'fermilatF006'}, f012:{x:34,y:22,scene:'fermilatF006'}
+      }
+    },
+    scavenger: {
+      id: 'scavenger',
+      name: 'Rook the Scavenger',
+      asset: 'assets/npcs/scavenger.png',
+      stages: {
+        f001:{x:8,y:8,scene:'npcScavenger'}, f002:{x:10,y:7,scene:'npcScavenger'}, f003:{x:11,y:9,scene:'npcScavenger'},
+        f004:{x:9,y:8,scene:'npcScavenger'}, f005:{x:12,y:10,scene:'npcScavenger'}, f006:{x:10,y:9,scene:'npcScavenger'},
+        f007:{x:13,y:8,scene:'npcScavenger'}, f008:{x:11,y:11,scene:'npcScavenger'}, f009:{x:9,y:10,scene:'npcScavenger'},
+        f010:{x:12,y:9,scene:'npcScavenger'}, f011:{x:10,y:8,scene:'npcScavenger'}, f012:{x:14,y:11,scene:'npcScavenger'}
+      }
+    },
+    medic: {
+      id: 'medic',
+      name: 'Kessa Field Medic',
+      asset: 'assets/npcs/medic.png',
+      stages: {
+        f001:{x:51,y:28,scene:'npcMedic'}, f002:{x:54,y:27,scene:'npcMedic'}, f003:{x:53,y:30,scene:'npcMedic'},
+        f004:{x:50,y:29,scene:'npcMedic'}, f005:{x:55,y:27,scene:'npcMedic'}, f006:{x:57,y:28,scene:'npcMedic'},
+        f007:{x:52,y:31,scene:'npcMedic'}, f008:{x:49,y:29,scene:'npcMedic'}, f009:{x:56,y:30,scene:'npcMedic'},
+        f010:{x:54,y:28,scene:'npcMedic'}, f011:{x:51,y:30,scene:'npcMedic'}, f012:{x:58,y:29,scene:'npcMedic'}
+      }
+    },
+    warden: {
+      id: 'warden',
+      name: 'Ashline Warden',
+      asset: 'assets/npcs/warden.png',
+      stages: {
+        f001:{x:34,y:11,scene:'npcWarden'}, f002:{x:36,y:12,scene:'npcWarden'}, f003:{x:33,y:10,scene:'npcWarden'},
+        f004:{x:39,y:11,scene:'npcWarden'}, f005:{x:37,y:13,scene:'npcWarden'}, f006:{x:35,y:12,scene:'npcWarden'},
+        f007:{x:38,y:10,scene:'npcWarden'}, f008:{x:34,y:12,scene:'npcWarden'}, f009:{x:40,y:11,scene:'npcWarden'},
+        f010:{x:36,y:13,scene:'npcWarden'}, f011:{x:35,y:11,scene:'npcWarden'}, f012:{x:41,y:12,scene:'npcWarden'}
       }
     }
   };
@@ -697,35 +724,60 @@
   function finishNpcTalk(npc){
     ensureNpcState(); ensureSideQuests();
     const key=npcRewardKey(npc);
-    const q=fermilatQuest(npc.stage);
-    const claimedQuest=claimFermilatQuest(npc.stage);
-    if(!claimedQuest){
-      if(q?.status === 'locked') startFermilatQuest(npc.stage);
-      else if(q?.status === 'active') log(`${npc.name} side quest: ${q.progress}/${q.target} anomalies deleted.`);
-      else if(q?.status === 'claimed') log(`${npc.name} side quest already claimed on ${stageDef(npc.stage).id}.`);
-    }
-    if(state.npcRewards[key]){
-      if(!claimedQuest) toast(sideQuestStatusText(npc.stage));
+    const stageTier = stageNumberFromKey(npc.stage);
+
+    if(npc.id === 'fermilat'){
+      const q=fermilatQuest(npc.stage);
+      const claimedQuest=claimFermilatQuest(npc.stage);
+      if(!claimedQuest){
+        if(q?.status === 'locked') startFermilatQuest(npc.stage);
+        else if(q?.status === 'active') log(`${npc.name} side quest: ${q.progress}/${q.target} anomalies deleted.`);
+        else if(q?.status === 'claimed') log(`${npc.name} side quest already claimed on ${stageDef(npc.stage).id}.`);
+      }
+      if(state.npcRewards[key]){
+        if(!claimedQuest) toast(sideQuestStatusText(npc.stage));
+        renderAll();
+        return;
+      }
+      const rewards = {
+        f001:{credits:15, items:{'Vector Cell':1,'Med Patch':1}, label:'Fermilat Creep Stash'},
+        f002:{credits:30, items:{'Vector Cell':2,'Burnt Alloy':1}, label:'Fermilat Ash Stash'},
+        f003:{credits:45, items:{'Vector Cell':2,'Corrupted Catalyst':1}, label:'Fermilat Grave Stash'}
+      }[npc.stage] || {credits:15 + stageTier*6, items:{'Vector Cell':1 + Math.floor(stageTier/4)}, label:'Fermilat Salvage Stash'};
+      state.npcRewards[key]=true;
+      addCredits(rewards.credits||0);
+      Object.entries(rewards.items||{}).forEach(([name,qty])=>addItem(name,qty));
+      log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
+      toast(`${rewards.label} recovered.`);
+      save(true);
       renderAll();
       return;
     }
-    const rewards = {
-      f001:{credits:15, items:{'Vector Cell':1,'Med Patch':1}, label:'Fermilat Creep Stash'},
-      f002:{credits:30, items:{'Vector Cell':2,'Burnt Alloy':1}, label:'Fermilat Ash Stash'},
-      f003:{credits:45, items:{'Vector Cell':2,'Corrupted Catalyst':1}, label:'Fermilat Grave Stash'}
-    }[npc.stage] || {credits:15, items:{'Vector Cell':1}, label:'Fermilat Stash'};
+
+    if(state.npcRewards[key]){
+      toast(`${npc.name} has nothing new right now.`);
+      renderAll();
+      return;
+    }
+
+    let reward = {credits:10 + stageTier*4, items:{'Scrap Metal':1}, label:'Field Contact'};
+    if(npc.id === 'scavenger') reward = {credits:12 + stageTier*5, items:{'Scrap Metal':1 + Math.floor(stageTier/4), 'Burnt Alloy': stageTier >= 4 ? 1 : 0}, label:'Scavenger Drop'};
+    if(npc.id === 'medic') reward = {credits:6 + stageTier*3, items:{'Med Patch':1 + (stageTier >= 7 ? 1 : 0)}, heal:true, label:'Medic Refill'};
+    if(npc.id === 'warden') reward = {credits:10 + stageTier*4, items:{'Vector Cell':1, 'Corrupted Catalyst': stageTier >= 6 ? 1 : 0}, label:'Warden Cache'};
+
     state.npcRewards[key]=true;
-    addCredits(rewards.credits||0);
-    Object.entries(rewards.items||{}).forEach(([name,qty])=>addItem(name,qty));
-    log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
-    toast(`${rewards.label} recovered.`);
+    addCredits(reward.credits||0);
+    Object.entries(reward.items||{}).forEach(([name,qty])=>{ if(qty>0) addItem(name,qty); });
+    if(reward.heal){ state.player.hp = combatStatBlock().maxHp; }
+    log(`${reward.label} secured from ${npc.name}. +${reward.credits||0} credits.`);
+    toast(`${npc.name} helped you.`);
     save(true);
     renderAll();
   }
   function interactNearbyNpc(){
     if(storyActive || battle) return false;
     const npc = nearbyNpc();
-    if(!npc){ toast('No NPC close enough. Find Fermilat deeper in the route and press E.'); return false; }
+    if(!npc){ toast('No NPC close enough. Find a survivor or contact and press E.'); return false; }
     talkToNpc(npc);
     return true;
   }
@@ -786,6 +838,55 @@
     if(npc){ evt.preventDefault(); talkToNpc(npc); }
   }
 
+
+
+  const POSTAPOC_PROP_PRESETS = {
+    barrelRed:   {img:'assets/postapoc/barrel_red.png',   w:28, h:36},
+    barrelBlue:  {img:'assets/postapoc/barrel_blue.png',  w:28, h:36},
+    cardboard1:  {img:'assets/postapoc/cardboard_1.png', w:26, h:20},
+    cardboard2:  {img:'assets/postapoc/cardboard_2.png', w:28, h:22},
+    benchDown:   {img:'assets/postapoc/bench_down.png',  w:56, h:26},
+    benchSide:   {img:'assets/postapoc/bench_side.png',  w:28, h:52},
+    doorRust:    {img:'assets/postapoc/door_rust.png',   w:34, h:52},
+    hatch:       {img:'assets/postapoc/hatch_closed.png',w:28, h:22},
+    hvac:        {img:'assets/postapoc/hvac.png',        w:34, h:26},
+    antenna:     {img:'assets/postapoc/antenna.png',     w:30, h:34},
+    containerGray:{img:'assets/postapoc/container_gray.png',w:74,h:46},
+    containerRed:{img:'assets/postapoc/container_red.png', w:74,h:46},
+    posters:     {img:'assets/postapoc/posters.png',     w:28, h:26},
+    duct:        {img:'assets/postapoc/duct_down.png',   w:22, h:18}
+  };
+  const STAGE_SALVAGE_THEMES = {
+    f001:['benchDown','cardboard1','barrelBlue','posters','doorRust','hatch','barrelRed','benchSide'],
+    f002:['containerGray','barrelRed','hvac','benchSide','antenna','cardboard2','duct','posters'],
+    f003:['benchDown','barrelBlue','cardboard1','containerRed','posters','hatch','barrelRed','duct'],
+    f004:['containerGray','benchSide','doorRust','barrelBlue','hvac','cardboard2','posters','antenna'],
+    f005:['hvac','doorRust','containerRed','benchDown','barrelRed','cardboard1','hatch','duct'],
+    f006:['containerGray','hatch','benchSide','barrelBlue','posters','antenna','hvac','cardboard2'],
+    f007:['containerRed','benchDown','barrelRed','doorRust','cardboard2','posters','hatch','duct'],
+    f008:['benchSide','hvac','barrelBlue','containerGray','posters','antenna','cardboard1','hatch'],
+    f009:['benchDown','cardboard2','containerRed','barrelRed','doorRust','hatch','posters','duct'],
+    f010:['containerGray','benchSide','antenna','hvac','barrelBlue','cardboard1','posters','doorRust'],
+    f011:['benchDown','hatch','containerRed','barrelBlue','cardboard2','hvac','posters','duct'],
+    f012:['containerGray','doorRust','benchSide','barrelRed','antenna','cardboard1','hatch','posters']
+  };
+  const STAGE_SALVAGE_POINTS = [[6,6],[15,9],[25,11],[36,8],[46,13],[58,16],[19,27],[49,31]];
+  function stageNumberFromKey(key='f001'){ return parseInt(String(key).replace(/\D/g,''), 10) || 1; }
+  const STAGE_SALVAGE_OBJECTS = Object.fromEntries(Object.keys(STAGE_SALVAGE_THEMES).map(key => {
+    const theme = STAGE_SALVAGE_THEMES[key];
+    const stageNum = stageNumberFromKey(key);
+    return [key, theme.map((name, i) => {
+      const preset = POSTAPOC_PROP_PRESETS[name];
+      const base = STAGE_SALVAGE_POINTS[i % STAGE_SALVAGE_POINTS.length];
+      return {
+        x: base[0] + ((stageNum + i) % 4),
+        y: base[1] + ((stageNum * 2 + i) % 5),
+        img: preset.img,
+        w: preset.w,
+        h: preset.h
+      };
+    })];
+  }));
 
   const mapArt = {
     ground: [
@@ -956,12 +1057,15 @@
   };
   function stageVisualPack(){ return stageVisualPacks[state?.currentStage || ''] || null; }
   function stageVisualAssetPaths(){
-    return Object.values(stageVisualPacks).flatMap(pack => [
-      ...(pack.ground || []),
-      ...(pack.blocked || []),
-      pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit,
-      ...((pack.props || []).map(p => p.img))
-    ]).filter(Boolean);
+    return [
+      ...Object.values(stageVisualPacks).flatMap(pack => [
+        ...(pack.ground || []),
+        ...(pack.blocked || []),
+        pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit,
+        ...((pack.props || []).map(p => p.img))
+      ]),
+      ...Object.values(STAGE_SALVAGE_OBJECTS).flatMap(list => list.map(p => p.img))
+    ].filter(Boolean);
   }
 
   // v91: the imported ground PNGs include edge/corner/platform pieces.
@@ -2415,7 +2519,7 @@
       'assets/operators/av001/portrait.png',
       'assets/operators/av001/battle.png',
       'assets/operators/av001/sprites/map_sprite.png',
-      NPC_DEFS.fermilat.asset,
+      ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
       ...mapArt.blocked,
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit,
@@ -2433,7 +2537,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.28 expanded layout overhaul pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.29 NPC and salvage prop pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3038,7 +3142,19 @@
       kicker:'GRAVE CORE RECOVERED', speaker:'AVOS',
       lines:['Boss-class entity deleted. Grave Core stabilized.', 'Extraction route is now authorized. Head to the white exit marker before the graveyard develops opinions again.']
     }
-  };
+  ,
+    npcScavenger: {
+      kicker:'FIELD CONTACT // SCAVENGER', speaker:'ROOK',
+      lines:['Rook the Scavenger: I am not lost. I am inventory-positive in an unexpected location.', 'Keep the weird things off me and I will keep slipping salvage into your route. Fair trade.']
+    },
+    npcMedic: {
+      kicker:'FIELD CONTACT // MEDIC', speaker:'KESSA',
+      lines:['Kessa: If you are bleeding internally, externally, or cosmically, line up single-file.', 'Take the med supplies and stop trying to die dramatically in active fracture zones.']
+    },
+    npcWarden: {
+      kicker:'FIELD CONTACT // WARDEN', speaker:'WARDEN',
+      lines:['Ashline Warden: These routes are uglier than the reports said. That means the reports were honest.', 'I marked a few safer pockets and left a cache. If the boss breathes on you, try not to take it personally.']
+    }};
   function safeHtml(v){return String(v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
   function stageStoryKey(base){
     const key=currentStageKey();
@@ -3955,7 +4071,8 @@
 
   function drawMapProps(){
     const pack = stageVisualPack();
-    const props = [...mapArt.props, ...((pack && pack.props) || [])];
+    const salvage = STAGE_SALVAGE_OBJECTS[currentStageKey()] || [];
+    const props = [...mapArt.props, ...((pack && pack.props) || []), ...salvage];
     props.forEach(p=>{
       const tile = tileAt(p.x,p.y);
       // Only draw decorative props on open floor so they never cover caches, NPCs, doors, or exits.
