@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.25 // PLAYTEST SIX MAP PASS',
+    'Version 0.9.26 // TWELVE STAGE EXPANSION PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -1627,14 +1627,14 @@
   // v103: Story Archive lets players replay unlocked narrative scenes from Mission Briefing.
   const STORY_ARCHIVE_ENTRIES = [
     {key:'intro', chapter:'Prologue', title:'The Ash Event', desc:'Vyra wakes up, AVOS explains how reality got aggressively educational.', unlock:()=>true},
-    {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || ['f002','f003','f004','f005','f006'].includes(currentStageKey())},
-    {key:'f002Intro', chapter:'Chapter 2', title:'Broken Signal', desc:'The outpost route comes online and the ash signal starts screaming.', unlock:()=>playerMeetsStageRequirement('f002') || !!state.stages?.f002?.unlocked || ['f002','f003','f004','f005','f006'].includes(currentStageKey())},
-    {key:'f002Clear', chapter:'Chapter 2', title:'The Broken Signal Answers', desc:'Outpost Core recovered and the Neon Graveyard frequency is exposed.', unlock:()=>!!state.stages?.f002?.complete || ['f003','f004','f005','f006'].includes(currentStageKey())},
-    {key:'f003Intro', chapter:'Chapter 3', title:'Dead Frequencies', desc:'Vyra enters the neon memorial grid where the dead signal talks back.', unlock:()=>playerMeetsStageRequirement('f003') || !!state.stages?.f003?.unlocked || ['f003','f004','f005','f006'].includes(currentStageKey())},
-    {key:'f003Clear', chapter:'Chapter 3', title:'The Graveyard Remembers', desc:'The dead frequency is silenced and the transit route opens.', unlock:()=>!!state.stages?.f003?.complete || ['f004','f005','f006'].includes(currentStageKey())},
-    {key:'f004Intro', chapter:'Chapter 4', title:'Below the Ashline', desc:'The broken subway route under the ashline comes online.', unlock:()=>playerMeetsStageRequirement('f004') || !!state.stages?.f004?.unlocked || ['f004','f005','f006'].includes(currentStageKey())},
-    {key:'f004Clear', chapter:'Chapter 4', title:'The Rail Signal Dies', desc:'Transit Nexus Core recovered and the lab frequency unlocks.', unlock:()=>!!state.stages?.f004?.complete || ['f005','f006'].includes(currentStageKey())},
-    {key:'f005Intro', chapter:'Chapter 5', title:'Prism Wound', desc:'The Glass Storm Lab route opens with unstable research records.', unlock:()=>playerMeetsStageRequirement('f005') || !!state.stages?.f005?.unlocked || ['f005','f006'].includes(currentStageKey())},
+    {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || ['f002','f003','f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f002Intro', chapter:'Chapter 2', title:'Broken Signal', desc:'The outpost route comes online and the ash signal starts screaming.', unlock:()=>playerMeetsStageRequirement('f002') || !!state.stages?.f002?.unlocked || ['f002','f003','f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f002Clear', chapter:'Chapter 2', title:'The Broken Signal Answers', desc:'Outpost Core recovered and the Neon Graveyard frequency is exposed.', unlock:()=>!!state.stages?.f002?.complete || ['f003','f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f003Intro', chapter:'Chapter 3', title:'Dead Frequencies', desc:'Vyra enters the neon memorial grid where the dead signal talks back.', unlock:()=>playerMeetsStageRequirement('f003') || !!state.stages?.f003?.unlocked || ['f003','f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f003Clear', chapter:'Chapter 3', title:'The Graveyard Remembers', desc:'The dead frequency is silenced and the transit route opens.', unlock:()=>!!state.stages?.f003?.complete || ['f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f004Intro', chapter:'Chapter 4', title:'Below the Ashline', desc:'The broken subway route under the ashline comes online.', unlock:()=>playerMeetsStageRequirement('f004') || !!state.stages?.f004?.unlocked || ['f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f004Clear', chapter:'Chapter 4', title:'The Rail Signal Dies', desc:'Transit Nexus Core recovered and the lab frequency unlocks.', unlock:()=>!!state.stages?.f004?.complete || ['f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
+    {key:'f005Intro', chapter:'Chapter 5', title:'Prism Wound', desc:'The Glass Storm Lab route opens with unstable research records.', unlock:()=>playerMeetsStageRequirement('f005') || !!state.stages?.f005?.unlocked || ['f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
     {key:'f005Clear', chapter:'Chapter 5', title:'The Lab Stops Reflecting', desc:'Prism Wound Core recovered and the Vector Core Spire wakes.', unlock:()=>!!state.stages?.f005?.complete || currentStageKey()==='f006'},
     {key:'f006Intro', chapter:'Chapter 6', title:'Heart of the Fault', desc:'The Vector Core Spire opens as the deepest current route.', unlock:()=>playerMeetsStageRequirement('f006') || !!state.stages?.f006?.unlocked || currentStageKey()==='f006'},
     {key:'f006Clear', chapter:'Chapter 6', title:'The Core Still Beats', desc:'Vector Heart Core recovered. The next arc is teased.', unlock:()=>!!state.stages?.f006?.complete}
@@ -2385,7 +2385,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -3185,7 +3185,7 @@
   function tileWalkableForRoute(x,y,target){
     const c=tileAt(x,y);
     if(c==='#') return false;
-    if(c==='D' && !(target && target.x===x && target.y===y)) return false;
+    if(c==='D' && !(state.flags.bossUnlocked || state.flags.anomaliesCleared>=3 || state.flags.key) && !(target && target.x===x && target.y===y)) return false;
     return true;
   }
   function routePathToObjective(){
@@ -3369,7 +3369,13 @@
       f003:'Shade Core secured. The dead frequency is silent, and the Transit Ruins route is now visible.',
       f004:'Transit Nexus Core secured. The Ashline tunnels are stable, and Glass Storm Lab is now exposed.',
       f005:'Prism Wound Core secured. The lab stopped reflecting threats, and Vector Core Spire is now awake.',
-      f006:'Vector Heart Core secured. The current route chain is stable, and the next arc is locked for a future build.'
+      f006:'Vector Heart Core secured. The current route chain is stable, and the Cinder Express Yard is now visible.',
+      f007:'Cinderline Core secured. The rail fire is contained, and the Flooded Data Vault is now reachable.',
+      f008:'Drowned Archive Core secured. The vault stops leaking memories, and Rust Orchard is now mapped.',
+      f009:'Harvest Alloy Core secured. The orchard is stable, and Blacksite Observatory is now exposed.',
+      f010:'Parallax Lens Core secured. The sky stops watching for one second, and Cryo Basilica opens.',
+      f011:'Basilica Wyrm Core secured. The ice route is clear, and Ash Crown Citadel is now online.',
+      f012:'Ash Crown Core secured. Route chain 12/20 is stabilized. Eight endgame fractures remain for future expansion.'
     })[def.key] || `${def.title} cleared. Core stabilized.`;
   }
 
@@ -3776,7 +3782,21 @@
     };
   }
 
-  function gainXp(n){ state.player.xp+=n; while(state.player.xp>=state.player.nextXp){state.player.xp-=state.player.nextXp; state.player.level++; state.player.nextXp=Math.floor(state.player.nextXp*1.35); state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1; state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; log(`Player Level increased to ${state.player.level}.`); unlockNextStages();} queueAutosave(); }
+  function gainXp(n){
+    state.player.level = Math.max(1, Math.min(99, state.player.level || 1));
+    if(state.player.level >= 99){ state.player.level=99; state.player.xp=0; state.player.nextXp=nextXpForPlayerLevel(99); queueAutosave(); return; }
+    state.player.xp+=Math.max(0, n||0);
+    while(state.player.level < 99 && state.player.xp>=state.player.nextXp){
+      state.player.xp-=state.player.nextXp;
+      state.player.level++;
+      state.player.nextXp=nextXpForPlayerLevel(state.player.level);
+      state.player.maxHp+=8; state.player.maxEp+=4; state.player.atk+=1; state.player.def+=1;
+      state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp;
+      log(`Player Level increased to ${state.player.level}.`); unlockNextStages();
+    }
+    if(state.player.level >= 99){ state.player.level=99; state.player.xp=0; state.player.nextXp=nextXpForPlayerLevel(99); toast('Player Level cap reached: 99'); }
+    queueAutosave();
+  }
   function useMedPatch(){ ensureUpgrades(); if((state.inventory['Med Patch']||0)<=0){toast('No Med Patch available.');return false;} if(state.player.hp>=combatStatBlock().maxHp){toast('HP already full.');return false;} const heal=25+(state.upgrades.medtech||0)*10; const before=state.player.hp; state.inventory['Med Patch']--; if(state.inventory['Med Patch']<=0) delete state.inventory['Med Patch']; state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); const gained=state.player.hp-before; SfxManager.item(); log(`Used Med Patch. +${gained} HP.`); renderAll(); return gained; }
   function useVectorCell(mode='field'){
     ensureUpgrades(); ensureEquipment();
@@ -4861,5 +4881,435 @@
     open:(id)=>openOverlay(id),
     fullscreen:()=>toggleFullscreenMode()
   };
+
+
+  // v116: Six-stage expansion. F-007 through F-012 are larger 60x36 routes with extra locked gates.
+  const stage7Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#................................#####........#............#",
+      "#...........C..........E.........#####........#.......C....#",
+      "#..............##..........................................#",
+      "#..............##..........................................#",
+      "#################................#####........#....E.......#",
+      "#################................#####........#............#",
+      "#################...H............#####........#............#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...............######..########",
+      "####......................###...............######..########",
+      "####......................#.................######..########",
+      "####......................###..........C....######..########",
+      "####......................###...............######..########",
+      "####......................###...............###............#",
+      "####......................###...............###............#",
+      "####..........E...........###...............###............#",
+      "####........................................###............#",
+      "####....#####..########.....................###............#",
+      "####......................###...............###............#",
+      "####......................###................DD............#",
+      "####......................###........................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###..........D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  const stage8Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#.......................#........#####.....................#",
+      "#...........C..........E#........#####................C....#",
+      "#..............##.......#..................................#",
+      "#..............##.......#..................................#",
+      "#################................#####.............E.......#",
+      "#################................#####.....................#",
+      "#################...H...#........#####.....................#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...............######..########",
+      "####......................###...............######..########",
+      "####......................###...............######..########",
+      "####......................###..........C....######..########",
+      "####......................###...............######..########",
+      "####......................###...............###............#",
+      "####......................###..#####..##.##.###............#",
+      "####..........E...........###...............###............#",
+      "####........................................###............#",
+      "####........................................###............#",
+      "####......................###...............###............#",
+      "####......................###................DD............#",
+      "####......................###........................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###..........D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  const stage9Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#................................#####.....................#",
+      "#...........C..........E.........#####................C....#",
+      "#..............##..........................................#",
+      "#..............##..........................................#",
+      "#################................#####.............E.......#",
+      "#################................#####.....................#",
+      "#################...H............#####.....................#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...........##########..########",
+      "####......................###...............######..########",
+      "####......................###.....#.........######..########",
+      "####......................###.....#....C....######..########",
+      "####......................###.....#.........######..########",
+      "####......................###.....#.........###............#",
+      "####......................###.....#.........###............#",
+      "####..........E...........###.....#.........###............#",
+      "####........................................###............#",
+      "####........................................###............#",
+      "####......................###.....#.........###............#",
+      "####......................###.....#..........DD............#",
+      "####......................###.....#..................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###.....#....D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  const stage10Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#................................#####........#............#",
+      "#...........C..........E.........#####........#.......C....#",
+      "#..............##..........................................#",
+      "#..............##..........................................#",
+      "#################................#####........#....E.......#",
+      "#################................#####........#............#",
+      "#################...H............#####........#............#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...............######..########",
+      "####......................###...............######..########",
+      "####......................#.................######..########",
+      "####......................###..........C....######..########",
+      "####......................###...............######..########",
+      "####......................###...............###............#",
+      "####......................###...............###............#",
+      "####..........E...........###...............###............#",
+      "####........................................###............#",
+      "####....#####..########.....................###............#",
+      "####......................###...............###............#",
+      "####......................###................DD............#",
+      "####......................###........................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###..........D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  const stage11Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#.......................#........#####.....................#",
+      "#...........C..........E#........#####................C....#",
+      "#..............##.......#..................................#",
+      "#..............##.......#..................................#",
+      "#################................#####.............E.......#",
+      "#################................#####.....................#",
+      "#################...H...#........#####.....................#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...............######..########",
+      "####......................###...............######..########",
+      "####......................###...............######..########",
+      "####......................###..........C....######..########",
+      "####......................###...............######..########",
+      "####......................###...............###............#",
+      "####......................###..#####..##.##.###............#",
+      "####..........E...........###...............###............#",
+      "####........................................###............#",
+      "####........................................###............#",
+      "####......................###...............###............#",
+      "####......................###................DD............#",
+      "####......................###........................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###..........D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  const stage12Map = [
+      "############################################################",
+      "#..............#############################################",
+      "#..............##................#####.....................#",
+      "#.P...S........##................#####.....................#",
+      "#................................#####.....................#",
+      "#...........C..........E.........#####................C....#",
+      "#..............##..........................................#",
+      "#..............##..........................................#",
+      "#################................#####.............E.......#",
+      "#################................#####.....................#",
+      "#################...H............#####.....................#",
+      "#################................#####.....................#",
+      "##################..##########..######.....................#",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..##########..##################..########",
+      "##################..#########...........##########..########",
+      "####......................###...............######..########",
+      "####......................###.....#.........######..########",
+      "####......................###.....#....C....######..########",
+      "####......................###.....#.........######..########",
+      "####......................###.....#.........###............#",
+      "####......................###.....#.........###............#",
+      "####..........E...........###.....#.........###............#",
+      "####........................................###............#",
+      "####........................................###............#",
+      "####......................###.....#.........###............#",
+      "####......................###.....#..........DD............#",
+      "####......................###.....#..................B..X..#",
+      "####......................###......C........###............#",
+      "####....L.................###.....#....D....###............#",
+      "####......................###...............###............#",
+      "####......................#####################............#",
+      "###############################################............#",
+      "###############################################............#",
+      "############################################################"
+    ];
+
+  STAGE_DEFS.f006.nextKey = 'f007';
+  Object.assign(STAGE_DEFS, {
+    f007: {key:'f007', id:'F-007', title:'Cinder Express Yard', chapter:'Chapter 7 // Cinder Rails', levelReq:30, map:normalizeMapRows(stage7Map), threat:'BRUTAL // RAILYARD CLASS', objective:'rail terminal → 3 cinder anomalies → cinderline boss → extraction', reward:'300 Credits, Cinderline Core, Vector Cells, Vyra Shards', rewardCredits:300, rewardShards:14, clearXp:1350, nextKey:'f008', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
+    f008: {key:'f008', id:'F-008', title:'Flooded Data Vault', chapter:'Chapter 8 // Drowned Archive', levelReq:36, map:normalizeMapRows(stage8Map), threat:'BRUTAL+ // VAULT CLASS', objective:'vault terminal → 3 drowned data anomalies → archive boss → extraction', reward:'360 Credits, Drowned Archive Core, Catalysts, Vyra Shards', rewardCredits:360, rewardShards:16, clearXp:1770, nextKey:'f009', bg:'assets/battle_backgrounds/toxic_sewers_battle.png'},
+    f009: {key:'f009', id:'F-009', title:'Rust Orchard', chapter:'Chapter 9 // Harvest Alloy', levelReq:42, map:normalizeMapRows(stage9Map), threat:'NIGHTMARE // ORCHARD CLASS', objective:'orchard terminal → 3 rust growth anomalies → harvest boss → extraction', reward:'430 Credits, Harvest Alloy Core, Rust Cores, Vyra Shards', rewardCredits:430, rewardShards:18, clearXp:2190, nextKey:'f010', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
+    f010: {key:'f010', id:'F-010', title:'Blacksite Observatory', chapter:'Chapter 10 // Parallax Eye', levelReq:49, map:normalizeMapRows(stage10Map), threat:'NIGHTMARE+ // OBSERVATORY CLASS', objective:'blacksite terminal → 3 sky-lens anomalies → parallax boss → extraction', reward:'520 Credits, Parallax Lens Core, Catalysts, Vyra Shards', rewardCredits:520, rewardShards:20, clearXp:2610, nextKey:'f011', bg:'assets/battle_backgrounds/neon_graveyard_battle.png'},
+    f011: {key:'f011', id:'F-011', title:'Cryo Basilica', chapter:'Chapter 11 // Frozen Prayer', levelReq:56, map:normalizeMapRows(stage11Map), threat:'APEX // BASILICA CLASS', objective:'basilica terminal → 3 cryo relic anomalies → basilica boss → extraction', reward:'620 Credits, Basilica Wyrm Core, Vector Cells, Vyra Shards', rewardCredits:620, rewardShards:22, clearXp:3030, nextKey:'f012', bg:'assets/battle_backgrounds/neon_graveyard_battle.png'},
+    f012: {key:'f012', id:'F-012', title:'Ash Crown Citadel', chapter:'Chapter 12 // Crown of Static', levelReq:63, map:normalizeMapRows(stage12Map), threat:'APEX+ // CITADEL CLASS', objective:'citadel terminal → 3 crown anomalies → ash crown boss → extraction', reward:'750 Credits, Ash Crown Core, Rust Cores, Vyra Shards', rewardCredits:750, rewardShards:25, clearXp:3450, nextKey:null, bg:'assets/battle_backgrounds/toxic_sewers_battle.png'}
+  });
+
+  Object.assign(ENCOUNTER_SLOTS, {
+    f007: {
+      '23,5': {type:'anomaly', index:20},
+      '51,8': {type:'anomaly', index:23},
+      '14,23': {type:'anomaly', index:26},
+      '53,28': {type:'boss', index:0}
+    },
+    f008: {
+      '23,5': {type:'anomaly', index:28},
+      '51,8': {type:'anomaly', index:31},
+      '14,23': {type:'anomaly', index:34},
+      '53,28': {type:'boss', index:3}
+    },
+    f009: {
+      '23,5': {type:'anomaly', index:36},
+      '51,8': {type:'anomaly', index:39},
+      '14,23': {type:'anomaly', index:42},
+      '53,28': {type:'boss', index:6}
+    },
+    f010: {
+      '23,5': {type:'anomaly', index:44},
+      '51,8': {type:'anomaly', index:47},
+      '14,23': {type:'anomaly', index:50},
+      '53,28': {type:'boss', index:9}
+    },
+    f011: {
+      '23,5': {type:'anomaly', index:52},
+      '51,8': {type:'anomaly', index:55},
+      '14,23': {type:'anomaly', index:58},
+      '53,28': {type:'boss', index:12}
+    },
+    f012: {
+      '23,5': {type:'anomaly', index:60},
+      '51,8': {type:'anomaly', index:63},
+      '14,23': {type:'anomaly', index:66},
+      '53,28': {type:'boss', index:15}
+    }
+  });
+
+  Object.assign(STAGE_ENCOUNTER_DEFS, {
+    f007: {
+      '23,5': {id:'AN-112', display:'Cinder Rail Grazer', hp:540, atk:61, xp:340, credits:240, loot:['Burnt Alloy','Corrupted Catalyst'], note:'Cinder Express Yard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-113', display:'Ember Signal Ghoul', hp:585, atk:63, xp:362, credits:258, loot:['Corrupted Catalyst','Burnt Alloy'], note:'Cinder Express Yard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-114', display:'Furnace Track Reaver', hp:630, atk:65, xp:384, credits:276, loot:['Rust Core','Outpost Access Chip'], note:'Cinder Express Yard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-031', display:'Cinderline Locomaw', hp:1100, atk:80, xp:740, credits:420, loot:['Cinderline Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Cinderline Core', note:'Boss-class guardian for Cinder Express Yard. Defeating it stabilizes route F-007 and moves the 20-stage chain forward.'}
+    },
+    f008: {
+      '23,5': {id:'AN-115', display:'Archive Leech', hp:634, atk:69, xp:417, credits:300, loot:['Corrupted Catalyst','Burnt Alloy'], note:'Flooded Data Vault anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-116', display:'Memory Drowned', hp:679, atk:71, xp:439, credits:318, loot:['Rust Core','Outpost Access Chip'], note:'Flooded Data Vault anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-117', display:'Cipher Mold Brute', hp:724, atk:73, xp:461, credits:336, loot:['Vector Cell','Med Patch'], note:'Flooded Data Vault anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-032', display:'The Drowned Librarian', hp:1310, atk:91, xp:903, credits:517, loot:['Drowned Archive Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Drowned Archive Core', note:'Boss-class guardian for Flooded Data Vault. Defeating it stabilizes route F-008 and moves the 20-stage chain forward.'}
+    },
+    f009: {
+      '23,5': {id:'AN-118', display:'Ironroot Stalker', hp:728, atk:78, xp:494, credits:360, loot:['Rust Core','Outpost Access Chip'], note:'Rust Orchard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-119', display:'Spore-Tin Wretch', hp:773, atk:80, xp:516, credits:378, loot:['Vector Cell','Med Patch'], note:'Rust Orchard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-120', display:'Orchard Sawbeast', hp:818, atk:82, xp:538, credits:396, loot:['Scrap Metal','Vector Cell'], note:'Rust Orchard anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-033', display:'Harvest Alloy Tyrant', hp:1520, atk:102, xp:1066, credits:614, loot:['Harvest Alloy Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Harvest Alloy Core', note:'Boss-class guardian for Rust Orchard. Defeating it stabilizes route F-009 and moves the 20-stage chain forward.'}
+    },
+    f010: {
+      '23,5': {id:'AN-121', display:'Starved Lens Imp', hp:831, atk:87, xp:578, credits:425, loot:['Vector Cell','Med Patch'], note:'Blacksite Observatory anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-122', display:'Nullscope Adept', hp:876, atk:89, xp:600, credits:443, loot:['Scrap Metal','Vector Cell'], note:'Blacksite Observatory anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-123', display:'Orbital Husk', hp:921, atk:91, xp:622, credits:461, loot:['Med Patch','Rust Core'], note:'Blacksite Observatory anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-034', display:'Parallax Watcher', hp:1745, atk:114, xp:1242, credits:718, loot:['Parallax Lens Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Parallax Lens Core', note:'Boss-class guardian for Blacksite Observatory. Defeating it stabilizes route F-010 and moves the 20-stage chain forward.'}
+    },
+    f011: {
+      '23,5': {id:'AN-124', display:'Frost-Vector Acolyte', hp:934, atk:96, xp:662, credits:490, loot:['Scrap Metal','Vector Cell'], note:'Cryo Basilica anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-125', display:'Relic Ice Maw', hp:979, atk:98, xp:684, credits:508, loot:['Med Patch','Rust Core'], note:'Cryo Basilica anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-126', display:'Shrine Null Saint', hp:1024, atk:100, xp:706, credits:526, loot:['Burnt Alloy','Corrupted Catalyst'], note:'Cryo Basilica anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-035', display:'Basilica Wyrm', hp:1970, atk:127, xp:1418, credits:822, loot:['Basilica Wyrm Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Basilica Wyrm Core', note:'Boss-class guardian for Cryo Basilica. Defeating it stabilizes route F-011 and moves the 20-stage chain forward.'}
+    },
+    f012: {
+      '23,5': {id:'AN-127', display:'Crownless Butcher', hp:1037, atk:106, xp:746, credits:555, loot:['Med Patch','Rust Core'], note:'Ash Crown Citadel anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '51,8': {id:'AN-128', display:'Throne Static Lich', hp:1082, atk:108, xp:768, credits:573, loot:['Burnt Alloy','Corrupted Catalyst'], note:'Ash Crown Citadel anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '14,23': {id:'AN-129', display:'Royal Ash Seraph', hp:1127, atk:110, xp:790, credits:591, loot:['Corrupted Catalyst','Burnt Alloy'], note:'Ash Crown Citadel anomaly. This enemy is tuned for the 20-stage level curve and guards a larger locked route branch.'},
+      '53,28': {id:'BOSS-036', display:'Ash Crown Regent', hp:2195, atk:139, xp:1594, credits:926, loot:['Ash Crown Core','Corrupted Catalyst','Vector Cell','Rust Core'], bossReward:'Ash Crown Core', note:'Boss-class guardian for Ash Crown Citadel. Defeating it stabilizes route F-012 and moves the 20-stage chain forward.'}
+    }
+  });
+
+  Object.assign(NPC_DEFS.fermilat.stages, {
+    f007: {x:39, y:25, scene:'fermilatF007'},
+    f008: {x:39, y:25, scene:'fermilatF008'},
+    f009: {x:39, y:25, scene:'fermilatF009'},
+    f010: {x:39, y:25, scene:'fermilatF010'},
+    f011: {x:39, y:25, scene:'fermilatF011'},
+    f012: {x:39, y:25, scene:'fermilatF012'}
+  });
+
+  Object.assign(FERMILAT_FAVOR_DEFS, {
+    f007:{title:'Cinder Express Yard Favor', target:7, credits:210, syncXp:330, skillXp:430, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Fermilat wants 7 anomalies deleted in Cinder Express Yard before he calls the route survivable.', done:'Fermilat admits Cinder Express Yard is slightly less horrible now. This is his version of praise.'},
+    f008:{title:'Flooded Data Vault Favor', target:8, credits:255, syncXp:400, skillXp:510, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Fermilat wants 8 anomalies deleted in Flooded Data Vault before he calls the route survivable.', done:'Fermilat admits Flooded Data Vault is slightly less horrible now. This is his version of praise.'},
+    f009:{title:'Rust Orchard Favor', target:9, credits:300, syncXp:470, skillXp:590, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':1}, ask:'Fermilat wants 9 anomalies deleted in Rust Orchard before he calls the route survivable.', done:'Fermilat admits Rust Orchard is slightly less horrible now. This is his version of praise.'},
+    f010:{title:'Blacksite Observatory Favor', target:10, credits:345, syncXp:540, skillXp:670, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':2}, ask:'Fermilat wants 10 anomalies deleted in Blacksite Observatory before he calls the route survivable.', done:'Fermilat admits Blacksite Observatory is slightly less horrible now. This is his version of praise.'},
+    f011:{title:'Cryo Basilica Favor', target:11, credits:390, syncXp:610, skillXp:750, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Fermilat wants 11 anomalies deleted in Cryo Basilica before he calls the route survivable.', done:'Fermilat admits Cryo Basilica is slightly less horrible now. This is his version of praise.'},
+    f012:{title:'Ash Crown Citadel Favor', target:12, credits:435, syncXp:680, skillXp:830, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Fermilat wants 12 anomalies deleted in Ash Crown Citadel before he calls the route survivable.', done:'Fermilat admits Ash Crown Citadel is slightly less horrible now. This is his version of praise.'}
+  });
+
+  Object.assign(stageVisualPacks, {
+    f007: {...stageVisualPacks.f004, floorTint:'rgba(40, 80, 120, .18)', pathTint:'rgba(90, 150, 220, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f004 && stageVisualPacks.f004.props)||[]), {x:35,y:29,img:(stageVisualPacks.f004.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f004.chest||mapArt.chest),w:42,h:42}] },
+    f008: {...stageVisualPacks.f005, floorTint:'rgba(65, 88, 135, .18)', pathTint:'rgba(105, 140, 202, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f005 && stageVisualPacks.f005.props)||[]), {x:35,y:29,img:(stageVisualPacks.f005.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f005.chest||mapArt.chest),w:42,h:42}] },
+    f009: {...stageVisualPacks.f006, floorTint:'rgba(90, 96, 150, .18)', pathTint:'rgba(120, 130, 184, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f006 && stageVisualPacks.f006.props)||[]), {x:35,y:29,img:(stageVisualPacks.f006.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f006.chest||mapArt.chest),w:42,h:42}] },
+    f010: {...stageVisualPacks.f003, floorTint:'rgba(115, 104, 165, .18)', pathTint:'rgba(135, 120, 166, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f003 && stageVisualPacks.f003.props)||[]), {x:35,y:29,img:(stageVisualPacks.f003.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f003.chest||mapArt.chest),w:42,h:42}] },
+    f011: {...stageVisualPacks.f002, floorTint:'rgba(140, 112, 180, .18)', pathTint:'rgba(150, 110, 148, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f002 && stageVisualPacks.f002.props)||[]), {x:35,y:29,img:(stageVisualPacks.f002.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f002.chest||mapArt.chest),w:42,h:42}] },
+    f012: {...stageVisualPacks.f001, floorTint:'rgba(165, 120, 195, .18)', pathTint:'rgba(165, 100, 130, .13)', wallEdge:'rgba(255,255,255,.20)', props:[...((stageVisualPacks.f001 && stageVisualPacks.f001.props)||[]), {x:35,y:29,img:(stageVisualPacks.f001.lore||mapArt.lore),w:44,h:44}, {x:54,y:6,img:(stageVisualPacks.f001.chest||mapArt.chest),w:42,h:42}] }
+  });
+
+  Object.assign(stageFloorStyles, {
+    f007: {base:'#23120d', alt:'#2e1811', grit:'rgba(255,142,66,.10)', line:'rgba(255,204,108,.07)'},
+    f008: {base:'#071b22', alt:'#0b2933', grit:'rgba(80,220,255,.10)', line:'rgba(120,255,230,.07)'},
+    f009: {base:'#1d160b', alt:'#2a210f', grit:'rgba(255,180,70,.10)', line:'rgba(180,255,120,.06)'},
+    f010: {base:'#0a0d22', alt:'#11183a', grit:'rgba(140,170,255,.10)', line:'rgba(255,255,255,.05)'},
+    f011: {base:'#101e2e', alt:'#142944', grit:'rgba(160,220,255,.10)', line:'rgba(200,255,255,.06)'},
+    f012: {base:'#220b15', alt:'#330f20', grit:'rgba(255,76,130,.11)', line:'rgba(255,220,180,.06)'}
+  });
+
+  Object.assign(STORY_SCENES, {
+    f007Intro: {kicker:'F-007 INTRO // CINDER EXPRESS YARD', title:'Cinder Rails', tag:'Level Req 30 // Route 7/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cinder Express Yard is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f007Terminal: {kicker:'F-007 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f007Lore: {kicker:'F-007 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f007BossIntro: {kicker:'F-007 BOSS // CORE GUARDIAN', title:'CINDERLINE LOCOMAW', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Cinderline Locomaw. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f007BossDefeated: {kicker:'F-007 BOSS DELETED // CORE EXPOSED', title:'CINDERLINE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 7/20.'}]},
+    f007Clear: {kicker:'CHAPTER 7 COMPLETE // CINDERLINE CORE', title:'CINDER EXPRESS YARD STABILIZED', tag:'Next route: Flooded Data Vault', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cinderline Core secured. Cinder Express Yard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF007: {kicker:'FERMILAT CONTACT // F-007', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cinder Express Yard. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    f008Intro: {kicker:'F-008 INTRO // FLOODED DATA VAULT', title:'Drowned Archive', tag:'Level Req 36 // Route 8/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Flooded Data Vault is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f008Terminal: {kicker:'F-008 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f008Lore: {kicker:'F-008 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f008BossIntro: {kicker:'F-008 BOSS // CORE GUARDIAN', title:'THE DROWNED LIBRARIAN', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: The Drowned Librarian. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f008BossDefeated: {kicker:'F-008 BOSS DELETED // CORE EXPOSED', title:'DROWNED ARCHIVE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 8/20.'}]},
+    f008Clear: {kicker:'CHAPTER 8 COMPLETE // DROWNED ARCHIVE CORE', title:'FLOODED DATA VAULT STABILIZED', tag:'Next route: Rust Orchard', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Drowned Archive Core secured. Flooded Data Vault is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF008: {kicker:'FERMILAT CONTACT // F-008', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Flooded Data Vault. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    f009Intro: {kicker:'F-009 INTRO // RUST ORCHARD', title:'Harvest Alloy', tag:'Level Req 42 // Route 9/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Rust Orchard is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f009Terminal: {kicker:'F-009 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f009Lore: {kicker:'F-009 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f009BossIntro: {kicker:'F-009 BOSS // CORE GUARDIAN', title:'HARVEST ALLOY TYRANT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Harvest Alloy Tyrant. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f009BossDefeated: {kicker:'F-009 BOSS DELETED // CORE EXPOSED', title:'HARVEST ALLOY CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 9/20.'}]},
+    f009Clear: {kicker:'CHAPTER 9 COMPLETE // HARVEST ALLOY CORE', title:'RUST ORCHARD STABILIZED', tag:'Next route: Blacksite Observatory', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Harvest Alloy Core secured. Rust Orchard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF009: {kicker:'FERMILAT CONTACT // F-009', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Rust Orchard. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    f010Intro: {kicker:'F-010 INTRO // BLACKSITE OBSERVATORY', title:'Parallax Eye', tag:'Level Req 49 // Route 10/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Blacksite Observatory is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f010Terminal: {kicker:'F-010 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f010Lore: {kicker:'F-010 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f010BossIntro: {kicker:'F-010 BOSS // CORE GUARDIAN', title:'PARALLAX WATCHER', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Parallax Watcher. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f010BossDefeated: {kicker:'F-010 BOSS DELETED // CORE EXPOSED', title:'PARALLAX LENS CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 10/20.'}]},
+    f010Clear: {kicker:'CHAPTER 10 COMPLETE // PARALLAX LENS CORE', title:'BLACKSITE OBSERVATORY STABILIZED', tag:'Next route: Cryo Basilica', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Parallax Lens Core secured. Blacksite Observatory is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF010: {kicker:'FERMILAT CONTACT // F-010', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Blacksite Observatory. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    f011Intro: {kicker:'F-011 INTRO // CRYO BASILICA', title:'Frozen Prayer', tag:'Level Req 56 // Route 11/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cryo Basilica is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f011Terminal: {kicker:'F-011 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f011Lore: {kicker:'F-011 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f011BossIntro: {kicker:'F-011 BOSS // CORE GUARDIAN', title:'BASILICA WYRM', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Basilica Wyrm. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f011BossDefeated: {kicker:'F-011 BOSS DELETED // CORE EXPOSED', title:'BASILICA WYRM CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 11/20.'}]},
+    f011Clear: {kicker:'CHAPTER 11 COMPLETE // BASILICA WYRM CORE', title:'CRYO BASILICA STABILIZED', tag:'Next route: Ash Crown Citadel', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Basilica Wyrm Core secured. Cryo Basilica is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF011: {kicker:'FERMILAT CONTACT // F-011', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cryo Basilica. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    f012Intro: {kicker:'F-012 INTRO // ASH CROWN CITADEL', title:'Crown of Static', tag:'Level Req 63 // Route 12/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Citadel is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f012Terminal: {kicker:'F-012 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
+    f012Lore: {kicker:'F-012 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
+    f012BossIntro: {kicker:'F-012 BOSS // CORE GUARDIAN', title:'ASH CROWN REGENT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Ash Crown Regent. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
+    f012BossDefeated: {kicker:'F-012 BOSS DELETED // CORE EXPOSED', title:'ASH CROWN CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 12/20.'}]},
+    f012Clear: {kicker:'CHAPTER 12 COMPLETE // ASH CROWN CORE', title:'ASH CROWN CITADEL STABILIZED', tag:'Next route: future endgame fractures', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Core secured. Ash Crown Citadel is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
+    fermilatF012: {kicker:'FERMILAT CONTACT // F-012', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Ash Crown Citadel. I will reward you with things I definitely did not steal from a vending machine.'}]}
+  });
+
+  function avStageAtOrBeyond(key){
+    const order=Object.keys(STAGE_DEFS);
+    return order.indexOf(currentStageKey()) >= order.indexOf(key);
+  }
+  STORY_ARCHIVE_ENTRIES.push(
+    {key:'f007Intro', chapter:'Chapter 7', title:'Cinder Express Yard', desc:'Vyra enters Cinder Express Yard.', unlock:()=>playerMeetsStageRequirement('f007') || !!state.stages?.f007?.unlocked || avStageAtOrBeyond('f007')},
+    {key:'f007Clear', chapter:'Chapter 7', title:'Cinder Express Yard Stabilized', desc:'Cinderline Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f007?.complete || avStageAtOrBeyond('f007')},
+    {key:'f008Intro', chapter:'Chapter 8', title:'Flooded Data Vault', desc:'Vyra enters Flooded Data Vault.', unlock:()=>playerMeetsStageRequirement('f008') || !!state.stages?.f008?.unlocked || avStageAtOrBeyond('f008')},
+    {key:'f008Clear', chapter:'Chapter 8', title:'Flooded Data Vault Stabilized', desc:'Drowned Archive Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f008?.complete || avStageAtOrBeyond('f008')},
+    {key:'f009Intro', chapter:'Chapter 9', title:'Rust Orchard', desc:'Vyra enters Rust Orchard.', unlock:()=>playerMeetsStageRequirement('f009') || !!state.stages?.f009?.unlocked || avStageAtOrBeyond('f009')},
+    {key:'f009Clear', chapter:'Chapter 9', title:'Rust Orchard Stabilized', desc:'Harvest Alloy Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f009?.complete || avStageAtOrBeyond('f009')},
+    {key:'f010Intro', chapter:'Chapter 10', title:'Blacksite Observatory', desc:'Vyra enters Blacksite Observatory.', unlock:()=>playerMeetsStageRequirement('f010') || !!state.stages?.f010?.unlocked || avStageAtOrBeyond('f010')},
+    {key:'f010Clear', chapter:'Chapter 10', title:'Blacksite Observatory Stabilized', desc:'Parallax Lens Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f010?.complete || avStageAtOrBeyond('f010')},
+    {key:'f011Intro', chapter:'Chapter 11', title:'Cryo Basilica', desc:'Vyra enters Cryo Basilica.', unlock:()=>playerMeetsStageRequirement('f011') || !!state.stages?.f011?.unlocked || avStageAtOrBeyond('f011')},
+    {key:'f011Clear', chapter:'Chapter 11', title:'Cryo Basilica Stabilized', desc:'Basilica Wyrm Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f011?.complete || avStageAtOrBeyond('f011')},
+    {key:'f012Intro', chapter:'Chapter 12', title:'Ash Crown Citadel', desc:'Vyra enters Ash Crown Citadel.', unlock:()=>playerMeetsStageRequirement('f012') || !!state.stages?.f012?.unlocked || avStageAtOrBeyond('f012')},
+    {key:'f012Clear', chapter:'Chapter 12', title:'Ash Crown Citadel Stabilized', desc:'Ash Crown Core recovered and the route chain advances.', unlock:()=>!!state.stages?.f012?.complete || avStageAtOrBeyond('f012')},
+  );
+
+  PROTOCOL_CHALLENGE_DEFS.push(
+    {id:'twelve_stage_route', metric:'fractures', title:'Twelve-Stage Route', desc:'Complete 12 fracture extractions in the expanded route chain.', target:12, reward:{credits:1200, xp:1100, items:{'Vector Cell':8,'Rust Core':6,'Corrupted Catalyst':6,'Operator Shard: Vyra':12}}},
+    {id:'road_to_twenty', metric:'bosses', title:'Road to 20 Stages', desc:'Defeat 10 boss-class guardians while scaling toward the planned 20-stage / Lv 99 endgame.', target:10, reward:{credits:1500, xp:1300, items:{'Vector Cell':10,'Rust Core':8,'Corrupted Catalyst':8}}}
+  );
+
   loadImages(); bind(); applySettings(); boot(); startAutosave(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
 })();
