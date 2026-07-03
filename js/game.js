@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.28 // EXPANDED LAYOUT OVERHAUL PASS',
+    'Version 0.9.30 // INTRO VIDEO PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.29';
+  const BUILD_VERSION = '0.9.30';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
@@ -93,7 +93,7 @@
     },
 
     forceResume(){
-      if(!this.unlocked) return;
+      if(!this.unlocked || this.musicStopped) return;
       try{ if(typeof activeMusicForState === 'function') this.requested = activeMusicForState(); }catch(err){}
       if(!this.requested) this.requested = 'intro';
       return this.play(this.requested, true);
@@ -313,12 +313,12 @@
   let gameStarted = false;
   function activeMusicForState(){
     // v58: music follows real UI/game state.
-    // Before the first game start, closing any menu/database always returns to intro.mp3.
+    // Main menu now uses pause.mp3; the intro video handles its own audio.
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
     if(uiState.mode === 'overlay') return 'pause';
     if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return 'level1';
-    if(uiState.mode === 'menu' || !document.querySelector('#mainMenu.hidden')) return 'intro';
-    return gameStarted ? 'level1' : 'intro';
+    if(uiState.mode === 'menu' || !document.querySelector('#mainMenu.hidden')) return 'pause';
+    return gameStarted ? 'level1' : 'pause';
   }
   function refreshMusic(){ AudioManager.play(activeMusicForState()); }
 
@@ -2537,7 +2537,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.29 NPC and salvage prop pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2695,11 +2695,50 @@
     toast('Tutorial tips reset.');
   }
   function boot(){
-    uiState.mode='boot'; AudioManager.play('intro');
-    let i=0; const lines=$('bootLines'); const prog=$('bootProgress').firstElementChild;
-    function step(){
-      if(i<bootLines.length){lines.textContent += '> '+bootLines[i++]+'\n'; prog.style.width=Math.min(100, i/bootLines.length*100)+'%'; setTimeout(step, state.settings.reducedMotion?30:260);} else {$('bootLogo').classList.remove('hidden'); bootDone=true;}}
-    step();
+    uiState.mode='boot';
+    bootDone=true;
+    AudioManager.stopMusic();
+    const video=$('introVideo');
+    const gate=$('introVideoGate');
+    const prog=$('bootProgress')?.firstElementChild;
+    if(prog) prog.style.width='0%';
+    if(video){
+      video.pause();
+      try{ video.currentTime=0; }catch(err){}
+      video.muted=false;
+      video.loop=false;
+      video.onended=finishIntroVideo;
+      video.onerror=()=>{ toast('Intro video missing. Opening main menu.'); finishIntroVideo(); };
+      video.ontimeupdate=()=>{
+        if(prog && Number.isFinite(video.duration) && video.duration>0){
+          prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
+        }
+      };
+    }
+    if(gate) gate.classList.remove('hidden');
+  }
+  function startIntroVideo(){
+    if(!$('bootScreen') || $('bootScreen').classList.contains('hidden')) return;
+    requestNativeFullscreen();
+    AudioManager.stopMusic();
+    const video=$('introVideo');
+    const gate=$('introVideoGate');
+    if(gate) gate.classList.add('hidden');
+    if(!video){ finishIntroVideo(); return; }
+    video.muted=false;
+    video.playsInline=true;
+    const playPromise=video.play();
+    if(playPromise && playPromise.catch){
+      playPromise.catch(()=>{
+        if(gate) gate.classList.remove('hidden');
+        toast('Tap again to allow video playback.');
+      });
+    }
+  }
+  function finishIntroVideo(){
+    const video=$('introVideo');
+    if(video){ video.pause(); try{ video.currentTime=video.duration||0; }catch(err){} }
+    showMenu();
   }
   function requestNativeFullscreen(){
     // Browsers only allow true fullscreen after a click/key press.
@@ -2711,7 +2750,7 @@
       }
     }catch(err){}
   }
-  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
+  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
   function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
@@ -4840,7 +4879,7 @@
         return;
       }
 
-      if(bootOpen && (south || start)){ showMenu(); return; }
+      if(bootOpen && (south || start)){ startIntroVideo(); return; }
       if(menuOpen){
         const root=this.controllerRootForState(true);
         this.ensureMenuCursor(root);
@@ -4957,13 +4996,13 @@
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
       routeMainMenuAction(btn.id || 'newGameBtn');
     }, true);
-    $('enterBtn').onclick=()=>{requestNativeFullscreen(); showMenu();}; document.addEventListener('keydown',e=>{
+    $('enterBtn').onclick=()=>startIntroVideo(); document.addEventListener('keydown',e=>{
       if(storyActive && ['Enter',' ','Escape'].includes(e.key)){ e.preventDefault(); if(e.key==='Escape') finishStory(); else advanceStory(); return; }
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       // v44: hard launch fallback. If the main menu is visible, Enter or Space always starts gameplay.
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
-      if(e.key==='Enter' && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); showMenu(); return; }
+      if((e.key==='Enter'||e.key===' ') && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); startIntroVideo(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
       if(battle && !$('battleOverlay').classList.contains('hidden')){
         const tag = (e.target && e.target.tagName || '').toLowerCase();
@@ -10056,5 +10095,5 @@
   // Keep the first 12 stages paced for a 20-stage / Lv 99 final chain.
   Object.entries(V118_STAGE_LEVEL_REQS).forEach(([key,req])=>{ if(STAGE_DEFS[key]) STAGE_DEFS[key].levelReq=req; });
 
-  loadImages(); bind(); applySettings(); boot(); startAutosave(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
+  loadImages(); bind(); applySettings(); boot(); startAutosave(); renderAll();
 })();
