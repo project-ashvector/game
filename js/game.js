@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.23 // PROTOCOL CHALLENGE PASS',
+    'Version 0.9.24 // THREE NEW MAPS PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.8';
+  const BUILD_VERSION = '0.9.24';
   const MAP_VERSION = 'sector_stage_v9';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
@@ -451,6 +451,91 @@
     '########################################'
   ];
 
+
+  const stage4Map = [
+    '########################################',
+    '#.........#############..............###',
+    '#.........#..........##..............###',
+    '#.P..S....#..........##..............###',
+    '#................C...##.......E......###',
+    '#.........#..........................###',
+    '#.........#..........##..............###',
+    '######.####..........###################',
+    '######.####..........###################',
+    '######.#################################',
+    '###.............###############........#',
+    '###.............##............#........#',
+    '###.............##............#........#',
+    '###........E......................E....#',
+    '###.............##........C...#........#',
+    '###...........C.##............#........#',
+    '###.............##............#........#',
+    '##################............##########',
+    '#########################.##############',
+    '####............#########.##############',
+    '####............##............#........#',
+    '####....L......................D..B..X.#',
+    '####............##....H.......#........#',
+    '####............##............#........#',
+    '########################################'
+  ];
+
+  const stage5Map = [
+    '########################################',
+    '#........##.........####################',
+    '#........##.........##.................#',
+    '#.P..S...##....C....##.................#',
+    '#................................E.....#',
+    '#........##.........##.................#',
+    '#........#############.................#',
+    '#........#############.................#',
+    '#####.################.................#',
+    '#####.##########...........#############',
+    '##............##...C.......##..........#',
+    '##............##...........##..........#',
+    '##......E..................##..........#',
+    '##............##................E......#',
+    '##............##...........##..........#',
+    '##............##...........##..........#',
+    '################.........C.##..........#',
+    '################...........#############',
+    '######################.#################',
+    '##............########.######..........#',
+    '##............##...........##..........#',
+    '##...L.......................D...B...X.#',
+    '##............##.....H.....##..........#',
+    '##............##...........##..........#',
+    '########################################'
+  ];
+
+  const stage6Map = [
+    '########################################',
+    '#..........##..............##..........#',
+    '#..........##..............##..........#',
+    '#.P...S....##....C.........##..........#',
+    '#.................................E....#',
+    '#..........##..............##..........#',
+    '#..........##..............##..........#',
+    '#######.#####################..........#',
+    '#######.#########............###########',
+    '###............##........C...###########',
+    '###............##...##.......##........#',
+    '###............##............##........#',
+    '###.....E................#...##........#',
+    '###............##......................#',
+    '###..........C.##...##.......##...E....#',
+    '###............##............##........#',
+    '#################............##........#',
+    '#######################.#######........#',
+    '#######################.################',
+    '##...........##.............############',
+    '##...........##.............##.........#',
+    '##....L.......................D...B..X.#',
+    '##...........##......H......##.........#',
+    '##...........##.............##.........#',
+    '########################################'
+  ];
+
   function normalizeMapRows(rows){
     const width = Math.max(...rows.map(r=>r.length));
     return rows.map(r => (r + '#'.repeat(width)).slice(0,width));
@@ -458,7 +543,10 @@
   const STAGE_DEFS = {
     f001: {key:'f001', id:'F-001', title:'Forbidden Graveyard', chapter:'Chapter 1 // The Awakening', levelReq:1, map:normalizeMapRows(baseMap), threat:'LOW → BOSS CLASS', objective:'grave terminal → 3 anomalies → boss → extraction', reward:'40 Credits, Rust Core, Corrupted Catalyst, Vyra Shards', rewardCredits:40, rewardShards:3, clearXp:220, nextKey:'f002', bg:'assets/battle_backgrounds/toxic_sewers_battle.png'},
     f002: {key:'f002', id:'F-002', title:'Ash Wastes Outpost', chapter:'Chapter 2 // Broken Signal', levelReq:5, map:normalizeMapRows(stage2Map), threat:'MEDIUM // OUTPOST CLASS', objective:'outpost terminal → three imported anomalies → existing boss → extraction', reward:'95 Credits, Burnt Alloy, Outpost Access Chip, Ashveil Mother Core chance, Vyra Shards', rewardCredits:95, rewardShards:6, clearXp:360, nextKey:'f003', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
-    f003: {key:'f003', id:'F-003', title:'Neon Graveyard', chapter:'Chapter 3 // Dead Frequencies', levelReq:12, map:normalizeMapRows(stage3Map), threat:'HIGH // GRAVEYARD CLASS', objective:'grave terminal → 3 existing-library anomalies → shade boss → extraction', reward:'120 Credits, 2 Rust Cores, 2 Catalysts, 7 Vyra Shards', rewardCredits:120, rewardShards:7, clearXp:550, nextKey:null, bg:'assets/battle_backgrounds/neon_graveyard_battle.png'}
+    f003: {key:'f003', id:'F-003', title:'Neon Graveyard', chapter:'Chapter 3 // Dead Frequencies', levelReq:12, map:normalizeMapRows(stage3Map), threat:'HIGH // GRAVEYARD CLASS', objective:'grave terminal → 3 existing-library anomalies → shade boss → extraction', reward:'120 Credits, 2 Rust Cores, 2 Catalysts, 7 Vyra Shards', rewardCredits:120, rewardShards:7, clearXp:550, nextKey:'f004', bg:'assets/battle_backgrounds/neon_graveyard_battle.png'},
+    f004: {key:'f004', id:'F-004', title:'Transit Ruins', chapter:'Chapter 4 // Below the Ashline', levelReq:15, map:normalizeMapRows(stage4Map), threat:'HIGH // SUBWAY CLASS', objective:'rail terminal → 3 tunnel anomalies → transit boss → extraction', reward:'150 Credits, Transit Nexus Core, Vector Cells, Vyra Shards', rewardCredits:150, rewardShards:8, clearXp:720, nextKey:'f005', bg:'assets/battle_backgrounds/ash_wastes_battle.png'},
+    f005: {key:'f005', id:'F-005', title:'Glass Storm Lab', chapter:'Chapter 5 // Prism Wound', levelReq:20, map:normalizeMapRows(stage5Map), threat:'VERY HIGH // LAB CLASS', objective:'lab terminal → 3 prism anomalies → storm boss → extraction', reward:'185 Credits, Prism Wound Core, Catalysts, Vyra Shards', rewardCredits:185, rewardShards:10, clearXp:920, nextKey:'f006', bg:'assets/battle_backgrounds/neon_graveyard_battle.png'},
+    f006: {key:'f006', id:'F-006', title:'Vector Core Spire', chapter:'Chapter 6 // Heart of the Fault', levelReq:25, map:normalizeMapRows(stage6Map), threat:'EXTREME // CORE CLASS', objective:'spire terminal → 3 core anomalies → vector boss → extraction', reward:'240 Credits, Vector Heart Core, Rust Cores, Vyra Shards', rewardCredits:240, rewardShards:12, clearXp:1200, nextKey:null, bg:'assets/battle_backgrounds/toxic_sewers_battle.png'}
   };
   function currentStageKey(){ return state?.currentStage || 'f001'; }
   function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
@@ -487,7 +575,10 @@
         // without blocking the boss corridor or spawning inside wall art.
         f001: {x:23, y:21, scene:'fermilatF001'},
         f002: {x:24, y:21, scene:'fermilatF002'},
-        f003: {x:30, y:19, scene:'fermilatF003'}
+        f003: {x:30, y:19, scene:'fermilatF003'},
+        f004: {x:26, y:21, scene:'fermilatF004'},
+        f005: {x:24, y:21, scene:'fermilatF005'},
+        f006: {x:25, y:21, scene:'fermilatF006'}
       }
     }
   };
@@ -497,7 +588,10 @@
   const FERMILAT_FAVOR_DEFS = {
     f001:{title:"Fermilat\'s Suspicious Favor", target:3, credits:35, syncXp:70, skillXp:120, items:{'Vector Cell':1,'Med Patch':1}, ask:'Fermilat wants you to defeat 3 anomalies before he "trusts your footwork."', done:'Fermilat is weirdly proud of your graveyard footwork.'},
     f002:{title:'Ash Wastes Footwork', target:4, credits:65, syncXp:115, skillXp:180, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Fermilat wants proof you can survive the dry outpost without sending evidence.', done:'Fermilat says the ash is terrible for "collectible preservation."'},
-    f003:{title:'Graveyard Toe-tal Chaos', target:5, credits:95, syncXp:165, skillXp:260, items:{'Vector Cell':2,'Corrupted Catalyst':1}, ask:'Fermilat wants 5 graveyard anomalies deleted. He calls it "spooky foot traffic control."', done:'Fermilat congratulates you in the least normal way possible.'}
+    f003:{title:'Graveyard Toe-tal Chaos', target:5, credits:95, syncXp:165, skillXp:260, items:{'Vector Cell':2,'Corrupted Catalyst':1}, ask:'Fermilat wants 5 graveyard anomalies deleted. He calls it "spooky foot traffic control."', done:'Fermilat congratulates you in the least normal way possible.'},
+    f004:{title:'Transit Tunnel Favor', target:5, credits:115, syncXp:190, skillXp:270, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Fermilat wants proof you can sprint through the subway without tripping over cursed rails.', done:'Fermilat says the Transit Ruins have excellent echo acoustics for terrible opinions.'},
+    f005:{title:'Prism Lab Favor', target:6, credits:145, syncXp:230, skillXp:320, items:{'Vector Cell':2,'Corrupted Catalyst':2}, ask:'Fermilat wants 6 prism anomalies deleted because glass floors make him nervous.', done:'Fermilat is impressed and asks if the lab can clone socks. AVOS refuses.'},
+    f006:{title:'Core Spire Favor', target:6, credits:180, syncXp:280, skillXp:380, items:{'Vector Cell':3,'Rust Core':2}, ask:'Fermilat wants 6 core anomaly defeats before he admits the final route is terrifying.', done:'Fermilat salutes you with absolutely no dignity and three suspicious snacks.'}
   };
   function sideQuestKey(stage=currentStageKey()){ return `fermilat:${stage}`; }
   function ensureSideQuests(){
@@ -830,6 +924,27 @@
         {x:35,y:4,img:'assets/tilesets/undead/rock_04.png',w:54,h:46},
         {x:6,y:22,img:'assets/tilesets/undead/grave_03.png',w:42,h:44}
       ]
+    },
+    f004: {
+      ground: ['assets/tilesets/cursed/ground_01.png','assets/tilesets/cursed/ground_02.png','assets/tilesets/cursed/ground_03.png','assets/tilesets/cursed/ground_04.png'],
+      blocked: ['assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/stone_fence_01.png','assets/tilesets/undead/rock_04.png'],
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/cursed/ruins_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      floorTint:'rgba(74,82,92,.18)', pathTint:'rgba(92,170,255,.13)', wallTint:'rgba(10,13,17,.97)', wallEdge:'rgba(92,170,255,.28)',
+      props:[{x:13,y:3,img:'assets/tilesets/cursed/ruins_01.png',w:58,h:50},{x:28,y:3,img:'assets/tilesets/cursed/rock_eyes_01.png',w:54,h:48},{x:6,y:11,img:'assets/tilesets/forbidden/rock_03.png',w:38,h:34},{x:18,y:12,img:'assets/tilesets/undead/bones_03.png',w:64,h:42},{x:31,y:14,img:'assets/tilesets/cursed/spike_plant_01.png',w:54,h:48},{x:11,y:20,img:'assets/tilesets/undead/dead_tree_02.png',w:54,h:64},{x:24,y:21,img:'assets/tilesets/cursed/tentacle_plant_01.png',w:52,h:48}]
+    },
+    f005: {
+      ground: ['assets/tilesets/undead/ground_01.png','assets/tilesets/undead/ground_02.png','assets/tilesets/undead/ground_03.png','assets/tilesets/undead/ground_04.png'],
+      blocked: ['assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/jaws_plant_01.png','assets/tilesets/undead/rock_04.png'],
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/undead/ruin_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      floorTint:'rgba(24,38,62,.20)', pathTint:'rgba(180,96,255,.14)', wallTint:'rgba(8,8,22,.97)', wallEdge:'rgba(190,96,255,.30)',
+      props:[{x:12,y:4,img:'assets/tilesets/undead/crystal_01.png',w:44,h:44},{x:29,y:5,img:'assets/tilesets/undead/lich_01.png',w:68,h:78},{x:5,y:11,img:'assets/tilesets/cursed/meat_flower_01.png',w:48,h:48},{x:22,y:11,img:'assets/tilesets/undead/crystal_01.png',w:48,h:48},{x:35,y:13,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},{x:9,y:20,img:'assets/tilesets/undead/bones_02.png',w:48,h:34},{x:25,y:22,img:'assets/tilesets/undead/skull_pile_01.png',w:60,h:54}]
+    },
+    f006: {
+      ground: ['assets/tilesets/forbidden/ground_01.png','assets/tilesets/forbidden/ground_02.png','assets/tilesets/forbidden/ground_03.png','assets/tilesets/forbidden/ground_04.png'],
+      blocked: ['assets/tilesets/undead/ruin_01.png','assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/crypt_01.png'],
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      floorTint:'rgba(12,48,64,.22)', pathTint:'rgba(0,255,200,.14)', wallTint:'rgba(3,10,18,.98)', wallEdge:'rgba(0,255,200,.34)',
+      props:[{x:15,y:3,img:'assets/tilesets/undead/ruin_01.png',w:70,h:68},{x:31,y:4,img:'assets/tilesets/undead/crystal_01.png',w:50,h:50},{x:6,y:12,img:'assets/tilesets/undead/dead_arm_01.png',w:58,h:52},{x:24,y:11,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},{x:35,y:14,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},{x:9,y:22,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},{x:24,y:21,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58}]
     }
   };
   function stageVisualPack(){ return stageVisualPacks[state?.currentStage || ''] || null; }
@@ -848,7 +963,10 @@
   const stageFloorStyles = {
     f001: {base:'#1b1721', alt:'#211b2a', grit:'rgba(202,184,255,.085)', line:'rgba(255,255,255,.045)'},
     f002: {base:'#22130f', alt:'#2b1710', grit:'rgba(255,180,112,.08)', line:'rgba(255,163,77,.045)'},
-    f003: {base:'#140f22', alt:'#1c1430', grit:'rgba(0,255,255,.09)', line:'rgba(255,88,214,.07)'}
+    f003: {base:'#140f22', alt:'#1c1430', grit:'rgba(0,255,255,.09)', line:'rgba(255,88,214,.07)'},
+    f004: {base:'#101820', alt:'#14222b', grit:'rgba(92,170,255,.085)', line:'rgba(92,170,255,.055)'},
+    f005: {base:'#101427', alt:'#151b34', grit:'rgba(190,96,255,.08)', line:'rgba(255,255,255,.052)'},
+    f006: {base:'#07171c', alt:'#0a2228', grit:'rgba(0,255,200,.09)', line:'rgba(0,255,200,.06)'}
   };
   function hashTile(tx,ty,salt=0){
     let n = ((tx+31) * 73856093) ^ ((ty+47) * 19349663) ^ (salt * 83492791);
@@ -978,6 +1096,24 @@
       '6,13': {type:'anomaly', index:53},
       '30,19': {type:'anomaly', index:58},
       '31,21': {type:'boss', index:18}
+    },
+    f004: {
+      '30,4': {type:'anomaly', index:61},
+      '11,13': {type:'anomaly', index:67},
+      '34,13': {type:'anomaly', index:73},
+      '34,21': {type:'boss', index:22}
+    },
+    f005: {
+      '33,4': {type:'anomaly', index:74},
+      '8,12': {type:'anomaly', index:80},
+      '32,13': {type:'anomaly', index:86},
+      '33,21': {type:'boss', index:24}
+    },
+    f006: {
+      '34,4': {type:'anomaly', index:88},
+      '8,12': {type:'anomaly', index:94},
+      '34,14': {type:'anomaly', index:99},
+      '34,21': {type:'boss', index:28}
     }
   };
   function encounterSlotFor(x,y,code){
@@ -998,6 +1134,24 @@
       '6,13': {id:'AN-055', display:'Hollow Revenant', hp:260, atk:31, xp:88, credits:72, loot:['Rust Core','Scrap Metal'], note:'Imported anomaly record assigned to the dead-frequency lane. It keeps walking like rent is due in the afterlife.'},
       '30,19': {id:'AN-060', display:'Mireclaw', hp:285, atk:33, xp:96, credits:78, loot:['Corrupted Catalyst','Med Patch'], note:'Imported anomaly record assigned to the graveyard relay path. AVOS says it is bitey. Vyra says she noticed.'},
       '31,21': {id:'BOSS-020', display:'Duskwither Shade Wraith', hp:540, atk:42, xp:240, credits:140, loot:['Rust Core','Corrupted Catalyst','Vector Cell'], bossReward:'Duskwither Wraith Core', note:'Imported boss-class record. It is basically a haunted software update with teeth. Delete it.'}
+    },
+    f004: {
+      '30,4': {id:'AN-063', display:'Rail Static Revenant', hp:300, atk:35, xp:112, credits:86, loot:['Burnt Alloy','Vector Cell'], note:'Transit Ruins anomaly. It rides broken signal rails and hates schedules.'},
+      '11,13': {id:'AN-069', display:'Tunnel Wretch', hp:330, atk:37, xp:120, credits:92, loot:['Scrap Metal','Corrupted Catalyst'], note:'Tunnel-class imported record. AVOS says it is mostly teeth and public transit trauma.'},
+      '34,13': {id:'AN-075', display:'Ashline Stalker', hp:355, atk:39, xp:128, credits:98, loot:['Burnt Alloy','Med Patch'], note:'Fast hostile signature in the lower station. It knows every shortcut and none of the manners.'},
+      '34,21': {id:'BOSS-024', display:'Transit Nexus Horror', hp:650, atk:48, xp:300, credits:175, loot:['Transit Nexus Core','Corrupted Catalyst','Vector Cell'], bossReward:'Transit Nexus Core', note:'Boss-class entity fused to the rail network. Delete the timetable. Delete the monster.'}
+    },
+    f005: {
+      '33,4': {id:'AN-076', display:'Prismskin Leech', hp:370, atk:42, xp:145, credits:110, loot:['Corrupted Catalyst','Vector Cell'], note:'Glass Storm Lab anomaly. It refracts pain, which is rude and scientifically annoying.'},
+      '8,12': {id:'AN-082', display:'Mirrorcoil Horror', hp:405, atk:44, xp:152, credits:118, loot:['Rust Core','Scrap Metal'], note:'Imported lab-class record. It keeps copying Vyra’s silhouette badly.'},
+      '32,13': {id:'AN-088', display:'Stormvein Maw', hp:440, atk:46, xp:160, credits:126, loot:['Corrupted Catalyst','Med Patch'], note:'Prism chamber hostile. It bites in multiple wavelengths.'},
+      '33,21': {id:'BOSS-026', display:'Prism Wound Matriarch', hp:760, atk:56, xp:360, credits:220, loot:['Prism Wound Core','Corrupted Catalyst','Vector Cell'], bossReward:'Prism Wound Core', note:'Boss-class lab record. It turned the research wing into a kaleidoscope of terrible decisions.'}
+    },
+    f006: {
+      '34,4': {id:'AN-090', display:'Vector Maw Seraph', hp:470, atk:50, xp:182, credits:142, loot:['Rust Core','Vector Cell'], note:'Core Spire anomaly. It looks holy until it opens the wrong number of mouths.'},
+      '8,12': {id:'AN-096', display:'Faultline Butcher', hp:510, atk:52, xp:190, credits:150, loot:['Corrupted Catalyst','Scrap Metal'], note:'Heavy anomaly record assigned to the fault core. AVOS recommends not being where its blade lands.'},
+      '34,14': {id:'AN-101', display:'Nullglass Eidolon', hp:550, atk:55, xp:205, credits:165, loot:['Rust Core','Med Patch'], note:'Final-route anomaly. It reflects the parts of the archive that refuse to die.'},
+      '34,21': {id:'BOSS-030', display:'Vector Heart Tyrant', hp:860, atk:66, xp:460, credits:300, loot:['Vector Heart Core','Rust Core','Corrupted Catalyst','Vector Cell'], bossReward:'Vector Heart Core', note:'Boss-class core entity. It is not the final final boss, but it is absolutely applying for the position.'}
     }
   };
   function stageEncounterOverride(x,y){
@@ -1181,6 +1335,9 @@
     if(key==='f001') return {key:'poison', chance:battle?.code==='B'?0.32:0.20, turns:2, potency:3, text:'grave rot'};
     if(key==='f002') return {key:'burn', chance:battle?.code==='B'?0.34:0.22, turns:2, potency:4, text:'ash burn'};
     if(key==='f003') return {key:'shock', chance:battle?.code==='B'?0.38:0.24, turns:2, potency:4, text:'dead-frequency shock'};
+    if(key==='f004') return {key:'corrosion', chance:battle?.code==='B'?0.40:0.26, turns:2, potency:5, text:'rail corrosion'};
+    if(key==='f005') return {key:'burn', chance:battle?.code==='B'?0.42:0.28, turns:2, potency:5, text:'prism burn'};
+    if(key==='f006') return {key:'shock', chance:battle?.code==='B'?0.45:0.30, turns:3, potency:5, text:'vector overload'};
     return {key:'poison', chance:0.18, turns:2, potency:3, text:'fracture sickness'};
   }
   function applyEnemyStatusAfterHit(dmg,dodged){
@@ -1470,11 +1627,17 @@
   // v103: Story Archive lets players replay unlocked narrative scenes from Mission Briefing.
   const STORY_ARCHIVE_ENTRIES = [
     {key:'intro', chapter:'Prologue', title:'The Ash Event', desc:'Vyra wakes up, AVOS explains how reality got aggressively educational.', unlock:()=>true},
-    {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || currentStageKey()==='f002' || currentStageKey()==='f003'},
-    {key:'f002Intro', chapter:'Chapter 2', title:'Broken Signal', desc:'The outpost route comes online and the ash signal starts screaming.', unlock:()=>playerMeetsStageRequirement('f002') || !!state.stages?.f002?.unlocked || currentStageKey()==='f002' || currentStageKey()==='f003'},
-    {key:'f002Clear', chapter:'Chapter 2', title:'The Broken Signal Answers', desc:'Outpost Core recovered and the Neon Graveyard frequency is exposed.', unlock:()=>!!state.stages?.f002?.complete || currentStageKey()==='f003'},
-    {key:'f003Intro', chapter:'Chapter 3', title:'Dead Frequencies', desc:'Vyra enters the neon memorial grid where the dead signal talks back.', unlock:()=>playerMeetsStageRequirement('f003') || !!state.stages?.f003?.unlocked || currentStageKey()==='f003'},
-    {key:'f003Clear', chapter:'Chapter 3', title:'The Graveyard Remembers', desc:'The dead frequency is silenced and the archive hints at a deeper truth.', unlock:()=>!!state.stages?.f003?.complete}
+    {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || ['f002','f003','f004','f005','f006'].includes(currentStageKey())},
+    {key:'f002Intro', chapter:'Chapter 2', title:'Broken Signal', desc:'The outpost route comes online and the ash signal starts screaming.', unlock:()=>playerMeetsStageRequirement('f002') || !!state.stages?.f002?.unlocked || ['f002','f003','f004','f005','f006'].includes(currentStageKey())},
+    {key:'f002Clear', chapter:'Chapter 2', title:'The Broken Signal Answers', desc:'Outpost Core recovered and the Neon Graveyard frequency is exposed.', unlock:()=>!!state.stages?.f002?.complete || ['f003','f004','f005','f006'].includes(currentStageKey())},
+    {key:'f003Intro', chapter:'Chapter 3', title:'Dead Frequencies', desc:'Vyra enters the neon memorial grid where the dead signal talks back.', unlock:()=>playerMeetsStageRequirement('f003') || !!state.stages?.f003?.unlocked || ['f003','f004','f005','f006'].includes(currentStageKey())},
+    {key:'f003Clear', chapter:'Chapter 3', title:'The Graveyard Remembers', desc:'The dead frequency is silenced and the transit route opens.', unlock:()=>!!state.stages?.f003?.complete || ['f004','f005','f006'].includes(currentStageKey())},
+    {key:'f004Intro', chapter:'Chapter 4', title:'Below the Ashline', desc:'The broken subway route under the ashline comes online.', unlock:()=>playerMeetsStageRequirement('f004') || !!state.stages?.f004?.unlocked || ['f004','f005','f006'].includes(currentStageKey())},
+    {key:'f004Clear', chapter:'Chapter 4', title:'The Rail Signal Dies', desc:'Transit Nexus Core recovered and the lab frequency unlocks.', unlock:()=>!!state.stages?.f004?.complete || ['f005','f006'].includes(currentStageKey())},
+    {key:'f005Intro', chapter:'Chapter 5', title:'Prism Wound', desc:'The Glass Storm Lab route opens with unstable research records.', unlock:()=>playerMeetsStageRequirement('f005') || !!state.stages?.f005?.unlocked || ['f005','f006'].includes(currentStageKey())},
+    {key:'f005Clear', chapter:'Chapter 5', title:'The Lab Stops Reflecting', desc:'Prism Wound Core recovered and the Vector Core Spire wakes.', unlock:()=>!!state.stages?.f005?.complete || currentStageKey()==='f006'},
+    {key:'f006Intro', chapter:'Chapter 6', title:'Heart of the Fault', desc:'The Vector Core Spire opens as the deepest current route.', unlock:()=>playerMeetsStageRequirement('f006') || !!state.stages?.f006?.unlocked || currentStageKey()==='f006'},
+    {key:'f006Clear', chapter:'Chapter 6', title:'The Core Still Beats', desc:'Vector Heart Core recovered. The next arc is teased.', unlock:()=>!!state.stages?.f006?.complete}
   ];
   function renderStoryArchivePanel(){
     ensureProgression(); ensureStoryFlags();
@@ -1496,7 +1659,10 @@
     {id:'terminal_sync', metric:'terminals', title:'Signal Technician', desc:'Sync 3 recovery terminals.', target:3, reward:{credits:90, xp:80, items:{'Vector Cell':1,'Archive Log 001':1}}},
     {id:'anomaly_cleanup', metric:'anomalies', title:'Anomaly Cleanup', desc:'Defeat 6 anomaly encounters.', target:6, reward:{credits:180, xp:160, items:{'Corrupted Catalyst':1,'Vector Cell':2}}},
     {id:'boss_breaker', metric:'bosses', title:'Boss Breaker', desc:'Defeat 2 boss-class guardians.', target:2, reward:{credits:260, xp:240, items:{'Rust Core':2,'Operator Shard: Vyra':4}}},
-    {id:'fracture_stabilizer', metric:'fractures', title:'Fracture Stabilizer', desc:'Complete 2 fracture extractions.', target:2, reward:{credits:300, xp:260, items:{'Vector Cell':3,'Corrupted Catalyst':2}}}
+    {id:'fracture_stabilizer', metric:'fractures', title:'Fracture Stabilizer', desc:'Complete 2 fracture extractions.', target:2, reward:{credits:300, xp:260, items:{'Vector Cell':3,'Corrupted Catalyst':2}}},
+    {id:'deep_route_scout', metric:'terminals', title:'Deep Route Scout', desc:'Sync 6 recovery terminals across the expanded route list.', target:6, reward:{credits:380, xp:320, items:{'Vector Cell':4,'Archive Log 001':2}}},
+    {id:'six_fracture_chain', metric:'fractures', title:'Six-Fracture Chain', desc:'Complete all 6 current fracture extractions.', target:6, reward:{credits:600, xp:520, items:{'Rust Core':4,'Corrupted Catalyst':4,'Operator Shard: Vyra':8}}},
+    {id:'core_breaker_plus', metric:'bosses', title:'Core Breaker+', desc:'Defeat 5 boss-class guardians.', target:5, reward:{credits:520, xp:440, items:{'Vector Cell':5,'Rust Core':3}}}
   ];
   function ensureProtocolChallenges(){
     if(!state) return;
@@ -1629,13 +1795,10 @@
     state.skillData.health ||= {xp:0, level:Math.max(1, state.player?.level || 1)};
     state.combatStyle ||= 'attack';
     state.currentStage ||= 'f001';
-    state.stages ||= {f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}};
-    state.stages.f001 ||= {unlocked:true,complete:false};
+    state.stages ||= {};
+    Object.keys(STAGE_DEFS).forEach((key,i)=> state.stages[key] ||= {unlocked:i===0,complete:false});
     state.stages.f001.unlocked = true;
-    state.stages.f002 ||= {unlocked:false,complete:false};
-    state.stages.f003 ||= {unlocked:false,complete:false};
     state.qaUnlockAllStages = !!state.qaUnlockAllStages;
-    if(state.flags?.chapterComplete && state.player?.level >= STAGE_DEFS.f002.levelReq) state.stages.f002.unlocked = true;
     ensureStoryFlags();
     ensureUpgrades();
     ensureEquipment();
@@ -2210,7 +2373,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -2235,7 +2398,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.8 stage route fix pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.24 three-map expansion pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2667,7 +2830,103 @@
         {speaker:'VYRA', portrait:'vyra', text:'I saw names in that core. Operators before me.'},
         {speaker:'AVOS', portrait:'vyra', text:'Failed deployments. Lost vectors. People the archive buried because guilt is easier to store than truth.'},
         {speaker:'VYRA', portrait:'vyra', text:'Then we dig up the truth.'},
-        {speaker:'AVOS', portrait:'vyra', text:'Agreed. Next route is still locked in this build, but narrative damage has been applied successfully.'}
+        {speaker:'AVOS', portrait:'vyra', text:'Agreed. The new transit route is online. F-004 is waiting below the ashline, which is a very dramatic way to say “subway problems.”'}
+      ]
+    },
+    f004Intro: {
+      kicker:'CHAPTER 4 // BELOW THE ASHLINE', speaker:'AVOS',
+      lines:['Fracture 004 is live: Transit Ruins. Old subway tunnels, broken rail power, and a route map that keeps coughing sparks.', 'Mission route: sync the rail terminal, clear three tunnel anomalies, breach the transit nexus boss, and extract before the platform starts moving.']
+    },
+    f004Terminal: {
+      kicker:'TRANSIT TERMINAL // RAIL SIGNAL SYNCED', speaker:'AVOS',
+      lines:['Transit terminal linked. It still thinks train service resumes in eight minutes. Optimism is disgusting.', 'Three tunnel anomalies are feeding the rail gate. Clear them and the Nexus Horror becomes reachable.']
+    },
+    f004Lore: {
+      kicker:'TRANSIT LOG // BELOW THE ASHLINE', speaker:'VYRA',
+      lines:['Recovered transit log. The evacuation tunnels moved survivors after the Ash Event, then the signal started routing them in circles.', 'AVOS: Public transit was already cursed. The fracture simply made it legally binding.']
+    },
+    f004BossIntro: {
+      kicker:'BOSS ENCOUNTER // TRANSIT NEXUS', speaker:'AVOS',
+      lines:['BOSS-024 Transit Nexus Horror detected. It is fused to the rail grid and very upset about delays.', 'Recommended tactic: delete the monster and any remaining customer service surveys.']
+    },
+    f004BossDefeated: {
+      kicker:'TRANSIT NEXUS CORE RECOVERED', speaker:'VYRA',
+      lines:['The rail grid is quiet. Core secured.', 'AVOS: Good. The train is cancelled, the monster is dead, and somehow this is still the best commute available. Extraction route is open.']
+    },
+    f004Clear: {
+      kicker:'CHAPTER 4 COMPLETE // RAIL SIGNAL SILENCED',
+      title:'THE RAIL SIGNAL DIES',
+      tag:'The Ashline is clear, but the next frequency is made of glass.',
+      speaker:'AVOS',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'Transit Nexus Core is stable. The tunnels stopped moving.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Excellent. You defeated public transportation. A heroic first.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Where does the next route point?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Glass Storm Lab. Research wing. Prism storm. Multiple warning labels written by people who are now dust.'}
+      ]
+    },
+    f005Intro: {
+      kicker:'CHAPTER 5 // PRISM WOUND', speaker:'VYRA',
+      lines:['The lab walls are reflecting things that are not in the room.', 'AVOS: Correct. Fracture 005 is a research facility that accidentally turned reality into a broken mirror. Sync terminal, erase anomalies, defeat the prism boss, extract with whatever dignity survives.']
+    },
+    f005Terminal: {
+      kicker:'LAB TERMINAL // PRISM LINKED', speaker:'AVOS',
+      lines:['Glass Storm Lab terminal synced. The lab tried to scan your skeleton and then apologized to the skeleton.', 'Three prism anomalies are stabilizing the storm gate. Remove them before the room learns recursion.']
+    },
+    f005Lore: {
+      kicker:'LAB LOG // PRISM WOUND', speaker:'AVOS',
+      lines:['Recovered research log. The lab attempted to refract ASH energy into safe storage.', 'Result: the storage started refracting the scientists. Technically innovative. Morally terrible.']
+    },
+    f005BossIntro: {
+      kicker:'BOSS ENCOUNTER // PRISM WOUND', speaker:'VYRA',
+      lines:['That thing is inside the glass and outside it.', 'AVOS: BOSS-026 Prism Wound Matriarch. Recommended tactic: hit the part that looks most smug. If all parts look smug, hit all parts.']
+    },
+    f005BossDefeated: {
+      kicker:'PRISM WOUND CORE RECOVERED', speaker:'AVOS',
+      lines:['Prism Wound Core recovered. Reflections are returning to normal levels of personal betrayal.', 'Extraction route open. Please do not take souvenirs unless they stop screaming.']
+    },
+    f005Clear: {
+      kicker:'CHAPTER 5 COMPLETE // PRISM WOUND SEALED',
+      title:'THE LAB STOPS REFLECTING',
+      tag:'The lab is stable, but the central vector heart is awake.',
+      speaker:'VYRA',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'Prism Core secured. I can see only one of myself again.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Tragic. I liked the version of you that laughed at my jokes.'},
+        {speaker:'VYRA', portrait:'vyra', text:'That was a reflection screaming for help.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Details. Next route: F-006, Vector Core Spire. The fault heart is awake.'}
+      ]
+    },
+    f006Intro: {
+      kicker:'CHAPTER 6 // HEART OF THE FAULT', speaker:'AVOS',
+      lines:['Fracture 006 is live: Vector Core Spire. Deepest current route. Reality integrity is doing pushups in a burning elevator.', 'Sync the spire terminal, clear three core anomalies, defeat the Vector Heart Tyrant, then extract before the next arc knocks.']
+    },
+    f006Terminal: {
+      kicker:'SPIRE TERMINAL // VECTOR HEART LINKED', speaker:'VYRA',
+      lines:['Terminal linked. I can feel the core watching.', 'AVOS: Good news: it sees you. Bad news: it hates observers. Clear the core anomalies and break the heart gate.']
+    },
+    f006Lore: {
+      kicker:'SPIRE LOG // HEART OF THE FAULT', speaker:'AVOS',
+      lines:['Recovered core log. The ASH network did not just predict the end of reality. It negotiated with it.', 'AVOS note: I do not remember agreeing to that. Which means either I forgot, or someone made sure I would. Fun! Terrifying, but fun.']
+    },
+    f006BossIntro: {
+      kicker:'BOSS ENCOUNTER // VECTOR HEART', speaker:'VYRA',
+      lines:['That is the loudest core yet.', 'AVOS: BOSS-030 Vector Heart Tyrant. Not the final truth, but definitely a truth with claws. Delete it before it deletes the map.']
+    },
+    f006BossDefeated: {
+      kicker:'VECTOR HEART CORE RECOVERED', speaker:'AVOS',
+      lines:['Vector Heart Core recovered. The current route network is stable.', 'Warning: the recovered core contains coordinates for a locked arc beyond this build. Congratulations, you found future problems.']
+    },
+    f006Clear: {
+      kicker:'CHAPTER 6 COMPLETE // VECTOR HEART STABILIZED',
+      title:'THE CORE STILL BEATS',
+      tag:'Six fractures are stable. The archive is no longer hiding that it is afraid.',
+      speaker:'VYRA',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'Vector Heart Core secured. Six fractures stabilized.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Reality is still broken, but now it is broken in a more organized way. That is progress.'},
+        {speaker:'VYRA', portrait:'vyra', text:'The core showed me another route.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Yes. The next arc is locked for now. But the map heard you. And something heard the map.'}
       ]
     },
     f002Terminal: {
@@ -2711,6 +2970,33 @@
         {speaker:'VYRA', portrait:'vyra', text:'You are hiding beside a boss gate in a haunted graveyard and that is still your main concern?'},
         {speaker:'FERMILAT', portrait:'fermilat', text:'Consistency is important for character development.'},
         {speaker:'VYRA', portrait:'vyra', text:'Your character development needs a patch note and a warning label.'}
+      ]
+    },
+    fermilatF004: {
+      kicker:'NPC CONTACT // F-004 TRANSIT RUINS', speaker:'FERMILAT',
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'subway tunnels are perfect for dramatic running shots. also for sniffing abandoned sneakers.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Every route somehow makes you worse.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Please complete it so he stops saying “sneaker archaeology.”'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'delete five tunnel anomalies and i will share my totally legal transit stash.'}
+      ]
+    },
+    fermilatF005: {
+      kicker:'NPC CONTACT // F-005 GLASS STORM LAB', speaker:'FERMILAT',
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'this lab has too many reflections. one of them saw my search history.'},
+        {speaker:'VYRA', portrait:'vyra', text:'I am not asking.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Six prism anomalies. Reward is cleaner than his browser history.'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'clear the lab and i will give you my premium not-cursed stash.'}
+      ]
+    },
+    fermilatF006: {
+      kicker:'NPC CONTACT // F-006 VECTOR CORE SPIRE', speaker:'FERMILAT',
+      lines:[
+        {speaker:'FERMILAT', portrait:'fermilat', text:'i followed you to the heart of reality because i believe in friendship and loot tables.'},
+        {speaker:'VYRA', portrait:'vyra', text:'That is the worst motivational speech I have ever heard.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Six core anomalies. I recommend accepting before Fermilat starts naming the walls.'},
+        {speaker:'FERMILAT', portrait:'fermilat', text:'the walls already named me back.'}
       ]
     },
     bossDefeated: {
@@ -3040,6 +3326,9 @@
       addItem('Corrupted Catalyst', def.key==='f003'?2:1);
       if(def.key==='f002'){ addItem('Keycard LV1',1); addItem('Outpost Access Chip',1); addItem('Burnt Alloy',3); }
       if(def.key==='f003'){ addItem('Vector Cell',2); addItem('Duskwither Wraith Core',1); }
+      if(def.key==='f004'){ addItem('Vector Cell',3); addItem('Burnt Alloy',3); addItem('Transit Nexus Core',1); }
+      if(def.key==='f005'){ addItem('Vector Cell',3); addItem('Prism Wound Core',1); addItem('Corrupted Catalyst',2); }
+      if(def.key==='f006'){ addItem('Vector Cell',4); addItem('Vector Heart Core',1); addItem('Rust Core',3); }
       if(def.clearXp) gainXp(def.clearXp);
       recordDrop(`${def.id} Clear Reward`, 'Stage Clear', 'Legendary');
       state.flags.chapterRewardsClaimed=true;
@@ -3065,7 +3354,10 @@
     return ({
       f001:'Grave Core secured. Vyra is awake, AVOS is still annoying, and the route to Ash Wastes Outpost is now visible.',
       f002:'Outpost Core secured. The broken signal is no longer jamming the route map, but it exposed the Neon Graveyard frequency.',
-      f003:'Shade Core secured. The dead frequency is silent for now, and the archive hints that a deeper route is coming soon.'
+      f003:'Shade Core secured. The dead frequency is silent, and the Transit Ruins route is now visible.',
+      f004:'Transit Nexus Core secured. The Ashline tunnels are stable, and Glass Storm Lab is now exposed.',
+      f005:'Prism Wound Core secured. The lab stopped reflecting threats, and Vector Core Spire is now awake.',
+      f006:'Vector Heart Core secured. The current route chain is stable, and the next arc is locked for a future build.'
     })[def.key] || `${def.title} cleared. Core stabilized.`;
   }
 
@@ -3106,6 +3398,9 @@
     const rewards=[`${def.rewardCredits||50} Credits`, `${def.clearXp||0} Sync XP`, def.key==='f003'?'Rust Core x2':'Rust Core', `Operator Shard: Vyra x${def.rewardShards||3}`, def.key==='f003'?'Corrupted Catalyst x2':'Corrupted Catalyst'];
     if(def.key==='f002') rewards.push('Keycard LV1','Outpost Access Chip','Burnt Alloy x3');
     if(def.key==='f003') rewards.push('Vector Cell x2','Duskwither Wraith Core');
+    if(def.key==='f004') rewards.push('Vector Cell x3','Burnt Alloy x3','Transit Nexus Core');
+    if(def.key==='f005') rewards.push('Vector Cell x3','Prism Wound Core','Corrupted Catalyst x2');
+    if(def.key==='f006') rewards.push('Vector Cell x4','Vector Heart Core','Rust Core x3');
     $('chapterRewardList').innerHTML=rewards.map(name=>`<div class="victory-loot-item"><span>${safeHtml(name)}</span></div>`).join('');
     const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!next; btn.textContent=next ? (nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`) : 'Next Fracture Coming Soon'; }
     panel.classList.remove('hidden');
