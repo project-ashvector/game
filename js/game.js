@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.18 // BATTLE SCANNER PASS',
+    'Version 0.9.19 // ENEMY INTENT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -2294,6 +2294,36 @@
     if(battle.enemy.atk > Math.max(8, s.def*5)) return {title:'Heavy Hitter', text:'Enemy attack is high. Guard before big hits and keep HP above half.'};
     return {title:'Stable', text:'Keep attacking. Save consumables unless HP or EP drops.'};
   }
+
+  // v109: Enemy intent preview. This is advisory only; it does not change battle balance.
+  function estimateIncomingDamage(){
+    if(!battle) return {raw:0, guarded:0, low:0, high:0};
+    const mod=combatModifiers();
+    const stats=combatStatBlock();
+    const low=Math.max(1,battle.enemy.atk-stats.def-mod.damageReduction-stats.block);
+    const high=Math.max(1,battle.enemy.atk-stats.def+4-mod.damageReduction-stats.block);
+    const raw=Math.max(1,battle.enemy.atk-stats.def+2-mod.damageReduction-stats.block);
+    const blocked=Math.max(1, Math.ceil(raw*.5));
+    const guarded=Math.max(0, raw-blocked);
+    return {raw, guarded, low, high};
+  }
+  function enemyIntentPreview(){
+    if(!battle) return {title:'Intent Offline', text:'No enemy loaded.'};
+    ensureBattleStatus();
+    const status=enemyStatusForStage();
+    const dmg=estimateIncomingDamage();
+    const statusChance=Math.round((status.chance||0)*100);
+    const enemyStatusText=statusSummary(battle.enemyStatus);
+    const playerStatusText=statusSummary(battle.playerStatus);
+    if(battle.enemy.hp<=0) return {title:'Enemy Down', text:'Core collapse pending.'};
+    if(battle.turn!=='player') return {title:'Enemy Acting', text:`Incoming attack resolving now. Watch HP and status effects.`};
+    if(battle.evadeNext) return {title:'Evade Primed', text:`Phantom Dash is primed. Next enemy strike is likely avoided.`};
+    if(battle.guard) return {title:'Guarded Hit', text:`Enemy likely attacks for ~${dmg.guarded} HP after Guard. ${statusChance}% ${status.text} status chance if hit connects.`};
+    if(enemyStatusText) return {title:'Enemy Afflicted', text:`Enemy has ${enemyStatusText}. Expected attack ~${dmg.raw} HP plus ${statusChance}% ${status.text} chance.`};
+    if(playerStatusText) return {title:'Status Warning', text:`Vyra has ${playerStatusText}. Enemy hit estimate ~${dmg.raw} HP.`};
+    if(battle.code==='B') return {title:'Boss Intent', text:`Heavy attack expected: ~${dmg.low}-${dmg.high} HP. ${statusChance}% ${status.text} status chance.`};
+    return {title:'Enemy Intent', text:`Basic attack expected: ~${dmg.low}-${dmg.high} HP. ${statusChance}% ${status.text} status chance.`};
+  }
   function showPreBattleDialog(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     const stage=stageDef();
@@ -2316,7 +2346,9 @@
     $('preBattleCancel').innerHTML=`<span class="controller-glyph">${safeHtml(labels.east)}</span><b>Retreat</b>`;
     const research=researchLineForCreature({id:def.id,name:def.name,type:code==='B'?'Boss':'Anomaly'});
     const scan=encounterThreatScan(def, code);
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Threat Scan</b><span>${scan.level} // ${safeHtml(scan.text)}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(enemyStatusForStage().text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    const expectedHit=Math.max(1, def.atk - s.def + 2 - combatModifiers().damageReduction - s.block);
+    const status=enemyStatusForStage();
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Expected Hit</b><span>~${expectedHit} HP // ${Math.round((status.chance||0)*100)}% ${safeHtml(status.text)}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Threat Scan</b><span>${scan.level} // ${safeHtml(scan.text)}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(status.text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); overlay.style.display=''; startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
     preBattleCommandIndex = 0;
@@ -2928,7 +2960,8 @@
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>
-      <div class="battle-meter scanner-meter"><b>AVOS Scanner</b><span>${safeHtml(battleTacticalAdvice().title)} // ${safeHtml(battleTacticalAdvice().text)}</span></div>`;
+      <div class="battle-meter scanner-meter"><b>AVOS Scanner</b><span>${safeHtml(battleTacticalAdvice().title)} // ${safeHtml(battleTacticalAdvice().text)}</span></div>
+      <div class="battle-meter scanner-meter"><b>Enemy Intent</b><span>${safeHtml(enemyIntentPreview().title)} // ${safeHtml(enemyIntentPreview().text)}</span></div>`;
     $('attackButtons').innerHTML='';
     const labels=safeControllerLabels();
     // v94: four main battle attacks map to the four face buttons (Xbox A/B/X/Y, PS Cross/Circle/Square/Triangle, Switch B/A/Y/X).
@@ -2953,7 +2986,7 @@
     const hint=document.createElement('div');
     hint.id='battleControllerHint';
     hint.className='battle-controller-hint';
-    hint.innerHTML=`Face buttons launch attacks: <b>${safeHtml(labels.south)}</b>/<b>${safeHtml(labels.east)}</b>/<b>${safeHtml(labels.west)}</b>/<b>${safeHtml(labels.north)}</b> // D-pad moves cursor // <b>${safeHtml(labels.start)}</b> chooses highlighted // <b>T</b> scanner tip`;
+    hint.innerHTML=`Face buttons launch attacks: <b>${safeHtml(labels.south)}</b>/<b>${safeHtml(labels.east)}</b>/<b>${safeHtml(labels.west)}</b>/<b>${safeHtml(labels.north)}</b> // D-pad moves cursor // <b>${safeHtml(labels.start)}</b> chooses highlighted // <b>T</b> scanner + enemy intent`;
     $('attackButtons').appendChild(hint);
     updateBattleCommandFocus();
   }
@@ -4197,7 +4230,7 @@
           if(key==='5' || key==='u'){ e.preventDefault(); useOverdriveBattle(); return; }
           if(key==='r'){ e.preventDefault(); useVectorCellBattle(); return; }
           if(key==='g'){ e.preventDefault(); guardBattle(); return; }
-          if(key==='t'){ e.preventDefault(); const tip=battleTacticalAdvice(); toast(`${tip.title}: ${tip.text}`); return; }
+          if(key==='t'){ e.preventDefault(); const tip=battleTacticalAdvice(); const intent=enemyIntentPreview(); toast(`${tip.title}: ${tip.text} // ${intent.title}: ${intent.text}`); return; }
         }
       }
       if(e.key==='Escape' && overlayOpen){ e.preventDefault(); closeOverlays(); return; }
