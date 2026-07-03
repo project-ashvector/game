@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.49 // CONTROLLER SPEED BOUNDARY PASS',
+    'Version 0.9.50 // HARD COLLISION CONTROLLER PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.49';
+  const BUILD_VERSION = '0.9.50';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -553,8 +553,21 @@
   function currentStageKey(){ return state?.currentStage || 'f001'; }
   function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
   function battleBgForStage(key=currentStageKey()){ return stageDef(key).bg || STAGE_DEFS.f001.bg; }
+  function sanitizeStageRows(rows){
+    const out=(rows||[]).map(String);
+    if(!out.length) return out;
+    return out.map((row,y)=>{
+      const chars=row.split('');
+      for(let x=0;x<chars.length;x++){
+        if(y===0 || y===out.length-1 || x===0 || x===chars.length-1){
+          if(chars[x] !== '#') chars[x] = '#';
+        }
+      }
+      return chars.join('');
+    });
+  }
   function parseStageMap(key){
-    const def=stageDef(key); const map=def.map.map(r=>r.split(''));
+    const def=stageDef(key); const map=sanitizeStageRows(def.map).map(r=>r.split(''));
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{ if(c==='P'){ px=x; py=y; map[y][x]='.'; }}));
     return {map, px, py};
@@ -3214,12 +3227,16 @@
   function inMapBounds(x,y){
     return Number.isInteger(x) && Number.isInteger(y) && y >= 0 && x >= 0 && y < mapHeight() && x < ((state.map[y] || '').length);
   }
+  function isOuterMapEdge(x,y){
+    const rowLen=(state.map[y] || '').length;
+    return !inMapBounds(x,y) || x <= 0 || y <= 0 || y >= mapHeight()-1 || x >= rowLen-1;
+  }
   function findSafeSpawn(){
     const parsed=parseStageMap(currentStageKey());
-    if(inMapBounds(parsed.px, parsed.py) && isWalkableTile(tileAt(parsed.px, parsed.py))) return {x:parsed.px,y:parsed.py};
+    if(canStandAt(parsed.px, parsed.py)) return {x:parsed.px,y:parsed.py};
     for(let y=0;y<mapHeight();y++){
       for(let x=0;x<(state.map[y]||'').length;x++){
-        if(isWalkableTile(tileAt(x,y))) return {x,y};
+        if(canStandAt(x,y)) return {x,y};
       }
     }
     return {x:1,y:1};
@@ -3228,7 +3245,7 @@
     if(!state?.player || !state?.map) return false;
     const x=Math.floor(Number(state.player.x));
     const y=Math.floor(Number(state.player.y));
-    if(inMapBounds(x,y) && isWalkableTile(tileAt(x,y))){
+    if(canStandAt(x,y)){
       state.player.x=x; state.player.y=y;
       return false;
     }
@@ -3253,8 +3270,16 @@
     // that could act like invisible holes at map edges.
     return ['.','P','S','C','H','L','E','B','X'].includes(c);
   }
+  function canStandAt(x,y){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
+    const c=tileAt(x,y);
+    if(!isWalkableTile(c)) return false;
+    // Prevent slipping out through ragged/uneven map rows.
+    if(!inMapBounds(x+1,y) || !inMapBounds(x-1,y) || !inMapBounds(x,y+1) || !inMapBounds(x,y-1)) return false;
+    return true;
+  }
   function isBlocked(c){return !isKnownMapTile(c) || c==='#' || c==='D';}
-  function tryMove(dx,dy){
+  function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
     if(battle) return;
     clampPlayerToMap();
@@ -3264,12 +3289,12 @@
     if(!dx && !dy) return;
     state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down';
     const nx=state.player.x+dx, ny=state.player.y+dy;
-    if(!inMapBounds(nx,ny)){ toast('Map boundary reached.'); renderAll(); return; }
+    if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)){ toast('Map boundary reached.'); renderAll(); return; }
     const c=tileAt(nx,ny);
     const npcBlock=npcAt(nx,ny);
     if(npcBlock){toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return;}
-    if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;}
-    if(!isWalkableTile(c)){ toast('Blocked.'); renderAll(); return; }
+    if(c==='D'){ handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
+    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); renderAll(); return; }
     state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); clampPlayerToMap(); renderAll(); queueAutosave();
   }
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=requiredAnomaliesForStage()){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear the required anomalies or find access.'); }
@@ -3893,6 +3918,7 @@
     const c=tileAt(x,y);
     if(!isKnownMapTile(c) || c==='#') return false;
     if(c==='D' && !(state.flags.bossUnlocked || state.flags.anomaliesCleared>=requiredAnomaliesForStage() || state.flags.key) && !(target && target.x===x && target.y===y)) return false;
+    if(c!=='D' && !canStandAt(x,y)) return false;
     return true;
   }
   function routePathToObjective(){
@@ -5371,9 +5397,9 @@
     lastNavDir: '',
     menuRoot: null,
     menuIndex: 0,
-    deadzone: 0.55,
-    moveDelay: 310,
-    navDelay: 165,
+    deadzone: 0.68,
+    moveDelay: 720,
+    navDelay: 220,
     loopId: null,
     scanTimer: null,
     nextScanAt: 0,
@@ -5670,14 +5696,13 @@
         this.lastMoveNeutralAt=now;
       } else {
         const changedDir = mv.key !== this.lastMoveDir;
-        const enoughDelay = now - this.lastMoveAt > this.moveDelay;
-        const neutralReset = now - this.lastMoveNeutralAt < 260;
-        // Controller movement is intentionally slower than keyboard/touch.
-        // It prevents held sticks/D-pads from sprinting through boundaries and triggers.
-        if(changedDir || enoughDelay || neutralReset){
+        const enoughDelay = now - this.lastMoveAt >= this.moveDelay;
+        const releasedRecently = now - this.lastMoveNeutralAt < 220;
+        // V140: one deliberate step, then held stick/D-pad waits the full delay.
+        if((changedDir && releasedRecently && now-this.lastMoveAt > 180) || enoughDelay){
           this.lastMoveDir = mv.key;
           this.lastMoveAt = now;
-          tryMove(mv.dx,mv.dy);
+          tryMove(mv.dx,mv.dy,'controller');
           return;
         }
       }
