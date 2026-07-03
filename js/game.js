@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.12 // CHAPTER STORY PASS',
+    'Version 0.9.13 // STORY ARCHIVE PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -1458,6 +1458,29 @@
     let panel = $('missionContractBoard');
     if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
     panel.innerHTML = contractHtml() + sideQuestHtml();
+  }
+
+
+  // v103: Story Archive lets players replay unlocked narrative scenes from Mission Briefing.
+  const STORY_ARCHIVE_ENTRIES = [
+    {key:'intro', chapter:'Prologue', title:'The Ash Event', desc:'Vyra wakes up, AVOS explains how reality got aggressively educational.', unlock:()=>true},
+    {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || currentStageKey()==='f002' || currentStageKey()==='f003'},
+    {key:'f002Intro', chapter:'Chapter 2', title:'Broken Signal', desc:'The outpost route comes online and the ash signal starts screaming.', unlock:()=>playerMeetsStageRequirement('f002') || !!state.stages?.f002?.unlocked || currentStageKey()==='f002' || currentStageKey()==='f003'},
+    {key:'f002Clear', chapter:'Chapter 2', title:'The Broken Signal Answers', desc:'Outpost Core recovered and the Neon Graveyard frequency is exposed.', unlock:()=>!!state.stages?.f002?.complete || currentStageKey()==='f003'},
+    {key:'f003Intro', chapter:'Chapter 3', title:'Dead Frequencies', desc:'Vyra enters the neon memorial grid where the dead signal talks back.', unlock:()=>playerMeetsStageRequirement('f003') || !!state.stages?.f003?.unlocked || currentStageKey()==='f003'},
+    {key:'f003Clear', chapter:'Chapter 3', title:'The Graveyard Remembers', desc:'The dead frequency is silenced and the archive hints at a deeper truth.', unlock:()=>!!state.stages?.f003?.complete}
+  ];
+  function renderStoryArchivePanel(){
+    ensureProgression(); ensureStoryFlags();
+    const grid = document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel = $('storyArchiveBoard');
+    if(!panel){ panel = document.createElement('section'); panel.id = 'storyArchiveBoard'; panel.className = 'fracture-card story-archive-board'; grid.appendChild(panel); }
+    const rows = STORY_ARCHIVE_ENTRIES.map(entry => {
+      const unlocked = !!entry.unlock();
+      return `<div class="story-archive-row ${unlocked?'unlocked':'locked'}"><div><b>${safeHtml(entry.chapter)} // ${safeHtml(entry.title)}</b><span>${safeHtml(entry.desc)}</span></div><button ${unlocked?'':'disabled'} onclick="window.AV.showStory('${entry.key}')">${unlocked?'Replay':'Locked'}</button></div>`;
+    }).join('');
+    panel.innerHTML = `<div class="record-kicker">STORY ARCHIVE // REPLAY UNLOCKED SCENES</div><h3>Recovered Narrative Logs</h3><p>Rewatch story beats without restarting the game. Locked entries open as you clear fractures.</p><div class="story-archive-list">${rows}</div>`;
   }
 
   function createSkillData(){
@@ -3212,6 +3235,7 @@
     $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
+    renderStoryArchivePanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Player Level: ${p.level} // QA Bypass: ${state.qaUnlockAllStages?'ON':'OFF'}</div><div class="statrow">Level Locks: ${Object.entries(STAGE_DEFS).map(([k,d])=>d.id+': '+(playerMeetsStageRequirement(k)?'open':'locked')).join(' // ')}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Controller: ${ControllerManager.statusText()}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
     renderFullscreenHud();
@@ -3246,7 +3270,7 @@
       if(id==='inventoryOverlay') renderInventoryDb();
       if(id==='operatorOverlay') renderOperatorDb();
       if(id==='fractureOverlay') renderFractureDb();
-      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); }
+      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); }
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
@@ -4018,7 +4042,7 @@
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
-    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
+    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
