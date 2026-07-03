@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.45 // MOBILE VICTORY REPORT PASS',
+    'Version 0.9.46 // FULL SKILL NODE GRID PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.45';
+  const BUILD_VERSION = '0.9.46';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -893,13 +893,6 @@
   function requiredAnomaliesForStage(key=currentStageKey()){
     return stageMissionScale(key).anomalyGoal;
   }
-  function zoneProfile(key=currentStageKey()){
-    const stage=stageNumberFromKey(key);
-    const tier=nodeTierForStage(key);
-    const skills=['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
-    const items=skills.map((skill,i)=>catalogNodeForSkill(skill,key,(tier+i)%Math.max(1,tier+1))?.item).filter(Boolean);
-    return {zone:`Stage ${stage} Training Zone`, skills, items};
-  }
   const SKILL_COLOR = {
     cryptomining:'#ffb84d',
     datafishing:'#70d7ff',
@@ -907,70 +900,67 @@
     forgenetics:'#d2a8ff',
     system_hacking:'#ffffff'
   };
+  const SKILL_NODE_REQS = [1,3,5,8];
   const TRAINING_NODE_CATALOG = {
     cryptomining:[
-      {label:'Ash Pebble Pile', item:'Ash Pebble', req:1, xp:12, glyph:'◆', verb:'mined'},
-      {label:'Ash Ore Vein', item:'Ash Ore', req:6, xp:22, glyph:'◇', verb:'mined'},
-      {label:'Dense Ash Vein', item:'Dense Ash Ore', req:14, xp:38, glyph:'⬙', verb:'mined'},
-      {label:'Vector Crystal Seam', item:'Vector Crystal', req:30, xp:70, glyph:'✦', verb:'mined'}
+      {label:'Ash Pebble Pile', item:'Ash Pebble', req:1, xp:10, glyph:'◆', verb:'mined'},
+      {label:'Ash Ore Vein', item:'Ash Ore', req:3, xp:16, glyph:'◇', verb:'mined'},
+      {label:'Dense Ash Vein', item:'Dense Ash Ore', req:5, xp:24, glyph:'⬙', verb:'mined'},
+      {label:'Vector Crystal Seam', item:'Vector Crystal', req:8, xp:34, glyph:'✦', verb:'mined'}
     ],
     datafishing:[
-      {label:'Static Packet Stream', item:'Static Packet', req:1, xp:12, glyph:'≋', verb:'decoded'},
-      {label:'Encrypted Data Stream', item:'Encrypted Data', req:6, xp:24, glyph:'⌁', verb:'decoded'},
-      {label:'Ghost Log Pool', item:'Ghost Log', req:15, xp:42, glyph:'☰', verb:'decoded'},
-      {label:'Blackbox Signal', item:'Blackbox File', req:32, xp:76, glyph:'▤', verb:'decoded'}
+      {label:'Static Packet Stream', item:'Static Packet', req:1, xp:10, glyph:'≋', verb:'decoded'},
+      {label:'Encrypted Data Stream', item:'Encrypted Data', req:3, xp:17, glyph:'⌁', verb:'decoded'},
+      {label:'Ghost Log Pool', item:'Ghost Log', req:5, xp:25, glyph:'☰', verb:'decoded'},
+      {label:'Blackbox Signal', item:'Blackbox File', req:8, xp:36, glyph:'▤', verb:'decoded'}
     ],
     codecraft:[
-      {label:'Wire Scrap Bench', item:'Wire Scrap', req:1, xp:11, glyph:'⚙', verb:'salvaged'},
-      {label:'Circuit Scrap Bench', item:'Circuit Scrap', req:6, xp:23, glyph:'⚒', verb:'salvaged'},
-      {label:'Logic Board Station', item:'Logic Board', req:14, xp:40, glyph:'▧', verb:'salvaged'},
-      {label:'Quantum Relay Rack', item:'Quantum Relay', req:30, xp:72, glyph:'⌬', verb:'salvaged'}
+      {label:'Wire Scrap Bench', item:'Wire Scrap', req:1, xp:9, glyph:'⚙', verb:'salvaged'},
+      {label:'Circuit Scrap Bench', item:'Circuit Scrap', req:3, xp:16, glyph:'⚒', verb:'salvaged'},
+      {label:'Logic Board Station', item:'Logic Board', req:5, xp:24, glyph:'▧', verb:'salvaged'},
+      {label:'Quantum Relay Rack', item:'Quantum Relay', req:8, xp:34, glyph:'⌬', verb:'salvaged'}
     ],
     forgenetics:[
-      {label:'Spore Sample Pod', item:'Spore Sample', req:1, xp:13, glyph:'✣', verb:'harvested'},
-      {label:'Mutagen Sample Pod', item:'Mutagen Sample', req:7, xp:27, glyph:'✤', verb:'harvested'},
-      {label:'Mutated Tissue Bloom', item:'Mutated Tissue', req:16, xp:46, glyph:'✹', verb:'harvested'},
-      {label:'Vector DNA Bloom', item:'Vector DNA', req:34, xp:82, glyph:'❋', verb:'harvested'}
+      {label:'Spore Sample Pod', item:'Spore Sample', req:1, xp:11, glyph:'✣', verb:'harvested'},
+      {label:'Mutagen Sample Pod', item:'Mutagen Sample', req:3, xp:18, glyph:'✤', verb:'harvested'},
+      {label:'Mutated Tissue Bloom', item:'Mutated Tissue', req:5, xp:27, glyph:'✹', verb:'harvested'},
+      {label:'Vector DNA Bloom', item:'Vector DNA', req:8, xp:38, glyph:'❋', verb:'harvested'}
     ],
     system_hacking:[
-      {label:'Broken Token Relay', item:'Broken Token', req:1, xp:12, glyph:'▣', verb:'hacked'},
-      {label:'Access Fragment Relay', item:'Access Fragment', req:6, xp:25, glyph:'▢', verb:'hacked'},
-      {label:'Security Keybit Panel', item:'Security Keybit', req:15, xp:44, glyph:'▨', verb:'hacked'},
-      {label:'Root Cipher Console', item:'Root Cipher', req:33, xp:80, glyph:'▩', verb:'hacked'}
+      {label:'Broken Token Relay', item:'Broken Token', req:1, xp:10, glyph:'▣', verb:'hacked'},
+      {label:'Access Fragment Relay', item:'Access Fragment', req:3, xp:17, glyph:'▢', verb:'hacked'},
+      {label:'Security Keybit Panel', item:'Security Keybit', req:5, xp:26, glyph:'▨', verb:'hacked'},
+      {label:'Root Cipher Console', item:'Root Cipher', req:8, xp:37, glyph:'▩', verb:'hacked'}
     ]
   };
-  function nodeTierForStage(stageKey=currentStageKey()){
-    const n=stageNumberFromKey(stageKey);
-    if(n <= 1) return 0;
-    if(n <= 3) return 1;
-    if(n <= 6) return 2;
-    return 3;
-  }
+  const TRAINING_SKILLS = ['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
+
   function catalogNodeForSkill(skill, stageKey=currentStageKey(), variant=0){
     const list=TRAINING_NODE_CATALOG[skill] || [];
     if(!list.length) return null;
-    const maxTier=Math.min(nodeTierForStage(stageKey), list.length-1);
-    const tier=Math.max(0, Math.min(maxTier, variant % (maxTier+1)));
+    const tier=Math.max(0, Math.min(list.length-1, variant));
     const base=list[tier];
     return {...base, skill, color:SKILL_COLOR[skill] || '#ffffff', tier};
   }
+
   function SKILLING_RULES_FROM_CATALOG(){
     const rules={};
     Object.entries(TRAINING_NODE_CATALOG).forEach(([skill,nodes])=>{
       nodes.forEach((n,tier)=>rules[n.item]={skill, baseXp:n.xp, levelBase:n.req, zoneStep:0, itemTier:tier});
     });
-    rules['Scrap Metal']={skill:'codecraft',baseXp:9,levelBase:1,zoneStep:0,itemTier:0};
-    rules['Burnt Alloy']={skill:'cryptomining',baseXp:34,levelBase:6,zoneStep:0,itemTier:2};
-    rules['Corrupted Catalyst']={skill:'forgenetics',baseXp:52,levelBase:16,zoneStep:0,itemTier:3};
-    rules['Rust Core']={skill:'cryptomining',baseXp:60,levelBase:14,zoneStep:0,itemTier:3};
-    rules['Archive Log 001']={skill:'datafishing',baseXp:30,levelBase:6,zoneStep:0,itemTier:1};
-    rules['Vector Cell']={skill:'system_hacking',baseXp:18,levelBase:1,zoneStep:0,itemTier:1};
-    rules['Zone Cache Voucher']={skill:'system_hacking',baseXp:65,levelBase:20,zoneStep:0,itemTier:4};
+    rules['Scrap Metal']={skill:'codecraft',baseXp:8,levelBase:1,zoneStep:0,itemTier:0};
+    rules['Burnt Alloy']={skill:'cryptomining',baseXp:22,levelBase:3,zoneStep:0,itemTier:1};
+    rules['Corrupted Catalyst']={skill:'forgenetics',baseXp:32,levelBase:5,zoneStep:0,itemTier:2};
+    rules['Rust Core']={skill:'cryptomining',baseXp:34,levelBase:8,zoneStep:0,itemTier:3};
+    rules['Archive Log 001']={skill:'datafishing',baseXp:18,levelBase:3,zoneStep:0,itemTier:1};
+    rules['Vector Cell']={skill:'system_hacking',baseXp:14,levelBase:1,zoneStep:0,itemTier:0};
+    rules['Zone Cache Voucher']={skill:'system_hacking',baseXp:40,levelBase:8,zoneStep:0,itemTier:3};
     return rules;
   }
   const SKILLING_ITEM_RULES = SKILLING_RULES_FROM_CATALOG();
+
   function skillingRuleForItem(name, fallbackSkill='cryptomining'){
-    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:8, levelBase:1, zoneStep:0, itemTier:0};
+    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:7, levelBase:1, zoneStep:0, itemTier:0};
   }
   function skillingLevelReqForItem(name, stageKey=currentStageKey()){
     const rule=skillingRuleForItem(name);
@@ -979,7 +969,7 @@
   function skillingXpForItem(name, stageKey=currentStageKey(), qty=1){
     const rule=skillingRuleForItem(name);
     const stage=stageNumberFromKey(stageKey);
-    const stageBoost=Math.floor(Math.max(0, stage-1) * (1.2 + (rule.itemTier || 0)*0.55));
+    const stageBoost=Math.floor(Math.max(0, stage-1) * (0.8 + (rule.itemTier || 0)*0.35));
     return Math.max(1, Math.floor((rule.baseXp + stageBoost) * Math.max(1, qty || 1)));
   }
   function canTrainFromItem(name, stageKey=currentStageKey()){
@@ -989,6 +979,11 @@
     return {ok:lvl>=req, req, lvl, skill:rule.skill, xp:skillingXpForItem(name, stageKey, 1)};
   }
 
+  function zoneProfile(key=currentStageKey()){
+    const stage=stageNumberFromKey(key);
+    const items=TRAINING_SKILLS.flatMap(skill => (TRAINING_NODE_CATALOG[skill]||[]).map(n=>n.item));
+    return {zone:`Stage ${stage} Full Skill Grid`, skills:[...TRAINING_SKILLS], items};
+  }
   function ensureTrainingNodeState(){
     if(!state) return;
     state.resourceNodes ||= {};
@@ -996,63 +991,71 @@
   function deterministicFloorTilesForStage(key=currentStageKey()){
     const def=stageDef(key);
     const rows=def.map || [];
-    const tiles=[];
-    const start=parseStageMap(key);
+    const parsed=parseStageMap(key);
     const stageNo=stageNumberFromKey(key);
-    for(let y=1;y<rows.length-1;y++){
-      for(let x=1;x<(rows[y]||'').length-1;x++){
-        const c=(rows[y]||'')[x];
-        const dist=Math.abs(x-start.px)+Math.abs(y-start.py);
-        if(c==='.' && dist>8 && ((x*17 + y*31 + stageNo*13) % 23 === 0)) tiles.push({x,y});
-      }
-    }
-    if(tiles.length < 12){
-      for(let y=2;y<rows.length-2;y+=2){
-        for(let x=2;x<(rows[y]||'').length-2;x+=3){
-          const c=(rows[y]||'')[x];
-          const dist=Math.abs(x-start.px)+Math.abs(y-start.py);
-          if(c==='.' && dist>8) tiles.push({x,y});
+    const tiles=[];
+    const addTile=(x,y)=>{
+      const c=(rows[y]||'')[x];
+      const dist=Math.abs(x-parsed.px)+Math.abs(y-parsed.py);
+      if(c!=='.' || dist<5) return;
+      const pos=`${x},${y}`;
+      if(!tiles.some(t=>t.x===x && t.y===y)) tiles.push({x,y});
+    };
+
+    // Wide spacing first so the 20 nodes do not clump.
+    for(let band=0; band<7; band++){
+      for(let y=2+band; y<rows.length-2; y+=7){
+        for(let x=2+((stageNo+band)*3%9); x<(rows[y]||'').length-2; x+=9){
+          addTile(x,y);
         }
       }
     }
-    const seen=new Set();
-    return tiles.filter(t=>{
-      const k=`${t.x},${t.y}`;
-      if(seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    });
+    // Fallback fill if a map is tighter.
+    for(let y=2;y<rows.length-2 && tiles.length<40;y++){
+      for(let x=2;x<(rows[y]||'').length-2 && tiles.length<40;x++){
+        if(((x*13+y*17+stageNo*19)%5)===0) addTile(x,y);
+      }
+    }
+    return tiles;
   }
+
   function stageTrainingNodes(key=currentStageKey()){
-    const scale=stageMissionScale(key);
     const floor=deterministicFloorTilesForStage(key);
-    const skills=['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
     const nodes=[];
     if(!floor.length) return nodes;
-    skills.forEach((skill,i)=>{
-      const variants = key==='f001' ? [0] : [0, Math.min(nodeTierForStage(key), 1 + ((i + scale.stage) % Math.max(1,nodeTierForStage(key))))];
-      variants.forEach((variant,local)=>{
-        const t=floor[(i*5 + local*11 + scale.stage) % floor.length];
-        const catalog=catalogNodeForSkill(skill,key,variant);
-        if(!catalog) return;
-        nodes.push({id:`${key}:node:${i}:${local}:${skill}:${catalog.tier}`, stage:key, x:t.x, y:t.y, skill, levelReq:catalog.req, itemXp:skillingXpForItem(catalog.item,key,1), ...catalog});
-      });
+
+    // Every map gets 4 different training objects per skill:
+    // req Lv. 1, 3, 5, and 8.
+    let cursor=0;
+    TRAINING_SKILLS.forEach((skill, skillIndex)=>{
+      for(let tier=0;tier<4;tier++){
+        const catalog=catalogNodeForSkill(skill,key,tier);
+        if(!catalog) continue;
+        let chosen=null;
+        for(let tries=0;tries<floor.length;tries++){
+          const idx=(skillIndex*17 + tier*11 + stageNumberFromKey(key)*7 + tries + cursor) % floor.length;
+          const t=floor[idx];
+          const pos=`${t.x},${t.y}`;
+          if(!nodes.some(n=>n.x===t.x && n.y===t.y)){
+            chosen=t;
+            cursor=idx+1;
+            break;
+          }
+        }
+        if(!chosen) chosen=floor[(skillIndex*4+tier) % floor.length];
+        nodes.push({
+          id:`${key}:skillnode:${skill}:${tier}`,
+          stage:key,
+          x:chosen.x,
+          y:chosen.y,
+          skill,
+          levelReq:catalog.req,
+          itemXp:skillingXpForItem(catalog.item,key,1),
+          ...catalog
+        });
+      }
     });
-    const extraCount=Math.max(0, Math.min(4, scale.nodeCount - skills.length));
-    for(let e=0;e<extraCount;e++){
-      const skill=skills[(e + scale.stage) % skills.length];
-      const catalog=catalogNodeForSkill(skill,key,e+scale.stage);
-      if(!catalog) continue;
-      const t=floor[(e*7 + scale.stage*3) % floor.length];
-      nodes.push({id:`${key}:node:extra:${e}:${skill}:${catalog.tier}`, stage:key, x:t.x, y:t.y, skill, levelReq:catalog.req, itemXp:skillingXpForItem(catalog.item,key,1), ...catalog});
-    }
-    const seen=new Set();
-    return nodes.filter(n=>{
-      const pos=`${n.x},${n.y}`;
-      if(seen.has(pos)) return false;
-      seen.add(pos);
-      return true;
-    });
+    return nodes;
   }
   function trainingNodeReady(node){
     ensureTrainingNodeState();
@@ -1152,7 +1155,7 @@
     const summary=loot.map(([name,qty])=>`${name}${qty>1?' x'+qty:''}`).join(', ');
     log(`${def.id} cache opened: +${scale.cacheCredits} credits, +${scale.cacheXp} Sync XP${summary?`, ${summary}`:''}.`);
     pulseObjective(`Cache recovered: ${summary || 'credits and supplies'}.`);
-    showTutorialTip('cache','Scaled Caches + Zone Loot','Caches now scale by level range and zone. Later stages give better materials, more credits, and a better gear chance.','Press I or Bag to view stacked loot in the bank-style inventory.');
+    showTutorialTip('cache','Scaled Caches + Zone Loot','Caches scale by level range and zone. Every map also has 4 color-coded training objects per skill.','Press I or Bag to view stacked loot in the bank-style inventory.');
     advanceProtocolChallenge('caches',1);
     renderAll();
     queueAutosave();
@@ -4781,7 +4784,7 @@
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
     $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Research ${researchStats.discovered}/${researchStats.total}</div><div class="statrow">Respawn ${respawnText} // Research Kills ${researchStats.kills}</div><div class="statrow">Checkpoint ${safeHtml(checkpointSummaryText())}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
-    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // 4 per skill // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
     $('inventory').innerHTML=`<button class="open-bag-btn" onclick="window.AV.openOverlay('inventoryOverlay')">Open Bag / Bank</button><div class="quick-bag-grid">${Object.entries(state.inventory).slice(0,12).map(([k,v])=>{ const item=findItemRecord(k); return `<div class="quick-bag-slot ${rarityClass(item.rarity)}" title="${safeHtml(k)}">${itemIconHtml(item,v)}<span>${safeHtml(k)}</span></div>`; }).join('') || '<div class="invrow">No recovered assets.</div>'}</div>`;
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';

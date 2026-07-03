@@ -2533,3 +2533,12 @@ body.battle-victory-mode #battleOverlay .battle-ui{
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
   }
 }
+
+
+/* V136: all-map full skill node grid */
+.skill-node-note{
+  font-size:11px;
+  color:#bdefff;
+}
+.bank-slot small.warn{color:#ffb840!important;}
+.bank-slot small.ok{color:#94ff62!important;}
