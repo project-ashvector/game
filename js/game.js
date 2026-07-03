@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.13 // STORY ARCHIVE PASS',
+    'Version 0.9.14 // OBJECTIVE GUIDE PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -2536,6 +2536,42 @@
   }
 
 
+  // v104: clearer route guidance for testers and new players.
+  function objectiveStepIndex(){
+    if(!state.flags.terminal) return 0;
+    if(Math.min(3,state.flags.anomaliesCleared||0) < 3) return 1;
+    if(!state.flags.bossUnlocked) return 2;
+    if(!state.flags.bossDefeated) return 3;
+    if(!state.flags.chapterComplete) return 4;
+    return 5;
+  }
+  function objectiveStepLabel(){
+    return ['Sync terminal','Clear anomalies','Open boss gate','Defeat boss','Extract','Stage complete'][objectiveStepIndex()] || 'Unknown';
+  }
+  function objectiveGuideText(){
+    const target=objectiveTarget();
+    const def=stageDef();
+    if(!target) return 'No active target. Open the Mission Briefing if you need to review the route.';
+    if(target.kind==='complete'){
+      const next=def.nextKey ? STAGE_DEFS[def.nextKey] : null;
+      return next ? `${def.id} complete. Next route: ${next.id} // ${next.title}.` : `${def.id} complete. More routes are coming soon.`;
+    }
+    const action = ({
+      terminal:'Reach the recovery terminal and sync the archive.',
+      anomaly:'Erase the nearest anomaly signature. Three are required before the boss route opens.',
+      boss:'Boss route is active. Defeat the guardian and recover the core.',
+      exit:'Core recovered. Reach the white extraction marker.'
+    })[target.kind] || 'Follow the active objective beacon.';
+    return `${action} Target: ${target.label} ${target.arrow} ${target.distance} tiles.`;
+  }
+  function objectiveGuideHtml(){
+    const target=objectiveTarget();
+    const step=objectiveStepLabel();
+    const targetLine = target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
+    return `<div class="mission-row"><b>Current Step:</b> ${safeHtml(step)}</div><div class="mission-row"><b>Target:</b> ${targetLine}</div><div class="mission-row"><b>Guide:</b> ${safeHtml(objectiveGuideText())}</div><div class="mission-row">Press <b>N</b> or click the target compass to ping the objective.</div>`;
+  }
+
+
   // v84: objective beacon for mobile/desktop navigation.
   // It finds the next main mission target and shows a compass/ping without adding new assets.
   function findTilesByCode(code){
@@ -2606,7 +2642,7 @@
   function showObjectivePing(){
     const target=objectiveTarget();
     if(!target){ toast('No active target.'); return; }
-    toast(`${target.label}: ${target.arrow} ${target.distance||0} tiles`);
+    toast(`${objectiveStepLabel()}: ${target.label} ${target.arrow} ${target.distance||0} tiles`);
     const c=ensureObjectiveCompass();
     c.classList.remove('objective-ping'); void c.offsetWidth; c.classList.add('objective-ping');
   }
@@ -3231,8 +3267,10 @@
     const contract=activeContract();
     const contractLine=`📜 Contract: ${safeHtml(contract.title)} (${contract.progress}/${contract.target})${contract.complete?' — ready to claim':''}`;
     const questLine=safeHtml(sideQuestStatusText());
-    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine}`;
-    $('missionProgress').innerHTML=objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
+    const target=objectiveTarget();
+    const targetSummary=target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
+    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine}`;
+    $('missionProgress').innerHTML=objectiveGuideHtml() + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     renderStoryArchivePanel();
@@ -4024,7 +4062,7 @@
           return;
         }
         if(key==='e'){ e.preventDefault(); interactNearbyNpc(); return; }
-        if(key==='n'){ e.preventDefault(); showObjectivePing(); return; }
+        if(key==='n'){ e.preventDefault(); showObjectivePing(); pulseObjective(objectiveGuideText()); return; }
         if(key==='m'){ e.preventDefault(); toggleSideHud(); return; }
         if(key==='i'){ e.preventDefault(); openOverlay('inventoryOverlay'); return; }
         if(key==='v'){ e.preventDefault(); openOverlay('anomalyOverlay'); return; }
