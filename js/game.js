@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.48 // CONTROLLER STABILITY PASS',
+    'Version 0.9.49 // CONTROLLER SPEED BOUNDARY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.48';
+  const BUILD_VERSION = '0.9.49';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -3216,10 +3216,10 @@
   }
   function findSafeSpawn(){
     const parsed=parseStageMap(currentStageKey());
-    if(inMapBounds(parsed.px, parsed.py) && tileAt(parsed.px, parsed.py) !== '#') return {x:parsed.px,y:parsed.py};
+    if(inMapBounds(parsed.px, parsed.py) && isWalkableTile(tileAt(parsed.px, parsed.py))) return {x:parsed.px,y:parsed.py};
     for(let y=0;y<mapHeight();y++){
       for(let x=0;x<(state.map[y]||'').length;x++){
-        if(tileAt(x,y) !== '#') return {x,y};
+        if(isWalkableTile(tileAt(x,y))) return {x,y};
       }
     }
     return {x:1,y:1};
@@ -3228,7 +3228,7 @@
     if(!state?.player || !state?.map) return false;
     const x=Math.floor(Number(state.player.x));
     const y=Math.floor(Number(state.player.y));
-    if(inMapBounds(x,y) && tileAt(x,y) !== '#'){
+    if(inMapBounds(x,y) && isWalkableTile(tileAt(x,y))){
       state.player.x=x; state.player.y=y;
       return false;
     }
@@ -3247,11 +3247,21 @@
     state.map[y]=state.map[y].slice(0,x) + v + state.map[y].slice(x+1);
     return true;
   }
-  function isBlocked(c){return c==='#' || c==='D';}
+  function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
+  function isWalkableTile(c){
+    // Whitelist playable symbols only. This blocks blank/undefined/weird characters
+    // that could act like invisible holes at map edges.
+    return ['.','P','S','C','H','L','E','B','X'].includes(c);
+  }
+  function isBlocked(c){return !isKnownMapTile(c) || c==='#' || c==='D';}
   function tryMove(dx,dy){
     if(storyActive) return;
     if(battle) return;
     clampPlayerToMap();
+    dx=Math.sign(Number(dx)||0);
+    dy=Math.sign(Number(dy)||0);
+    if(dx && dy){ dy=0; } // never allow diagonal clipping through corners
+    if(!dx && !dy) return;
     state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down';
     const nx=state.player.x+dx, ny=state.player.y+dy;
     if(!inMapBounds(nx,ny)){ toast('Map boundary reached.'); renderAll(); return; }
@@ -3259,6 +3269,7 @@
     const npcBlock=npcAt(nx,ny);
     if(npcBlock){toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return;}
     if(isBlocked(c)){if(c==='D') handleDoor(nx,ny); else toast('Blocked.'); renderAll(); return;}
+    if(!isWalkableTile(c)){ toast('Blocked.'); renderAll(); return; }
     state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); clampPlayerToMap(); renderAll(); queueAutosave();
   }
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=requiredAnomaliesForStage()){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear the required anomalies or find access.'); }
@@ -3880,7 +3891,7 @@
   // while keeping the actual walls/floors easy to read.
   function tileWalkableForRoute(x,y,target){
     const c=tileAt(x,y);
-    if(c==='#') return false;
+    if(!isKnownMapTile(c) || c==='#') return false;
     if(c==='D' && !(state.flags.bossUnlocked || state.flags.anomaliesCleared>=requiredAnomaliesForStage() || state.flags.key) && !(target && target.x===x && target.y===y)) return false;
     return true;
   }
@@ -5355,12 +5366,13 @@
     lastButtons: {},
     lastMoveAt: 0,
     lastMoveDir: '',
+    lastMoveNeutralAt: 0,
     lastNavAt: 0,
     lastNavDir: '',
     menuRoot: null,
     menuIndex: 0,
-    deadzone: 0.42,
-    moveDelay: 170,
+    deadzone: 0.55,
+    moveDelay: 310,
     navDelay: 165,
     loopId: null,
     scanTimer: null,
@@ -5397,6 +5409,7 @@
       this.lastMoveDir = '';
       this.lastNavDir = '';
       this.lastMoveAt = 0;
+      this.lastMoveNeutralAt = 0;
       this.lastNavAt = 0;
     },
 
@@ -5490,7 +5503,11 @@
       const ay = Number(pad.axes?.[1] || 0);
       if(!dx && Math.abs(ax) > this.deadzone) dx = ax > 0 ? 1 : -1;
       if(!dy && Math.abs(ay) > this.deadzone) dy = ay > 0 ? 1 : -1;
-      if(dx && dy){ if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0; }
+      if(dx && dy){
+        // Hard single-axis movement prevents corner clipping on controller.
+        if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0;
+      }
+      dx=Math.sign(dx||0); dy=Math.sign(dy||0);
       return {dx,dy,key:`${dx},${dy}`};
     },
 
@@ -5648,13 +5665,22 @@
 
       const mv=this.movement(pad);
       const now=performance.now();
-      if((mv.dx || mv.dy) && (mv.key !== this.lastMoveDir || now-this.lastMoveAt > this.moveDelay)){
-        this.lastMoveDir = mv.key;
-        this.lastMoveAt = now;
-        tryMove(mv.dx,mv.dy);
-        return;
+      if(!mv.dx && !mv.dy){
+        this.lastMoveDir='';
+        this.lastMoveNeutralAt=now;
+      } else {
+        const changedDir = mv.key !== this.lastMoveDir;
+        const enoughDelay = now - this.lastMoveAt > this.moveDelay;
+        const neutralReset = now - this.lastMoveNeutralAt < 260;
+        // Controller movement is intentionally slower than keyboard/touch.
+        // It prevents held sticks/D-pads from sprinting through boundaries and triggers.
+        if(changedDir || enoughDelay || neutralReset){
+          this.lastMoveDir = mv.key;
+          this.lastMoveAt = now;
+          tryMove(mv.dx,mv.dy);
+          return;
+        }
       }
-      if(!mv.dx && !mv.dy){ this.lastMoveDir=''; }
       if(south){ interactNearbyNpc(); return; }
       if(east){ useMedPatch(); return; }
       if(west){ useVectorCell(); return; }
