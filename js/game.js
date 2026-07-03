@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.20 // VICTORY REPORT PASS',
+    'Version 0.9.21 // DEATH RECOVERY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -3120,20 +3120,77 @@
 
   function handlePlayerDeath(){
     if(!battle) return;
+    const defeatedBy = battle.enemy?.name || 'Unknown anomaly';
+    const defeatedId = battle.enemy?.id || 'ANOMALY';
+    const stage = stageDef();
+    const anomalyCount = Math.min(3, state.flags.anomaliesCleared || 0);
+    const hadCheckpoint = !!state.checkpoint?.snapshot;
+    const checkpointLabel = state.checkpoint?.label || 'Fracture Entry';
     battle.turn='defeated';
     setBattleMobileMode(false);
+    state.deaths = (state.deaths || 0) + 1;
     state.player.hp = 0;
     SfxManager.death();
     AudioManager.stopMusic();
     $('battleText').textContent = 'Vyra has fallen. Archive synchronization failed.';
     renderBattle();
     const panel=$('battleVictory');
-    const retryLabel = state.checkpoint?.label ? `Retry from ${safeHtml(state.checkpoint.label)}` : 'Retry Fracture';
-    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed. The run has ended.</p><div class="protocol-list"><div><b>Status</b><span>HP reached 0. Developer mercy disabled.</span></div><div><b>Recovery</b><span>${state.checkpoint?.label ? 'Checkpoint found: '+safeHtml(state.checkpoint.label) : 'No checkpoint found. Restart from Fracture Entry.'}</span></div></div><button id="deathRetryBtn">${retryLabel}</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
+    const retryLabel = hadCheckpoint ? `Safe Reboot: ${safeHtml(checkpointLabel)}` : 'Restart Fracture';
+    panel.innerHTML = `<div class="victory-card defeat-card"><div class="record-kicker">DEFEAT REPORT // OPERATOR DOWN</div><h2>ARCHIVE COLLAPSE</h2><p>Vyra was overwhelmed by ${safeHtml(defeatedBy)}. AVOS prepared a safer reboot route.</p><div class="record-grid"><div><b>Defeated By</b><span>${safeHtml(defeatedId)} // ${safeHtml(defeatedBy)}</span></div><div><b>Fracture</b><span>${safeHtml(stage.id)} // ${safeHtml(stage.title)}</span></div><div><b>Progress Kept</b><span>Anomalies ${anomalyCount}/3 // Boss ${state.flags.bossDefeated?'Defeated':'Pending'}</span></div><div><b>Recovery Point</b><span>${hadCheckpoint ? safeHtml(checkpointLabel) : 'No checkpoint snapshot. Restarting current fracture.'}</span></div><div><b>Reboot Rule</b><span>Retry restores HP/EP for playtest flow. Inventory and progress stay local-save based.</span></div><div><b>Total Defeats</b><span>${state.deaths}</span></div></div><div class="protocol-list"><div><b>AVOS Tip</b><span>Use Guard when Enemy Intent predicts a heavy hit. Save Vector Cells for low EP or boss fights.</span></div><div><b>Route Tip</b><span>Recovery terminals and heal stations are your safest checkpoint path.</span></div></div><button id="deathRetryBtn">${retryLabel}</button><button id="deathRestartStageBtn">Restart Current Fracture</button><button id="deathMenuBtn">Return to Main Menu</button></div>`;
     panel.classList.remove('hidden');
+
+    const recoverPlayerVitals=()=>{
+      const caps=combatStatBlock();
+      state.player.hp = caps.maxHp;
+      state.player.ep = caps.maxEp || state.player.maxEp;
+      state.player.overdrive = Math.min(state.player.maxOverdrive || 100, Math.max(state.player.overdrive || 0, 20));
+      toast('Emergency reboot complete. HP/EP restored.');
+    };
+
+    const closeDeathPanel=()=>{
+      battle=null;
+      setBattleMobileMode(false);
+      uiState.mode='game';
+      panel.classList.add('hidden');
+      $('battleOverlay').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      document.body.classList.add('game-active','fullscreen-mode');
+      renderAll();
+      AudioManager.play(activeMusicForState());
+      pulseObjective(currentObjectiveText());
+      save(true);
+    };
+
     const retry=$('deathRetryBtn');
+    const restart=$('deathRestartStageBtn');
     const menu=$('deathMenuBtn');
-    if(retry) retry.onclick=()=>{ const restored=restoreCheckpoint(); battle=null; setBattleMobileMode(false); if(!restored) state=newGameState(); gameStarted=true; uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); $('app').classList.remove('hidden'); renderAll(); AudioManager.play(activeMusicForState()); };
+
+    if(retry) retry.onclick=()=>{
+      const restored=restoreCheckpoint();
+      if(!restored){
+        loadStage(stage.key, {force:true});
+        recoverPlayerVitals();
+        battle=null;
+        setBattleMobileMode(false);
+        panel.classList.add('hidden');
+        $('battleOverlay').classList.add('hidden');
+        return;
+      }
+      recoverPlayerVitals();
+      closeDeathPanel();
+    };
+
+    if(restart) restart.onclick=()=>{
+      battle=null;
+      setBattleMobileMode(false);
+      panel.classList.add('hidden');
+      $('battleOverlay').classList.add('hidden');
+      loadStage(stage.key, {force:true});
+      recoverPlayerVitals();
+      renderAll();
+      save(true);
+    };
+
     if(menu) menu.onclick=()=>{ battle=null; setBattleMobileMode(false); panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
   }
 
