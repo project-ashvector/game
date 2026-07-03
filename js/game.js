@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.30 // INTRO VIDEO PASS',
+    'Version 0.9.31 // FULLSCREEN INTRO VIDEO FIX',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.30';
+  const BUILD_VERSION = '0.9.31';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
@@ -2694,50 +2694,111 @@
     queueAutosave();
     toast('Tutorial tips reset.');
   }
+  let introVideoActive=false;
   function boot(){
     uiState.mode='boot';
     bootDone=true;
+    introVideoActive=false;
     AudioManager.stopMusic();
+    document.body.classList.add('fullscreen-mode');
+    const bootScreen=$('bootScreen');
     const video=$('introVideo');
     const gate=$('introVideoGate');
+    const shade=$('introVideoShade');
     const prog=$('bootProgress')?.firstElementChild;
+    if(bootScreen) bootScreen.classList.remove('hidden');
+    if(shade) shade.style.display='';
     if(prog) prog.style.width='0%';
     if(video){
       video.pause();
       try{ video.currentTime=0; }catch(err){}
-      video.muted=false;
       video.loop=false;
+      video.controls=false;
+      video.preload='auto';
+      video.setAttribute('webkit-playsinline','false');
+      video.removeAttribute('playsinline');
       video.onended=finishIntroVideo;
-      video.onerror=()=>{ toast('Intro video missing. Opening main menu.'); finishIntroVideo(); };
+      video.onerror=()=>{ toast('Intro video missing or blocked. Opening main menu.'); finishIntroVideo(); };
+      video.onwebkitendfullscreen=()=>{ if(introVideoActive && video.currentTime >= Math.max(1,(video.duration||1)-.75)) finishIntroVideo(); };
       video.ontimeupdate=()=>{
         if(prog && Number.isFinite(video.duration) && video.duration>0){
           prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
         }
       };
+      try{ video.load(); }catch(err){}
     }
     if(gate) gate.classList.remove('hidden');
   }
-  function startIntroVideo(){
-    if(!$('bootScreen') || $('bootScreen').classList.contains('hidden')) return;
-    requestNativeFullscreen();
-    AudioManager.stopMusic();
+  function requestVideoFullscreen(video){
+    document.body.classList.add('fullscreen-mode','intro-video-active');
+    const target=video || $('bootScreen') || document.documentElement;
+    try{
+      if(video && video.webkitEnterFullscreen){ video.webkitEnterFullscreen(); return; }
+      if(target && target.requestFullscreen && !document.fullscreenElement){ target.requestFullscreen().catch(()=>requestNativeFullscreen()); return; }
+      if(target && target.webkitRequestFullscreen){ target.webkitRequestFullscreen(); return; }
+      requestNativeFullscreen();
+    }catch(err){ requestNativeFullscreen(); }
+  }
+  function startIntroVideo(opts={}){
+    const fromMenu=!!opts.fromMenu;
+    const bootScreen=$('bootScreen');
     const video=$('introVideo');
     const gate=$('introVideoGate');
+    const shade=$('introVideoShade');
+    const prog=$('bootProgress')?.firstElementChild;
+    if(fromMenu){
+      hideAll();
+      if(bootScreen) bootScreen.classList.remove('hidden');
+      uiState.mode='boot';
+    } else if(!bootScreen || bootScreen.classList.contains('hidden')) return;
+    introVideoActive=true;
+    AudioManager.stopMusic();
+    document.body.classList.add('fullscreen-mode','intro-video-active');
     if(gate) gate.classList.add('hidden');
+    if(shade) shade.style.display='none';
+    if(prog) prog.style.width='0%';
     if(!video){ finishIntroVideo(); return; }
+    video.controls=true;
+    video.loop=false;
     video.muted=false;
-    video.playsInline=true;
-    const playPromise=video.play();
-    if(playPromise && playPromise.catch){
-      playPromise.catch(()=>{
-        if(gate) gate.classList.remove('hidden');
-        toast('Tap again to allow video playback.');
-      });
-    }
+    video.volume=1;
+    video.setAttribute('webkit-playsinline','false');
+    video.removeAttribute('playsinline');
+    try{ video.currentTime=0; }catch(err){}
+    const tryPlay=()=>{
+      const p=video.play();
+      if(p && p.catch){
+        p.then(()=>requestVideoFullscreen(video)).catch(()=>{
+          video.muted=true;
+          const mutedTry=video.play();
+          if(mutedTry && mutedTry.catch){
+            mutedTry.then(()=>{ requestVideoFullscreen(video); toast('Video started muted by browser. Use video controls to unmute.'); }).catch(()=>{
+              introVideoActive=false;
+              if(gate) gate.classList.remove('hidden');
+              if(shade) shade.style.display='';
+              toast('Video playback blocked. Tap the start button again.');
+            });
+          } else requestVideoFullscreen(video);
+        });
+      } else requestVideoFullscreen(video);
+    };
+    tryPlay();
   }
+  function replayIntroVideo(){ startIntroVideo({fromMenu:true}); }
   function finishIntroVideo(){
+    introVideoActive=false;
+    document.body.classList.remove('intro-video-active');
     const video=$('introVideo');
-    if(video){ video.pause(); try{ video.currentTime=video.duration||0; }catch(err){} }
+    const gate=$('introVideoGate');
+    const shade=$('introVideoShade');
+    if(video){
+      video.pause();
+      video.controls=false;
+      video.muted=false;
+      try{ video.currentTime=0; }catch(err){}
+    }
+    if(gate) gate.classList.remove('hidden');
+    if(shade) shade.style.display='';
     showMenu();
   }
   function requestNativeFullscreen(){
@@ -2745,12 +2806,13 @@
     // We still force CSS fullscreen immediately, then request native fullscreen when allowed.
     document.body.classList.add('fullscreen-mode');
     try{
-      if(!document.fullscreenElement && document.documentElement.requestFullscreen){
-        document.documentElement.requestFullscreen().catch(()=>{});
+      const target=$('bootScreen') || document.documentElement;
+      if(!document.fullscreenElement && target.requestFullscreen){
+        target.requestFullscreen().catch(()=>{});
       }
     }catch(err){}
   }
-  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
+  function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
   function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
@@ -4975,6 +5037,7 @@
       continueBtn:()=>{ try{load();}catch(err){} startGame(false); },
       newGameBtn:()=>startGame(true),
       openingStoryBtn:()=>startGame(true),
+      introVideoReplayBtn:()=>replayIntroVideo(),
       fractureIndexBtn:()=>openOverlay('fractureOverlay'),
       operatorFilesBtn:()=>openOverlay('operatorOverlay'),
       anomalyIndexBtn:()=>openOverlay('anomalyOverlay'),
@@ -4996,13 +5059,13 @@
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
       routeMainMenuAction(btn.id || 'newGameBtn');
     }, true);
-    $('enterBtn').onclick=()=>startIntroVideo(); document.addEventListener('keydown',e=>{
+    if($('enterBtn')) $('enterBtn').onclick=()=>startIntroVideo(); if($('introSkipVideoBtn')) $('introSkipVideoBtn').onclick=finishIntroVideo; document.addEventListener('keydown',e=>{
       if(storyActive && ['Enter',' ','Escape'].includes(e.key)){ e.preventDefault(); if(e.key==='Escape') finishStory(); else advanceStory(); return; }
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       // v44: hard launch fallback. If the main menu is visible, Enter or Space always starts gameplay.
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
-      if((e.key==='Enter'||e.key===' ') && bootDone && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); startIntroVideo(); return; }
+      if((e.key==='Enter'||e.key===' ') && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); startIntroVideo(); return; }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
       if(battle && !$('battleOverlay').classList.contains('hidden')){
         const tag = (e.target && e.target.tagName || '').toLowerCase();
