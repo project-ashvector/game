@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.14 // OBJECTIVE GUIDE PASS',
+    'Version 0.9.15 // ROUTE BEACON PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -2567,8 +2567,10 @@
   function objectiveGuideHtml(){
     const target=objectiveTarget();
     const step=objectiveStepLabel();
+    const path=routePathToObjective();
+    const routeLine = path.length > 1 ? `${path.length-1} walkable steps` : 'route pending';
     const targetLine = target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
-    return `<div class="mission-row"><b>Current Step:</b> ${safeHtml(step)}</div><div class="mission-row"><b>Target:</b> ${targetLine}</div><div class="mission-row"><b>Guide:</b> ${safeHtml(objectiveGuideText())}</div><div class="mission-row">Press <b>N</b> or click the target compass to ping the objective.</div>`;
+    return `<div class="mission-row"><b>Current Step:</b> ${safeHtml(step)}</div><div class="mission-row"><b>Target:</b> ${targetLine}</div><div class="mission-row"><b>Route:</b> ${safeHtml(routeLine)}</div><div class="mission-row"><b>Guide:</b> ${safeHtml(objectiveGuideText())}</div><div class="mission-row">Press <b>N</b> or click the target compass to ping the objective.</div>`;
   }
 
 
@@ -2618,6 +2620,80 @@
     if(dx>0 && dy<0) return '↗';
     if(dx<0 && dy>0) return '↙';
     return '↖';
+  }
+
+  // v105: route beacon pathing. This draws a subtle breadcrumb route to the current objective
+  // while keeping the actual walls/floors easy to read.
+  function tileWalkableForRoute(x,y,target){
+    const c=tileAt(x,y);
+    if(c==='#') return false;
+    if(c==='D' && !(target && target.x===x && target.y===y)) return false;
+    return true;
+  }
+  function routePathToObjective(){
+    const target=objectiveTarget();
+    if(!target || target.kind==='complete' || target.x == null || target.y == null) return [];
+    const start={x:state.player.x,y:state.player.y};
+    const goal={x:target.x,y:target.y};
+    if(start.x===goal.x && start.y===goal.y) return [start];
+    const key=(x,y)=>`${x},${y}`;
+    const q=[start];
+    const seen=new Set([key(start.x,start.y)]);
+    const prev=new Map();
+    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    let found=false;
+    while(q.length){
+      const cur=q.shift();
+      if(cur.x===goal.x && cur.y===goal.y){ found=true; break; }
+      for(const [dx,dy] of dirs){
+        const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
+        if(seen.has(k)) continue;
+        if(!tileWalkableForRoute(nx,ny,goal)) continue;
+        seen.add(k);
+        prev.set(k, cur);
+        q.push({x:nx,y:ny});
+      }
+    }
+    if(!found) return [];
+    const path=[];
+    let cur=goal;
+    while(cur){
+      path.push(cur);
+      if(cur.x===start.x && cur.y===start.y) break;
+      cur=prev.get(key(cur.x,cur.y));
+    }
+    return path.reverse();
+  }
+  function drawObjectiveRoute(){
+    const path=routePathToObjective();
+    if(path.length < 2) return;
+    const target=objectiveTarget();
+    const color = target?.kind==='boss' ? 'rgba(255,48,72,.82)' : target?.kind==='exit' ? 'rgba(255,255,255,.78)' : 'rgba(0,217,255,.78)';
+    const fill = target?.kind==='boss' ? 'rgba(255,48,72,.18)' : target?.kind==='exit' ? 'rgba(255,255,255,.16)' : 'rgba(0,217,255,.16)';
+    ctx.save();
+    ctx.lineWidth=3;
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    ctx.shadowColor=color;
+    ctx.shadowBlur=9;
+    ctx.strokeStyle=color;
+    ctx.beginPath();
+    path.forEach((p,i)=>{
+      const cx=p.x*TILE+TILE/2, cy=p.y*TILE+TILE/2;
+      if(i===0) ctx.moveTo(cx,cy);
+      else ctx.lineTo(cx,cy);
+    });
+    ctx.stroke();
+    ctx.shadowBlur=0;
+    path.forEach((p,i)=>{
+      if(i===0 || i===path.length-1 || i%2!==0) return;
+      const cx=p.x*TILE+TILE/2, cy=p.y*TILE+TILE/2;
+      ctx.fillStyle=fill;
+      ctx.beginPath();
+      ctx.arc(cx,cy,5,0,Math.PI*2);
+      ctx.fill();
+    });
+    ctx.restore();
   }
   function ensureObjectiveCompass(){
     let c=$('objectiveCompass');
@@ -3067,6 +3143,7 @@
     ctx.clearRect(0,0,VIEW_W,VIEW_H); camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, state.map[0].length*TILE - VIEW_W)); camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, state.map.length*TILE - VIEW_H));
     ctx.save(); ctx.translate(-camera.x,-camera.y);
     for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
+    drawObjectiveRoute();
     drawMapProps();
     drawNpcs();
     // player / AV-001 Vyra exploration sprite
@@ -3238,6 +3315,17 @@
     }
     stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
     const navTarget=objectiveTarget();
+    const route=routePathToObjective();
+    if(route.length > 1){
+      mctx.save();
+      mctx.strokeStyle='#00d9ff';
+      mctx.globalAlpha=.72;
+      mctx.lineWidth=2;
+      mctx.beginPath();
+      route.forEach((p,i)=>{ const px=p.x*sx+sx/2, py=p.y*sy+sy/2; if(i===0) mctx.moveTo(px,py); else mctx.lineTo(px,py); });
+      mctx.stroke();
+      mctx.restore();
+    }
     if(navTarget && navTarget.x != null){ mctx.strokeStyle='#00d9ff'; mctx.lineWidth=2; mctx.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.ceil(sx*3),Math.ceil(sy*3)); }
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
