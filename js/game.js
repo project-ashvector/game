@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.31 // FULLSCREEN INTRO VIDEO FIX',
+    'Version 0.9.32 // INTRO MUSIC ROUTE PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,10 +26,10 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.31';
+  const BUILD_VERSION = '0.9.32';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
-    intro: 'assets/music/intro.mp3',
+    intro: 'assets/music/pause.mp3',
     level1: 'assets/music/level1.mp3',
     battle: 'assets/music/battle.mp3',
     boss: 'assets/music/boss.mp3',
@@ -313,7 +313,7 @@
   let gameStarted = false;
   function activeMusicForState(){
     // v58: music follows real UI/game state.
-    // Main menu now uses pause.mp3; the intro video handles its own audio.
+    // The old intro music route now uses pause.mp3; the intro video handles its own audio.
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
     if(uiState.mode === 'overlay') return 'pause';
     if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return 'level1';
