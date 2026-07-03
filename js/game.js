@@ -801,7 +801,10 @@
         'assets/tilesets/undead/dead_tree_02.png',
         'assets/tilesets/undead/broken_tree_01.png',
         'assets/tilesets/undead/grave_01.png',
-        'assets/tilesets/undead/grave_02.png'
+        'assets/tilesets/undead/grave_02.png',
+        'assets/tilesets/undead/ruin_01.png',
+        'assets/tilesets/undead/rock_04.png',
+        'assets/tilesets/undead/grave_03.png'
       ],
       floorTint: 'rgba(32, 10, 54, .22)',
       pathTint: 'rgba(0, 244, 255, .16)',
@@ -810,10 +813,18 @@
       props: [
         {x:8,y:3,img:'assets/tilesets/undead/bones_01.png',w:44,h:34},
         {x:21,y:3,img:'assets/tilesets/undead/grave_01.png',w:38,h:40},
+        {x:32,y:2,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},
+        {x:13,y:6,img:'assets/tilesets/undead/ruin_01.png',w:74,h:72},
         {x:8,y:9,img:'assets/tilesets/undead/bones_02.png',w:48,h:34},
+        {x:4,y:12,img:'assets/tilesets/undead/plant_01.png',w:46,h:42},
         {x:10,y:16,img:'assets/tilesets/undead/crystal_01.png',w:44,h:44},
+        {x:16,y:18,img:'assets/tilesets/undead/bones_03.png',w:72,h:44},
+        {x:22,y:11,img:'assets/tilesets/undead/dead_arm_01.png',w:58,h:52},
         {x:26,y:18,img:'assets/tilesets/undead/dead_tree_02.png',w:58,h:66},
-        {x:31,y:20,img:'assets/tilesets/undead/grave_02.png',w:38,h:40}
+        {x:29,y:19,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58},
+        {x:31,y:20,img:'assets/tilesets/undead/grave_02.png',w:38,h:40},
+        {x:35,y:4,img:'assets/tilesets/undead/rock_04.png',w:54,h:46},
+        {x:6,y:22,img:'assets/tilesets/undead/grave_03.png',w:42,h:44}
       ]
     }
   };
