@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.35 // INTRO AUTO CLOSE PASS',
+    'Version 0.9.37 // CLEAN MAP LIGHTING PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.35';
+  const BUILD_VERSION = '0.9.37';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -1091,36 +1091,39 @@
     return Math.abs((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff);
   }
   function drawUniformGround(x,y,tx,ty,c){
+    // v127: clean floor pass. Use one smooth base and extremely subtle noise so the map
+    // reads like one surface instead of visible square tiles.
     const s = stageFloorStyles[currentStageKey()] || stageFloorStyles.f001;
-    ctx.fillStyle = ((tx + ty) & 1) ? s.alt : s.base;
+    ctx.fillStyle = s.base;
     ctx.fillRect(x,y,TILE,TILE);
     const h1 = hashTile(tx,ty,1);
     const h2 = hashTile(tx,ty,2);
-    ctx.fillStyle = s.grit;
-    ctx.fillRect(x + 6 + (h1 % 25), y + 7 + ((h1 >> 5) % 24), 2, 2);
-    ctx.fillRect(x + 8 + (h2 % 23), y + 9 + ((h2 >> 4) % 22), 1, 1);
-    if((h1 % 5) === 0){
-      ctx.strokeStyle = s.line;
-      ctx.lineWidth = 1;
+    if((h1 % 9) === 0){
+      ctx.fillStyle = s.alt || s.base;
+      ctx.globalAlpha = .16;
       ctx.beginPath();
-      ctx.moveTo(x + 8, y + 12 + (h2 % 19));
-      ctx.lineTo(x + TILE - 9, y + 13 + (h2 % 19));
-      ctx.stroke();
+      ctx.ellipse(x + 10 + (h1 % 22), y + 10 + (h2 % 21), 10 + (h1 % 9), 7 + (h2 % 7), 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    if(s.accent && (h2 % 7) === 0){
+    if(s.accent && (h2 % 13) === 0){
       ctx.fillStyle = s.accent;
+      ctx.globalAlpha = .28;
       ctx.beginPath();
-      ctx.moveTo(x + 6, y + TILE - 8);
-      ctx.lineTo(x + 18 + (h1 % 14), y + 8);
-      ctx.lineTo(x + 26 + (h2 % 10), y + 8);
-      ctx.lineTo(x + 14, y + TILE - 8);
+      ctx.moveTo(x + 4 + (h1 % 8), y + TILE - 5);
+      ctx.lineTo(x + 17 + (h1 % 10), y + 7);
+      ctx.lineTo(x + 24 + (h2 % 12), y + 9);
+      ctx.lineTo(x + 13, y + TILE - 6);
       ctx.closePath();
       ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    // Important tiles get a slightly brighter floor pad so they read as grounded, not pasted on.
+    // Important tiles keep only a soft pad, no boxed tile border.
     if(c !== '.'){
-      ctx.fillStyle='rgba(255,255,255,.035)';
-      ctx.fillRect(x+4,y+4,TILE-8,TILE-8);
+      ctx.fillStyle='rgba(255,255,255,.018)';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x+7,y+7,TILE-14,TILE-14,8) : ctx.rect(x+7,y+7,TILE-14,TILE-14);
+      ctx.fill();
     }
   }
 
@@ -1136,22 +1139,18 @@
   function tileCenter(x,y){ return {cx:x+TILE/2, cy:y+TILE/2}; }
   function drawPathOverlay(x,y,tx,ty,c){
     const pack = stageVisualPack();
-    const alpha = c === '.' ? .18 : .10;
+    const alpha = c === '.' ? .10 : .075;
     ctx.fillStyle = (pack && pack.pathTint) || `rgba(0,217,255,${alpha})`;
-    ctx.fillRect(x+2,y+2,TILE-4,TILE-4);
-    const openN = tileAt(tx,ty-1) !== '#';
-    const openS = tileAt(tx,ty+1) !== '#';
-    const openW = tileAt(tx-1,ty) !== '#';
-    const openE = tileAt(tx+1,ty) !== '#';
-    ctx.strokeStyle='rgba(255,255,255,.055)';
-    ctx.lineWidth=1;
-    if(!openN){ ctx.beginPath(); ctx.moveTo(x+5,y+5); ctx.lineTo(x+TILE-5,y+5); ctx.stroke(); }
-    if(!openS){ ctx.beginPath(); ctx.moveTo(x+5,y+TILE-5); ctx.lineTo(x+TILE-5,y+TILE-5); ctx.stroke(); }
-    if(!openW){ ctx.beginPath(); ctx.moveTo(x+5,y+5); ctx.lineTo(x+5,y+TILE-5); ctx.stroke(); }
-    if(!openE){ ctx.beginPath(); ctx.moveTo(x+TILE-5,y+5); ctx.lineTo(x+TILE-5,y+TILE-5); ctx.stroke(); }
-    if((tx + ty) % 2 === 0){
-      ctx.fillStyle='rgba(255,255,255,.032)';
-      ctx.fillRect(x+7,y+7,TILE-14,TILE-14);
+    ctx.globalAlpha = .72;
+    ctx.fillRect(x,y,TILE,TILE);
+    ctx.globalAlpha = 1;
+    // No per-tile strokes here. Wall/floor readability is handled by wall edges,
+    // so open floors stay clean and seamless.
+    if(c !== '.' && ((tx + ty) % 3 === 0)){
+      ctx.fillStyle='rgba(255,255,255,.018)';
+      ctx.beginPath();
+      ctx.arc(x+TILE/2,y+TILE/2,13,0,Math.PI*2);
+      ctx.fill();
     }
   }
   function drawWallBase(x,y,tx,ty){
@@ -1159,14 +1158,27 @@
     const edge = hasWalkableNeighbor(tx,ty);
     ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.96)';
     ctx.fillRect(x,y,TILE,TILE);
-    ctx.strokeStyle = edge ? ((pack && pack.wallEdge) || 'rgba(0,217,255,.18)') : 'rgba(0,0,0,.24)';
-    ctx.lineWidth = edge ? 2 : 1;
-    ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
+    const h=hashTile(tx,ty,7);
+    if(!edge && (h%8===0)){
+      ctx.fillStyle='rgba(255,255,255,.018)';
+      ctx.fillRect(x + (h%20), y + ((h>>4)%20), 10, 6);
+    }
     if(edge){
-      ctx.fillStyle='rgba(255,255,255,.045)';
-      ctx.fillRect(x+3,y+3,TILE-6,3);
-      ctx.fillStyle='rgba(0,0,0,.22)';
-      ctx.fillRect(x+3,y+TILE-7,TILE-6,4);
+      const edgeColor=(pack && pack.wallEdge) || 'rgba(0,217,255,.18)';
+      ctx.strokeStyle=edgeColor;
+      ctx.lineWidth=2;
+      const openN=tileAt(tx,ty-1) !== '#';
+      const openS=tileAt(tx,ty+1) !== '#';
+      const openW=tileAt(tx-1,ty) !== '#';
+      const openE=tileAt(tx+1,ty) !== '#';
+      ctx.beginPath();
+      if(openN){ ctx.moveTo(x+2,y+2); ctx.lineTo(x+TILE-2,y+2); }
+      if(openS){ ctx.moveTo(x+2,y+TILE-2); ctx.lineTo(x+TILE-2,y+TILE-2); }
+      if(openW){ ctx.moveTo(x+2,y+2); ctx.lineTo(x+2,y+TILE-2); }
+      if(openE){ ctx.moveTo(x+TILE-2,y+2); ctx.lineTo(x+TILE-2,y+TILE-2); }
+      ctx.stroke();
+      ctx.fillStyle='rgba(0,0,0,.18)';
+      ctx.fillRect(x,y+TILE-5,TILE,5);
     }
   }
   function drawInteractMarker(label,x,y,color='rgba(0,217,255,.9)'){
@@ -4177,12 +4189,13 @@
     const dx = x + (TILE-drawW)/2;
     const dy = y + TILE - drawH + 4;
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,.45)';
+    ctx.fillStyle='rgba(0,0,0,.34)';
     ctx.beginPath();
-    ctx.ellipse(x+TILE/2,y+TILE-4,18,7,0,0,Math.PI*2);
+    ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
     ctx.fill();
-    ctx.shadowColor='#00d9ff';
-    ctx.shadowBlur=12;
+    // v127: toned down player lighting so Vyra sits in the scene instead of glowing like a marker.
+    ctx.shadowColor='rgba(0,217,255,.34)';
+    ctx.shadowBlur=4;
     if(im && im.complete && im.naturalWidth){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
@@ -4190,11 +4203,12 @@
       ctx.imageSmoothingEnabled = oldSmooth;
     } else {
       // fallback only if asset fails to load
-      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#00d9ff';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='#00d9ff';ctx.strokeRect(x+5,y+4,32,34);
+      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='rgba(0,217,255,.78)';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='rgba(0,217,255,.35)';ctx.strokeRect(x+5,y+4,32,34);
     }
-    ctx.strokeStyle='rgba(0,217,255,.75)';
+    ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(0,217,255,.22)';
     ctx.lineWidth=1;
-    ctx.strokeRect(x+5,y+4,TILE-10,TILE-8);
+    ctx.strokeRect(x+7,y+7,TILE-14,TILE-12);
     ctx.restore();
   }
 
@@ -4238,7 +4252,6 @@
     drawUniformGround(x,y,tx,ty,c);
     if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
     drawPathOverlay(x,y,tx,ty,c);
-    ctx.strokeStyle='rgba(255,255,255,.07)'; ctx.lineWidth=1; ctx.strokeRect(x,y,TILE,TILE);
 
     if(c==='C'){
       if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
