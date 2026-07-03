@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.22 // CHECKPOINT HUD PASS',
+    'Version 0.9.23 // PROTOCOL CHALLENGE PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -1462,6 +1462,8 @@
     let panel = $('missionContractBoard');
     if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
     panel.innerHTML = contractHtml() + sideQuestHtml();
+    renderProtocolChallengeBoard();
+    renderRouteIntelBoard();
   }
 
 
@@ -1485,6 +1487,134 @@
       return `<div class="story-archive-row ${unlocked?'unlocked':'locked'}"><div><b>${safeHtml(entry.chapter)} // ${safeHtml(entry.title)}</b><span>${safeHtml(entry.desc)}</span></div><button ${unlocked?'':'disabled'} onclick="window.AV.showStory('${entry.key}')">${unlocked?'Replay':'Locked'}</button></div>`;
     }).join('');
     panel.innerHTML = `<div class="record-kicker">STORY ARCHIVE // REPLAY UNLOCKED SCENES</div><h3>Recovered Narrative Logs</h3><p>Rewatch story beats without restarting the game. Locked entries open as you clear fractures.</p><div class="story-archive-list">${rows}</div>`;
+  }
+
+
+  // v113: Protocol Challenges add repeatable milestone goals/rewards across all current fractures.
+  const PROTOCOL_CHALLENGE_DEFS = [
+    {id:'cache_runner', metric:'caches', title:'Cache Runner', desc:'Open 5 supply caches in any fracture.', target:5, reward:{credits:120, xp:90, items:{'Med Patch':2,'Vector Cell':1}}},
+    {id:'terminal_sync', metric:'terminals', title:'Signal Technician', desc:'Sync 3 recovery terminals.', target:3, reward:{credits:90, xp:80, items:{'Vector Cell':1,'Archive Log 001':1}}},
+    {id:'anomaly_cleanup', metric:'anomalies', title:'Anomaly Cleanup', desc:'Defeat 6 anomaly encounters.', target:6, reward:{credits:180, xp:160, items:{'Corrupted Catalyst':1,'Vector Cell':2}}},
+    {id:'boss_breaker', metric:'bosses', title:'Boss Breaker', desc:'Defeat 2 boss-class guardians.', target:2, reward:{credits:260, xp:240, items:{'Rust Core':2,'Operator Shard: Vyra':4}}},
+    {id:'fracture_stabilizer', metric:'fractures', title:'Fracture Stabilizer', desc:'Complete 2 fracture extractions.', target:2, reward:{credits:300, xp:260, items:{'Vector Cell':3,'Corrupted Catalyst':2}}}
+  ];
+  function ensureProtocolChallenges(){
+    if(!state) return;
+    state.protocolChallenges ||= {};
+    PROTOCOL_CHALLENGE_DEFS.forEach(def=>{
+      const rec = state.protocolChallenges[def.id] || {};
+      state.protocolChallenges[def.id] = {
+        id:def.id,
+        progress:Math.max(0, Number(rec.progress||0)),
+        target:def.target,
+        complete:!!rec.complete || Number(rec.progress||0) >= def.target,
+        claimed:!!rec.claimed
+      };
+      if(state.protocolChallenges[def.id].progress >= def.target) state.protocolChallenges[def.id].complete = true;
+    });
+  }
+  function protocolChallengeRecord(id){
+    ensureProtocolChallenges();
+    return state.protocolChallenges[id] || null;
+  }
+  function protocolChallengeSummaryText(){
+    ensureProtocolChallenges();
+    const total=PROTOCOL_CHALLENGE_DEFS.length;
+    const ready=PROTOCOL_CHALLENGE_DEFS.filter(d=>protocolChallengeRecord(d.id)?.complete && !protocolChallengeRecord(d.id)?.claimed).length;
+    const done=PROTOCOL_CHALLENGE_DEFS.filter(d=>protocolChallengeRecord(d.id)?.claimed).length;
+    return ready ? `${ready} reward${ready>1?'s':''} ready // ${done}/${total} claimed` : `${done}/${total} claimed`;
+  }
+  function advanceProtocolChallenge(metric, amount=1){
+    ensureProtocolChallenges();
+    let changed=false;
+    PROTOCOL_CHALLENGE_DEFS.filter(def=>def.metric===metric).forEach(def=>{
+      const rec=protocolChallengeRecord(def.id);
+      if(!rec || rec.claimed) return;
+      const before=rec.progress;
+      rec.progress=Math.min(def.target, rec.progress + Math.max(1, Number(amount||1)));
+      if(rec.progress>=def.target && !rec.complete){
+        rec.complete=true;
+        toast(`Protocol complete: ${def.title}`);
+        log(`Protocol Challenge complete: ${def.title}. Claim the reward in Mission Briefing.`);
+      }
+      if(rec.progress!==before) changed=true;
+    });
+    if(changed){
+      queueAutosave();
+      renderProtocolChallengeBoard();
+      renderRouteIntelBoard();
+    }
+  }
+  function protocolRewardText(def){
+    const r=def.reward||{};
+    const items=Object.entries(r.items||{}).map(([name,qty])=>`${name} x${qty}`).join(', ');
+    return `${r.credits||0} Credits${r.xp?`, ${r.xp} Sync XP`:''}${items?`, ${items}`:''}`;
+  }
+  function claimProtocolChallenge(id){
+    ensureProtocolChallenges();
+    const def=PROTOCOL_CHALLENGE_DEFS.find(d=>d.id===id);
+    const rec=def ? protocolChallengeRecord(id) : null;
+    if(!def || !rec){ toast('Protocol challenge missing.'); return; }
+    if(!rec.complete){ toast(`${def.title} incomplete.`); return; }
+    if(rec.claimed){ toast(`${def.title} already claimed.`); return; }
+    const r=def.reward||{};
+    if(r.credits) addCredits(r.credits);
+    if(r.xp) gainXp(r.xp);
+    Object.entries(r.items||{}).forEach(([name,qty])=>addItem(name,qty));
+    rec.claimed=true;
+    log(`Protocol Challenge reward claimed: ${def.title} // ${protocolRewardText(def)}.`);
+    toast(`Claimed: ${def.title}`);
+    renderProtocolChallengeBoard();
+    renderRouteIntelBoard();
+    renderUI();
+    save(true);
+  }
+  function resetProtocolChallenges(){
+    state.protocolChallenges={};
+    ensureProtocolChallenges();
+    renderProtocolChallengeBoard();
+    renderRouteIntelBoard();
+    renderUI();
+    save(true);
+    toast('Protocol challenges reset.');
+  }
+  function protocolChallengeHtml(){
+    ensureProtocolChallenges();
+    const rows=PROTOCOL_CHALLENGE_DEFS.map(def=>{
+      const rec=protocolChallengeRecord(def.id);
+      const pct=Math.max(0,Math.min(100,100*(rec.progress||0)/def.target));
+      const status=rec.claimed?'CLAIMED':rec.complete?'READY':'ACTIVE';
+      return `<div class="mission-row protocol-challenge-row ${rec.claimed?'claimed':rec.complete?'complete':'active'}"><div><b>${safeHtml(def.title)}</b><span>${safeHtml(def.desc)}</span><small>${rec.progress}/${def.target} // ${safeHtml(protocolRewardText(def))}</small><div class="bar xp"><span style="width:${pct}%"></span></div></div><button ${rec.complete&&!rec.claimed?'':'disabled'} onclick="window.AV.claimProtocolChallenge('${def.id}')">${status}</button></div>`;
+    }).join('');
+    return `<div class="record-kicker">PROTOCOL CHALLENGES // ACCOUNT-WIDE MILESTONES</div><h3>AVOS Challenge Board</h3><p>Complete optional milestones while playing any fracture. Rewards help testing without breaking the route.</p><div class="story-archive-list protocol-challenge-list">${rows}</div>`;
+  }
+  function renderProtocolChallengeBoard(){
+    const grid=document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('protocolChallengeBoard');
+    if(!panel){ panel=document.createElement('section'); panel.id='protocolChallengeBoard'; panel.className='fracture-card protocol-challenge-board'; grid.appendChild(panel); }
+    panel.innerHTML=protocolChallengeHtml();
+  }
+  function routeIntelHtml(){
+    ensureProtocolChallenges(); ensureProgression();
+    const totalStages=Object.keys(STAGE_DEFS).length;
+    const complete=Object.keys(STAGE_DEFS).filter(k=>state.stages?.[k]?.complete).length;
+    const bossTotal=Object.values(state.bossKills||{}).reduce((a,b)=>a+(Number(b)||0),0);
+    const research=researchSummary();
+    const cp=checkpointSummaryText();
+    const stageRows=Object.entries(STAGE_DEFS).map(([key,def])=>{
+      const status=state.stages?.[key]?.complete?'CLEARED':playerMeetsStageRequirement(key)?'OPEN':'LOCKED';
+      const kills=state.bossKills?.[key]||0;
+      return `<div class="mission-row"><b>${def.id}</b> <span>${safeHtml(def.title)} // ${status} // Boss Kills ${kills}</span></div>`;
+    }).join('');
+    return `<div class="record-kicker">ROUTE INTEL // BUILD PROGRESS</div><h3>Chapter Status</h3><p>${complete}/${totalStages} fractures stabilized // ${bossTotal} boss cores recovered // ${protocolChallengeSummaryText()}</p><div class="mission-row"><b>Research</b> <span>${research.discovered}/${research.total} entries // ${research.kills} kills // ${research.ranks} ranks</span></div><div class="mission-row"><b>Checkpoint</b> <span>${safeHtml(cp)}</span></div>${stageRows}`;
+  }
+  function renderRouteIntelBoard(){
+    const grid=document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('routeIntelBoard');
+    if(!panel){ panel=document.createElement('section'); panel.id='routeIntelBoard'; panel.className='fracture-card route-intel-board'; grid.appendChild(panel); }
+    panel.innerHTML=routeIntelHtml();
   }
 
   function createSkillData(){
@@ -1513,6 +1643,7 @@
     ensureRespawnState();
     ensureNpcState();
     ensureSideQuests();
+    ensureProtocolChallenges();
   }
   function ensureStoryFlags(){
     state.flags ||= {};
@@ -2079,7 +2210,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -2104,7 +2235,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; ensureContracts(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.8 stage route fix pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.8 stage route fix pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -2288,8 +2419,8 @@
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.'); showTutorialTip('cache','Caches + Supplies','Caches can give Med Patches, Vector Cells, credits, and gear drops. They are worth checking before harder fights.','Q uses a Med Patch. R uses a Vector Cell.');}
-    if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal'),()=>showTutorialTip('terminal','Recovery Terminals','Terminals save your checkpoint and push the main mission forward. After syncing, the route beacon will point toward anomaly targets.','Clear 3 anomalies to open the boss route.')); pulseObjective(currentObjectiveText());}
+    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.'); showTutorialTip('cache','Caches + Supplies','Caches can give Med Patches, Vector Cells, credits, and gear drops. They are worth checking before harder fights.','Q uses a Med Patch. R uses a Vector Cell.'); advanceProtocolChallenge('caches',1);}
+    if(c==='S'){const firstTerminalSync=!state.flags.terminal; state.flags.terminal=true; if(firstTerminalSync) advanceProtocolChallenge('terminals',1); setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal'),()=>showTutorialTip('terminal','Recovery Terminals','Terminals save your checkpoint and push the main mission forward. After syncing, the route beacon will point toward anomaly targets.','Clear 3 anomalies to open the boss route.')); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, graveyard champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce(stageStoryKey('lore'));}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
@@ -2917,6 +3048,7 @@
     state.flags.chapterClearSeen=true;
     state.stages[def.key] ||= {unlocked:true,complete:false};
     state.stages[def.key].complete=true;
+    advanceProtocolChallenge('fractures',1);
     unlockNextStages();
     SfxManager.levelWin();
     log(`${def.id} complete: Core recovered. Rewards delivered to inventory.`);
@@ -3269,10 +3401,12 @@
       state.enemyKills[stageKey] = (state.enemyKills[stageKey] || 0) + 1;
       advanceContract(e.name);
       advanceSideQuests(e.name);
+      advanceProtocolChallenge('anomalies',1);
+      advanceProtocolChallenge('victories',1);
       scheduleEncounterRespawn('E', battle.x, battle.y, e.name);
     }
     if(wasAnomaly && state.flags.anomaliesCleared >= 3 && !state.flags.bossUnlocked){state.flags.bossUnlocked=true; log('AVOS forced the boss route open. Somebody in security is getting demoted.'); pulseObjective(currentObjectiveText());}
-    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; state.bossKills ||= {}; state.bossKills[stageDef().key]=(state.bossKills[stageDef().key]||0)+1; loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); recordDrop('Corrupted Catalyst', battle.enemy.name, 'Epic'); const bossReward=battle.enemy.bossReward || (stageDef().key==='f002'?'Ashveil Mother Core':'Toxic Monarch Relic'); if(!state.inventory[bossReward]){ loot.push(bossReward); addItem(bossReward,1); recordDrop(bossReward, battle.enemy.name, 'Relic'); }}
+    if(wasBoss){state.flags.bossUnlocked=true; state.flags.bossDefeated=true; state.bossKills ||= {}; state.bossKills[stageDef().key]=(state.bossKills[stageDef().key]||0)+1; advanceProtocolChallenge('bosses',1); advanceProtocolChallenge('victories',1); loot.push('Corrupted Catalyst'); addItem('Corrupted Catalyst',1); recordDrop('Corrupted Catalyst', battle.enemy.name, 'Epic'); const bossReward=battle.enemy.bossReward || (stageDef().key==='f002'?'Ashveil Mother Core':'Toxic Monarch Relic'); if(!state.inventory[bossReward]){ loot.push(bossReward); addItem(bossReward,1); recordDrop(bossReward, battle.enemy.name, 'Relic'); }}
     const gearDrop = (!wasBoss && Math.random() < 0.42) ? pickGearDrop(false) : (wasBoss ? pickGearDrop(true) : null);
     if(gearDrop && !loot.includes(gearDrop.name)){ loot.push(gearDrop.name); addItem(gearDrop.name,1); recordDrop(gearDrop.name, battle.enemy.name, gearDrop.rarity || 'Rare'); }
     const cellQty = wasBoss ? 2 : (wasAnomaly && Math.random()<0.38 ? 1 : 0);
@@ -3323,7 +3457,7 @@
       const item=findItemRecord(name);
       return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,qty)}<span>${safeHtml(name)}${qty>1?` x${qty}`:''}</span></div>`;
     }).join('') || '<span>No loot recovered.</span>';
-    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY REPORT // THREAT NEUTRALIZED</div><h2>${safeHtml(enemy.name)}</h2><p>Synchronization +${xpGain} // Credits +${enemy.credits}</p><div class="record-grid"><div><b>Mission Next</b><span>${safeHtml(missionNext)}</span></div><div><b>Current Objective</b><span>${safeHtml(objective)}</span></div><div><b>Anomalies</b><span>${anomalyCount}/3 // Boss Route ${state.flags.bossUnlocked?'Open':'Locked'}</span></div><div><b>Vyra Status</b><span>HP ${state.player.hp}/${combatStatBlock().maxHp} // EP ${state.player.ep}/${epMax}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${safeHtml(research.text)}</span></div><div><b>Contract</b><span>${safeHtml(contract.title)} // ${contract.progress}/${contract.target}${contract.complete?' // Ready to claim':''}</span></div><div><b>Side Quest</b><span>${safeHtml(sideQuestStatusText())}</span></div><div><b>Enemy File</b><span>${safeHtml(enemy.id || 'ANOMALY')} // ${meta.wasBoss?'Boss':'Anomaly'}</span></div></div><h3>Recovered Loot</h3><div class="victory-loot">${lootHtml}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
+    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY REPORT // THREAT NEUTRALIZED</div><h2>${safeHtml(enemy.name)}</h2><p>Synchronization +${xpGain} // Credits +${enemy.credits}</p><div class="record-grid"><div><b>Mission Next</b><span>${safeHtml(missionNext)}</span></div><div><b>Current Objective</b><span>${safeHtml(objective)}</span></div><div><b>Anomalies</b><span>${anomalyCount}/3 // Boss Route ${state.flags.bossUnlocked?'Open':'Locked'}</span></div><div><b>Vyra Status</b><span>HP ${state.player.hp}/${combatStatBlock().maxHp} // EP ${state.player.ep}/${epMax}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${safeHtml(research.text)}</span></div><div><b>Contract</b><span>${safeHtml(contract.title)} // ${contract.progress}/${contract.target}${contract.complete?' // Ready to claim':''}</span></div><div><b>Side Quest</b><span>${safeHtml(sideQuestStatusText())}</span></div><div><b>Protocol Challenges</b><span>${safeHtml(protocolChallengeSummaryText())}</span></div><div><b>Enemy File</b><span>${safeHtml(enemy.id || 'ANOMALY')} // ${meta.wasBoss?'Boss':'Anomaly'}</span></div></div><h3>Recovered Loot</h3><div class="victory-loot">${lootHtml}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
     if(btn) btn.onclick=()=>{
@@ -3589,10 +3723,11 @@
     const contract=activeContract();
     const contractLine=`📜 Contract: ${safeHtml(contract.title)} (${contract.progress}/${contract.target})${contract.complete?' — ready to claim':''}`;
     const questLine=safeHtml(sideQuestStatusText());
+    const protocolLine=safeHtml(protocolChallengeSummaryText());
     const target=objectiveTarget();
     const targetSummary=target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
-    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine}`;
-    $('missionProgress').innerHTML=objectiveGuideHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
+    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine} &nbsp; 🏆 ${protocolLine}`;
+    $('missionProgress').innerHTML=objectiveGuideHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div><div class="mission-row">🏆 Protocol Challenges: ${safeHtml(protocolChallengeSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     renderStoryArchivePanel();
@@ -4408,9 +4543,9 @@
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
