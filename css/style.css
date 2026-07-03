@@ -2357,3 +2357,16 @@ body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0
     font-size:21px;
   }
 }
+
+
+/* V134: skill color identities for field nodes and level-up popups */
+.skill-levelup-notice.skill-cryptomining{border-color:rgba(255,184,77,.78);box-shadow:0 0 34px rgba(255,184,77,.22),0 18px 60px rgba(0,0,0,.52);}
+.skill-levelup-notice.skill-cryptomining .levelup-kicker,.skill-levelup-notice.skill-cryptomining .levelup-icon b{color:#ffb84d;}
+.skill-levelup-notice.skill-datafishing{border-color:rgba(112,215,255,.78);box-shadow:0 0 34px rgba(112,215,255,.22),0 18px 60px rgba(0,0,0,.52);}
+.skill-levelup-notice.skill-datafishing .levelup-kicker,.skill-levelup-notice.skill-datafishing .levelup-icon b{color:#70d7ff;}
+.skill-levelup-notice.skill-codecraft{border-color:rgba(148,255,98,.78);box-shadow:0 0 34px rgba(148,255,98,.22),0 18px 60px rgba(0,0,0,.52);}
+.skill-levelup-notice.skill-codecraft .levelup-kicker,.skill-levelup-notice.skill-codecraft .levelup-icon b{color:#94ff62;}
+.skill-levelup-notice.skill-forgenetics{border-color:rgba(210,168,255,.78);box-shadow:0 0 34px rgba(210,168,255,.22),0 18px 60px rgba(0,0,0,.52);}
+.skill-levelup-notice.skill-forgenetics .levelup-kicker,.skill-levelup-notice.skill-forgenetics .levelup-icon b{color:#d2a8ff;}
+.skill-levelup-notice.skill-system_hacking{border-color:rgba(255,255,255,.78);box-shadow:0 0 34px rgba(255,255,255,.18),0 18px 60px rgba(0,0,0,.52);}
+.skill-levelup-notice.skill-system_hacking .levelup-kicker,.skill-levelup-notice.skill-system_hacking .levelup-icon b{color:#ffffff;}
