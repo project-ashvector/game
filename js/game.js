@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.47 // MAP BOUNDARY FIX PASS',
+    'Version 0.9.48 // CONTROLLER STABILITY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.47';
+  const BUILD_VERSION = '0.9.48';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -5362,6 +5362,11 @@
     deadzone: 0.42,
     moveDelay: 170,
     navDelay: 165,
+    loopId: null,
+    scanTimer: null,
+    nextScanAt: 0,
+    lastErrorAt: 0,
+
     init(){
       if(this.ready) return;
       this.ready = true;
@@ -5369,31 +5374,63 @@
       window.addEventListener('gamepadconnected', e => this.connect(e.gamepad));
       window.addEventListener('gamepaddisconnected', e => {
         if(this.activeIndex === e.gamepad.index){
-          this.connected = false;
-          this.activeIndex = null;
-          this.id = '';
-          this.profile = 'Generic Controller';
-          toast('Controller disconnected.');
-          renderAll();
+          this.disconnect(false);
         }
       });
+      // Some browsers only refresh the Gamepad API after a user gesture/focus event.
+      ['pointerdown','mousedown','keydown','touchstart'].forEach(evt=>{
+        window.addEventListener(evt, () => this.scan(), {passive:true});
+      });
+      window.addEventListener('focus', () => { this.resetInputState(); this.scan(); }, {passive:true});
+      window.addEventListener('blur', () => this.resetInputState(), {passive:true});
+      document.addEventListener('visibilitychange', () => {
+        this.resetInputState();
+        if(!document.hidden) this.scan();
+      }, {passive:true});
       this.scan();
-      requestAnimationFrame(() => this.loop());
+      this.scanTimer = setInterval(() => this.scan(), 1000);
+      this.loop();
     },
+
+    resetInputState(){
+      this.lastButtons = {};
+      this.lastMoveDir = '';
+      this.lastNavDir = '';
+      this.lastMoveAt = 0;
+      this.lastNavAt = 0;
+    },
+
     scan(){
+      if(!('getGamepads' in navigator)) return;
       const pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
-      const pad = pads.find(p => p.connected);
+      const current = (this.activeIndex != null) ? pads.find(p => p && p.index === this.activeIndex && p.connected !== false) : null;
+      const pad = current || pads.find(p => p && p.connected !== false);
       if(pad) this.connect(pad, true);
+      else if(this.connected) this.disconnect(true);
     },
+
     connect(pad, quiet=false){
       if(!pad) return;
+      const changed = this.activeIndex !== pad.index || this.id !== (pad.id || 'Controller');
       this.activeIndex = pad.index;
       this.connected = true;
       this.id = pad.id || 'Controller';
       this.profile = this.detectProfile(this.id);
+      if(changed) this.resetInputState();
       if(battle) renderBattle();
       if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); }
     },
+
+    disconnect(quiet=false){
+      this.connected = false;
+      this.activeIndex = null;
+      this.id = '';
+      this.profile = 'Generic Controller';
+      this.resetInputState();
+      if(!quiet) toast('Controller disconnected.');
+      try{ renderAll(); }catch(err){}
+    },
+
     detectProfile(id=''){
       const name = id.toLowerCase();
       if(/dualsense|dualshock|playstation|wireless controller|ps4|ps5/.test(name)) return 'PlayStation Controller';
@@ -5401,6 +5438,7 @@
       if(/switch|joy-con|joycon|pro controller|nintendo/.test(name)) return 'Switch Controller';
       return 'Generic Controller';
     },
+
     labels(){
       const p=this.profile;
       if(/PlayStation/.test(p)) return {south:'Cross', east:'Circle', west:'Square', north:'Triangle', start:'Options', select:'Share'};
@@ -5408,6 +5446,7 @@
       if(/Xbox/.test(p)) return {south:'A', east:'B', west:'X', north:'Y', start:'Menu', select:'View'};
       return {south:'Button 1', east:'Button 2', west:'Button 3', north:'Button 4', start:'Start', select:'Select'};
     },
+
     statusText(){
       if(!('getGamepads' in navigator)) return 'Not supported by this browser';
       const pad=this.currentPad();
@@ -5415,36 +5454,46 @@
       const l=this.labels();
       return `${this.profile} // Menus: D-pad hover + ${l.south} confirm // Battle: face buttons attack // ${l.select}: QA console`;
     },
+
     currentPad(){
+      if(!('getGamepads' in navigator)) return null;
       const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-      if(this.activeIndex != null && pads[this.activeIndex]) return pads[this.activeIndex];
-      const pad = Array.from(pads).find(Boolean);
+      if(this.activeIndex != null){
+        const p = pads[this.activeIndex];
+        if(p && p.connected !== false) return p;
+      }
+      const pad = Array.from(pads).filter(Boolean).find(p => p.connected !== false);
       if(pad) this.connect(pad, true);
+      else if(this.connected) this.disconnect(true);
       return pad || null;
     },
+
     pressed(pad, index){
       const b = pad && pad.buttons && pad.buttons[index];
       return !!b && (b.pressed || b.value > 0.55);
     },
+
     justPressed(pad, index){
       const now = this.pressed(pad,index);
       const was = !!this.lastButtons[index];
       this.lastButtons[index] = now;
       return now && !was;
     },
+
     movement(pad){
       let dx=0, dy=0;
       if(this.pressed(pad,14)) dx=-1;
       else if(this.pressed(pad,15)) dx=1;
       if(this.pressed(pad,12)) dy=-1;
       else if(this.pressed(pad,13)) dy=1;
-      const ax = pad.axes?.[0] || 0;
-      const ay = pad.axes?.[1] || 0;
+      const ax = Number(pad.axes?.[0] || 0);
+      const ay = Number(pad.axes?.[1] || 0);
       if(!dx && Math.abs(ax) > this.deadzone) dx = ax > 0 ? 1 : -1;
       if(!dy && Math.abs(ay) > this.deadzone) dy = ay > 0 ? 1 : -1;
       if(dx && dy){ if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0; }
       return {dx,dy,key:`${dx},${dy}`};
     },
+
     navMove(pad){
       const mv=this.movement(pad);
       const now=performance.now();
@@ -5461,6 +5510,7 @@
       if(menuOpen) return $('mainMenu')?.querySelector('.menu-buttons') || $('mainMenu');
       return visibleOverlayRoot();
     },
+
     moveMenuCursor(root, dy=1){
       if(!root) return;
       if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
@@ -5469,6 +5519,7 @@
       this.menuIndex = (this.menuIndex + (dy >= 0 ? 1 : -1) + items.length) % items.length;
       updateControllerMenuFocus(root, this.menuIndex);
     },
+
     confirmMenuCursor(root){
       if(!root) return false;
       if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
@@ -5476,6 +5527,7 @@
       this.menuIndex = result.index;
       return activateControllerMenuElement(result.items[this.menuIndex]);
     },
+
     ensureMenuCursor(root){
       if(!root) return;
       if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
@@ -5484,22 +5536,56 @@
     },
 
     loop(){
-      const pad=this.currentPad();
-      if(pad){
-        if(!this.connected) this.connect(pad, true);
-        this.handle(pad);
-      }
-      requestAnimationFrame(() => this.loop());
+      if(this.loopId) cancelAnimationFrame(this.loopId);
+      const tick = () => {
+        try{
+          const now = performance.now();
+          if(now >= this.nextScanAt){
+            this.nextScanAt = now + 1000;
+            this.scan();
+          }
+          const pad=this.currentPad();
+          if(pad){
+            if(!this.connected) this.connect(pad, true);
+            this.handle(pad);
+          }
+        }catch(err){
+          // Never let one bad UI state kill the controller loop.
+          const now = performance.now();
+          if(now - this.lastErrorAt > 1500){
+            this.lastErrorAt = now;
+            console.warn('[AV Controller] loop recovered:', err);
+          }
+          this.resetInputState();
+        }finally{
+          this.loopId = requestAnimationFrame(tick);
+        }
+      };
+      this.loopId = requestAnimationFrame(tick);
     },
+
     handle(pad){
-      const bootOpen = !$('bootScreen').classList.contains('hidden');
-      const menuOpen = !$('mainMenu').classList.contains('hidden');
-      const appOpen = !$('app').classList.contains('hidden');
+      const visible = id => {
+        const el=$(id);
+        return !!el && !el.classList.contains('hidden');
+      };
+      const bootOpen = visible('bootScreen');
+      const menuOpen = visible('mainMenu');
+      const appOpen = visible('app');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
-      const preBattleOpen = $('preBattleOverlay') && !$('preBattleOverlay').classList.contains('hidden');
-      const battleOpen = battle && !$('battleOverlay').classList.contains('hidden');
+      const preBattleOpen = visible('preBattleOverlay');
+      const battleOpen = !!battle && visible('battleOverlay');
+      const victoryOpen = document.body.classList.contains('battle-victory-mode') || (visible('battleVictory') && battleOpen);
       const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3);
       const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), lt=this.justPressed(pad,6), rt=this.justPressed(pad,7), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
+
+      if(victoryOpen){
+        const btn=$('continueBattleBtnTop') || $('continueBattleBtn') || $('deathRetryBtn');
+        const nav=this.navMove(pad);
+        if(nav){ this.ensureMenuCursor($('battleVictory')); this.moveMenuCursor($('battleVictory'), nav.dy || nav.dx || 1); return; }
+        if((south || start || east) && btn){ btn.click(); return; }
+        return;
+      }
 
       if(storyActive){
         const root=$('storyOverlay')?.querySelector('.story-actions');
@@ -5514,6 +5600,7 @@
       }
 
       if(bootOpen && (south || start)){ startIntroVideo(); return; }
+
       if(menuOpen){
         const root=this.controllerRootForState(true);
         this.ensureMenuCursor(root);
@@ -5522,6 +5609,7 @@
         if(south || start){ this.confirmMenuCursor(root); return; }
         return;
       }
+
       if(select && !battleOpen && !preBattleOpen){ openOverlay('playtestOverlay'); this.menuRoot=null; this.menuIndex=0; return; }
 
       if(preBattleOpen){
@@ -5535,7 +5623,6 @@
       if(battleOpen){
         const nav=this.navMove(pad);
         if(nav){ moveBattleCommand(nav.dx, nav.dy); return; }
-        // Battle is direct: the four face buttons map to the four main combat attacks.
         if(south){ triggerBattleCommand(0); return; }
         if(east){ triggerBattleCommand(1); return; }
         if(west){ triggerBattleCommand(2); return; }
@@ -5556,6 +5643,7 @@
         if(east || start){ closeOverlays(); this.menuRoot=null; this.menuIndex=0; return; }
         return;
       }
+
       if(!appOpen || storyActive) return;
 
       const mv=this.movement(pad);
@@ -5574,6 +5662,7 @@
       if(start){ openOverlay('missionOverlay'); return; }
     }
   };
+
 
   function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); const tipBox=$('settingTutorialTips'); if(tipBox) tipBox.checked = state.settings.tutorialTips !== false; const rb=$('settingRouteBeacon'); if(rb) rb.checked = state.settings.routeBeacon !== false; const oc=$('settingObjectiveCompass'); if(oc) oc.checked = state.settings.objectiveCompass !== false; const mr=$('settingMinimapRoute'); if(mr) mr.checked = state.settings.minimapRoute !== false; applyAudioSettings(); }
   let autosaveStarted=false;
