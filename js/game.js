@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.38 // GAME ENTRY VIDEO FIX PASS',
+    'Version 0.9.39 // FULLSCREEN STORY FIX PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.38';
+  const BUILD_VERSION = '0.9.39';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2865,18 +2865,20 @@
     if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
   }
   function requestNativeFullscreen(){
-    // Never request fullscreen on the hidden intro/boot screen during gameplay.
-    // That was reopening the video layer when Initialize Operator was clicked.
+    // Use the whole document as the fullscreen target so body-level overlays
+    // like story dialog, tutorial tips, menus, and battle panels remain visible.
+    // Targeting #app hid storyOverlay outside the fullscreen subtree.
     document.body.classList.add('fullscreen-mode');
     try{
-      const app=$('app'), menu=$('mainMenu'), boot=$('bootScreen');
-      let target=document.documentElement;
-      if(app && !app.classList.contains('hidden')) target=app;
-      else if(menu && !menu.classList.contains('hidden')) target=menu;
-      else if(boot && !boot.classList.contains('hidden') && boot.classList.contains('intro-video-playing')) target=boot;
-      if(!document.fullscreenElement && target.requestFullscreen){
-        target.requestFullscreen().catch(()=>{});
+      const target=document.documentElement;
+      const current=document.fullscreenElement || document.webkitFullscreenElement;
+      const open=()=>{ try{ if(target.requestFullscreen) target.requestFullscreen().catch(()=>{}); else if(target.webkitRequestFullscreen) target.webkitRequestFullscreen(); }catch(err){} };
+      if(current && current !== target){
+        if(document.exitFullscreen) document.exitFullscreen().then(open).catch(()=>{});
+        else if(document.webkitExitFullscreen){ document.webkitExitFullscreen(); setTimeout(open,80); }
+        return;
       }
+      if(!current) open();
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
@@ -2967,7 +2969,7 @@
     if(!overlay){
       overlay=document.createElement('div'); overlay.id='preBattleOverlay'; overlay.className='overlay pre-battle-overlay hidden';
       overlay.innerHTML=`<div class="pre-battle-card avos-crt"><button id="preBattleBack" class="modal-close">Back Out</button><div class="db-header"><div id="preBattleHeader">ANOMALY CONTACT</div><div>PRE-BATTLE SCAN</div></div><div class="pre-battle-layout"><img id="preBattleImg" alt="enemy preview"><section><div class="record-kicker" id="preBattleKicker"></div><h2 id="preBattleName"></h2><p id="preBattleText"></p><p id="preBattleControllerHint" class="controller-menu-hint"></p><div id="preBattleStats" class="record-grid"></div><div class="story-actions pre-battle-actions"><button id="preBattleStart" data-controller-select="0">Engage</button><button id="preBattleCancel" data-controller-select="1">Retreat</button></div></section></div></div>`;
-      document.body.appendChild(overlay);
+      mountStoryOverlay(overlay);
       $('preBattleBack').onclick=$('preBattleCancel').onclick=closePreBattleDialog;
     }
     const s=combatStatBlock();
@@ -3336,6 +3338,17 @@
     state.flags.storySeen[key]=true;
     showStory(key, after);
   }
+  function storyOverlayHost(){
+    const fs=document.fullscreenElement || document.webkitFullscreenElement;
+    // If the browser is currently fullscreening a child element, the story overlay
+    // must be inside that element or it will exist but be invisible.
+    if(fs && fs !== document.documentElement && fs !== document.body) return fs;
+    return document.body;
+  }
+  function mountStoryOverlay(overlay){
+    const host=storyOverlayHost();
+    if(overlay && host && overlay.parentElement !== host) host.appendChild(overlay);
+  }
   function showStory(key, after){
     const scene = STORY_SCENES[key];
     if(!scene){ if(after) after(); return; }
@@ -3351,6 +3364,7 @@
       $('storyNext').onclick=advanceStory;
       $('storySkip').onclick=finishStory;
     }
+    mountStoryOverlay(overlay);
     const storyPortrait = document.querySelector('#storyOverlay .story-body img');
     const lineData = raw => {
       if(raw && typeof raw === 'object') return raw;
@@ -3367,6 +3381,7 @@
     if($('storySceneTitle')){ $('storySceneTitle').textContent = scene.title || ''; $('storySceneTitle').style.display = scene.title ? '' : 'none'; }
     if($('storySceneTag')){ $('storySceneTag').textContent = scene.tag || ''; $('storySceneTag').style.display = scene.tag ? '' : 'none'; }
     if($('storyControllerTip')){ const l=ControllerManager.labels(); $('storyControllerTip').innerHTML = `Controller: <b>${l.south}</b> continue / confirm, D-pad hover, <b>${l.east}</b> skip`; }
+    overlay.style.zIndex='120000';
     overlay.classList.remove('hidden');
     document.body.classList.add('story-open');
     const draw=()=>{
