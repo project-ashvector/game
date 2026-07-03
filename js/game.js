@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.43 // SKILL LEVELUP REQUIREMENTS PASS',
+    'Version 0.9.45 // MOBILE VICTORY REPORT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.43';
+  const BUILD_VERSION = '0.9.45';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -894,51 +894,93 @@
     return stageMissionScale(key).anomalyGoal;
   }
   function zoneProfile(key=currentStageKey()){
-    const n=stageNumberFromKey(key);
-    const profiles=[
-      {zone:'Graveyard', skills:['forgenetics','cryptomining','datafishing'], items:['Scrap Metal','Ash Ore','Mutagen Sample','Archive Log 001']},
-      {zone:'Ash Wastes', skills:['cryptomining','codecraft','system_hacking'], items:['Burnt Alloy','Ash Ore','Circuit Scrap','Access Fragment']},
-      {zone:'Neon Graveyard', skills:['datafishing','system_hacking','forgenetics'], items:['Encrypted Data','Access Fragment','Mutagen Sample','Corrupted Catalyst']},
-      {zone:'Transit Ruins', skills:['system_hacking','codecraft','cryptomining'], items:['Access Fragment','Circuit Scrap','Burnt Alloy','Vector Cell']},
-      {zone:'Glass Lab', skills:['forgenetics','datafishing','codecraft'], items:['Mutagen Sample','Encrypted Data','Corrupted Catalyst','Prism Wound Core']},
-      {zone:'Vector Core', skills:['system_hacking','cryptomining','datafishing'], items:['Access Fragment','Ash Ore','Encrypted Data','Rust Core']}
-    ];
-    return profiles[(n-1)%profiles.length];
+    const stage=stageNumberFromKey(key);
+    const tier=nodeTierForStage(key);
+    const skills=['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
+    const items=skills.map((skill,i)=>catalogNodeForSkill(skill,key,(tier+i)%Math.max(1,tier+1))?.item).filter(Boolean);
+    return {zone:`Stage ${stage} Training Zone`, skills, items};
   }
-  const TRAINING_NODE_TYPES = {
-    cryptomining:{label:'Ash Ore Vein', skill:'cryptomining', item:'Ash Ore', color:'#ffb84d', glyph:'◆', verb:'mined'},
-    datafishing:{label:'Data Stream', skill:'datafishing', item:'Encrypted Data', color:'#70d7ff', glyph:'≋', verb:'decoded'},
-    codecraft:{label:'Scrap Workbench', skill:'codecraft', item:'Circuit Scrap', color:'#94ff62', glyph:'⚙', verb:'salvaged'},
-    forgenetics:{label:'Bio Spore Pod', skill:'forgenetics', item:'Mutagen Sample', color:'#d2a8ff', glyph:'✣', verb:'harvested'},
-    system_hacking:{label:'Relay Console', skill:'system_hacking', item:'Access Fragment', color:'#ffffff', glyph:'▣', verb:'hacked'}
+  const SKILL_COLOR = {
+    cryptomining:'#ffb84d',
+    datafishing:'#70d7ff',
+    codecraft:'#94ff62',
+    forgenetics:'#d2a8ff',
+    system_hacking:'#ffffff'
   };
-  const SKILLING_ITEM_RULES = {
-    'Scrap Metal':       {skill:'codecraft',       baseXp:10, levelBase:1,  zoneStep:1, itemTier:0},
-    'Ash Ore':           {skill:'cryptomining',    baseXp:18, levelBase:1,  zoneStep:2, itemTier:0},
-    'Circuit Scrap':     {skill:'codecraft',       baseXp:22, levelBase:2,  zoneStep:2, itemTier:1},
-    'Encrypted Data':    {skill:'datafishing',     baseXp:26, levelBase:3,  zoneStep:2, itemTier:1},
-    'Access Fragment':   {skill:'system_hacking',  baseXp:32, levelBase:4,  zoneStep:3, itemTier:2},
-    'Burnt Alloy':       {skill:'cryptomining',    baseXp:36, levelBase:5,  zoneStep:3, itemTier:2},
-    'Mutagen Sample':    {skill:'forgenetics',     baseXp:44, levelBase:6,  zoneStep:3, itemTier:3},
-    'Corrupted Catalyst':{skill:'forgenetics',     baseXp:64, levelBase:10, zoneStep:4, itemTier:4},
-    'Rust Core':         {skill:'cryptomining',    baseXp:72, levelBase:12, zoneStep:4, itemTier:4},
-    'Archive Log 001':   {skill:'datafishing',     baseXp:34, levelBase:4,  zoneStep:2, itemTier:2},
-    'Vector Cell':       {skill:'system_hacking',  baseXp:20, levelBase:1,  zoneStep:1, itemTier:1},
-    'Zone Cache Voucher':{skill:'system_hacking',  baseXp:85, levelBase:14, zoneStep:5, itemTier:5}
+  const TRAINING_NODE_CATALOG = {
+    cryptomining:[
+      {label:'Ash Pebble Pile', item:'Ash Pebble', req:1, xp:12, glyph:'◆', verb:'mined'},
+      {label:'Ash Ore Vein', item:'Ash Ore', req:6, xp:22, glyph:'◇', verb:'mined'},
+      {label:'Dense Ash Vein', item:'Dense Ash Ore', req:14, xp:38, glyph:'⬙', verb:'mined'},
+      {label:'Vector Crystal Seam', item:'Vector Crystal', req:30, xp:70, glyph:'✦', verb:'mined'}
+    ],
+    datafishing:[
+      {label:'Static Packet Stream', item:'Static Packet', req:1, xp:12, glyph:'≋', verb:'decoded'},
+      {label:'Encrypted Data Stream', item:'Encrypted Data', req:6, xp:24, glyph:'⌁', verb:'decoded'},
+      {label:'Ghost Log Pool', item:'Ghost Log', req:15, xp:42, glyph:'☰', verb:'decoded'},
+      {label:'Blackbox Signal', item:'Blackbox File', req:32, xp:76, glyph:'▤', verb:'decoded'}
+    ],
+    codecraft:[
+      {label:'Wire Scrap Bench', item:'Wire Scrap', req:1, xp:11, glyph:'⚙', verb:'salvaged'},
+      {label:'Circuit Scrap Bench', item:'Circuit Scrap', req:6, xp:23, glyph:'⚒', verb:'salvaged'},
+      {label:'Logic Board Station', item:'Logic Board', req:14, xp:40, glyph:'▧', verb:'salvaged'},
+      {label:'Quantum Relay Rack', item:'Quantum Relay', req:30, xp:72, glyph:'⌬', verb:'salvaged'}
+    ],
+    forgenetics:[
+      {label:'Spore Sample Pod', item:'Spore Sample', req:1, xp:13, glyph:'✣', verb:'harvested'},
+      {label:'Mutagen Sample Pod', item:'Mutagen Sample', req:7, xp:27, glyph:'✤', verb:'harvested'},
+      {label:'Mutated Tissue Bloom', item:'Mutated Tissue', req:16, xp:46, glyph:'✹', verb:'harvested'},
+      {label:'Vector DNA Bloom', item:'Vector DNA', req:34, xp:82, glyph:'❋', verb:'harvested'}
+    ],
+    system_hacking:[
+      {label:'Broken Token Relay', item:'Broken Token', req:1, xp:12, glyph:'▣', verb:'hacked'},
+      {label:'Access Fragment Relay', item:'Access Fragment', req:6, xp:25, glyph:'▢', verb:'hacked'},
+      {label:'Security Keybit Panel', item:'Security Keybit', req:15, xp:44, glyph:'▨', verb:'hacked'},
+      {label:'Root Cipher Console', item:'Root Cipher', req:33, xp:80, glyph:'▩', verb:'hacked'}
+    ]
   };
+  function nodeTierForStage(stageKey=currentStageKey()){
+    const n=stageNumberFromKey(stageKey);
+    if(n <= 1) return 0;
+    if(n <= 3) return 1;
+    if(n <= 6) return 2;
+    return 3;
+  }
+  function catalogNodeForSkill(skill, stageKey=currentStageKey(), variant=0){
+    const list=TRAINING_NODE_CATALOG[skill] || [];
+    if(!list.length) return null;
+    const maxTier=Math.min(nodeTierForStage(stageKey), list.length-1);
+    const tier=Math.max(0, Math.min(maxTier, variant % (maxTier+1)));
+    const base=list[tier];
+    return {...base, skill, color:SKILL_COLOR[skill] || '#ffffff', tier};
+  }
+  function SKILLING_RULES_FROM_CATALOG(){
+    const rules={};
+    Object.entries(TRAINING_NODE_CATALOG).forEach(([skill,nodes])=>{
+      nodes.forEach((n,tier)=>rules[n.item]={skill, baseXp:n.xp, levelBase:n.req, zoneStep:0, itemTier:tier});
+    });
+    rules['Scrap Metal']={skill:'codecraft',baseXp:9,levelBase:1,zoneStep:0,itemTier:0};
+    rules['Burnt Alloy']={skill:'cryptomining',baseXp:34,levelBase:6,zoneStep:0,itemTier:2};
+    rules['Corrupted Catalyst']={skill:'forgenetics',baseXp:52,levelBase:16,zoneStep:0,itemTier:3};
+    rules['Rust Core']={skill:'cryptomining',baseXp:60,levelBase:14,zoneStep:0,itemTier:3};
+    rules['Archive Log 001']={skill:'datafishing',baseXp:30,levelBase:6,zoneStep:0,itemTier:1};
+    rules['Vector Cell']={skill:'system_hacking',baseXp:18,levelBase:1,zoneStep:0,itemTier:1};
+    rules['Zone Cache Voucher']={skill:'system_hacking',baseXp:65,levelBase:20,zoneStep:0,itemTier:4};
+    return rules;
+  }
+  const SKILLING_ITEM_RULES = SKILLING_RULES_FROM_CATALOG();
   function skillingRuleForItem(name, fallbackSkill='cryptomining'){
-    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:14, levelBase:1, zoneStep:1, itemTier:0};
+    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:8, levelBase:1, zoneStep:0, itemTier:0};
   }
   function skillingLevelReqForItem(name, stageKey=currentStageKey()){
     const rule=skillingRuleForItem(name);
-    return Math.max(1, Math.min(99, rule.levelBase + Math.floor((stageNumberFromKey(stageKey)-1) * rule.zoneStep)));
+    return Math.max(1, Math.min(99, rule.levelBase || 1));
   }
   function skillingXpForItem(name, stageKey=currentStageKey(), qty=1){
     const rule=skillingRuleForItem(name);
     const stage=stageNumberFromKey(stageKey);
-    const tierBoost=(rule.itemTier || 0) * 6;
-    const stageBoost=Math.floor(stage * (4 + (rule.itemTier || 0)));
-    return Math.max(1, Math.floor((rule.baseXp + tierBoost + stageBoost) * Math.max(1, qty || 1)));
+    const stageBoost=Math.floor(Math.max(0, stage-1) * (1.2 + (rule.itemTier || 0)*0.55));
+    return Math.max(1, Math.floor((rule.baseXp + stageBoost) * Math.max(1, qty || 1)));
   }
   function canTrainFromItem(name, stageKey=currentStageKey()){
     const rule=skillingRuleForItem(name);
@@ -946,6 +988,7 @@
     const lvl=skillLevel(rule.skill);
     return {ok:lvl>=req, req, lvl, skill:rule.skill, xp:skillingXpForItem(name, stageKey, 1)};
   }
+
   function ensureTrainingNodeState(){
     if(!state) return;
     state.resourceNodes ||= {};
@@ -981,19 +1024,35 @@
     });
   }
   function stageTrainingNodes(key=currentStageKey()){
-    const profile=zoneProfile(key);
     const scale=stageMissionScale(key);
     const floor=deterministicFloorTilesForStage(key);
+    const skills=['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
     const nodes=[];
-    for(let i=0;i<Math.min(scale.nodeCount, floor.length);i++){
-      const t=floor[(i*3 + scale.stage) % floor.length];
-      const skill=profile.skills[i % profile.skills.length];
-      const def=TRAINING_NODE_TYPES[skill];
-      const req=skillingLevelReqForItem(def.item, key);
-      const xp=skillingXpForItem(def.item, key, 1);
-      nodes.push({id:`${key}:node:${i}:${skill}`, stage:key, x:t.x, y:t.y, skill, levelReq:req, itemXp:xp, ...def});
+    if(!floor.length) return nodes;
+    skills.forEach((skill,i)=>{
+      const variants = key==='f001' ? [0] : [0, Math.min(nodeTierForStage(key), 1 + ((i + scale.stage) % Math.max(1,nodeTierForStage(key))))];
+      variants.forEach((variant,local)=>{
+        const t=floor[(i*5 + local*11 + scale.stage) % floor.length];
+        const catalog=catalogNodeForSkill(skill,key,variant);
+        if(!catalog) return;
+        nodes.push({id:`${key}:node:${i}:${local}:${skill}:${catalog.tier}`, stage:key, x:t.x, y:t.y, skill, levelReq:catalog.req, itemXp:skillingXpForItem(catalog.item,key,1), ...catalog});
+      });
+    });
+    const extraCount=Math.max(0, Math.min(4, scale.nodeCount - skills.length));
+    for(let e=0;e<extraCount;e++){
+      const skill=skills[(e + scale.stage) % skills.length];
+      const catalog=catalogNodeForSkill(skill,key,e+scale.stage);
+      if(!catalog) continue;
+      const t=floor[(e*7 + scale.stage*3) % floor.length];
+      nodes.push({id:`${key}:node:extra:${e}:${skill}:${catalog.tier}`, stage:key, x:t.x, y:t.y, skill, levelReq:catalog.req, itemXp:skillingXpForItem(catalog.item,key,1), ...catalog});
     }
-    return nodes;
+    const seen=new Set();
+    return nodes.filter(n=>{
+      const pos=`${n.x},${n.y}`;
+      if(seen.has(pos)) return false;
+      seen.add(pos);
+      return true;
+    });
   }
   function trainingNodeReady(node){
     ensureTrainingNodeState();
@@ -2552,7 +2611,22 @@
     {id:'IT-022', name:'Circuit Scrap', type:'Material', category:'Codecraft', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:3, asset:'assets/items/scrap_metal.png', status:'field-skill-resource', desc:'Circuit fragments used for future codecraft and gear assembly.'},
     {id:'IT-023', name:'Mutagen Sample', type:'Material', category:'Forgenetics', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:8, asset:'assets/items/corrupted_catalyst.png', status:'field-skill-resource', desc:'Unstable bio sample harvested from corrupted growths.'},
     {id:'IT-024', name:'Access Fragment', type:'Material', category:'System Hacking', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:5, asset:'assets/items/keycard_lv1.png', status:'field-skill-resource', desc:'Broken access token salvaged from relay consoles and security panels.'},
-    {id:'IT-025', name:'Zone Cache Voucher', type:'Key Item', category:'Reward', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:0, asset:'assets/items/keycard_lv1.png', status:'mission-scaling', desc:'Mission-scaling reward marker used by AVOS to track deeper zone cache value.'}  ];
+    {id:'IT-025', name:'Zone Cache Voucher', type:'Key Item', category:'Reward', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:0, asset:'assets/items/keycard_lv1.png', status:'mission-scaling', desc:'Mission-scaling reward marker used by AVOS to track deeper zone cache value.'},
+    {id:'IT-030', name:'Ash Pebble', type:'Material', category:'Cryptomining', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:1, asset:'assets/items/scrap_metal.png', status:'skill-tier-1', desc:'Level 1 cryptomining resource. Small ash-rock fragments used for early training.'},
+    {id:'IT-031', name:'Dense Ash Ore', type:'Material', category:'Cryptomining', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:5, asset:'assets/items/scrap_metal.png', status:'skill-tier-2', desc:'Mid-tier cryptomining resource from packed ash veins.'},
+    {id:'IT-032', name:'Vector Crystal', type:'Material', category:'Cryptomining', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:12, asset:'assets/items/rust_core.png', status:'skill-tier-3', desc:'High-tier cryptomining resource with a faint blue pulse.'},
+    {id:'IT-033', name:'Static Packet', type:'Material', category:'Datafishing', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:1, asset:'assets/items/archive_log_001.png', status:'skill-tier-1', desc:'Level 1 datafishing resource. Tiny data packets pulled from dead signals.'},
+    {id:'IT-034', name:'Ghost Log', type:'Material', category:'Datafishing', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:6, asset:'assets/items/archive_log_001.png', status:'skill-tier-2', desc:'Mid-tier datafishing resource containing broken field logs.'},
+    {id:'IT-035', name:'Blackbox File', type:'Material', category:'Datafishing', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:14, asset:'assets/items/archive_log_001.png', status:'skill-tier-3', desc:'High-tier datafishing resource recovered from locked crash memory.'},
+    {id:'IT-036', name:'Wire Scrap', type:'Material', category:'Codecraft', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:1, asset:'assets/items/scrap_metal.png', status:'skill-tier-1', desc:'Level 1 codecraft resource. Loose wire and tiny boards for starter crafting.'},
+    {id:'IT-037', name:'Logic Board', type:'Material', category:'Codecraft', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:6, asset:'assets/items/scrap_metal.png', status:'skill-tier-2', desc:'Mid-tier codecraft resource used to rebuild cleaner modules.'},
+    {id:'IT-038', name:'Quantum Relay', type:'Material', category:'Codecraft', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:15, asset:'assets/items/keycard_lv1.png', status:'skill-tier-3', desc:'High-tier codecraft part that still argues with the laws of physics.'},
+    {id:'IT-039', name:'Spore Sample', type:'Material', category:'Forgenetics', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:1, asset:'assets/items/corrupted_catalyst.png', status:'skill-tier-1', desc:'Level 1 forgenetics resource. Safe-ish biological residue.'},
+    {id:'IT-040', name:'Mutated Tissue', type:'Material', category:'Forgenetics', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:7, asset:'assets/items/corrupted_catalyst.png', status:'skill-tier-2', desc:'Mid-tier forgenetics resource that refuses to stay still.'},
+    {id:'IT-041', name:'Vector DNA', type:'Material', category:'Forgenetics', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:18, asset:'assets/items/corrupted_catalyst.png', status:'skill-tier-3', desc:'High-tier forgenetics resource from unstable vector mutations.'},
+    {id:'IT-042', name:'Broken Token', type:'Material', category:'System Hacking', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:1, asset:'assets/items/keycard_lv1.png', status:'skill-tier-1', desc:'Level 1 system hacking resource. Broken login token with one useful byte left.'},
+    {id:'IT-043', name:'Security Keybit', type:'Material', category:'System Hacking', slot:'Stack', rarity:'Uncommon', stackSize:999, sellPrice:6, asset:'assets/items/keycard_lv1.png', status:'skill-tier-2', desc:'Mid-tier hacking resource used to crack stronger relays.'},
+    {id:'IT-044', name:'Root Cipher', type:'Material', category:'System Hacking', slot:'Stack', rarity:'Rare', stackSize:999, sellPrice:16, asset:'assets/items/keycard_lv1.png', status:'skill-tier-3', desc:'High-tier hacking cipher with root-level system traces.'}  ];
 
   const importedItemRegistry = [{"id":"IT-1001","name":"Common Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/cape/common/it-1001_cape_common.png","status":"placeholder-art"},{"id":"IT-1002","name":"Epic Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/cape/epic/it-1002_cape_epic.png","status":"placeholder-art"},{"id":"IT-1003","name":"Legendary Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/cape/legendary/it-1003_cape_legendary.png","status":"placeholder-art"},{"id":"IT-1004","name":"Mythic Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/cape/mythic/it-1004_cape_mythic.png","status":"placeholder-art"},{"id":"IT-1005","name":"Rare Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/cape/rare/it-1005_cape_rare.png","status":"placeholder-art"},{"id":"IT-1006","name":"Uncommon Cape","type":"Equipment","category":"Armor","slot":"Cape","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/cape/uncommon/it-1006_cape_uncommon.png","status":"placeholder-art"},{"id":"IT-1007","name":"Common Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/chest/common/it-1007_chest_common.png","status":"placeholder-art"},{"id":"IT-1008","name":"Epic Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/chest/epic/it-1008_chest_epic.png","status":"placeholder-art"},{"id":"IT-1009","name":"Legendary Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/chest/legendary/it-1009_chest_legendary.png","status":"placeholder-art"},{"id":"IT-1010","name":"Mythic Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/chest/mythic/it-1010_chest_mythic.png","status":"placeholder-art"},{"id":"IT-1011","name":"Rare Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/chest/rare/it-1011_chest_rare.png","status":"placeholder-art"},{"id":"IT-1012","name":"Uncommon Chest","type":"Equipment","category":"Armor","slot":"Chest","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/chest/uncommon/it-1012_chest_uncommon.png","status":"placeholder-art"},{"id":"IT-1013","name":"Common Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/gloves/common/it-1013_gloves_common.png","status":"placeholder-art"},{"id":"IT-1014","name":"Epic Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/gloves/epic/it-1014_gloves_epic.png","status":"placeholder-art"},{"id":"IT-1015","name":"Legendary Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/gloves/legendary/it-1015_gloves_legendary.png","status":"placeholder-art"},{"id":"IT-1016","name":"Mythic Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/gloves/mythic/it-1016_gloves_mythic.png","status":"placeholder-art"},{"id":"IT-1017","name":"Rare Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/gloves/rare/it-1017_gloves_rare.png","status":"placeholder-art"},{"id":"IT-1018","name":"Uncommon Gloves","type":"Equipment","category":"Armor","slot":"Gloves","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/gloves/uncommon/it-1018_gloves_uncommon.png","status":"placeholder-art"},{"id":"IT-1019","name":"Common Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/helm/common/it-1019_helm_common.png","status":"placeholder-art"},{"id":"IT-1020","name":"Epic Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/helm/epic/it-1020_helm_epic.png","status":"placeholder-art"},{"id":"IT-1021","name":"Legendary Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/helm/legendary/it-1021_helm_legendary.png","status":"placeholder-art"},{"id":"IT-1022","name":"Mythic Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/helm/mythic/it-1022_helm_mythic.png","status":"placeholder-art"},{"id":"IT-1023","name":"Rare Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/helm/rare/it-1023_helm_rare.png","status":"placeholder-art"},{"id":"IT-1024","name":"Uncommon Helm","type":"Equipment","category":"Armor","slot":"Helm","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/helm/uncommon/it-1024_helm_uncommon.png","status":"placeholder-art"},{"id":"IT-1025","name":"Common Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/legs/common/it-1025_legs_common.png","status":"placeholder-art"},{"id":"IT-1026","name":"Epic Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/legs/epic/it-1026_legs_epic.png","status":"placeholder-art"},{"id":"IT-1027","name":"Legendary Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/legs/legendary/it-1027_legs_legendary.png","status":"placeholder-art"},{"id":"IT-1028","name":"Mythic Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/legs/mythic/it-1028_legs_mythic.png","status":"placeholder-art"},{"id":"IT-1029","name":"Rare Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/legs/rare/it-1029_legs_rare.png","status":"placeholder-art"},{"id":"IT-1030","name":"Uncommon Legs","type":"Equipment","category":"Armor","slot":"Legs","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/legs/uncommon/it-1030_legs_uncommon.png","status":"placeholder-art"},{"id":"IT-1031","name":"Common Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/neckless/common/it-1031_neckless_common.png","status":"placeholder-art"},{"id":"IT-1032","name":"Epic Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/neckless/epic/it-1032_neckless_epic.png","status":"placeholder-art"},{"id":"IT-1033","name":"Legendary Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/neckless/legendary/it-1033_neckless_legendary.png","status":"placeholder-art"},{"id":"IT-1034","name":"Mythic Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/neckless/mythic/it-1034_neckless_mythic.png","status":"placeholder-art"},{"id":"IT-1035","name":"Rare Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/neckless/rare/it-1035_neckless_rare.png","status":"placeholder-art"},{"id":"IT-1036","name":"Uncommon Neckless","type":"Equipment","category":"Armor","slot":"Neckless","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/neckless/uncommon/it-1036_neckless_uncommon.png","status":"placeholder-art"},{"id":"IT-1037","name":"Common Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/armor/ring/common/it-1037_ring_common.png","status":"placeholder-art"},{"id":"IT-1038","name":"Epic Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/armor/ring/epic/it-1038_ring_epic.png","status":"placeholder-art"},{"id":"IT-1039","name":"Legendary Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/armor/ring/legendary/it-1039_ring_legendary.png","status":"placeholder-art"},{"id":"IT-1040","name":"Mythic Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/armor/ring/mythic/it-1040_ring_mythic.png","status":"placeholder-art"},{"id":"IT-1041","name":"Rare Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/armor/ring/rare/it-1041_ring_rare.png","status":"placeholder-art"},{"id":"IT-1042","name":"Uncommon Ring","type":"Equipment","category":"Armor","slot":"Ring","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/armor/ring/uncommon/it-1042_ring_uncommon.png","status":"placeholder-art"},{"id":"IT-1043","name":"Vector Cell","type":"Consumable","category":"Energy","slot":"Quick Use","rarity":"Common","stackSize":99,"sellPrice":10,"asset":"assets/items/imported/consumables/consumables/common/it-1043_vector_cell.png","status":"production-art","desc":"Vector Cell energy capsule. Restores EP during fights or exploration."},{"id":"IT-1044","name":"Ashthorn Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1044_ashthorn_dagger.png","status":"production-art"},{"id":"IT-1045","name":"Blightweave Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1045_blightweave_staff.png","status":"production-art"},{"id":"IT-1046","name":"Bloodrot Sword","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1046_bloodrot_sword.png","status":"production-art"},{"id":"IT-1047","name":"Cinderbite Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1047_cinderbite_dagger.png","status":"production-art"},{"id":"IT-1048","name":"Deathbloom Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1048_deathbloom_staff.png","status":"production-art"},{"id":"IT-1049","name":"Duskbranch Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1049_duskbranch_staff.png","status":"production-art"},{"id":"IT-1050","name":"Duskfang Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1050_duskfang_blade.png","status":"production-art"},{"id":"IT-1051","name":"Embercrack Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1051_embercrack_axe.png","status":"production-art"},{"id":"IT-1052","name":"Frostbite Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1052_frostbite_blade.png","status":"production-art"},{"id":"IT-1053","name":"Gloomroot Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1053_gloomroot_bow.png","status":"production-art"},{"id":"IT-1054","name":"Gloomspire Scepter","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1054_gloomspire_scepter.png","status":"production-art"},{"id":"IT-1055","name":"Gravemarrow Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1055_gravemarrow_spear.png","status":"production-art"},{"id":"IT-1056","name":"Gravethorn Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1056_gravethorn_warblade.png","status":"production-art"},{"id":"IT-1057","name":"Marshfang Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1057_marshfang_dagger.png","status":"production-art"},{"id":"IT-1058","name":"Mirefang Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1058_mirefang_spear.png","status":"production-art"},{"id":"IT-1059","name":"Mirewood Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1059_mirewood_staff.png","status":"production-art"},{"id":"IT-1060","name":"Nightthorn Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1060_nightthorn_bow.png","status":"production-art"},{"id":"IT-1061","name":"Plaguefang Claw","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1061_plaguefang_claw.png","status":"production-art"},{"id":"IT-1062","name":"Shardstone Mace","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1062_shardstone_mace.png","status":"production-art"},{"id":"IT-1063","name":"Smogcoil Whip","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1063_smogcoil_whip.png","status":"production-art"},{"id":"IT-1064","name":"Sootveil Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1064_sootveil_blade.png","status":"production-art"},{"id":"IT-1065","name":"Soulshard Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1065_soulshard_wand.png","status":"production-art"},{"id":"IT-1066","name":"Soulspike Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1066_soulspike_dagger.png","status":"production-art"},{"id":"IT-1067","name":"Thornrend Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1067_thornrend_axe.png","status":"production-art"},{"id":"IT-1068","name":"Thornslicer Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Common","stackSize":1,"sellPrice":5,"asset":"assets/items/imported/weapons/weapons/common/it-1068_thornslicer_saber.png","status":"production-art"},{"id":"IT-1069","name":"Bloodshard Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1069_bloodshard_warhammer.png","status":"production-art"},{"id":"IT-1070","name":"Duskdrift Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1070_duskdrift_longbow.png","status":"production-art"},{"id":"IT-1071","name":"Duskspire Catalyst","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1071_duskspire_catalyst.png","status":"production-art"},{"id":"IT-1072","name":"Emberwrath Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1072_emberwrath_crossbow.png","status":"production-art"},{"id":"IT-1073","name":"Gloomthorn Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1073_gloomthorn_warblade.png","status":"production-art"},{"id":"IT-1074","name":"Gravetide Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1074_gravetide_pike.png","status":"production-art"},{"id":"IT-1075","name":"Mirethorn Greatblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1075_mirethorn_greatblade.png","status":"production-art"},{"id":"IT-1076","name":"Plaguewrought Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1076_plaguewrought_glaive.png","status":"production-art"},{"id":"IT-1077","name":"Shardrift Longspear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1077_shardrift_longspear.png","status":"production-art"},{"id":"IT-1078","name":"Soulflare Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1078_soulflare_bow.png","status":"production-art"},{"id":"IT-1079","name":"Soulreaver Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1079_soulreaver_scythe.png","status":"production-art"},{"id":"IT-1080","name":"Soulshatter Claws","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1080_soulshatter_claws.png","status":"production-art"},{"id":"IT-1081","name":"Venomspire Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1081_venomspire_spear.png","status":"production-art"},{"id":"IT-1082","name":"Voidcarver Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1082_voidcarver_blade.png","status":"production-art"},{"id":"IT-1083","name":"Wraithvine Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Epic","stackSize":1,"sellPrice":40,"asset":"assets/items/imported/weapons/weapons/epic/it-1083_wraithvine_staff.png","status":"production-art"},{"id":"IT-1084","name":"Ashvenom Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1084_ashvenom_saber.png","status":"production-art"},{"id":"IT-1085","name":"Bloodspire Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1085_bloodspire_blade.png","status":"production-art"},{"id":"IT-1086","name":"Duskfang Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1086_duskfang_scythe.png","status":"production-art"},{"id":"IT-1087","name":"Duskthorn Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1087_duskthorn_pike.png","status":"production-art"},{"id":"IT-1088","name":"Gravemarrow Halberd","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1088_gravemarrow_halberd.png","status":"production-art"},{"id":"IT-1089","name":"Soulforge Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1089_soulforge_staff.png","status":"production-art"},{"id":"IT-1090","name":"Soulrend Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1090_soulrend_longbow.png","status":"production-art"},{"id":"IT-1091","name":"Voidheart Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1091_voidheart_greataxe.png","status":"production-art"},{"id":"IT-1092","name":"Voidlash Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1092_voidlash_crossbow.png","status":"production-art"},{"id":"IT-1093","name":"Wraithbound Blades","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Legendary","stackSize":1,"sellPrice":80,"asset":"assets/items/imported/weapons/weapons/legendary/it-1093_wraithbound_blades.png","status":"production-art"},{"id":"IT-1094","name":"Ashbreaker Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1094_ashbreaker_pike.png","status":"production-art"},{"id":"IT-1095","name":"Duskveil Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1095_duskveil_longbow.png","status":"production-art"},{"id":"IT-1096","name":"Gravemind Scepter","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1096_gravemind_scepter.png","status":"production-art"},{"id":"IT-1097","name":"Shardking Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1097_shardking_blade.png","status":"production-art"},{"id":"IT-1098","name":"Smolderthorn Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1098_smolderthorn_glaive.png","status":"production-art"},{"id":"IT-1099","name":"Soulreign Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1099_soulreign_bow.png","status":"production-art"},{"id":"IT-1100","name":"Soulshatter Greatblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1100_soulshatter_greatblade.png","status":"production-art"},{"id":"IT-1101","name":"Voidborne Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1101_voidborne_scythe.png","status":"production-art"},{"id":"IT-1102","name":"Voidrend Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1102_voidrend_warhammer.png","status":"production-art"},{"id":"IT-1103","name":"Wraithforged Twinblades","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Mythic","stackSize":1,"sellPrice":160,"asset":"assets/items/imported/weapons/weapons/mythic/it-1103_wraithforged_twinblades.png","status":"production-art"},{"id":"IT-1104","name":"Ashdrift Longspear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1104_ashdrift_longspear.png","status":"production-art"},{"id":"IT-1105","name":"Ashgloom Warblade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1105_ashgloom_warblade.png","status":"production-art"},{"id":"IT-1106","name":"Bloodcurse Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1106_bloodcurse_wand.png","status":"production-art"},{"id":"IT-1107","name":"Bloodveil Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1107_bloodveil_greataxe.png","status":"production-art"},{"id":"IT-1108","name":"Duskhowl Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1108_duskhowl_blade.png","status":"production-art"},{"id":"IT-1109","name":"Duskshard Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1109_duskshard_glaive.png","status":"production-art"},{"id":"IT-1110","name":"Duskthorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1110_duskthorn_longbow.png","status":"production-art"},{"id":"IT-1111","name":"Embershard Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1111_embershard_crossbow.png","status":"production-art"},{"id":"IT-1112","name":"Gravemist Scythe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1112_gravemist_scythe.png","status":"production-art"},{"id":"IT-1113","name":"Gravethorn Cleaver","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1113_gravethorn_cleaver.png","status":"production-art"},{"id":"IT-1114","name":"Mirefang Longsword","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1114_mirefang_longsword.png","status":"production-art"},{"id":"IT-1115","name":"Rotfang Claws","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1115_rotfang_claws.png","status":"production-art"},{"id":"IT-1116","name":"Shatterspike Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1116_shatterspike_blade.png","status":"production-art"},{"id":"IT-1117","name":"Soulbind Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1117_soulbind_bow.png","status":"production-art"},{"id":"IT-1118","name":"Soulpiercer Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1118_soulpiercer_longbow.png","status":"production-art"},{"id":"IT-1119","name":"Soulshard Catalyst","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1119_soulshard_catalyst.png","status":"production-art"},{"id":"IT-1120","name":"Venomspire Pike","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1120_venomspire_pike.png","status":"production-art"},{"id":"IT-1121","name":"Venomthorn Saber","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1121_venomthorn_saber.png","status":"production-art"},{"id":"IT-1122","name":"Voidreaver Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1122_voidreaver_blade.png","status":"production-art"},{"id":"IT-1123","name":"Wraithbone Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Rare","stackSize":1,"sellPrice":20,"asset":"assets/items/imported/weapons/weapons/rare/it-1123_wraithbone_staff.png","status":"production-art"},{"id":"IT-1124","name":"Ashwrought Greataxe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1124_ashwrought_greataxe.png","status":"production-art"},{"id":"IT-1125","name":"Blightthorn Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1125_blightthorn_bow.png","status":"production-art"},{"id":"IT-1126","name":"Bloodthorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1126_bloodthorn_longbow.png","status":"production-art"},{"id":"IT-1127","name":"Cinderspine Crossbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1127_cinderspine_crossbow.png","status":"production-art"},{"id":"IT-1128","name":"Cryptvine Bow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1128_cryptvine_bow.png","status":"production-art"},{"id":"IT-1129","name":"Duskchill Knife","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1129_duskchill_knife.png","status":"production-art"},{"id":"IT-1130","name":"Duskroot Wand","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1130_duskroot_wand.png","status":"production-art"},{"id":"IT-1131","name":"Duskveil Glaive","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1131_duskveil_glaive.png","status":"production-art"},{"id":"IT-1132","name":"Emberfang Dagger","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png","status":"production-art"},{"id":"IT-1133","name":"Gravemind Flail","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1133_gravemind_flail.png","status":"production-art"},{"id":"IT-1134","name":"Gravetide Mace","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1134_gravetide_mace.png","status":"production-art"},{"id":"IT-1135","name":"Marrowshard Blade","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1135_marrowshard_blade.png","status":"production-art"},{"id":"IT-1136","name":"Mirethorn Longbow","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1136_mirethorn_longbow.png","status":"production-art"},{"id":"IT-1137","name":"Mireweaver Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1137_mireweaver_staff.png","status":"production-art"},{"id":"IT-1138","name":"Plaguebite Axe","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1138_plaguebite_axe.png","status":"production-art"},{"id":"IT-1139","name":"Shardfang Rapier","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1139_shardfang_rapier.png","status":"production-art"},{"id":"IT-1140","name":"Sootcrack Warhammer","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1140_sootcrack_warhammer.png","status":"production-art"},{"id":"IT-1141","name":"Thornpierce Lance","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1141_thornpierce_lance.png","status":"production-art"},{"id":"IT-1142","name":"Voidpiercer Spear","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1142_voidpiercer_spear.png","status":"production-art"},{"id":"IT-1143","name":"Voidwhisper Staff","type":"Weapon","category":"Weapons","slot":"Weapons","rarity":"Uncommon","stackSize":1,"sellPrice":10,"asset":"assets/items/imported/weapons/weapons/uncommon/it-1143_voidwhisper_staff.png","status":"production-art"}];
 
@@ -4014,6 +4088,7 @@
     $('battleVictory')?.classList.add('hidden');
     $('battlePanel')?.classList.remove('battle-shake');
     document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) document.body.classList.remove('fullscreen-mode'); });
+    leaveBattleVictoryMode();
     setBattleMobileMode(true);
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     $('battleOverlay').classList.remove('hidden');
@@ -4204,6 +4279,7 @@
     const checkpointLabel = state.checkpoint?.label || 'Fracture Entry';
     battle.turn='defeated';
     setBattleMobileMode(false);
+    leaveBattleVictoryMode();
     state.deaths = (state.deaths || 0) + 1;
     state.player.hp = 0;
     SfxManager.death();
@@ -4226,6 +4302,7 @@
     const closeDeathPanel=()=>{
       battle=null;
       setBattleMobileMode(false);
+      leaveBattleVictoryMode();
       uiState.mode='game';
       panel.classList.add('hidden');
       $('battleOverlay').classList.add('hidden');
@@ -4324,7 +4401,24 @@
     el.classList.remove('battle-shake'); void el.offsetWidth; el.classList.add('battle-shake');
     setTimeout(()=>el.classList.remove('battle-shake'),ms);
   }
+  function enterBattleVictoryMode(){
+    document.body.classList.remove('battle-mode');
+    document.body.classList.add('battle-victory-mode');
+    const pad=$('mobileBattlePad');
+    if(pad) pad.style.display='none';
+    const attackRoot=$('attackButtons');
+    if(attackRoot) attackRoot.innerHTML='';
+    document.querySelectorAll('#battleOverlay .battle-command-panel, #battleOverlay .battle-ui').forEach(el=>el.classList.add('victory-hidden'));
+  }
+  function leaveBattleVictoryMode(){
+    document.body.classList.remove('battle-victory-mode');
+    const pad=$('mobileBattlePad');
+    if(pad) pad.style.display='';
+    document.querySelectorAll('#battleOverlay .victory-hidden').forEach(el=>el.classList.remove('victory-hidden'));
+  }
+
   function showVictoryPanel(enemy, loot, meta={}){
+    enterBattleVictoryMode();
     const panel=$('battleVictory');
     const lootCounts = (loot||[]).reduce((acc,name)=>{ acc[name]=(acc[name]||0)+1; return acc; }, {});
     const lootEntries = Object.entries(lootCounts);
@@ -4343,16 +4437,20 @@
       const item=findItemRecord(name);
       return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,qty)}<span>${safeHtml(name)}${qty>1?` x${qty}`:''}</span></div>`;
     }).join('') || '<span>No loot recovered.</span>';
-    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY REPORT // THREAT NEUTRALIZED</div><h2>${safeHtml(enemy.name)}</h2><p>Synchronization +${xpGain} // Credits +${enemy.credits}</p><div class="record-grid"><div><b>Mission Next</b><span>${safeHtml(missionNext)}</span></div><div><b>Current Objective</b><span>${safeHtml(objective)}</span></div><div><b>Anomalies</b><span>${anomalyCount}/${requiredAnomalyGoal} // Boss Route ${state.flags.bossUnlocked?'Open':'Locked'}</span></div><div><b>Vyra Status</b><span>HP ${state.player.hp}/${combatStatBlock().maxHp} // EP ${state.player.ep}/${epMax}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${safeHtml(research.text)}</span></div><div><b>Contract</b><span>${safeHtml(contract.title)} // ${contract.progress}/${contract.target}${contract.complete?' // Ready to claim':''}</span></div><div><b>Side Quest</b><span>${safeHtml(sideQuestStatusText())}</span></div><div><b>Protocol Challenges</b><span>${safeHtml(protocolChallengeSummaryText())}</span></div><div><b>Enemy File</b><span>${safeHtml(enemy.id || 'ANOMALY')} // ${meta.wasBoss?'Boss':'Anomaly'}</span></div></div><h3>Recovered Loot</h3><div class="victory-loot">${lootHtml}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
+    panel.innerHTML = `<div class="victory-card mobile-fit-victory-card"><div class="record-kicker">VICTORY REPORT // THREAT NEUTRALIZED</div><h2>${safeHtml(enemy.name)}</h2><p>Synchronization +${xpGain} // Credits +${enemy.credits}</p><button id="continueBattleBtnTop" class="victory-continue-sticky">${nextLabel}</button><div class="record-grid"><div><b>Mission Next</b><span>${safeHtml(missionNext)}</span></div><div><b>Current Objective</b><span>${safeHtml(objective)}</span></div><div><b>Anomalies</b><span>${anomalyCount}/${requiredAnomalyGoal} // Boss Route ${state.flags.bossUnlocked?'Open':'Locked'}</span></div><div><b>Vyra Status</b><span>HP ${state.player.hp}/${combatStatBlock().maxHp} // EP ${state.player.ep}/${epMax}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${safeHtml(research.text)}</span></div><div><b>Contract</b><span>${safeHtml(contract.title)} // ${contract.progress}/${contract.target}${contract.complete?' // Ready to claim':''}</span></div><div><b>Side Quest</b><span>${safeHtml(sideQuestStatusText())}</span></div><div><b>Protocol Challenges</b><span>${safeHtml(protocolChallengeSummaryText())}</span></div><div><b>Enemy File</b><span>${safeHtml(enemy.id || 'ANOMALY')} // ${meta.wasBoss?'Boss':'Anomaly'}</span></div></div><h3>Recovered Loot</h3><div class="victory-loot">${lootHtml}</div><button id="continueBattleBtn" class="victory-continue-bottom">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
-    const btn=$('continueBattleBtn');
-    if(btn) btn.onclick=()=>{
+    const continueVictory=()=>{
+      leaveBattleVictoryMode();
       battle=null; setBattleMobileMode(false); uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play(activeMusicForState());
       if(meta.wasBoss){showStoryOnce(stageStoryKey('bossDefeated')); pulseObjective(currentObjectiveText());}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared===1){showStoryOnce('firstAnomaly');}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared>=requiredAnomaliesForStage()){showStoryOnce('allAnomalies');}
       else {pulseObjective(currentObjectiveText());}
     };
+    const btn=$('continueBattleBtn');
+    const topBtn=$('continueBattleBtnTop');
+    if(btn) btn.onclick=continueVictory;
+    if(topBtn) topBtn.onclick=continueVictory;
   }
 
   function gainXp(n){
@@ -5041,7 +5139,10 @@
   // without relying on tiny keyboard-style hotkeys during fights.
   function setBattleMobileMode(on){
     document.body.classList.toggle('battle-mode', !!on);
-    if(on) ensureMobileBattlePad();
+    if(on){
+      document.body.classList.remove('battle-victory-mode');
+      ensureMobileBattlePad();
+    }
   }
   function ensureMobileBattlePad(){
     if(document.getElementById('mobileBattlePad')) return;

@@ -2370,3 +2370,166 @@ body[data-stage="f001"] canvas#game{box-shadow:0 0 0 1px rgba(112,215,255,.20),0
 .skill-levelup-notice.skill-forgenetics .levelup-kicker,.skill-levelup-notice.skill-forgenetics .levelup-icon b{color:#d2a8ff;}
 .skill-levelup-notice.skill-system_hacking{border-color:rgba(255,255,255,.78);box-shadow:0 0 34px rgba(255,255,255,.18),0 18px 60px rgba(0,0,0,.52);}
 .skill-levelup-notice.skill-system_hacking .levelup-kicker,.skill-levelup-notice.skill-system_hacking .levelup-icon b{color:#ffffff;}
+
+
+/* V135: mobile victory report fit + hide battle controls after win */
+body.battle-victory-mode .mobile-battle-pad,
+body.battle-victory-mode .mobile-action-pad,
+body.battle-victory-mode .mobile-pad{
+  display:none!important;
+}
+#battleOverlay .victory-hidden,
+body.battle-victory-mode #battleOverlay .battle-command-panel,
+body.battle-victory-mode #battleOverlay #attackButtons{
+  display:none!important;
+}
+body.battle-victory-mode #battleOverlay .battle-ui{
+  display:none!important;
+}
+#battleVictory:not(.hidden){
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch;
+  align-items:start!important;
+  justify-items:center!important;
+  place-items:start center!important;
+}
+.mobile-fit-victory-card{
+  max-height:calc(100svh - 28px);
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.victory-continue-sticky,
+.victory-continue-bottom{
+  width:100%;
+  min-height:46px;
+  margin:10px 0;
+  border-color:rgba(148,255,98,.62)!important;
+  color:#eafff4!important;
+  background:linear-gradient(180deg,rgba(22,44,34,.96),rgba(7,16,14,.96))!important;
+  box-shadow:0 0 20px rgba(148,255,98,.16);
+}
+.victory-continue-sticky{
+  position:sticky;
+  top:0;
+  z-index:3;
+}
+@media (max-width: 900px), (pointer: coarse){
+  body.battle-victory-mode #battleOverlay{
+    padding:0!important;
+    align-items:stretch!important;
+    justify-items:stretch!important;
+  }
+  body.battle-victory-mode #battlePanel.battle{
+    width:100vw!important;
+    height:100svh!important;
+    max-height:100svh!important;
+    min-height:0!important;
+    aspect-ratio:auto!important;
+    padding:0!important;
+    border-width:0!important;
+    overflow:hidden!important;
+    display:block!important;
+  }
+  body.battle-victory-mode #battleVictory{
+    position:fixed!important;
+    inset:0!important;
+    z-index:99999!important;
+    display:block!important;
+    padding:8px max(8px, env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left))!important;
+    background:rgba(0,0,0,.86)!important;
+    overflow:auto!important;
+  }
+  body.battle-victory-mode .mobile-fit-victory-card{
+    width:100%!important;
+    max-width:none!important;
+    max-height:none!important;
+    min-height:auto!important;
+    padding:12px!important;
+    border-left-width:3px!important;
+    border-radius:14px!important;
+    overflow:visible!important;
+  }
+  body.battle-victory-mode .victory-card .record-kicker{
+    font-size:12px!important;
+    letter-spacing:.11em!important;
+  }
+  body.battle-victory-mode .victory-card h2{
+    font-size:clamp(24px,7vw,36px)!important;
+    line-height:1.02!important;
+    margin:.15rem 0 .25rem!important;
+  }
+  body.battle-victory-mode .victory-card p{
+    font-size:13px!important;
+    line-height:1.25!important;
+    margin:.25rem 0 .5rem!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid{
+    grid-template-columns:1fr!important;
+    gap:6px!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid>div{
+    padding:7px 8px!important;
+    min-height:0!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid b{
+    font-size:12px!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid span{
+    font-size:12px!important;
+    line-height:1.25!important;
+  }
+  body.battle-victory-mode .victory-loot{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:6px!important;
+    margin:8px 0!important;
+  }
+  body.battle-victory-mode .victory-loot-item{
+    padding:6px!important;
+    min-height:0!important;
+  }
+  body.battle-victory-mode .victory-loot-item .item-icon-shell{
+    width:38px!important;
+    height:38px!important;
+  }
+  body.battle-victory-mode .victory-loot-item .item-icon-shell img{
+    width:30px!important;
+    height:30px!important;
+  }
+  body.battle-victory-mode .victory-loot-item span{
+    font-size:10px!important;
+    line-height:1.15!important;
+  }
+  body.battle-victory-mode .victory-continue-sticky{
+    position:sticky!important;
+    top:0!important;
+    min-height:44px!important;
+    font-size:13px!important;
+    margin:8px 0!important;
+  }
+  body.battle-victory-mode .victory-continue-bottom{
+    min-height:44px!important;
+    font-size:13px!important;
+    margin:8px 0 4px!important;
+  }
+}
+@media (max-width: 900px) and (orientation: landscape), (pointer: coarse) and (orientation: landscape){
+  body.battle-victory-mode #battleVictory{
+    padding:6px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left))!important;
+  }
+  body.battle-victory-mode .mobile-fit-victory-card{
+    padding:10px!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  body.battle-victory-mode .victory-card h2{
+    font-size:24px!important;
+  }
+  body.battle-victory-mode .victory-card .record-grid>div:nth-child(n+6){
+    display:none!important;
+  }
+  body.battle-victory-mode .victory-loot{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
