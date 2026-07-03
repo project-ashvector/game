@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.7 // STAGE 3 ROUTE FIX PASS',
+    'Version 0.9.11 // BOOT VERSION SYNC PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
