@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.34 // INTRO VIDEO FADEOUT PASS',
+    'Version 0.9.35 // INTRO AUTO CLOSE PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.34';
+  const BUILD_VERSION = '0.9.35';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2715,11 +2715,12 @@
       video.loop=false;
       video.controls=false;
       video.preload='auto';
-      video.setAttribute('webkit-playsinline','false');
-      video.removeAttribute('playsinline');
+      video.playsInline=true;
+      video.setAttribute('playsinline','true');
+      video.setAttribute('webkit-playsinline','true');
       video.onended=()=>finishIntroVideo({fade:true});
       video.onerror=()=>{ toast('Intro video missing or blocked. Opening main menu.'); finishIntroVideo(); };
-      video.onwebkitendfullscreen=()=>{ if(introVideoActive && video.currentTime >= Math.max(1,(video.duration||1)-.75)) finishIntroVideo({fade:true}); };
+      video.onwebkitendfullscreen=()=>{};
       video.ontimeupdate=()=>{
         if(prog && Number.isFinite(video.duration) && video.duration>0){
           prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
@@ -2732,13 +2733,14 @@
   }
   function requestVideoFullscreen(video){
     document.body.classList.add('fullscreen-mode','intro-video-active');
-    const target=video || $('bootScreen') || document.documentElement;
+    const target=$('bootScreen') || document.documentElement;
     try{
-      if(video && video.webkitEnterFullscreen){ video.webkitEnterFullscreen(); return; }
-      if(target && target.requestFullscreen && !document.fullscreenElement){ target.requestFullscreen().catch(()=>requestNativeFullscreen()); return; }
-      if(target && target.webkitRequestFullscreen){ target.webkitRequestFullscreen(); return; }
-      requestNativeFullscreen();
-    }catch(err){ requestNativeFullscreen(); }
+      if(target && target.requestFullscreen && !document.fullscreenElement){
+        target.requestFullscreen().catch(()=>{});
+      } else if(target && target.webkitRequestFullscreen){
+        target.webkitRequestFullscreen();
+      }
+    }catch(err){}
   }
   function startIntroVideo(opts={}){
     const fromMenu=!!opts.fromMenu;
@@ -2761,12 +2763,13 @@
     if(shade){ shade.classList.add('hidden'); shade.style.display='none'; shade.style.opacity='0'; }
     if(prog) prog.style.width='0%';
     if(!video){ finishIntroVideo(); return; }
-    video.controls=true;
+    video.controls=false;
     video.loop=false;
     video.muted=false;
     video.volume=1;
-    video.setAttribute('webkit-playsinline','false');
-    video.removeAttribute('playsinline');
+    video.playsInline=true;
+    video.setAttribute('playsinline','true');
+    video.setAttribute('webkit-playsinline','true');
     try{ video.currentTime=0; }catch(err){}
     const tryPlay=()=>{
       const p=video.play();
@@ -2789,6 +2792,12 @@
     tryPlay();
   }
   function replayIntroVideo(){ startIntroVideo({fromMenu:true}); }
+  function exitIntroFullscreen(){
+    try{
+      if(document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+      else if(document.webkitFullscreenElement && document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }catch(err){}
+  }
   function finishIntroVideo(opts={}){
     const bootScreen=$('bootScreen');
     const video=$('introVideo');
@@ -2804,14 +2813,19 @@
       return;
     }
     introVideoActive=false;
+    exitIntroFullscreen();
     document.body.classList.remove('intro-video-active');
     if(video){
       video.pause();
       video.controls=false;
       video.muted=false;
+      video.style.opacity='';
       try{ video.currentTime=0; }catch(err){}
     }
-    if(bootScreen) bootScreen.classList.remove('intro-video-playing','intro-video-fading');
+    if(bootScreen){
+      bootScreen.classList.remove('intro-video-playing','intro-video-fading');
+      bootScreen.classList.add('hidden');
+    }
     if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
     if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
     showMenu();
