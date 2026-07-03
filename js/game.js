@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.26 // TWELVE STAGE EXPANSION PASS',
+    'Version 0.9.27 // STAGE COLOR IDENTITY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -945,7 +945,14 @@
       chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
       floorTint:'rgba(12,48,64,.22)', pathTint:'rgba(0,255,200,.14)', wallTint:'rgba(3,10,18,.98)', wallEdge:'rgba(0,255,200,.34)',
       props:[{x:15,y:3,img:'assets/tilesets/undead/ruin_01.png',w:70,h:68},{x:31,y:4,img:'assets/tilesets/undead/crystal_01.png',w:50,h:50},{x:6,y:12,img:'assets/tilesets/undead/dead_arm_01.png',w:58,h:52},{x:24,y:11,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},{x:35,y:14,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},{x:9,y:22,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},{x:24,y:21,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58}]
-    }
+    },
+    // v117: late-route stages use canvas tint packs so they look different without editing asset PNGs.
+    f007: {floorTint:'rgba(255,96,35,.20)', pathTint:'rgba(255,122,54,.17)', wallTint:'rgba(32,13,6,.98)', wallEdge:'rgba(255,122,54,.38)', blocked:['assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/undead/ruin_01.png','assets/tilesets/forbidden/stone_fence_01.png'], props:[{x:8,y:8,img:'assets/tilesets/forbidden/fire_01.png',w:36,h:36},{x:30,y:12,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},{x:44,y:24,img:'assets/tilesets/undead/bones_03.png',w:52,h:36}]},
+    f008: {floorTint:'rgba(32,145,255,.19)', pathTint:'rgba(70,190,255,.16)', wallTint:'rgba(5,17,30,.98)', wallEdge:'rgba(70,190,255,.40)', blocked:['assets/tilesets/undead/ruin_01.png','assets/tilesets/forbidden/rock_01.png','assets/tilesets/forbidden/stone_fence_02.png'], props:[{x:11,y:9,img:'assets/tilesets/undead/ruin_01.png',w:64,h:62},{x:36,y:15,img:'assets/tilesets/forbidden/rock_02.png',w:42,h:38},{x:52,y:27,img:'assets/tilesets/forbidden/signpost_02.png',w:34,h:44}]},
+    f009: {floorTint:'rgba(210,110,42,.19)', pathTint:'rgba(255,178,84,.15)', wallTint:'rgba(22,15,8,.98)', wallEdge:'rgba(255,178,84,.36)', blocked:['assets/tilesets/forbidden/tree_01.png','assets/tilesets/forbidden/tree_02.png','assets/tilesets/undead/plant_01.png'], props:[{x:9,y:11,img:'assets/tilesets/undead/plant_01.png',w:44,h:42},{x:34,y:20,img:'assets/tilesets/forbidden/bush_01.png',w:44,h:40},{x:50,y:30,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36}]},
+    f010:{floorTint:'rgba(78,42,255,.20)', pathTint:'rgba(125,92,255,.16)', wallTint:'rgba(10,7,29,.98)', wallEdge:'rgba(125,92,255,.41)', blocked:['assets/tilesets/forbidden/crypt_01.png','assets/tilesets/undead/lich_01.png','assets/tilesets/undead/grave_03.png'], props:[{x:13,y:8,img:'assets/tilesets/undead/lich_01.png',w:66,h:78},{x:38,y:18,img:'assets/tilesets/undead/grave_03.png',w:44,h:50},{x:53,y:26,img:'assets/tilesets/forbidden/headstone_01.png',w:34,h:40}]},
+    f011:{floorTint:'rgba(155,245,255,.18)', pathTint:'rgba(200,255,255,.14)', wallTint:'rgba(3,20,28,.98)', wallEdge:'rgba(185,245,255,.40)', blocked:['assets/tilesets/undead/ruin_01.png','assets/tilesets/forbidden/rock_03.png','assets/tilesets/forbidden/crypt_01.png'], props:[{x:10,y:10,img:'assets/tilesets/forbidden/rock_03.png',w:42,h:38},{x:33,y:17,img:'assets/tilesets/undead/ruin_01.png',w:66,h:62},{x:48,y:29,img:'assets/tilesets/undead/skull_pile_01.png',w:58,h:52}]},
+    f012:{floorTint:'rgba(255,205,66,.19)', pathTint:'rgba(255,226,110,.14)', wallTint:'rgba(30,20,3,.98)', wallEdge:'rgba(255,226,110,.43)', blocked:['assets/tilesets/undead/lich_01.png','assets/tilesets/forbidden/crypt_01.png','assets/tilesets/undead/ruin_01.png'], props:[{x:12,y:9,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},{x:31,y:16,img:'assets/tilesets/forbidden/crypt_01.png',w:58,h:58},{x:49,y:30,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58}]}
   };
   function stageVisualPack(){ return stageVisualPacks[state?.currentStage || ''] || null; }
   function stageVisualAssetPaths(){
@@ -961,12 +968,18 @@
   // Drawing those randomly made the map look like broken floating blocks.
   // Walkable tiles now use one consistent procedural ground per stage, while props/interactables still use the imported art.
   const stageFloorStyles = {
-    f001: {base:'#1b1721', alt:'#211b2a', grit:'rgba(202,184,255,.085)', line:'rgba(255,255,255,.045)'},
-    f002: {base:'#22130f', alt:'#2b1710', grit:'rgba(255,180,112,.08)', line:'rgba(255,163,77,.045)'},
-    f003: {base:'#140f22', alt:'#1c1430', grit:'rgba(0,255,255,.09)', line:'rgba(255,88,214,.07)'},
-    f004: {base:'#101820', alt:'#14222b', grit:'rgba(92,170,255,.085)', line:'rgba(92,170,255,.055)'},
-    f005: {base:'#101427', alt:'#151b34', grit:'rgba(190,96,255,.08)', line:'rgba(255,255,255,.052)'},
-    f006: {base:'#07171c', alt:'#0a2228', grit:'rgba(0,255,200,.09)', line:'rgba(0,255,200,.06)'}
+    f001: {base:'#1b1721', alt:'#211b2a', grit:'rgba(202,184,255,.085)', line:'rgba(255,255,255,.045)', accent:'rgba(160,118,255,.12)'},
+    f002: {base:'#22130f', alt:'#2b1710', grit:'rgba(255,180,112,.08)', line:'rgba(255,163,77,.045)', accent:'rgba(255,126,48,.12)'},
+    f003: {base:'#140f22', alt:'#1c1430', grit:'rgba(0,255,255,.09)', line:'rgba(255,88,214,.07)', accent:'rgba(0,255,255,.12)'},
+    f004: {base:'#101820', alt:'#14222b', grit:'rgba(92,170,255,.085)', line:'rgba(92,170,255,.055)', accent:'rgba(92,170,255,.12)'},
+    f005: {base:'#101427', alt:'#151b34', grit:'rgba(190,96,255,.08)', line:'rgba(255,255,255,.052)', accent:'rgba(190,96,255,.12)'},
+    f006: {base:'#07171c', alt:'#0a2228', grit:'rgba(0,255,200,.09)', line:'rgba(0,255,200,.06)', accent:'rgba(0,255,200,.12)'},
+    f007: {base:'#261009', alt:'#34170b', grit:'rgba(255,110,45,.095)', line:'rgba(255,140,60,.065)', accent:'rgba(255,95,35,.13)'},
+    f008: {base:'#061525', alt:'#0a2035', grit:'rgba(66,170,255,.09)', line:'rgba(90,205,255,.06)', accent:'rgba(50,170,255,.13)'},
+    f009: {base:'#1d1608', alt:'#281d0a', grit:'rgba(255,190,90,.085)', line:'rgba(210,140,54,.06)', accent:'rgba(230,150,55,.12)'},
+    f010:{base:'#0c0922', alt:'#120d31', grit:'rgba(130,90,255,.09)', line:'rgba(170,130,255,.065)', accent:'rgba(116,82,255,.14)'},
+    f011:{base:'#061821', alt:'#092532', grit:'rgba(195,255,255,.085)', line:'rgba(185,245,255,.06)', accent:'rgba(170,255,255,.12)'},
+    f012:{base:'#211705', alt:'#2e2108', grit:'rgba(255,220,95,.09)', line:'rgba(255,220,95,.065)', accent:'rgba(255,215,70,.13)'}
   };
   function hashTile(tx,ty,salt=0){
     let n = ((tx+31) * 73856093) ^ ((ty+47) * 19349663) ^ (salt * 83492791);
@@ -989,6 +1002,16 @@
       ctx.moveTo(x + 8, y + 12 + (h2 % 19));
       ctx.lineTo(x + TILE - 9, y + 13 + (h2 % 19));
       ctx.stroke();
+    }
+    if(s.accent && (h2 % 7) === 0){
+      ctx.fillStyle = s.accent;
+      ctx.beginPath();
+      ctx.moveTo(x + 6, y + TILE - 8);
+      ctx.lineTo(x + 18 + (h1 % 14), y + 8);
+      ctx.lineTo(x + 26 + (h2 % 10), y + 8);
+      ctx.lineTo(x + 14, y + TILE - 8);
+      ctx.closePath();
+      ctx.fill();
     }
     // Important tiles get a slightly brighter floor pad so they read as grounded, not pasted on.
     if(c !== '.'){
@@ -3850,11 +3873,21 @@
     // is no longer crushed into black and the player gets a readable light radius.
     const t = Date.now() * 0.00032;
     const stage = currentStageKey();
-    const tint = stage === 'f002'
-      ? {fog:'rgba(70,42,20,.18)', beam:'rgba(255,170,80,.075)', glow:'rgba(255,148,64,.22)'}
-      : stage === 'f003'
-        ? {fog:'rgba(16,22,54,.16)', beam:'rgba(130,190,255,.08)', glow:'rgba(112,215,255,.22)'}
-        : {fog:'rgba(16,18,34,.16)', beam:'rgba(160,230,210,.07)', glow:'rgba(150,255,210,.20)'};
+    const atmosphereTints = {
+      f001:{fog:'rgba(16,18,34,.16)', beam:'rgba(160,230,210,.07)', glow:'rgba(150,255,210,.20)'},
+      f002:{fog:'rgba(70,42,20,.18)', beam:'rgba(255,170,80,.075)', glow:'rgba(255,148,64,.22)'},
+      f003:{fog:'rgba(16,22,54,.16)', beam:'rgba(130,190,255,.08)', glow:'rgba(112,215,255,.22)'},
+      f004:{fog:'rgba(8,30,48,.16)', beam:'rgba(92,170,255,.08)', glow:'rgba(92,170,255,.22)'},
+      f005:{fog:'rgba(28,16,58,.16)', beam:'rgba(190,96,255,.08)', glow:'rgba(190,96,255,.22)'},
+      f006:{fog:'rgba(4,36,35,.16)', beam:'rgba(0,255,200,.08)', glow:'rgba(0,255,200,.22)'},
+      f007:{fog:'rgba(70,22,6,.17)', beam:'rgba(255,122,54,.085)', glow:'rgba(255,100,40,.23)'},
+      f008:{fog:'rgba(4,22,54,.17)', beam:'rgba(70,190,255,.085)', glow:'rgba(70,190,255,.22)'},
+      f009:{fog:'rgba(56,34,6,.16)', beam:'rgba(255,178,84,.078)', glow:'rgba(255,178,84,.20)'},
+      f010:{fog:'rgba(20,10,58,.17)', beam:'rgba(125,92,255,.085)', glow:'rgba(125,92,255,.22)'},
+      f011:{fog:'rgba(4,36,48,.16)', beam:'rgba(185,245,255,.085)', glow:'rgba(185,245,255,.21)'},
+      f012:{fog:'rgba(58,40,4,.18)', beam:'rgba(255,226,110,.085)', glow:'rgba(255,226,110,.24)'}
+    };
+    const tint = atmosphereTints[stage] || atmosphereTints.f001;
     ctx.save();
     ctx.fillStyle=tint.fog;
     ctx.fillRect(0,0,VIEW_W,VIEW_H);
