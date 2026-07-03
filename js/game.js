@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.33 // INTRO VIDEO CLEAN START PASS',
+    'Version 0.9.34 // INTRO VIDEO FADEOUT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.33';
+  const BUILD_VERSION = '0.9.34';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2694,7 +2694,7 @@
     queueAutosave();
     toast('Tutorial tips reset.');
   }
-  let introVideoActive=false;
+  let introVideoActive=false; let introFadeTimer=null;
   function boot(){
     uiState.mode='boot';
     bootDone=true;
@@ -2717,9 +2717,9 @@
       video.preload='auto';
       video.setAttribute('webkit-playsinline','false');
       video.removeAttribute('playsinline');
-      video.onended=finishIntroVideo;
+      video.onended=()=>finishIntroVideo({fade:true});
       video.onerror=()=>{ toast('Intro video missing or blocked. Opening main menu.'); finishIntroVideo(); };
-      video.onwebkitendfullscreen=()=>{ if(introVideoActive && video.currentTime >= Math.max(1,(video.duration||1)-.75)) finishIntroVideo(); };
+      video.onwebkitendfullscreen=()=>{ if(introVideoActive && video.currentTime >= Math.max(1,(video.duration||1)-.75)) finishIntroVideo({fade:true}); };
       video.ontimeupdate=()=>{
         if(prog && Number.isFinite(video.duration) && video.duration>0){
           prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
@@ -2727,7 +2727,7 @@
       };
       try{ video.load(); }catch(err){}
     }
-    if(bootScreen) bootScreen.classList.remove('intro-video-playing');
+    if(bootScreen) bootScreen.classList.remove('intro-video-playing','intro-video-fading');
     if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
   }
   function requestVideoFullscreen(video){
@@ -2755,6 +2755,7 @@
     introVideoActive=true;
     AudioManager.stopMusic();
     document.body.classList.add('fullscreen-mode','intro-video-active');
+    if(bootScreen) bootScreen.classList.remove('intro-video-fading');
     if(bootScreen) bootScreen.classList.add('intro-video-playing');
     if(gate){ gate.classList.add('hidden'); gate.style.display='none'; gate.style.opacity='0'; gate.style.pointerEvents='none'; }
     if(shade){ shade.classList.add('hidden'); shade.style.display='none'; shade.style.opacity='0'; }
@@ -2788,20 +2789,29 @@
     tryPlay();
   }
   function replayIntroVideo(){ startIntroVideo({fromMenu:true}); }
-  function finishIntroVideo(){
-    introVideoActive=false;
-    document.body.classList.remove('intro-video-active');
+  function finishIntroVideo(opts={}){
+    const bootScreen=$('bootScreen');
     const video=$('introVideo');
     const gate=$('introVideoGate');
     const shade=$('introVideoShade');
+    const shouldFade=!!opts.fade;
+    if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
+    if(shouldFade && bootScreen && !bootScreen.classList.contains('hidden')){
+      if(video) video.controls=false;
+      bootScreen.classList.add('intro-video-fading');
+      // Let the video fade out first, then swap into the main menu cleanly.
+      introFadeTimer=setTimeout(()=>finishIntroVideo({fade:false}), 950);
+      return;
+    }
+    introVideoActive=false;
+    document.body.classList.remove('intro-video-active');
     if(video){
       video.pause();
       video.controls=false;
       video.muted=false;
       try{ video.currentTime=0; }catch(err){}
     }
-    const bootScreen=$('bootScreen');
-    if(bootScreen) bootScreen.classList.remove('intro-video-playing');
+    if(bootScreen) bootScreen.classList.remove('intro-video-playing','intro-video-fading');
     if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
     if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
     showMenu();
