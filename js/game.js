@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.32 // INTRO MUSIC ROUTE PASS',
+    'Version 0.9.33 // INTRO VIDEO CLEAN START PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +26,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.32';
+  const BUILD_VERSION = '0.9.33';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -2727,7 +2727,8 @@
       };
       try{ video.load(); }catch(err){}
     }
-    if(gate) gate.classList.remove('hidden');
+    if(bootScreen) bootScreen.classList.remove('intro-video-playing');
+    if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
   }
   function requestVideoFullscreen(video){
     document.body.classList.add('fullscreen-mode','intro-video-active');
@@ -2754,8 +2755,9 @@
     introVideoActive=true;
     AudioManager.stopMusic();
     document.body.classList.add('fullscreen-mode','intro-video-active');
-    if(gate) gate.classList.add('hidden');
-    if(shade) shade.style.display='none';
+    if(bootScreen) bootScreen.classList.add('intro-video-playing');
+    if(gate){ gate.classList.add('hidden'); gate.style.display='none'; gate.style.opacity='0'; gate.style.pointerEvents='none'; }
+    if(shade){ shade.classList.add('hidden'); shade.style.display='none'; shade.style.opacity='0'; }
     if(prog) prog.style.width='0%';
     if(!video){ finishIntroVideo(); return; }
     video.controls=true;
@@ -2774,8 +2776,9 @@
           if(mutedTry && mutedTry.catch){
             mutedTry.then(()=>{ requestVideoFullscreen(video); toast('Video started muted by browser. Use video controls to unmute.'); }).catch(()=>{
               introVideoActive=false;
-              if(gate) gate.classList.remove('hidden');
-              if(shade) shade.style.display='';
+              if(bootScreen) bootScreen.classList.remove('intro-video-playing');
+              if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
+              if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
               toast('Video playback blocked. Tap the start button again.');
             });
           } else requestVideoFullscreen(video);
@@ -2797,8 +2800,10 @@
       video.muted=false;
       try{ video.currentTime=0; }catch(err){}
     }
-    if(gate) gate.classList.remove('hidden');
-    if(shade) shade.style.display='';
+    const bootScreen=$('bootScreen');
+    if(bootScreen) bootScreen.classList.remove('intro-video-playing');
+    if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
+    if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
     showMenu();
   }
   function requestNativeFullscreen(){
