@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.27 // STAGE COLOR IDENTITY PASS',
+    'Version 0.9.28 // EXPANDED LAYOUT OVERHAUL PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,8 +26,8 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.24';
-  const MAP_VERSION = 'sector_stage_v9';
+  const BUILD_VERSION = '0.9.28';
+  const MAP_VERSION = 'sector_stage_v10_layout_overhaul';
   const MUSIC = {
     intro: 'assets/music/intro.mp3',
     level1: 'assets/music/level1.mp3',
@@ -2433,7 +2433,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.24 three-map expansion pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.28 expanded layout overhaul pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -5283,35 +5283,35 @@
     f007BossDefeated: {kicker:'F-007 BOSS DELETED // CORE EXPOSED', title:'CINDERLINE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 7/20.'}]},
     f007Clear: {kicker:'CHAPTER 7 COMPLETE // CINDERLINE CORE', title:'CINDER EXPRESS YARD STABILIZED', tag:'Next route: Flooded Data Vault', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cinderline Core secured. Cinder Express Yard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
     fermilatF007: {kicker:'FERMILAT CONTACT // F-007', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cinder Express Yard. I will reward you with things I definitely did not steal from a vending machine.'}]},
-    f008Intro: {kicker:'F-008 INTRO // FLOODED DATA VAULT', title:'Drowned Archive', tag:'Level Req 36 // Route 8/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Flooded Data Vault is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f008Intro: {kicker:'F-008 INTRO // FLOODED DATA VAULT', title:'Drowned Archive', tag:'Level Req 35 // Route 8/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Flooded Data Vault is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f008Terminal: {kicker:'F-008 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f008Lore: {kicker:'F-008 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f008BossIntro: {kicker:'F-008 BOSS // CORE GUARDIAN', title:'THE DROWNED LIBRARIAN', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: The Drowned Librarian. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f008BossDefeated: {kicker:'F-008 BOSS DELETED // CORE EXPOSED', title:'DROWNED ARCHIVE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 8/20.'}]},
     f008Clear: {kicker:'CHAPTER 8 COMPLETE // DROWNED ARCHIVE CORE', title:'FLOODED DATA VAULT STABILIZED', tag:'Next route: Rust Orchard', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Drowned Archive Core secured. Flooded Data Vault is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
     fermilatF008: {kicker:'FERMILAT CONTACT // F-008', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Flooded Data Vault. I will reward you with things I definitely did not steal from a vending machine.'}]},
-    f009Intro: {kicker:'F-009 INTRO // RUST ORCHARD', title:'Harvest Alloy', tag:'Level Req 42 // Route 9/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Rust Orchard is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f009Intro: {kicker:'F-009 INTRO // RUST ORCHARD', title:'Harvest Alloy', tag:'Level Req 40 // Route 9/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Rust Orchard is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f009Terminal: {kicker:'F-009 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f009Lore: {kicker:'F-009 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f009BossIntro: {kicker:'F-009 BOSS // CORE GUARDIAN', title:'HARVEST ALLOY TYRANT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Harvest Alloy Tyrant. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f009BossDefeated: {kicker:'F-009 BOSS DELETED // CORE EXPOSED', title:'HARVEST ALLOY CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 9/20.'}]},
     f009Clear: {kicker:'CHAPTER 9 COMPLETE // HARVEST ALLOY CORE', title:'RUST ORCHARD STABILIZED', tag:'Next route: Blacksite Observatory', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Harvest Alloy Core secured. Rust Orchard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
     fermilatF009: {kicker:'FERMILAT CONTACT // F-009', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Rust Orchard. I will reward you with things I definitely did not steal from a vending machine.'}]},
-    f010Intro: {kicker:'F-010 INTRO // BLACKSITE OBSERVATORY', title:'Parallax Eye', tag:'Level Req 49 // Route 10/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Blacksite Observatory is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f010Intro: {kicker:'F-010 INTRO // BLACKSITE OBSERVATORY', title:'Parallax Eye', tag:'Level Req 45 // Route 10/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Blacksite Observatory is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f010Terminal: {kicker:'F-010 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f010Lore: {kicker:'F-010 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f010BossIntro: {kicker:'F-010 BOSS // CORE GUARDIAN', title:'PARALLAX WATCHER', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Parallax Watcher. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f010BossDefeated: {kicker:'F-010 BOSS DELETED // CORE EXPOSED', title:'PARALLAX LENS CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 10/20.'}]},
     f010Clear: {kicker:'CHAPTER 10 COMPLETE // PARALLAX LENS CORE', title:'BLACKSITE OBSERVATORY STABILIZED', tag:'Next route: Cryo Basilica', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Parallax Lens Core secured. Blacksite Observatory is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
     fermilatF010: {kicker:'FERMILAT CONTACT // F-010', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Blacksite Observatory. I will reward you with things I definitely did not steal from a vending machine.'}]},
-    f011Intro: {kicker:'F-011 INTRO // CRYO BASILICA', title:'Frozen Prayer', tag:'Level Req 56 // Route 11/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cryo Basilica is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f011Intro: {kicker:'F-011 INTRO // CRYO BASILICA', title:'Frozen Prayer', tag:'Level Req 50 // Route 11/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cryo Basilica is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f011Terminal: {kicker:'F-011 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f011Lore: {kicker:'F-011 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f011BossIntro: {kicker:'F-011 BOSS // CORE GUARDIAN', title:'BASILICA WYRM', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Basilica Wyrm. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f011BossDefeated: {kicker:'F-011 BOSS DELETED // CORE EXPOSED', title:'BASILICA WYRM CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 11/20.'}]},
     f011Clear: {kicker:'CHAPTER 11 COMPLETE // BASILICA WYRM CORE', title:'CRYO BASILICA STABILIZED', tag:'Next route: Ash Crown Citadel', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Basilica Wyrm Core secured. Cryo Basilica is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
     fermilatF011: {kicker:'FERMILAT CONTACT // F-011', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cryo Basilica. I will reward you with things I definitely did not steal from a vending machine.'}]},
-    f012Intro: {kicker:'F-012 INTRO // ASH CROWN CITADEL', title:'Crown of Static', tag:'Level Req 63 // Route 12/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Citadel is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
+    f012Intro: {kicker:'F-012 INTRO // ASH CROWN CITADEL', title:'Crown of Static', tag:'Level Req 55 // Route 12/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Citadel is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f012Terminal: {kicker:'F-012 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f012Lore: {kicker:'F-012 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f012BossIntro: {kicker:'F-012 BOSS // CORE GUARDIAN', title:'ASH CROWN REGENT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Ash Crown Regent. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
@@ -5343,6 +5343,4601 @@
     {id:'twelve_stage_route', metric:'fractures', title:'Twelve-Stage Route', desc:'Complete 12 fracture extractions in the expanded route chain.', target:12, reward:{credits:1200, xp:1100, items:{'Vector Cell':8,'Rust Core':6,'Corrupted Catalyst':6,'Operator Shard: Vyra':12}}},
     {id:'road_to_twenty', metric:'bosses', title:'Road to 20 Stages', desc:'Defeat 10 boss-class guardians while scaling toward the planned 20-stage / Lv 99 endgame.', target:10, reward:{credits:1500, xp:1300, items:{'Vector Cell':10,'Rust Core':8,'Corrupted Catalyst':8}}}
   );
+
+
+
+  // v118: Expanded Layout Overhaul. All playable stages are rebuilt into bigger, clearer routes.
+  // The PNG assets are untouched: this swaps the map data, encounter tables, and decorative prop placement only.
+  const V118_STAGE_LEVEL_REQS = {
+    "f001": 1,
+    "f002": 5,
+    "f003": 10,
+    "f004": 15,
+    "f005": 20,
+    "f006": 25,
+    "f007": 30,
+    "f008": 35,
+    "f009": 40,
+    "f010": 45,
+    "f011": 50,
+    "f012": 55
+};
+  const V118_STAGE_MAPS = {
+    "f001": [
+        "########################################################################",
+        "########################################################################",
+        "##..............###########################.......................######",
+        "##..............###.................#######.......................######",
+        "##..P.....S.....###.................#######.......................######",
+        "##..................................#######...............C.......######",
+        "##..........................E.....................................######",
+        "##...................................................E............######",
+        "##..............###...C...........................................######",
+        "##..............###.................#######.......................######",
+        "###################.................#######.......................######",
+        "###################.................#######.......................######",
+        "##########################...###########################################",
+        "##########################...###########################################",
+        "##########################...###########################################",
+        "##########################...###########################################",
+        "##########################...###########################################",
+        "#####........................##..................#######################",
+        "#####.............C..........##..................#######################",
+        "#####........................##..................#######################",
+        "#####........................##.........E........#######################",
+        "#####........................##..................#######################",
+        "#####........E.................................................#########",
+        "#####...........................................................########",
+        "#####.................................H.........................########",
+        "#####.....................#####..............E...############...########",
+        "#####.....................#####..................############...########",
+        "#####.....................#####..................######..............###",
+        "##############...##############...C..............######..............###",
+        "##############...######################################.........E....###",
+        "##############...######################################..............###",
+        "##############...#####################################D......B.....X.###",
+        "#####...................##############################D..............###",
+        "#####...................##############################D..............###",
+        "#####......L............###############################....E......C..###",
+        "#####......E............###############################..............###",
+        "#####...C...............###############################..............###",
+        "#####...................################################################",
+        "#####...................################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f002": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "######################################################..............####",
+        "#####......................###########################..............####",
+        "#####......................###########################..............####",
+        "#####......................###########################.....E........####",
+        "#####.........E............##########################D.......B..E.X.####",
+        "#####.............................###################D..............####",
+        "#####..............................##################D..............####",
+        "#####..............................###################..............####",
+        "#####......C...............#####...####################...##############",
+        "#####......................#####...####################...##############",
+        "#####......................#####...####################...##############",
+        "################################...##########......................#####",
+        "################################...##########......................#####",
+        "################################...##########......C...............#####",
+        "########################..................###......................#####",
+        "########################.......C..........###........E.............#####",
+        "########################..................###......................#####",
+        "########################.....H......E..............................#####",
+        "########################...........................................#####",
+        "########################........................E..................#####",
+        "########################..................###......................#####",
+        "########################..................###......................#####",
+        "############################...#########################################",
+        "############################...#########################################",
+        "############################...#########################################",
+        "####################..................#######....................#######",
+        "##..............####..................#######....................#######",
+        "##..............####......C...........#######...............E....#######",
+        "##..............####..............................L..............#######",
+        "##.......S.....................E.................................#######",
+        "##..P..................C...................D..............C......#######",
+        "##....................................#######....................#######",
+        "##..............####..................#######....................#######",
+        "##..............####..................##################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f003": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "###.............####..............##########......................######",
+        "###.............####..............##########......................######",
+        "###.............####..............##########...C.......E..........######",
+        "###..P....S................E......................................######",
+        "###...............................................................######",
+        "###...............................................................######",
+        "###.............####..............######################################",
+        "###.............####..............######################################",
+        "##########################...######################.................####",
+        "##########################...######################.................####",
+        "##########################...######################.................####",
+        "##########################...######################.................####",
+        "##########################....................#####.......E.........####",
+        "##########################....................#####.................####",
+        "##########################....................#####.................####",
+        "####..................####...........E........#####.............C...####",
+        "####................................................................####",
+        "####...........................................D....................####",
+        "####................................................................####",
+        "####........E.........######...............C..#####.................####",
+        "####..................######..................############...###########",
+        "####.............C....######..................############...###########",
+        "####..................##############...###################...###########",
+        "####.......L..........##############...###################...###########",
+        "####..................##############...###################...###########",
+        "####..................##############...###################...###########",
+        "####..................##############...###############..............####",
+        "####..................###....................#########..............####",
+        "#########################.....C..............#########..............####",
+        "#########################....................########D..........E...####",
+        "#########################........H...........########D.......B....X.####",
+        "#########################....................########D.....C........####",
+        "#########################.........E..........#########....E.........####",
+        "#########################....................#########..............####",
+        "#########################....................#########..............####",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f004": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "##..............###..................#####........................######",
+        "##..............###..................#####........................######",
+        "##..............###..................#####....C...................######",
+        "##..P.....S.................E.....................................######",
+        "##..................................................E.............######",
+        "##...............................C................................######",
+        "##..............###..................#####........................######",
+        "##..............###..................#####........................######",
+        "###########################...############........................######",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "################......................##################################",
+        "################....C.................##################################",
+        "################......................######.......................#####",
+        "################...................................................#####",
+        "################.......E.H.........................................#####",
+        "################...................................................#####",
+        "################......................######.......D....E..........#####",
+        "################......................######.......................#####",
+        "################......................######..................C....#####",
+        "##########################...###############.......................#####",
+        "##########################...###############.......................#####",
+        "##########################...#########################...###############",
+        "#######...........................####################...###############",
+        "#######........................C..###################................###",
+        "#######...........................###################................###",
+        "#######...........E...............###################................###",
+        "#######.......L..............E....##################D.....E..........###",
+        "#######...........................##################D........B..E..X.###",
+        "#######...C.......................###################................###",
+        "#######...........................###################................###",
+        "#####################################################................###",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f005": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "###.............####................#######....................#########",
+        "###.............####................#######....................#########",
+        "###.............####...........C....#######.....C..............#########",
+        "###..P....S....................................................#########",
+        "###........................E.........................E.........#########",
+        "###............................................................#########",
+        "###.............####................#######....................#########",
+        "###.............####................#######....................#########",
+        "####################................#######....................#########",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "########################......................##########################",
+        "########################......................####.................#####",
+        "#####................###..............E.......####.................#####",
+        "#####................###......................####.................#####",
+        "#####.............C...............H................................#####",
+        "#####...........................................D.........E........#####",
+        "#####........E.....................................................#####",
+        "#####................###...................C..####.................#####",
+        "#####................###......................####.................#####",
+        "#####................###......................####.................#####",
+        "#####................#############################.................#####",
+        "#####................####################################...############",
+        "############...##########################################...############",
+        "############...##########################################...############",
+        "############...##########################################...############",
+        "#######.......................######################................####",
+        "#######.......................######################................####",
+        "#######.................C.....######################................####",
+        "#######............................................D......E.....C...####",
+        "#######.....L.......E..............................D........B.....X.####",
+        "#######............................................D...........E....####",
+        "#######.......................######################................####",
+        "#######.......................######################................####",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f006": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "####....................################################################",
+        "####....................################################################",
+        "####................C...################################################",
+        "####......L....E........################################################",
+        "####....................################################################",
+        "####....................################################################",
+        "####....................################################################",
+        "#############...######....................##############################",
+        "#############...######.......C............######..................######",
+        "#############...######....................######..................######",
+        "#############.....................................C...............######",
+        "#############.....................E...............................######",
+        "##############................................D.......E...........######",
+        "######################....................######..................######",
+        "######################....................######..............E...######",
+        "#################################...############..................######",
+        "#################################...############..................######",
+        "#########################..................#####..................######",
+        "#########################..................#############...#############",
+        "#########################.............C....#############...#############",
+        "#########################......H...........#############...#############",
+        "#########################.........E........#############...#############",
+        "#########################..................#############...#############",
+        "#########################..................#############...#############",
+        "#########################..................#########................####",
+        "#############################...####################................####",
+        "#############################...####################...........C....####",
+        "######################................#############D.....E..........####",
+        "##................####................#############D........B.....X.####",
+        "##................####...C............#############D................####",
+        "##....................................##############................####",
+        "##..P......S.................E........##############............E...####",
+        "##....................................##############................####",
+        "##................####................##############................####",
+        "##................####................##################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f007": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "####################..................#####......................#######",
+        "####################..................#####......................#######",
+        "####################..................#####....C.................#######",
+        "####################.......E.....................................#######",
+        "####################................................E............#######",
+        "####################..............C..............................#######",
+        "####################..................#####......................#######",
+        "####################..................#####......................#######",
+        "####################..................#####......................#######",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "##..............###...................##################################",
+        "##..............###...................#######....................#######",
+        "##..............###................C..#######....................#######",
+        "##............................................................C..#######",
+        "##..P.....S................E.....................................#######",
+        "##.......................................D...........E...........#######",
+        "##..............###...................#######....................#######",
+        "##..............###...................#######....................#######",
+        "###################...................#######....................#######",
+        "###########################...###############....................#######",
+        "###########################...########################...###############",
+        "###########################...########################...###############",
+        "###########################...########################...###############",
+        "#######............................###################...............###",
+        "#######............................###################...............###",
+        "#######....C.......................###################...............###",
+        "#######...........E.......H........##################D....E..........###",
+        "#######......L.................E...##################D.......B...E.X.###",
+        "#######............................###################..........C....###",
+        "#######............................###################...............###",
+        "#######............................###################...............###",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f008": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "###.............###...................######.....................#######",
+        "###.............###...................######.....................#######",
+        "###.............###...................######.....................#######",
+        "###..P....S.................E....................................#######",
+        "###.................................................E............#######",
+        "###..............................C...............................#######",
+        "###.............###...................######.....................#######",
+        "###.............###...................######...C.................#######",
+        "###########################...##############.....................#######",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "###########################...##########################################",
+        "#######........................#########################################",
+        "#######........................#####.....................###############",
+        "#######........................#####.....................###############",
+        "#######............H...........#####..............C......###############",
+        "#######.......E..........................................###############",
+        "#######...........................D..........E...........###############",
+        "#######..................................................###############",
+        "#######................C.......#####.....................###############",
+        "#######........................#####.....................###############",
+        "#######........................#####....................E###############",
+        "##################...###############.....................###############",
+        "##################...########################...########################",
+        "##################...########################...########################",
+        "##################...########################...########################",
+        "##################...########################...#####................###",
+        "############......................###########...#####................###",
+        "############......................###########...#####................###",
+        "############...C..................###########.......D.....E..........###",
+        "############........................................D........B..E..X.###",
+        "############......L...........E.....................D................###",
+        "############.....................................................C...###",
+        "############......................###################................###",
+        "############......................###################................###",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f009": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "############......................##################................####",
+        "############......................##################................####",
+        "############...................E..##################...........C....####",
+        "############.......L..............##########..............E.........####",
+        "############.............E........#########........D........B.....X.####",
+        "############......................#########........D............E...####",
+        "############..................C...#########...#####D................####",
+        "############......................#########...######................####",
+        "############......................#########...######................####",
+        "#################...#######################...##########################",
+        "#################...#######################...##########################",
+        "#################...#######################...##########################",
+        "#################...##############....................##################",
+        "########....................######....................##################",
+        "########....................######..............C.....##################",
+        "########....................######....................##################",
+        "########........E......H...................E..........##################",
+        "########..............................................##################",
+        "########..............................................##################",
+        "########....C..................###....................##################",
+        "########.......................###....................##################",
+        "############################...#########################################",
+        "############################...#########################################",
+        "############################...#########################################",
+        "############################...#########################D###############",
+        "####################..................######....................########",
+        "####################..................######....................########",
+        "##..............####..................######....................########",
+        "##..............####............................................########",
+        "##..............####.........E......................E...........########",
+        "##..............................................................########",
+        "##..P.....S.............C.............######....................########",
+        "##....................................######.............C......########",
+        "##..............####..................######....................########",
+        "##..............########################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f010": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "####................########..................##########################",
+        "####................########..................##########################",
+        "####...C............########..............C...##########################",
+        "####.........E......########.....L............##########################",
+        "####.X.....B........#D######........E.........##########################",
+        "####................#D######..................##########################",
+        "####....E...........#D######..................##########################",
+        "####................########..................##########################",
+        "####................########..................##########################",
+        "#############...###################...##################################",
+        "#############...###################...##################################",
+        "#############...###################...##################################",
+        "#####..................####...................####.................#####",
+        "#####..................####...................####.................#####",
+        "#####..............C...####...................####.................#####",
+        "#####..................####...................####.................#####",
+        "#####.........E....................H..E...................E........#####",
+        "#####...........................................D..................#####",
+        "#####......................................C.......................#####",
+        "#####..................####...................####.................#####",
+        "#####..................####...................####.................#####",
+        "#####..................####...................####.................#####",
+        "###################################...##################################",
+        "###################################...##################################",
+        "###################################...##################################",
+        "###################################...##################################",
+        "#######.................###########...############.................#####",
+        "#######.................###########...############.................#####",
+        "#######.................####................######.................#####",
+        "#######.................####................######.................#####",
+        "#######........E....C.....................................E........#####",
+        "#######............................P....S..........................#####",
+        "#######.......................................................C....#####",
+        "#######.................####................######.................#####",
+        "############################................############################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f011": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "############################................############################",
+        "############################...C............############################",
+        "############################................############################",
+        "#######...........................E..............................#######",
+        "#######.............................B....X.......................#######",
+        "#######.................C..................................C.....#######",
+        "#######................................E.........................#######",
+        "#######.......L...E..................................E...........#######",
+        "#######..........................................................#######",
+        "#######..........................................................#######",
+        "#######......................######DDD#####...E..................#######",
+        "#######......................######...#####......................#######",
+        "#######......................######...#####......................#######",
+        "###################################...##################################",
+        "#########################......................#########################",
+        "#########################......................#########################",
+        "#########################......................#########################",
+        "#########################.........E............#########################",
+        "########........................................................########",
+        "########............................H...........................########",
+        "########....................C...................................########",
+        "########.........E........................D............E........########",
+        "########........................................................########",
+        "########........................................................########",
+        "########...................########...#######................C..########",
+        "########....C..............########...#######...................########",
+        "########...................########...#######...................########",
+        "###################################...##################################",
+        "###################################...##################################",
+        "############################................############################",
+        "############################................############################",
+        "############################................############################",
+        "############################.......P....S...############################",
+        "############################................############################",
+        "############################................############################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ],
+    "f012": [
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################",
+        "########...............###########################..................####",
+        "########...............###########################..................####",
+        "########...............###########################............C.....####",
+        "########........E......###########################..................####",
+        "########.....L.........##...................######.......E..........####",
+        "########...............##...................####D#..................####",
+        "########............C..##...C...............######..................####",
+        "########............................................................####",
+        "########................D........E..................................####",
+        "###############.....................................................####",
+        "#########################...................############################",
+        "#########################...................############################",
+        "#################################...####################################",
+        "#################################...####################################",
+        "#####....................########...#########......................#####",
+        "#####.......................................#......................#####",
+        "#####.......................................#......................#####",
+        "#####.......................................#......................#####",
+        "#####.........E..................H...................E.............#####",
+        "#####..............................................................#####",
+        "#####..............C.............E.............................C...#####",
+        "#####...................................C...#......................#####",
+        "#####.......................................#......................#####",
+        "#########...#############...................###########...##############",
+        "#########...###########################################...##############",
+        "#########...########################################................####",
+        "#########...########################################................####",
+        "###..............###################################................####",
+        "###..............##################################D......E.........####",
+        "###..............##################################D........B...E..X####",
+        "###..P....S......###################################................####",
+        "###..............###################################................####",
+        "###..............###################################................####",
+        "########################################################################",
+        "########################################################################",
+        "########################################################################"
+    ]
+};
+  const V118_ENCOUNTER_SLOTS = {
+    "f001": {
+        "28,6": {
+            "type": "anomaly",
+            "index": 7
+        },
+        "53,7": {
+            "type": "anomaly",
+            "index": 12
+        },
+        "40,20": {
+            "type": "anomaly",
+            "index": 17
+        },
+        "13,22": {
+            "type": "anomaly",
+            "index": 22
+        },
+        "45,25": {
+            "type": "anomaly",
+            "index": 27
+        },
+        "64,29": {
+            "type": "anomaly",
+            "index": 32
+        },
+        "59,34": {
+            "type": "anomaly",
+            "index": 37
+        },
+        "11,35": {
+            "type": "anomaly",
+            "index": 42
+        },
+        "61,31": {
+            "type": "boss",
+            "index": 7
+        }
+    },
+    "f002": {
+        "59,7": {
+            "type": "anomaly",
+            "index": 14
+        },
+        "14,8": {
+            "type": "anomaly",
+            "index": 19
+        },
+        "64,8": {
+            "type": "anomaly",
+            "index": 24
+        },
+        "53,19": {
+            "type": "anomaly",
+            "index": 29
+        },
+        "36,21": {
+            "type": "anomaly",
+            "index": 34
+        },
+        "48,23": {
+            "type": "anomaly",
+            "index": 39
+        },
+        "60,31": {
+            "type": "anomaly",
+            "index": 44
+        },
+        "31,33": {
+            "type": "anomaly",
+            "index": 49
+        },
+        "61,8": {
+            "type": "boss",
+            "index": 10
+        }
+    },
+    "f003": {
+        "55,5": {
+            "type": "anomaly",
+            "index": 21
+        },
+        "27,6": {
+            "type": "anomaly",
+            "index": 26
+        },
+        "58,15": {
+            "type": "anomaly",
+            "index": 31
+        },
+        "37,18": {
+            "type": "anomaly",
+            "index": 36
+        },
+        "12,22": {
+            "type": "anomaly",
+            "index": 41
+        },
+        "64,32": {
+            "type": "anomaly",
+            "index": 46
+        },
+        "34,35": {
+            "type": "anomaly",
+            "index": 51
+        },
+        "58,35": {
+            "type": "anomaly",
+            "index": 56
+        },
+        "61,33": {
+            "type": "boss",
+            "index": 13
+        }
+    },
+    "f004": {
+        "28,7": {
+            "type": "anomaly",
+            "index": 28
+        },
+        "52,8": {
+            "type": "anomaly",
+            "index": 33
+        },
+        "23,22": {
+            "type": "anomaly",
+            "index": 38
+        },
+        "56,24": {
+            "type": "anomaly",
+            "index": 43
+        },
+        "18,33": {
+            "type": "anomaly",
+            "index": 48
+        },
+        "29,34": {
+            "type": "anomaly",
+            "index": 53
+        },
+        "58,34": {
+            "type": "anomaly",
+            "index": 58
+        },
+        "64,35": {
+            "type": "anomaly",
+            "index": 3
+        },
+        "61,35": {
+            "type": "boss",
+            "index": 16
+        }
+    },
+    "f005": {
+        "27,7": {
+            "type": "anomaly",
+            "index": 35
+        },
+        "53,7": {
+            "type": "anomaly",
+            "index": 40
+        },
+        "38,18": {
+            "type": "anomaly",
+            "index": 45
+        },
+        "58,21": {
+            "type": "anomaly",
+            "index": 50
+        },
+        "13,22": {
+            "type": "anomaly",
+            "index": 55
+        },
+        "58,34": {
+            "type": "anomaly",
+            "index": 0
+        },
+        "20,35": {
+            "type": "anomaly",
+            "index": 5
+        },
+        "63,36": {
+            "type": "anomaly",
+            "index": 10
+        },
+        "60,35": {
+            "type": "boss",
+            "index": 19
+        }
+    },
+    "f006": {
+        "15,7": {
+            "type": "anomaly",
+            "index": 42
+        },
+        "34,15": {
+            "type": "anomaly",
+            "index": 47
+        },
+        "54,16": {
+            "type": "anomaly",
+            "index": 52
+        },
+        "62,18": {
+            "type": "anomaly",
+            "index": 57
+        },
+        "34,25": {
+            "type": "anomaly",
+            "index": 2
+        },
+        "57,31": {
+            "type": "anomaly",
+            "index": 7
+        },
+        "29,35": {
+            "type": "anomaly",
+            "index": 12
+        },
+        "64,35": {
+            "type": "anomaly",
+            "index": 17
+        },
+        "60,32": {
+            "type": "boss",
+            "index": 22
+        }
+    },
+    "f007": {
+        "27,8": {
+            "type": "anomaly",
+            "index": 49
+        },
+        "52,9": {
+            "type": "anomaly",
+            "index": 54
+        },
+        "27,22": {
+            "type": "anomaly",
+            "index": 59
+        },
+        "53,23": {
+            "type": "anomaly",
+            "index": 4
+        },
+        "18,34": {
+            "type": "anomaly",
+            "index": 9
+        },
+        "58,34": {
+            "type": "anomaly",
+            "index": 14
+        },
+        "31,35": {
+            "type": "anomaly",
+            "index": 19
+        },
+        "65,35": {
+            "type": "anomaly",
+            "index": 24
+        },
+        "61,35": {
+            "type": "boss",
+            "index": 25
+        }
+    },
+    "f008": {
+        "28,6": {
+            "type": "anomaly",
+            "index": 56
+        },
+        "52,7": {
+            "type": "anomaly",
+            "index": 1
+        },
+        "14,20": {
+            "type": "anomaly",
+            "index": 6
+        },
+        "45,21": {
+            "type": "anomaly",
+            "index": 11
+        },
+        "56,25": {
+            "type": "anomaly",
+            "index": 16
+        },
+        "58,33": {
+            "type": "anomaly",
+            "index": 21
+        },
+        "64,34": {
+            "type": "anomaly",
+            "index": 26
+        },
+        "30,35": {
+            "type": "anomaly",
+            "index": 31
+        },
+        "61,34": {
+            "type": "boss",
+            "index": 28
+        }
+    },
+    "f009": {
+        "31,6": {
+            "type": "anomaly",
+            "index": 3
+        },
+        "58,7": {
+            "type": "anomaly",
+            "index": 8
+        },
+        "25,8": {
+            "type": "anomaly",
+            "index": 13
+        },
+        "64,9": {
+            "type": "anomaly",
+            "index": 18
+        },
+        "16,20": {
+            "type": "anomaly",
+            "index": 23
+        },
+        "43,20": {
+            "type": "anomaly",
+            "index": 28
+        },
+        "29,33": {
+            "type": "anomaly",
+            "index": 33
+        },
+        "52,33": {
+            "type": "anomaly",
+            "index": 38
+        },
+        "60,8": {
+            "type": "boss",
+            "index": 31
+        }
+    },
+    "f010": {
+        "13,7": {
+            "type": "anomaly",
+            "index": 10
+        },
+        "36,8": {
+            "type": "anomaly",
+            "index": 15
+        },
+        "8,10": {
+            "type": "anomaly",
+            "index": 20
+        },
+        "14,20": {
+            "type": "anomaly",
+            "index": 25
+        },
+        "38,20": {
+            "type": "anomaly",
+            "index": 30
+        },
+        "58,20": {
+            "type": "anomaly",
+            "index": 35
+        },
+        "15,34": {
+            "type": "anomaly",
+            "index": 40
+        },
+        "58,34": {
+            "type": "anomaly",
+            "index": 45
+        },
+        "11,8": {
+            "type": "boss",
+            "index": 34
+        }
+    },
+    "f011": {
+        "34,7": {
+            "type": "anomaly",
+            "index": 17
+        },
+        "39,10": {
+            "type": "anomaly",
+            "index": 22
+        },
+        "18,11": {
+            "type": "anomaly",
+            "index": 27
+        },
+        "53,11": {
+            "type": "anomaly",
+            "index": 32
+        },
+        "46,14": {
+            "type": "anomaly",
+            "index": 37
+        },
+        "34,21": {
+            "type": "anomaly",
+            "index": 42
+        },
+        "17,25": {
+            "type": "anomaly",
+            "index": 47
+        },
+        "55,25": {
+            "type": "anomaly",
+            "index": 52
+        },
+        "36,8": {
+            "type": "boss",
+            "index": 2
+        }
+    },
+    "f012": {
+        "16,9": {
+            "type": "anomaly",
+            "index": 24
+        },
+        "57,10": {
+            "type": "anomaly",
+            "index": 29
+        },
+        "33,14": {
+            "type": "anomaly",
+            "index": 34
+        },
+        "14,24": {
+            "type": "anomaly",
+            "index": 39
+        },
+        "53,24": {
+            "type": "anomaly",
+            "index": 44
+        },
+        "33,26": {
+            "type": "anomaly",
+            "index": 49
+        },
+        "58,34": {
+            "type": "anomaly",
+            "index": 54
+        },
+        "64,35": {
+            "type": "anomaly",
+            "index": 59
+        },
+        "60,35": {
+            "type": "boss",
+            "index": 5
+        }
+    }
+};
+  const V118_STAGE_ENCOUNTERS = {
+    "f001": {
+        "28,6": {
+            "id": "AN-011",
+            "display": "Grave Gnawer",
+            "hp": 63,
+            "atk": 7,
+            "xp": 35,
+            "credits": 18,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,7": {
+            "id": "AN-012",
+            "display": "Lantern Ghoul",
+            "hp": 74,
+            "atk": 9,
+            "xp": 44,
+            "credits": 23,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "40,20": {
+            "id": "AN-013",
+            "display": "Coffin Ripper",
+            "hp": 85,
+            "atk": 11,
+            "xp": 53,
+            "credits": 28,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "13,22": {
+            "id": "AN-014",
+            "display": "Mossbone Crawler",
+            "hp": 96,
+            "atk": 13,
+            "xp": 62,
+            "credits": 33,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "45,25": {
+            "id": "AN-015",
+            "display": "Crypt Mite",
+            "hp": 107,
+            "atk": 7,
+            "xp": 71,
+            "credits": 38,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,29": {
+            "id": "AN-016",
+            "display": "Hollow Sexton",
+            "hp": 118,
+            "atk": 9,
+            "xp": 80,
+            "credits": 43,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "59,34": {
+            "id": "AN-017",
+            "display": "Skullroot Imp",
+            "hp": 129,
+            "atk": 11,
+            "xp": 89,
+            "credits": 48,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "11,35": {
+            "id": "AN-018",
+            "display": "Rot Choir Wretch",
+            "hp": 140,
+            "atk": 13,
+            "xp": 98,
+            "credits": 53,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Forbidden Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,31": {
+            "id": "BOSS-001",
+            "display": "Graveyard Bell Keeper",
+            "hp": 188,
+            "atk": 14,
+            "xp": 178,
+            "credits": 98,
+            "loot": [
+                "Grave Bell Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Grave Bell Core",
+            "note": "Expanded-layout boss guarding the locked wing of Forbidden Graveyard. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f002": {
+        "59,7": {
+            "id": "AN-021",
+            "display": "Ashline Raider",
+            "hp": 75,
+            "atk": 8,
+            "xp": 55,
+            "credits": 26,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "14,8": {
+            "id": "AN-022",
+            "display": "Sootjaw Hyena",
+            "hp": 86,
+            "atk": 10,
+            "xp": 64,
+            "credits": 31,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,8": {
+            "id": "AN-023",
+            "display": "Outpost Husk",
+            "hp": 97,
+            "atk": 12,
+            "xp": 73,
+            "credits": 36,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,19": {
+            "id": "AN-024",
+            "display": "Burnt Coil Serpent",
+            "hp": 108,
+            "atk": 14,
+            "xp": 82,
+            "credits": 41,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "36,21": {
+            "id": "AN-025",
+            "display": "Cinderclaw",
+            "hp": 119,
+            "atk": 8,
+            "xp": 91,
+            "credits": 46,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "48,23": {
+            "id": "AN-026",
+            "display": "Signal Leech",
+            "hp": 130,
+            "atk": 10,
+            "xp": 100,
+            "credits": 51,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "60,31": {
+            "id": "AN-027",
+            "display": "Scrap Maw",
+            "hp": 141,
+            "atk": 12,
+            "xp": 109,
+            "credits": 56,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "31,33": {
+            "id": "AN-028",
+            "display": "Wasteland Brooder",
+            "hp": 152,
+            "atk": 14,
+            "xp": 118,
+            "credits": 61,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Wastes Outpost. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,8": {
+            "id": "BOSS-002",
+            "display": "Ashveil Spider Mother",
+            "hp": 220,
+            "atk": 16,
+            "xp": 250,
+            "credits": 130,
+            "loot": [
+                "Ashveil Mother Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Ashveil Mother Core",
+            "note": "Expanded-layout boss guarding the locked wing of Ash Wastes Outpost. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f003": {
+        "55,5": {
+            "id": "AN-031",
+            "display": "Neon Mourner",
+            "hp": 90,
+            "atk": 10,
+            "xp": 80,
+            "credits": 36,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "27,6": {
+            "id": "AN-032",
+            "display": "Static Ghoul",
+            "hp": 101,
+            "atk": 12,
+            "xp": 89,
+            "credits": 41,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,15": {
+            "id": "AN-033",
+            "display": "Glitchbone Stalker",
+            "hp": 112,
+            "atk": 14,
+            "xp": 98,
+            "credits": 46,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "37,18": {
+            "id": "AN-034",
+            "display": "Violet Cryptling",
+            "hp": 123,
+            "atk": 16,
+            "xp": 107,
+            "credits": 51,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "12,22": {
+            "id": "AN-035",
+            "display": "Dead Frequency Leech",
+            "hp": 134,
+            "atk": 10,
+            "xp": 116,
+            "credits": 56,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,32": {
+            "id": "AN-036",
+            "display": "Prism Skull Wraith",
+            "hp": 145,
+            "atk": 12,
+            "xp": 125,
+            "credits": 61,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "34,35": {
+            "id": "AN-037",
+            "display": "Cyan Hollow",
+            "hp": 156,
+            "atk": 14,
+            "xp": 134,
+            "credits": 66,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,35": {
+            "id": "AN-038",
+            "display": "Gravewave Shambler",
+            "hp": 167,
+            "atk": 16,
+            "xp": 143,
+            "credits": 71,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Neon Graveyard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,33": {
+            "id": "BOSS-003",
+            "display": "Duskwither Shade Wraith",
+            "hp": 260,
+            "atk": 18,
+            "xp": 340,
+            "credits": 170,
+            "loot": [
+                "Duskwither Wraith Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Duskwither Wraith Core",
+            "note": "Expanded-layout boss guarding the locked wing of Neon Graveyard. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f004": {
+        "28,7": {
+            "id": "AN-041",
+            "display": "Rail Static Revenant",
+            "hp": 105,
+            "atk": 12,
+            "xp": 105,
+            "credits": 46,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "52,8": {
+            "id": "AN-042",
+            "display": "Tunnel Wretch",
+            "hp": 116,
+            "atk": 14,
+            "xp": 114,
+            "credits": 51,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "23,22": {
+            "id": "AN-043",
+            "display": "Ashline Stalker",
+            "hp": 127,
+            "atk": 16,
+            "xp": 123,
+            "credits": 56,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "56,24": {
+            "id": "AN-044",
+            "display": "Cinder Railhound",
+            "hp": 138,
+            "atk": 18,
+            "xp": 132,
+            "credits": 61,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "18,33": {
+            "id": "AN-045",
+            "display": "Platform Banshee",
+            "hp": 149,
+            "atk": 12,
+            "xp": 141,
+            "credits": 66,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "29,34": {
+            "id": "AN-046",
+            "display": "Transit Gnawer",
+            "hp": 160,
+            "atk": 14,
+            "xp": 150,
+            "credits": 71,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,34": {
+            "id": "AN-047",
+            "display": "Switchyard Horror",
+            "hp": 171,
+            "atk": 16,
+            "xp": 159,
+            "credits": 76,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,35": {
+            "id": "AN-048",
+            "display": "Ticketless Dead",
+            "hp": 182,
+            "atk": 18,
+            "xp": 168,
+            "credits": 81,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Transit Ruins. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,35": {
+            "id": "BOSS-004",
+            "display": "Transit Nexus Tyrant",
+            "hp": 300,
+            "atk": 20,
+            "xp": 430,
+            "credits": 210,
+            "loot": [
+                "Transit Nexus Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Transit Nexus Core",
+            "note": "Expanded-layout boss guarding the locked wing of Transit Ruins. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f005": {
+        "27,7": {
+            "id": "AN-051",
+            "display": "Prism Splinter",
+            "hp": 120,
+            "atk": 14,
+            "xp": 130,
+            "credits": 56,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,7": {
+            "id": "AN-052",
+            "display": "Glasslung Horror",
+            "hp": 131,
+            "atk": 16,
+            "xp": 139,
+            "credits": 61,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "38,18": {
+            "id": "AN-053",
+            "display": "Lab Shardling",
+            "hp": 142,
+            "atk": 18,
+            "xp": 148,
+            "credits": 66,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,21": {
+            "id": "AN-054",
+            "display": "Storm Gel Serpent",
+            "hp": 153,
+            "atk": 20,
+            "xp": 157,
+            "credits": 71,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "13,22": {
+            "id": "AN-055",
+            "display": "Mirror Husk",
+            "hp": 164,
+            "atk": 14,
+            "xp": 166,
+            "credits": 76,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,34": {
+            "id": "AN-056",
+            "display": "Violet Scalpel",
+            "hp": 175,
+            "atk": 16,
+            "xp": 175,
+            "credits": 81,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "20,35": {
+            "id": "AN-057",
+            "display": "Glass Choir",
+            "hp": 186,
+            "atk": 18,
+            "xp": 184,
+            "credits": 86,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "63,36": {
+            "id": "AN-058",
+            "display": "Containment Wretch",
+            "hp": 197,
+            "atk": 20,
+            "xp": 193,
+            "credits": 91,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Glass Storm Lab. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "60,35": {
+            "id": "BOSS-005",
+            "display": "Prism Wound Matriarch",
+            "hp": 340,
+            "atk": 23,
+            "xp": 520,
+            "credits": 250,
+            "loot": [
+                "Prism Wound Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Prism Wound Core",
+            "note": "Expanded-layout boss guarding the locked wing of Glass Storm Lab. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f006": {
+        "15,7": {
+            "id": "AN-061",
+            "display": "Core Parasite",
+            "hp": 135,
+            "atk": 15,
+            "xp": 155,
+            "credits": 66,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "34,15": {
+            "id": "AN-062",
+            "display": "Vector Spire Imp",
+            "hp": 146,
+            "atk": 17,
+            "xp": 164,
+            "credits": 71,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "54,16": {
+            "id": "AN-063",
+            "display": "Nullwire Stalker",
+            "hp": 157,
+            "atk": 19,
+            "xp": 173,
+            "credits": 76,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "62,18": {
+            "id": "AN-064",
+            "display": "Faultline Warden",
+            "hp": 168,
+            "atk": 21,
+            "xp": 182,
+            "credits": 81,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "34,25": {
+            "id": "AN-065",
+            "display": "Cyan Core Leech",
+            "hp": 179,
+            "atk": 15,
+            "xp": 191,
+            "credits": 86,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "57,31": {
+            "id": "AN-066",
+            "display": "Reactor Husk",
+            "hp": 190,
+            "atk": 17,
+            "xp": 200,
+            "credits": 91,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "29,35": {
+            "id": "AN-067",
+            "display": "Spire Maw",
+            "hp": 201,
+            "atk": 19,
+            "xp": 209,
+            "credits": 96,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,35": {
+            "id": "AN-068",
+            "display": "Heartwire Horror",
+            "hp": 212,
+            "atk": 21,
+            "xp": 218,
+            "credits": 101,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Vector Core Spire. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "60,32": {
+            "id": "BOSS-006",
+            "display": "Vector Heart Seraph",
+            "hp": 380,
+            "atk": 25,
+            "xp": 610,
+            "credits": 290,
+            "loot": [
+                "Vector Heart Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Vector Heart Core",
+            "note": "Expanded-layout boss guarding the locked wing of Vector Core Spire. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f007": {
+        "27,8": {
+            "id": "AN-071",
+            "display": "Cinder Coupler",
+            "hp": 150,
+            "atk": 17,
+            "xp": 180,
+            "credits": 76,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "52,9": {
+            "id": "AN-072",
+            "display": "Rail Yard Brute",
+            "hp": 161,
+            "atk": 19,
+            "xp": 189,
+            "credits": 81,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "27,22": {
+            "id": "AN-073",
+            "display": "Coal Signal Ghoul",
+            "hp": 172,
+            "atk": 21,
+            "xp": 198,
+            "credits": 86,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,23": {
+            "id": "AN-074",
+            "display": "Ember Cart Horror",
+            "hp": 183,
+            "atk": 23,
+            "xp": 207,
+            "credits": 91,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "18,34": {
+            "id": "AN-075",
+            "display": "Switchblade Wretch",
+            "hp": 194,
+            "atk": 17,
+            "xp": 216,
+            "credits": 96,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,34": {
+            "id": "AN-076",
+            "display": "Cinderline Hound",
+            "hp": 205,
+            "atk": 19,
+            "xp": 225,
+            "credits": 101,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "31,35": {
+            "id": "AN-077",
+            "display": "Ash Brake Beast",
+            "hp": 216,
+            "atk": 21,
+            "xp": 234,
+            "credits": 106,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "65,35": {
+            "id": "AN-078",
+            "display": "Boiler Rat King",
+            "hp": 227,
+            "atk": 23,
+            "xp": 243,
+            "credits": 111,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cinder Express Yard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,35": {
+            "id": "BOSS-007",
+            "display": "Cinderline Conductor",
+            "hp": 420,
+            "atk": 27,
+            "xp": 700,
+            "credits": 330,
+            "loot": [
+                "Cinderline Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Cinderline Core",
+            "note": "Expanded-layout boss guarding the locked wing of Cinder Express Yard. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f008": {
+        "28,6": {
+            "id": "AN-081",
+            "display": "Drowned Data Leech",
+            "hp": 165,
+            "atk": 19,
+            "xp": 205,
+            "credits": 86,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "52,7": {
+            "id": "AN-082",
+            "display": "Vault Sludge Wraith",
+            "hp": 176,
+            "atk": 21,
+            "xp": 214,
+            "credits": 91,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "14,20": {
+            "id": "AN-083",
+            "display": "Archive Barnacle",
+            "hp": 187,
+            "atk": 23,
+            "xp": 223,
+            "credits": 96,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "45,21": {
+            "id": "AN-084",
+            "display": "Floodcode Husk",
+            "hp": 198,
+            "atk": 25,
+            "xp": 232,
+            "credits": 101,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "56,25": {
+            "id": "AN-085",
+            "display": "Wet Static Horror",
+            "hp": 209,
+            "atk": 19,
+            "xp": 241,
+            "credits": 106,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,33": {
+            "id": "AN-086",
+            "display": "Index Eel",
+            "hp": 220,
+            "atk": 21,
+            "xp": 250,
+            "credits": 111,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,34": {
+            "id": "AN-087",
+            "display": "Sump Librarian",
+            "hp": 231,
+            "atk": 23,
+            "xp": 259,
+            "credits": 116,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "30,35": {
+            "id": "AN-088",
+            "display": "Drowned Firewall",
+            "hp": 242,
+            "atk": 25,
+            "xp": 268,
+            "credits": 121,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Flooded Data Vault. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "61,34": {
+            "id": "BOSS-008",
+            "display": "Drowned Librarian",
+            "hp": 460,
+            "atk": 29,
+            "xp": 790,
+            "credits": 370,
+            "loot": [
+                "Drowned Archive Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Drowned Archive Core",
+            "note": "Expanded-layout boss guarding the locked wing of Flooded Data Vault. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f009": {
+        "31,6": {
+            "id": "AN-091",
+            "display": "Rust Orchard Imp",
+            "hp": 180,
+            "atk": 21,
+            "xp": 230,
+            "credits": 96,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,7": {
+            "id": "AN-092",
+            "display": "Harvest Alloy Mite",
+            "hp": 191,
+            "atk": 23,
+            "xp": 239,
+            "credits": 101,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "25,8": {
+            "id": "AN-093",
+            "display": "Ironroot Stalker",
+            "hp": 202,
+            "atk": 25,
+            "xp": 248,
+            "credits": 106,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,9": {
+            "id": "AN-094",
+            "display": "Cropwire Ghoul",
+            "hp": 213,
+            "atk": 27,
+            "xp": 257,
+            "credits": 111,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "16,20": {
+            "id": "AN-095",
+            "display": "Scarecrow Husk",
+            "hp": 224,
+            "atk": 21,
+            "xp": 266,
+            "credits": 116,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "43,20": {
+            "id": "AN-096",
+            "display": "Rustjaw Boar",
+            "hp": 235,
+            "atk": 23,
+            "xp": 275,
+            "credits": 121,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "29,33": {
+            "id": "AN-097",
+            "display": "Thorn Gearling",
+            "hp": 246,
+            "atk": 25,
+            "xp": 284,
+            "credits": 126,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "52,33": {
+            "id": "AN-098",
+            "display": "Oxide Dryad",
+            "hp": 257,
+            "atk": 27,
+            "xp": 293,
+            "credits": 131,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Rust Orchard. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "60,8": {
+            "id": "BOSS-009",
+            "display": "Harvest Alloy Tyrant",
+            "hp": 500,
+            "atk": 32,
+            "xp": 880,
+            "credits": 410,
+            "loot": [
+                "Harvest Alloy Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Harvest Alloy Core",
+            "note": "Expanded-layout boss guarding the locked wing of Rust Orchard. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f010": {
+        "13,7": {
+            "id": "AN-101",
+            "display": "Parallax Drone",
+            "hp": 195,
+            "atk": 22,
+            "xp": 255,
+            "credits": 106,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "36,8": {
+            "id": "AN-102",
+            "display": "Lensburn Wretch",
+            "hp": 206,
+            "atk": 24,
+            "xp": 264,
+            "credits": 111,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "8,10": {
+            "id": "AN-103",
+            "display": "Starless Watcher",
+            "hp": 217,
+            "atk": 26,
+            "xp": 273,
+            "credits": 116,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "14,20": {
+            "id": "AN-104",
+            "display": "Blacksite Nullhound",
+            "hp": 228,
+            "atk": 28,
+            "xp": 282,
+            "credits": 121,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "38,20": {
+            "id": "AN-105",
+            "display": "Aperture Leech",
+            "hp": 239,
+            "atk": 22,
+            "xp": 291,
+            "credits": 126,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,20": {
+            "id": "AN-106",
+            "display": "Orbit Ghoul",
+            "hp": 250,
+            "atk": 24,
+            "xp": 300,
+            "credits": 131,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "15,34": {
+            "id": "AN-107",
+            "display": "Mirror-Eye Husk",
+            "hp": 261,
+            "atk": 26,
+            "xp": 309,
+            "credits": 136,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,34": {
+            "id": "AN-108",
+            "display": "Void Antenna",
+            "hp": 272,
+            "atk": 28,
+            "xp": 318,
+            "credits": 141,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Blacksite Observatory. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "11,8": {
+            "id": "BOSS-010",
+            "display": "Parallax Watcher",
+            "hp": 540,
+            "atk": 34,
+            "xp": 970,
+            "credits": 450,
+            "loot": [
+                "Parallax Lens Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Parallax Lens Core",
+            "note": "Expanded-layout boss guarding the locked wing of Blacksite Observatory. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f011": {
+        "34,7": {
+            "id": "AN-111",
+            "display": "Cryo Acolyte",
+            "hp": 210,
+            "atk": 24,
+            "xp": 280,
+            "credits": 116,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "39,10": {
+            "id": "AN-112",
+            "display": "Frozen Choirling",
+            "hp": 221,
+            "atk": 26,
+            "xp": 289,
+            "credits": 121,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "18,11": {
+            "id": "AN-113",
+            "display": "Basilica Whelp",
+            "hp": 232,
+            "atk": 28,
+            "xp": 298,
+            "credits": 126,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,11": {
+            "id": "AN-114",
+            "display": "Frostwire Husk",
+            "hp": 243,
+            "atk": 30,
+            "xp": 307,
+            "credits": 131,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "46,14": {
+            "id": "AN-115",
+            "display": "Ice Reliquary",
+            "hp": 254,
+            "atk": 24,
+            "xp": 316,
+            "credits": 136,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "34,21": {
+            "id": "AN-116",
+            "display": "Pale Wyrmling",
+            "hp": 265,
+            "atk": 26,
+            "xp": 325,
+            "credits": 141,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "17,25": {
+            "id": "AN-117",
+            "display": "Prayer Leech",
+            "hp": 276,
+            "atk": 28,
+            "xp": 334,
+            "credits": 146,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "55,25": {
+            "id": "AN-118",
+            "display": "Cold Bell Revenant",
+            "hp": 287,
+            "atk": 30,
+            "xp": 343,
+            "credits": 151,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Cryo Basilica. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "36,8": {
+            "id": "BOSS-011",
+            "display": "Basilica Wyrm",
+            "hp": 580,
+            "atk": 36,
+            "xp": 1060,
+            "credits": 490,
+            "loot": [
+                "Basilica Wyrm Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Basilica Wyrm Core",
+            "note": "Expanded-layout boss guarding the locked wing of Cryo Basilica. Clear three anomalies, open the security doors, then recover the core."
+        }
+    },
+    "f012": {
+        "16,9": {
+            "id": "AN-121",
+            "display": "Crown Ashguard",
+            "hp": 225,
+            "atk": 26,
+            "xp": 305,
+            "credits": 126,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "57,10": {
+            "id": "AN-122",
+            "display": "Citadel Hexer",
+            "hp": 236,
+            "atk": 28,
+            "xp": 314,
+            "credits": 131,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "33,14": {
+            "id": "AN-123",
+            "display": "Regent Husk",
+            "hp": 247,
+            "atk": 30,
+            "xp": 323,
+            "credits": 136,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "14,24": {
+            "id": "AN-124",
+            "display": "Goldbone Knight",
+            "hp": 258,
+            "atk": 32,
+            "xp": 332,
+            "credits": 141,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "53,24": {
+            "id": "AN-125",
+            "display": "Ash Crown Leech",
+            "hp": 269,
+            "atk": 26,
+            "xp": 341,
+            "credits": 146,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "33,26": {
+            "id": "AN-126",
+            "display": "Vaulted Revenant",
+            "hp": 280,
+            "atk": 28,
+            "xp": 350,
+            "credits": 151,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "58,34": {
+            "id": "AN-127",
+            "display": "Scepter Maw",
+            "hp": 291,
+            "atk": 30,
+            "xp": 359,
+            "credits": 156,
+            "loot": [
+                "Scrap Metal",
+                "Med Patch"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "64,35": {
+            "id": "AN-128",
+            "display": "Crownfire Horror",
+            "hp": 302,
+            "atk": 32,
+            "xp": 368,
+            "credits": 161,
+            "loot": [
+                "Scrap Metal",
+                "Corrupted Catalyst"
+            ],
+            "note": "Expanded route anomaly for Ash Crown Citadel. This hostile is optional after the first three clears, but deleting it gives extra training and loot."
+        },
+        "60,35": {
+            "id": "BOSS-012",
+            "display": "Ash Crown Regent",
+            "hp": 620,
+            "atk": 38,
+            "xp": 1150,
+            "credits": 530,
+            "loot": [
+                "Ash Crown Core",
+                "Rust Core",
+                "Corrupted Catalyst",
+                "Vector Cell"
+            ],
+            "bossReward": "Ash Crown Core",
+            "note": "Expanded-layout boss guarding the locked wing of Ash Crown Citadel. Clear three anomalies, open the security doors, then recover the core."
+        }
+    }
+};
+  const V118_STAGE_PROPS = {
+    "f001": [
+        {
+            "x": 52,
+            "y": 4,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 26,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 19,
+            "y": 18,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 41,
+            "y": 20,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 3,
+            "y": 2,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 42,
+            "y": 24,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 11,
+            "y": 27,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 33,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 15,
+            "y": 19,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 32,
+            "y": 19,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 29,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 34,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 64,
+            "y": 10,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 25,
+            "y": 25,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 59,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 6,
+            "y": 22,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 59,
+            "y": 29,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 20,
+            "y": 11,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 11,
+            "y": 3,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 7,
+            "y": 35,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 55,
+            "y": 32,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 44,
+            "y": 3,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 38,
+            "y": 27,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 61,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f002": [
+        {
+            "x": 12,
+            "y": 11,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 32,
+            "y": 21,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 58,
+            "y": 35,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 63,
+            "y": 16,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 30,
+            "y": 18,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 67,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 16,
+            "y": 7,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 38,
+            "y": 18,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 32,
+            "y": 33,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 27,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 45,
+            "y": 32,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 64,
+            "y": 32,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 66,
+            "y": 21,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 53,
+            "y": 23,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 7,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 58,
+            "y": 21,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 5,
+            "y": 6,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 23,
+            "y": 10,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 20,
+            "y": 14,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 61,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 67,
+            "y": 4,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 29,
+            "y": 26,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 52,
+            "y": 34,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 24,
+            "y": 20,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f003": [
+        {
+            "x": 43,
+            "y": 33,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 8,
+            "y": 10,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 24,
+            "y": 4,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 41,
+            "y": 22,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 19,
+            "y": 6,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 57,
+            "y": 36,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 7,
+            "y": 22,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 59,
+            "y": 24,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 43,
+            "y": 17,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 35,
+            "y": 17,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 37,
+            "y": 29,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 12,
+            "y": 28,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 14,
+            "y": 3,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 59,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 54,
+            "y": 31,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 28,
+            "y": 23,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 30,
+            "y": 17,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 3,
+            "y": 8,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 54,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 20,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 66,
+            "y": 31,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 44,
+            "y": 4,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 45,
+            "y": 23,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 39,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f004": [
+        {
+            "x": 36,
+            "y": 8,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 17,
+            "y": 37,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 28,
+            "y": 17,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 58,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 44,
+            "y": 27,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 33,
+            "y": 20,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 51,
+            "y": 23,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 31,
+            "y": 10,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 17,
+            "y": 23,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 40,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 7,
+            "y": 32,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 22,
+            "y": 6,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 60,
+            "y": 4,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 25,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 60,
+            "y": 28,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 49,
+            "y": 7,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 14,
+            "y": 30,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 23,
+            "y": 30,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 34,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 3,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 31,
+            "y": 26,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 56,
+            "y": 37,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 37,
+            "y": 19,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 29,
+            "y": 32,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f005": [
+        {
+            "x": 15,
+            "y": 18,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 8,
+            "y": 21,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 23,
+            "y": 37,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 28,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 47,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 55,
+            "y": 19,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 61,
+            "y": 3,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 34,
+            "y": 5,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 6,
+            "y": 25,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 65,
+            "y": 26,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 42,
+            "y": 22,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 59,
+            "y": 34,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 23,
+            "y": 3,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 32,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 16,
+            "y": 33,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 64,
+            "y": 38,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 4,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 62,
+            "y": 8,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 52,
+            "y": 31,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 16,
+            "y": 27,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 28,
+            "y": 12,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 20,
+            "y": 20,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 60,
+            "y": 18,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 43,
+            "y": 6,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f006": [
+        {
+            "x": 17,
+            "y": 7,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 22,
+            "y": 31,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 23,
+            "y": 35,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 30,
+            "y": 12,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 9,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 59,
+            "y": 34,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 38,
+            "y": 24,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 28,
+            "y": 25,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 36,
+            "y": 37,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 30,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 42,
+            "y": 23,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 2,
+            "y": 35,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 13,
+            "y": 13,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 49,
+            "y": 21,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 60,
+            "y": 15,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 13,
+            "y": 36,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 52,
+            "y": 34,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 38,
+            "y": 13,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 33,
+            "y": 16,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 10,
+            "y": 33,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 24,
+            "y": 14,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 33,
+            "y": 34,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 4,
+            "y": 4,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 22,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f007": [
+        {
+            "x": 13,
+            "y": 34,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 4,
+            "y": 24,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 60,
+            "y": 22,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 34,
+            "y": 9,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 66,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 36,
+            "y": 6,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 22,
+            "y": 24,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 63,
+            "y": 9,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 31,
+            "y": 19,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 30,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 45,
+            "y": 23,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 7,
+            "y": 34,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 5,
+            "y": 19,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 28,
+            "y": 29,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 49,
+            "y": 6,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 7,
+            "y": 22,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 64,
+            "y": 19,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 19,
+            "y": 31,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 59,
+            "y": 27,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 29,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/spike_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 55,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/rock_03.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 40,
+            "y": 22,
+            "img": "assets/tilesets/undead/dead_arm_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 17,
+            "y": 35,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 24,
+            "y": 21,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f008": [
+        {
+            "x": 11,
+            "y": 21,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 63,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 40,
+            "y": 21,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 18,
+            "y": 30,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 42,
+            "y": 25,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 22,
+            "y": 31,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 18,
+            "y": 16,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 56,
+            "y": 22,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 25,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 14,
+            "y": 19,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 27,
+            "y": 12,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 58,
+            "y": 4,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 41,
+            "y": 6,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 20,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 31,
+            "y": 34,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 47,
+            "y": 11,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 9,
+            "y": 17,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 33,
+            "y": 3,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 17,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 51,
+            "y": 6,
+            "img": "assets/tilesets/forbidden/rock_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 24,
+            "y": 16,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 30,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 32,
+            "y": 8,
+            "img": "assets/tilesets/undead/plant_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 11,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/lantern_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f009": [
+        {
+            "x": 13,
+            "y": 20,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 26,
+            "y": 33,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 22,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 21,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 59,
+            "y": 11,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 3,
+            "y": 38,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 22,
+            "y": 24,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 45,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 28,
+            "y": 28,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 30,
+            "y": 4,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 14,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 36,
+            "y": 21,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 36,
+            "y": 37,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 17,
+            "y": 14,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 13,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 7,
+            "y": 37,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 16,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 15,
+            "y": 33,
+            "img": "assets/tilesets/forbidden/coffin_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 55,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/bush_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 62,
+            "y": 37,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 48,
+            "y": 35,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 11,
+            "y": 31,
+            "img": "assets/tilesets/forbidden/skull_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 53,
+            "y": 23,
+            "img": "assets/tilesets/forbidden/headstone_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 52,
+            "y": 37,
+            "img": "assets/tilesets/forbidden/bone_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f010": [
+        {
+            "x": 54,
+            "y": 16,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 5,
+            "y": 22,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 29,
+            "y": 7,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 59,
+            "y": 21,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 4,
+            "y": 9,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 40,
+            "y": 23,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 17,
+            "y": 6,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 57,
+            "y": 18,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 35,
+            "y": 4,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 43,
+            "y": 16,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 61,
+            "y": 24,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 32,
+            "y": 32,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 15,
+            "y": 25,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 56,
+            "y": 25,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 16,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 52,
+            "y": 23,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 63,
+            "y": 16,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 15,
+            "y": 19,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 11,
+            "y": 5,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 53,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/signpost_02.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 41,
+            "y": 38,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 51,
+            "y": 31,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 15,
+            "y": 13,
+            "img": "assets/tilesets/undead/grave_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 37,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f011": [
+        {
+            "x": 33,
+            "y": 34,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 49,
+            "y": 24,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 16,
+            "y": 15,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 52,
+            "y": 29,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 30,
+            "y": 25,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 9,
+            "y": 16,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 56,
+            "y": 27,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 53,
+            "y": 23,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 22,
+            "y": 16,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 38,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 45,
+            "y": 10,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 53,
+            "y": 15,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 44,
+            "y": 18,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 23,
+            "y": 25,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 54,
+            "y": 10,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 62,
+            "y": 15,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 29,
+            "y": 18,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 61,
+            "y": 27,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 17,
+            "y": 30,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 42,
+            "y": 36,
+            "img": "assets/tilesets/forbidden/rock_02.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 21,
+            "y": 10,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 62,
+            "y": 9,
+            "img": "assets/tilesets/undead/rock_04.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 10,
+            "y": 30,
+            "img": "assets/tilesets/undead/bones_03.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 9,
+            "y": 23,
+            "img": "assets/tilesets/forbidden/stone_fence_02.png",
+            "w": 60,
+            "h": 55
+        }
+    ],
+    "f012": [
+        {
+            "x": 7,
+            "y": 21,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 54,
+            "y": 35,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 22,
+            "y": 9,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 63,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 60,
+            "h": 55
+        },
+        {
+            "x": 12,
+            "y": 24,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 36,
+            "h": 62
+        },
+        {
+            "x": 57,
+            "y": 38,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 44,
+            "h": 34
+        },
+        {
+            "x": 18,
+            "y": 11,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 52,
+            "h": 41
+        },
+        {
+            "x": 52,
+            "y": 7,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 60,
+            "h": 48
+        },
+        {
+            "x": 8,
+            "y": 35,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 36,
+            "h": 55
+        },
+        {
+            "x": 14,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 44,
+            "h": 62
+        },
+        {
+            "x": 24,
+            "y": 20,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 52,
+            "h": 34
+        },
+        {
+            "x": 60,
+            "y": 31,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 60,
+            "h": 41
+        },
+        {
+            "x": 29,
+            "y": 15,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 36,
+            "h": 48
+        },
+        {
+            "x": 9,
+            "y": 12,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 44,
+            "h": 55
+        },
+        {
+            "x": 38,
+            "y": 15,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 52,
+            "h": 62
+        },
+        {
+            "x": 19,
+            "y": 25,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 60,
+            "h": 34
+        },
+        {
+            "x": 53,
+            "y": 14,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 36,
+            "h": 41
+        },
+        {
+            "x": 56,
+            "y": 32,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 44,
+            "h": 48
+        },
+        {
+            "x": 52,
+            "y": 38,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 52,
+            "h": 55
+        },
+        {
+            "x": 61,
+            "y": 8,
+            "img": "assets/tilesets/forbidden/fire_01.png",
+            "w": 60,
+            "h": 62
+        },
+        {
+            "x": 57,
+            "y": 15,
+            "img": "assets/tilesets/undead/lich_01.png",
+            "w": 36,
+            "h": 34
+        },
+        {
+            "x": 36,
+            "y": 25,
+            "img": "assets/tilesets/undead/ruin_01.png",
+            "w": 44,
+            "h": 41
+        },
+        {
+            "x": 11,
+            "y": 37,
+            "img": "assets/tilesets/undead/skull_pile_01.png",
+            "w": 52,
+            "h": 48
+        },
+        {
+            "x": 65,
+            "y": 7,
+            "img": "assets/tilesets/forbidden/crypt_01.png",
+            "w": 60,
+            "h": 55
+        }
+    ]
+};
+  const V118_FERMILAT_STAGES = {
+    "f001": {
+        "x": 46,
+        "y": 28,
+        "scene": "fermilatF001"
+    },
+    "f002": {
+        "x": 46,
+        "y": 29,
+        "scene": "fermilatF002"
+    },
+    "f003": {
+        "x": 44,
+        "y": 30,
+        "scene": "fermilatF003"
+    },
+    "f004": {
+        "x": 46,
+        "y": 28,
+        "scene": "fermilatF004"
+    },
+    "f005": {
+        "x": 45,
+        "y": 25,
+        "scene": "fermilatF005"
+    },
+    "f006": {
+        "x": 42,
+        "y": 28,
+        "scene": "fermilatF006"
+    },
+    "f007": {
+        "x": 46,
+        "y": 27,
+        "scene": "fermilatF007"
+    },
+    "f008": {
+        "x": 46,
+        "y": 28,
+        "scene": "fermilatF008"
+    },
+    "f009": {
+        "x": 46,
+        "y": 29,
+        "scene": "fermilatF009"
+    },
+    "f010": {
+        "x": 45,
+        "y": 25,
+        "scene": "fermilatF010"
+    },
+    "f011": {
+        "x": 46,
+        "y": 28,
+        "scene": "fermilatF011"
+    },
+    "f012": {
+        "x": 46,
+        "y": 28,
+        "scene": "fermilatF012"
+    }
+};
+
+  Object.entries(V118_STAGE_MAPS).forEach(([key,map])=>{
+    if(!STAGE_DEFS[key]) return;
+    STAGE_DEFS[key].map = normalizeMapRows(map);
+    STAGE_DEFS[key].levelReq = V118_STAGE_LEVEL_REQS[key] || STAGE_DEFS[key].levelReq;
+    STAGE_DEFS[key].objective = 'expanded route → sync terminal → clear 3 of 8 anomalies → locked boss wing → extraction';
+    STAGE_DEFS[key].threat = `${STAGE_DEFS[key].threat} // EXPANDED LAYOUT`;
+  });
+  Object.assign(ENCOUNTER_SLOTS, V118_ENCOUNTER_SLOTS);
+  Object.assign(STAGE_ENCOUNTER_DEFS, V118_STAGE_ENCOUNTERS);
+  Object.assign(NPC_DEFS.fermilat.stages, V118_FERMILAT_STAGES);
+  Object.entries(V118_STAGE_PROPS).forEach(([key,extra])=>{
+    stageVisualPacks[key] ||= {};
+    stageVisualPacks[key].props = [...(stageVisualPacks[key].props || []), ...extra];
+    stageVisualPacks[key].blocked = [...new Set([...(stageVisualPacks[key].blocked || []), ...extra.map(p=>p.img)])];
+  });
+  // Keep the first 12 stages paced for a 20-stage / Lv 99 final chain.
+  Object.entries(V118_STAGE_LEVEL_REQS).forEach(([key,req])=>{ if(STAGE_DEFS[key]) STAGE_DEFS[key].levelReq=req; });
 
   loadImages(); bind(); applySettings(); boot(); startAutosave(); setTimeout(()=>{ if(!$('bootScreen').classList.contains('hidden') && $('bootLogo').classList.contains('hidden')){ $('bootLogo').classList.remove('hidden'); bootDone=true; } }, 4500); renderAll();
 })();
