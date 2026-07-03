@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.15 // ROUTE BEACON PASS',
+    'Version 0.9.16 // TUTORIAL HINT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -327,6 +327,7 @@
     if(typeof state.settings.crt !== 'boolean') state.settings.crt = true;
     if(typeof state.settings.reducedMotion !== 'boolean') state.settings.reducedMotion = false;
     if(typeof state.settings.largeText !== 'boolean') state.settings.largeText = false;
+    if(typeof state.settings.tutorialTips !== 'boolean') state.settings.tutorialTips = true;
     if(typeof state.settings.musicVolume !== 'number') state.settings.musicVolume = 0.58;
     if(typeof state.settings.sfxVolume !== 'number') state.settings.sfxVolume = 0.72;
     if(typeof state.settings.musicMuted !== 'boolean') state.settings.musicMuted = false;
@@ -2040,7 +2041,7 @@
   const images = {};
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -2192,6 +2193,36 @@
   }
   function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
+
+  // v106: optional first-run tutorial cards. They are local-save aware and can be disabled in Configuration.
+  function showTutorialTip(id,title,body,extra=''){
+    if(!state || !state.flags) return;
+    ensureSettings();
+    if(state.settings.tutorialTips === false) return;
+    state.flags.tutorialSeen ||= {};
+    if(state.flags.tutorialSeen[id]) return;
+    state.flags.tutorialSeen[id]=true;
+    queueAutosave();
+    $('tutorialTipOverlay')?.remove();
+    const tip=document.createElement('div');
+    tip.id='tutorialTipOverlay';
+    tip.className='avos-crt tutorial-tip-overlay';
+    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99999;width:min(380px,calc(100vw - 28px));background:rgba(5,9,14,.96);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 28px rgba(0,217,255,.22);border-radius:14px;padding:14px;color:#eafcff;font-family:monospace;line-height:1.35;';
+    tip.innerHTML=`<div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:17px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div>`;
+    document.body.appendChild(tip);
+    $('tutorialTipOk').onclick=()=>tip.remove();
+    $('tutorialTipDisable').onclick=()=>{ state.settings.tutorialTips=false; applySettings(); queueAutosave(); tip.remove(); toast('Tutorial tips disabled. Re-enable in Configuration.'); };
+    setTimeout(()=>{ if(document.body.contains(tip)) tip.style.boxShadow='0 0 22px rgba(0,217,255,.16)'; }, 2200);
+  }
+  function resetTutorialTips(){
+    ensureSettings();
+    state.settings.tutorialTips=true;
+    state.flags ||= {};
+    state.flags.tutorialSeen={};
+    applySettings();
+    queueAutosave();
+    toast('Tutorial tips reset.');
+  }
   function boot(){
     uiState.mode='boot'; AudioManager.play('intro');
     let i=0; const lines=$('bootLines'); const prog=$('bootProgress').firstElementChild;
@@ -2210,7 +2241,7 @@
     }catch(err){}
   }
   function showMenu(){hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('intro');}
-  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); requestNativeFullscreen(); $('app').classList.remove('hidden'); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function tileAt(x,y){return state.map[y]?.[x] ?? '#';}
   function setTile(x,y,v){if(state.map[y]) state.map[y][x]=v;}
@@ -2219,8 +2250,8 @@
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=3){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear 3 anomalies or find access.'); }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.');}
-    if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal')); pulseObjective(currentObjectiveText());}
+    if(c==='C'){setTile(x,y,'.'); state.flags.chests++; addItem('Med Patch',1); const cellDrop=Math.random()<0.65; if(cellDrop) addItem('Vector Cell',1); addCredits(20); const g=Math.random()<0.35?pickGearDrop(false):null; const supplies='Med Patch'+(cellDrop?' + Vector Cell':'')+' + 20 credits'; if(g){addItem(g.name,1); recordDrop(g.name, 'Standard Cache', g.rarity || 'Uncommon'); log('Standard Cache opened: '+supplies+' + '+g.name+'.');} else log('Standard Cache opened: '+supplies+'.'); pulseObjective('Cache recovered. HP/EP supplies stocked. Keep moving toward the anomaly signatures.'); showTutorialTip('cache','Caches + Supplies','Caches can give Med Patches, Vector Cells, credits, and gear drops. They are worth checking before harder fights.','Q uses a Med Patch. R uses a Vector Cell.');}
+    if(c==='S'){state.flags.terminal=true; setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal'),()=>showTutorialTip('terminal','Recovery Terminals','Terminals save your checkpoint and push the main mission forward. After syncing, the route beacon will point toward anomaly targets.','Clear 3 anomalies to open the boss route.')); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, graveyard champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce(stageStoryKey('lore'));}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
@@ -2821,6 +2852,7 @@
     $('chapterRewardList').innerHTML=rewards.map(name=>`<div class="victory-loot-item"><span>${safeHtml(name)}</span></div>`).join('');
     const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!next; btn.textContent=next ? (nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`) : 'Next Fracture Coming Soon'; }
     panel.classList.remove('hidden');
+    showTutorialTip('stage-clear','Stage Clear + Next Fracture','After clearing a level, use Start Next Fracture or the Fracture Index to move forward. The Story Archive will keep unlocked scenes for replay.','QA tools can also jump levels from the Playtest Console.');
   }
 
   function startBattle(code,x,y){
@@ -2846,6 +2878,7 @@
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
     $('battleOverlay').classList.remove('hidden');
     renderBattle();
+    showTutorialTip('battle-basics','Battle Basics','Use the four main attack buttons to deal damage. Save EP for healing or stronger protocols, and use Guard when HP gets low.','Controller face buttons map to the four attacks. LT/L2 uses Vector Cell, RB/R1 guards, RT/R2 uses Overdrive.');
   }
   function renderBattle(){
     if(!battle)return;
@@ -4056,7 +4089,7 @@
     }
   };
 
-  function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); applyAudioSettings(); }
+  function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); const tipBox=$('settingTutorialTips'); if(tipBox) tipBox.checked = state.settings.tutorialTips !== false; applyAudioSettings(); }
   let autosaveStarted=false;
   function startAutosave(){
     if(autosaveStarted) return;
@@ -4172,8 +4205,8 @@
     ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
-    $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
+    $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();};
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
   window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
