@@ -5,10 +5,12 @@
   const mini = $('minimap');
   const mctx = mini.getContext('2d');
   const TILE = 42;
+  const MAP_ENTITY_W = 44;
+  const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.39 // FULLSCREEN STORY FIX PASS',
+    'Version 0.9.40 // MOBILE PLAYABILITY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -26,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.39';
+  const BUILD_VERSION = '0.9.40';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -784,17 +786,17 @@
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
     const im = images[npc.asset];
-    const drawW = 48;
-    const drawH = 76;
+    const drawW = MAP_ENTITY_W;
+    const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
-    const dy = y + TILE - drawH + 6;
+    const dy = y + TILE - drawH + 5;
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,.48)';
+    ctx.fillStyle='rgba(0,0,0,.42)';
     ctx.beginPath();
-    ctx.ellipse(x+TILE/2,y+TILE-4,18,7,0,0,Math.PI*2);
+    ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
     ctx.fill();
     ctx.shadowColor='#94ff62';
-    ctx.shadowBlur=13;
+    ctx.shadowBlur=6;
     if(im && im.complete && im.naturalWidth){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
@@ -822,7 +824,7 @@
     }
     ctx.strokeStyle=near?'rgba(148,255,98,.88)':'rgba(148,255,98,.38)';
     ctx.lineWidth=near?2:1;
-    ctx.strokeRect(x+5,y+4,TILE-10,TILE-8);
+    ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
     ctx.restore();
   }
   function drawNpcs(){ stageNpcs().forEach(drawNpc); }
@@ -4193,9 +4195,10 @@
 
     const px = state.player.x*TILE + TILE/2 - camera.x;
     const py = state.player.y*TILE + TILE/2 - camera.y;
-    const light = ctx.createRadialGradient(px, py, 26, px, py, 250);
-    light.addColorStop(0,'rgba(255,255,255,.18)');
-    light.addColorStop(.32,tint.glow);
+    const light = ctx.createRadialGradient(px, py, 22, px, py, 190);
+    // v130: no player-colored glow. Keep a tiny neutral readability lift only.
+    light.addColorStop(0,'rgba(255,255,255,.045)');
+    light.addColorStop(.36,'rgba(255,255,255,.030)');
     light.addColorStop(1,'rgba(255,255,255,0)');
     ctx.globalCompositeOperation='screen';
     ctx.fillStyle=light;
@@ -4224,19 +4227,19 @@
   function drawPlayerSprite(x,y){
     const spritePath = 'assets/operators/av001/sprites/map_sprite.png';
     const im = images[spritePath];
-    // feet anchored to tile bottom; sprite can be taller than one tile
-    const drawW = 48;
-    const drawH = 60;
+    // v130: same map footprint as NPCs and monsters.
+    const drawW = MAP_ENTITY_W;
+    const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
-    const dy = y + TILE - drawH + 4;
+    const dy = y + TILE - drawH + 5;
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,.34)';
+    ctx.fillStyle='rgba(0,0,0,.42)';
     ctx.beginPath();
     ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
     ctx.fill();
-    // v127: toned down player lighting so Vyra sits in the scene instead of glowing like a marker.
-    ctx.shadowColor='rgba(0,217,255,.34)';
-    ctx.shadowBlur=4;
+    // Remove the blue glow from the player sprite; keep only the sprite itself and neutral shadow.
+    ctx.shadowColor='rgba(0,0,0,.35)';
+    ctx.shadowBlur=2;
     if(im && im.complete && im.naturalWidth){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
@@ -4244,12 +4247,9 @@
       ctx.imageSmoothingEnabled = oldSmooth;
     } else {
       // fallback only if asset fails to load
-      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='rgba(0,217,255,.78)';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='rgba(0,217,255,.35)';ctx.strokeRect(x+5,y+4,32,34);
+      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='rgba(255,255,255,.72)';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='rgba(255,255,255,.18)';ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
     }
     ctx.shadowBlur=0;
-    ctx.strokeStyle='rgba(0,217,255,.22)';
-    ctx.lineWidth=1;
-    ctx.strokeRect(x+7,y+7,TILE-14,TILE-12);
     ctx.restore();
   }
 
@@ -4312,15 +4312,26 @@
     }
     if(c==='E'||c==='B'){
       const im = getMapCreatureImage(c,tx,ty);
+      const drawW = MAP_ENTITY_W;
+      const drawH = MAP_ENTITY_H;
+      const dx = x + (TILE-drawW)/2;
+      const dy = y + TILE - drawH + 5;
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,.44)';
+      ctx.beginPath();
+      ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
+      ctx.fill();
       if(im && im.complete && im.naturalWidth){
-        ctx.save();
         ctx.shadowColor = c==='B' ? '#ff3048' : '#bd1f2d';
-        ctx.shadowBlur = c==='B' ? 16 : 10;
-        ctx.drawImage(im, x+5, y+5, TILE-10, TILE-10);
-        ctx.restore();
+        ctx.shadowBlur = c==='B' ? 10 : 7;
+        const oldSmooth = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(im, dx, dy, drawW, drawH);
+        ctx.imageSmoothingEnabled = oldSmooth;
       } else {
-        ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+21,y+21,c==='B'?18:14,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
+        ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+TILE/2,y+TILE/2,c==='B'?16:15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
       }
+      ctx.restore();
       // v92: field letter rings are hidden; anomaly/boss markers stay on the minimap only.
     }
     if(c==='D'){
