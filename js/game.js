@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.11 // BOOT VERSION SYNC PASS',
+    'Version 0.9.12 // CHAPTER STORY PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -2345,6 +2345,48 @@
       kicker:'DUSKWITHER WRAITH CORE RECOVERED', speaker:'VYRA',
       lines:['The grave signal is collapsing. Core secured.', 'AVOS: Excellent. You have successfully punched a ghost into localStorage. Extraction route is open.']
     },
+    f001Clear: {
+      kicker:'CHAPTER 1 COMPLETE // GRAVE CORE RECOVERED',
+      title:'THE FIRST VECTOR WAKES',
+      tag:'One core stabilized. Two million problems politely wait their turn.',
+      speaker:'AVOS',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'The grave core is stable. The dead stopped screaming at me. Mostly.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Excellent. You restored 0.0007% of reality. At this pace, we finish shortly after the sun files for retirement.'},
+        {speaker:'VYRA', portrait:'vyra', text:'You could say “good job” like a normal machine.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Good job, Operator. Also, bad news: the core woke a buried route marker pointing toward Ash Wastes Outpost.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Let me guess. Hotter, uglier, and somehow more haunted?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Correct. Pack water, a weapon, and the emotional strength to fight garbage with legs.'}
+      ]
+    },
+    f002Clear: {
+      kicker:'CHAPTER 2 COMPLETE // OUTPOST SIGNAL RESTORED',
+      title:'THE BROKEN SIGNAL ANSWERS',
+      tag:'The outpost is quiet now. That is rarely good news.',
+      speaker:'AVOS',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'Outpost core secured. The signal is clean.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Clean is generous. It now sounds like a haunted toaster whispering coordinates.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Coordinates to what?'},
+        {speaker:'AVOS', portrait:'vyra', text:'F-003. Neon Graveyard. Memorial network. Dead operators. Extremely illegal vibes.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Why would anyone connect a graveyard to the ASH network?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Humanity wanted to remember its heroes. Then the network remembered them back. Loudly.'}
+      ]
+    },
+    f003Clear: {
+      kicker:'CHAPTER 3 COMPLETE // DEAD FREQUENCY SILENCED',
+      title:'THE GRAVEYARD REMEMBERS',
+      tag:'The third core is stable, but the archive just opened a deeper door.',
+      speaker:'VYRA',
+      lines:[
+        {speaker:'VYRA', portrait:'vyra', text:'The Neon Graveyard is stabilized. The whispers stopped.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Correction: the whispers moved to a lower priority notification channel. Very professional of them.'},
+        {speaker:'VYRA', portrait:'vyra', text:'I saw names in that core. Operators before me.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Failed deployments. Lost vectors. People the archive buried because guilt is easier to store than truth.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Then we dig up the truth.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Agreed. Next route is still locked in this build, but narrative damage has been applied successfully.'}
+      ]
+    },
     f002Terminal: {
       kicker:'OUTPOST TERMINAL // SIGNAL SYNCED', speaker:'AVOS',
       lines:['Outpost uplink stabilized. Signal quality: crispy, burnt, and only slightly haunted.', 'Three ash signatures are feeding the scrap gate. Shut them down and the boss door opens. Preferably before the outpost notices you are stealing its Wi-Fi.']
@@ -2587,7 +2629,21 @@
     unlockNextStages();
     SfxManager.levelWin();
     log(`${def.id} complete: Core recovered. Rewards delivered to inventory.`);
-    save(true); renderAll(); showChapterClearPanel();
+    save(true); renderAll();
+    const clearStoryKey = `${def.key}Clear`;
+    if(STORY_SCENES[clearStoryKey] && !state.flags.storySeen?.[clearStoryKey]){
+      showStoryOnce(clearStoryKey, showChapterClearPanel);
+    } else {
+      showChapterClearPanel();
+    }
+  }
+
+  function chapterClearStoryCopy(def){
+    return ({
+      f001:'Grave Core secured. Vyra is awake, AVOS is still annoying, and the route to Ash Wastes Outpost is now visible.',
+      f002:'Outpost Core secured. The broken signal is no longer jamming the route map, but it exposed the Neon Graveyard frequency.',
+      f003:'Shade Core secured. The dead frequency is silent for now, and the archive hints that a deeper route is coming soon.'
+    })[def.key] || `${def.title} cleared. Core stabilized.`;
   }
 
   function showChapterClearPanel(){
@@ -2623,7 +2679,7 @@
     $('chapterMenuBtn').onclick=()=>{ panel.classList.add('hidden'); gameStarted=false; showMenu(); };
     $('chapterClearKicker').textContent=`STAGE COMPLETE // ${def.id} STABILIZED`;
     $('chapterClearTitle').textContent=def.chapter.replace(/^Chapter \d+ \/\/\s*/, '').toUpperCase();
-    $('chapterClearCopy').textContent=`${def.title} cleared. Progress saved locally. ${next ? (nextReady ? next.id+' is available now.' : next.id+' requires Player Lv. '+next.levelReq+'. Train more if it is locked.') : 'More fractures are coming in a future build.'}`;
+    $('chapterClearCopy').textContent=`${chapterClearStoryCopy(def)} ${next ? (nextReady ? next.id+' is available now.' : next.id+' requires Player Lv. '+next.levelReq+'. Train more if it is locked.') : 'More fractures are coming in a future build.'}`;
     const rewards=[`${def.rewardCredits||50} Credits`, `${def.clearXp||0} Sync XP`, def.key==='f003'?'Rust Core x2':'Rust Core', `Operator Shard: Vyra x${def.rewardShards||3}`, def.key==='f003'?'Corrupted Catalyst x2':'Corrupted Catalyst'];
     if(def.key==='f002') rewards.push('Keycard LV1','Outpost Access Chip','Burnt Alloy x3');
     if(def.key==='f003') rewards.push('Vector Cell x2','Duskwither Wraith Core');
@@ -3967,7 +4023,7 @@
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();};
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; $('qaPath').onclick=()=>toast('Route: Terminal → 3 Anomalies → Door → Boss → Exit'); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
   window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
