@@ -8,7 +8,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.19 // ENEMY INTENT PASS',
+    'Version 0.9.20 // VICTORY REPORT PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -3191,10 +3191,23 @@
   }
   function showVictoryPanel(enemy, loot, meta={}){
     const panel=$('battleVictory');
-    const uniqueLoot = [...new Set(loot)];
-    const nextLabel = meta.wasBoss ? 'Recover Grave Core' : 'Return to Fracture';
+    const lootCounts = (loot||[]).reduce((acc,name)=>{ acc[name]=(acc[name]||0)+1; return acc; }, {});
+    const lootEntries = Object.entries(lootCounts);
+    const nextLabel = meta.wasBoss ? 'Recover Core / Continue' : 'Return to Fracture';
     const research = researchLineForCreature({id:enemy.id, name:enemy.name, type:meta.wasBoss?'Boss':'Anomaly'});
-    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY // THREAT NEUTRALIZED</div><h2>${enemy.name}</h2><p>Synchronization +${Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)))} // Credits +${enemy.credits}</p><p class="fineprint">Research Rank ${research.rank} // ${research.text}</p><div class="victory-loot">${uniqueLoot.map(name=>{const item=findItemRecord(name); return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,1)}<span>${name}</span></div>`}).join('') || '<span>No loot recovered.</span>'}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
+    const contract = activeContract();
+    const objective = currentObjectiveText();
+    const anomalyCount = Math.min(3, state.flags.anomaliesCleared || 0);
+    const epMax = combatStatBlock().maxEp || state.player.maxEp;
+    const xpGain = Math.floor(enemy.xp * (1 + (combatStatBlock().xpBonus||0)));
+    const missionNext = meta.wasBoss
+      ? 'Boss defeated. Reach the white extraction marker to finish the fracture.'
+      : (anomalyCount>=3 ? 'Three anomalies cleared. Boss route is open.' : `Clear ${3-anomalyCount} more anomal${3-anomalyCount===1?'y':'ies'} to open the boss route.`);
+    const lootHtml = lootEntries.map(([name,qty])=>{
+      const item=findItemRecord(name);
+      return `<div class="victory-loot-item ${rarityClass(item.rarity)}">${itemIconHtml(item,qty)}<span>${safeHtml(name)}${qty>1?` x${qty}`:''}</span></div>`;
+    }).join('') || '<span>No loot recovered.</span>';
+    panel.innerHTML = `<div class="victory-card"><div class="record-kicker">VICTORY REPORT // THREAT NEUTRALIZED</div><h2>${safeHtml(enemy.name)}</h2><p>Synchronization +${xpGain} // Credits +${enemy.credits}</p><div class="record-grid"><div><b>Mission Next</b><span>${safeHtml(missionNext)}</span></div><div><b>Current Objective</b><span>${safeHtml(objective)}</span></div><div><b>Anomalies</b><span>${anomalyCount}/3 // Boss Route ${state.flags.bossUnlocked?'Open':'Locked'}</span></div><div><b>Vyra Status</b><span>HP ${state.player.hp}/${combatStatBlock().maxHp} // EP ${state.player.ep}/${epMax}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${safeHtml(research.text)}</span></div><div><b>Contract</b><span>${safeHtml(contract.title)} // ${contract.progress}/${contract.target}${contract.complete?' // Ready to claim':''}</span></div><div><b>Side Quest</b><span>${safeHtml(sideQuestStatusText())}</span></div><div><b>Enemy File</b><span>${safeHtml(enemy.id || 'ANOMALY')} // ${meta.wasBoss?'Boss':'Anomaly'}</span></div></div><h3>Recovered Loot</h3><div class="victory-loot">${lootHtml}</div><button id="continueBattleBtn">${nextLabel}</button></div>`;
     panel.classList.remove('hidden');
     const btn=$('continueBattleBtn');
     if(btn) btn.onclick=()=>{
