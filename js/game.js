@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.55 // BOOT GATE ESCAPE FIX PASS',
+    'Version 0.9.56 // F001 DEAD SPOT BLOCK PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.55';
+  const BUILD_VERSION = '0.9.56';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -3308,7 +3308,7 @@
     }catch(err){}
   }
   function showMenu(){setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -3327,10 +3327,18 @@
     resetCollisionCacheOnly();
   }
   function stageManualBlockAt(x,y,key=currentStageKey()){
-    // V144: seal the F-001 shelf/roof strips that let the player break out near Fermilat/boss route.
+    // V146: seal the exact F-001 Fermilat/bench dead spot and roof strips.
+    // The screenshot spot is under/behind Fermilat near the cyan route corner.
+    // Keep the main boss route row open, but block the broken lower pocket.
     if(key==='f001'){
+      // Upper roof/shelf strip near the approach.
       if(y>=16 && y<=19 && x>=19 && x<=22) return true;
+      // Boss-yard top strip.
       if(y>=18 && y<=19 && x>=32 && x<=38) return true;
+      // Fermilat + bench dead zone pocket. This is the reported break spot.
+      if(y>=21 && y<=23 && x>=16 && x<=26) return true;
+      // Extra one-tile lip directly above that pocket, without closing the boss route.
+      if(y===20 && x>=21 && x<=26) return true;
     }
     return false;
   }
