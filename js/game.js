@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.50 // HARD COLLISION CONTROLLER PASS',
+    'Version 0.9.51 // HARD MAP LOCK PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.50';
+  const BUILD_VERSION = '0.9.51';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -554,25 +554,25 @@
   function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
   function battleBgForStage(key=currentStageKey()){ return stageDef(key).bg || STAGE_DEFS.f001.bg; }
   function sanitizeStageRows(rows){
-    const out=(rows||[]).map(String);
+    const out=(rows||[]).map(r => Array.isArray(r) ? r.join('') : String(r || ''));
     if(!out.length) return out;
     return out.map((row,y)=>{
       const chars=row.split('');
       for(let x=0;x<chars.length;x++){
         if(y===0 || y===out.length-1 || x===0 || x===chars.length-1){
-          if(chars[x] !== '#') chars[x] = '#';
+          chars[x] = '#';
         }
       }
       return chars.join('');
     });
   }
   function parseStageMap(key){
-    const def=stageDef(key); const map=sanitizeStageRows(def.map).map(r=>r.split(''));
+    const def=stageDef(key);
+    const map=sanitizeStageRows(def.map).map(r=>r.split(''));
     let px=1,py=1;
     map.forEach((row,y)=>row.forEach((c,x)=>{ if(c==='P'){ px=x; py=y; map[y][x]='.'; }}));
     return {map, px, py};
   }
-
 
   // v74/v75: NPC contact system. NPCs are drawn on the map, can be clicked,
   // or can be talked to by standing near them and pressing E. v75 moves them deeper
@@ -2479,6 +2479,8 @@
     state.currentStage=key;
     state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
+    invalidateCollisionRegion();
+    sanitizeLiveMapEdges();
     clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
@@ -2887,7 +2889,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); sanitizeLiveMapEdges(); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3222,27 +3224,120 @@
   function showMenu(){setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
   function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
-  function mapWidth(){ return state?.map?.[0]?.length || 0; }
+  function rowAt(y){ return state?.map?.[y] || null; }
+  function rowLength(y){ const row=rowAt(y); return row ? row.length : 0; }
+  function mapWidth(){ return Math.max(0, ...(state?.map || []).map(r => r ? r.length : 0)); }
   function mapHeight(){ return state?.map?.length || 0; }
   function inMapBounds(x,y){
-    return Number.isInteger(x) && Number.isInteger(y) && y >= 0 && x >= 0 && y < mapHeight() && x < ((state.map[y] || '').length);
+    return Number.isInteger(x) && Number.isInteger(y) && y >= 0 && x >= 0 && y < mapHeight() && x < rowLength(y);
   }
   function isOuterMapEdge(x,y){
-    const rowLen=(state.map[y] || '').length;
-    return !inMapBounds(x,y) || x <= 0 || y <= 0 || y >= mapHeight()-1 || x >= rowLen-1;
+    return !inMapBounds(x,y) || x <= 0 || y <= 0 || y >= mapHeight()-1 || x >= rowLength(y)-1;
+  }
+  function tileAt(x,y){ return inMapBounds(x,y) ? (rowAt(y)?.[x] ?? '#') : '#'; }
+  function setRowChar(y,x,v){
+    const row=rowAt(y);
+    if(!inMapBounds(x,y) || !row) return false;
+    if(Array.isArray(row)){ row[x]=v; return true; }
+    if(typeof row === 'string'){ state.map[y]=row.slice(0,x) + v + row.slice(x+1); return true; }
+    return false;
+  }
+  function setTile(x,y,v){
+    const ok=setRowChar(y,x,v);
+    if(ok) invalidateCollisionRegion();
+    return ok;
+  }
+  function sanitizeLiveMapEdges(){
+    if(!state?.map) return false;
+    let changed=false;
+    for(let y=0;y<state.map.length;y++){
+      const len=rowLength(y);
+      for(let x=0;x<len;x++){
+        if(y===0 || y===state.map.length-1 || x===0 || x===len-1){
+          if(tileAt(x,y) !== '#'){
+            setRowChar(y,x,'#');
+            changed=true;
+          }
+        }
+      }
+    }
+    if(changed) invalidateCollisionRegion();
+    return changed;
+  }
+  function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
+  function isEventWalkableTile(c){ return ['.','P','S','C','H','L','E','B','X'].includes(c); }
+  function isRegionPassableTile(c){ return ['.','P','S','C','H','L','E','B','X','D'].includes(c); }
+  function isBlocked(c){ return !isKnownMapTile(c) || c==='#' || c==='D'; }
+
+  let collisionRegionCache = {stage:null, map:null, set:null, start:null};
+  function invalidateCollisionRegion(){
+    collisionRegionCache = {stage:null, map:null, set:null, start:null};
+  }
+  function rawSpawnForStage(key=currentStageKey()){
+    const parsed=parseStageMap(key);
+    return {x:parsed.px, y:parsed.py};
+  }
+  function regionPassableAt(x,y){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
+    const c=tileAt(x,y);
+    if(!isRegionPassableTile(c)) return false;
+    if(!inMapBounds(x+1,y) || !inMapBounds(x-1,y) || !inMapBounds(x,y+1) || !inMapBounds(x,y-1)) return false;
+    return true;
+  }
+  function fallbackRegionStart(){
+    const spawn=rawSpawnForStage();
+    if(regionPassableAt(spawn.x,spawn.y)) return spawn;
+    for(let y=1;y<mapHeight()-1;y++){
+      for(let x=1;x<rowLength(y)-1;x++){
+        if(regionPassableAt(x,y)) return {x,y};
+      }
+    }
+    return {x:1,y:1};
+  }
+  function collisionRegion(){
+    if(collisionRegionCache.stage===currentStageKey() && collisionRegionCache.map===state.map && collisionRegionCache.set){
+      return collisionRegionCache;
+    }
+    sanitizeLiveMapEdges();
+    const start=fallbackRegionStart();
+    const seen=new Set();
+    const q=[];
+    const key=(x,y)=>`${x},${y}`;
+    if(regionPassableAt(start.x,start.y)){
+      seen.add(key(start.x,start.y));
+      q.push(start);
+    }
+    while(q.length){
+      const cur=q.shift();
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
+        if(seen.has(k)) continue;
+        if(!regionPassableAt(nx,ny)) continue;
+        seen.add(k);
+        q.push({x:nx,y:ny});
+      }
+    }
+    collisionRegionCache = {stage:currentStageKey(), map:state.map, set:seen, start};
+    return collisionRegionCache;
+  }
+  function canStandAt(x,y){
+    if(!regionPassableAt(x,y)) return false;
+    const c=tileAt(x,y);
+    if(!isEventWalkableTile(c)) return false;
+    return collisionRegion().set.has(`${x},${y}`);
   }
   function findSafeSpawn(){
-    const parsed=parseStageMap(currentStageKey());
-    if(canStandAt(parsed.px, parsed.py)) return {x:parsed.px,y:parsed.py};
-    for(let y=0;y<mapHeight();y++){
-      for(let x=0;x<(state.map[y]||'').length;x++){
-        if(canStandAt(x,y)) return {x,y};
-      }
+    const region=collisionRegion();
+    if(region.start && canStandAt(region.start.x, region.start.y)) return {...region.start};
+    for(const k of region.set){
+      const [x,y]=k.split(',').map(Number);
+      if(canStandAt(x,y)) return {x,y};
     }
     return {x:1,y:1};
   }
   function clampPlayerToMap(){
     if(!state?.player || !state?.map) return false;
+    sanitizeLiveMapEdges();
     const x=Math.floor(Number(state.player.x));
     const y=Math.floor(Number(state.player.y));
     if(canStandAt(x,y)){
@@ -3254,48 +3349,38 @@
     state.player.y=safe.y;
     state.visited ||= {};
     state.visited[`${safe.x},${safe.y}`]=1;
-    log('AVOS safety tether pulled Vyra back inside the map boundary.');
+    log('AVOS hard safety tether pulled Vyra back inside the playable collision region.');
     toast('Boundary safety tether restored position.');
     return true;
   }
-  function tileAt(x,y){ return inMapBounds(x,y) ? (state.map[y]?.[x] ?? '#') : '#'; }
-  function setTile(x,y,v){
-    if(!inMapBounds(x,y) || typeof state.map[y] !== 'string') return false;
-    state.map[y]=state.map[y].slice(0,x) + v + state.map[y].slice(x+1);
-    return true;
-  }
-  function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
-  function isWalkableTile(c){
-    // Whitelist playable symbols only. This blocks blank/undefined/weird characters
-    // that could act like invisible holes at map edges.
-    return ['.','P','S','C','H','L','E','B','X'].includes(c);
-  }
-  function canStandAt(x,y){
-    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
-    const c=tileAt(x,y);
-    if(!isWalkableTile(c)) return false;
-    // Prevent slipping out through ragged/uneven map rows.
-    if(!inMapBounds(x+1,y) || !inMapBounds(x-1,y) || !inMapBounds(x,y+1) || !inMapBounds(x,y-1)) return false;
-    return true;
-  }
-  function isBlocked(c){return !isKnownMapTile(c) || c==='#' || c==='D';}
   function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
     if(battle) return;
     clampPlayerToMap();
     dx=Math.sign(Number(dx)||0);
     dy=Math.sign(Number(dy)||0);
-    if(dx && dy){ dy=0; } // never allow diagonal clipping through corners
+    if(dx && dy){ dy=0; }
     if(!dx && !dy) return;
     state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down';
     const nx=state.player.x+dx, ny=state.player.y+dy;
-    if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)){ toast('Map boundary reached.'); renderAll(); return; }
+    if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny) || !collisionRegion().set.has(`${nx},${ny}`)){
+      toast('Map boundary reached.');
+      renderAll();
+      return;
+    }
     const c=tileAt(nx,ny);
     const npcBlock=npcAt(nx,ny);
-    if(npcBlock){toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return;}
+    if(npcBlock){ toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return; }
     if(c==='D'){ handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
     if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); renderAll(); return; }
-    state.player.x=nx; state.player.y=ny; SfxManager.step(); state.visited[`${nx},${ny}`]=1; handleTile(c,nx,ny); clampPlayerToMap(); renderAll(); queueAutosave();
+    state.player.x=nx;
+    state.player.y=ny;
+    SfxManager.step();
+    state.visited[`${nx},${ny}`]=1;
+    handleTile(c,nx,ny);
+    clampPlayerToMap();
+    renderAll();
+    queueAutosave();
   }
   function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=requiredAnomaliesForStage()){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear the required anomalies or find access.'); }
   function handleTile(c,x,y){
@@ -3917,6 +4002,7 @@
   function tileWalkableForRoute(x,y,target){
     const c=tileAt(x,y);
     if(!isKnownMapTile(c) || c==='#') return false;
+    if(!collisionRegion().set.has(`${x},${y}`)) return false;
     if(c==='D' && !(state.flags.bossUnlocked || state.flags.anomaliesCleared>=requiredAnomaliesForStage() || state.flags.key) && !(target && target.x===x && target.y===y)) return false;
     if(c!=='D' && !canStandAt(x,y)) return false;
     return true;
@@ -4594,6 +4680,7 @@
     return '';
   }
   function render(){
+    sanitizeLiveMapEdges();
     clampPlayerToMap();
     ctx.clearRect(0,0,VIEW_W,VIEW_H);
     const maxCamX=Math.max(0, mapWidth()*TILE - VIEW_W);
@@ -5397,9 +5484,9 @@
     lastNavDir: '',
     menuRoot: null,
     menuIndex: 0,
-    deadzone: 0.68,
-    moveDelay: 720,
-    navDelay: 220,
+    deadzone: 0.78,
+    moveDelay: 950,
+    navDelay: 240,
     loopId: null,
     scanTimer: null,
     nextScanAt: 0,
@@ -5540,166 +5627,15 @@
     navMove(pad){
       const mv=this.movement(pad);
       const now=performance.now();
-      if((mv.dx || mv.dy) && (mv.key !== this.lastNavDir || now-this.lastNavAt > this.navDelay)){
-        this.lastNavDir = mv.key;
-        this.lastNavAt = now;
-        return mv;
-      }
-      if(!mv.dx && !mv.dy) this.lastNavDir='';
-      return null;
-    },
-
-    controllerRootForState(menuOpen){
-      if(menuOpen) return $('mainMenu')?.querySelector('.menu-buttons') || $('mainMenu');
-      return visibleOverlayRoot();
-    },
-
-    moveMenuCursor(root, dy=1){
-      if(!root) return;
-      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
-      const items = controllerMenuElements(root);
-      if(!items.length) return;
-      this.menuIndex = (this.menuIndex + (dy >= 0 ? 1 : -1) + items.length) % items.length;
-      updateControllerMenuFocus(root, this.menuIndex);
-    },
-
-    confirmMenuCursor(root){
-      if(!root) return false;
-      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
-      const result = updateControllerMenuFocus(root, this.menuIndex);
-      this.menuIndex = result.index;
-      return activateControllerMenuElement(result.items[this.menuIndex]);
-    },
-
-    ensureMenuCursor(root){
-      if(!root) return;
-      if(this.menuRoot !== root){ this.menuRoot=root; this.menuIndex=0; }
-      const result = updateControllerMenuFocus(root, this.menuIndex);
-      this.menuIndex = result.index;
-    },
-
-    loop(){
-      if(this.loopId) cancelAnimationFrame(this.loopId);
-      const tick = () => {
-        try{
-          const now = performance.now();
-          if(now >= this.nextScanAt){
-            this.nextScanAt = now + 1000;
-            this.scan();
-          }
-          const pad=this.currentPad();
-          if(pad){
-            if(!this.connected) this.connect(pad, true);
-            this.handle(pad);
-          }
-        }catch(err){
-          // Never let one bad UI state kill the controller loop.
-          const now = performance.now();
-          if(now - this.lastErrorAt > 1500){
-            this.lastErrorAt = now;
-            console.warn('[AV Controller] loop recovered:', err);
-          }
-          this.resetInputState();
-        }finally{
-          this.loopId = requestAnimationFrame(tick);
-        }
-      };
-      this.loopId = requestAnimationFrame(tick);
-    },
-
-    handle(pad){
-      const visible = id => {
-        const el=$(id);
-        return !!el && !el.classList.contains('hidden');
-      };
-      const bootOpen = visible('bootScreen');
-      const menuOpen = visible('mainMenu');
-      const appOpen = visible('app');
-      const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
-      const preBattleOpen = visible('preBattleOverlay');
-      const battleOpen = !!battle && visible('battleOverlay');
-      const victoryOpen = document.body.classList.contains('battle-victory-mode') || (visible('battleVictory') && battleOpen);
-      const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3);
-      const lb=this.justPressed(pad,4), rb=this.justPressed(pad,5), lt=this.justPressed(pad,6), rt=this.justPressed(pad,7), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
-
-      if(victoryOpen){
-        const btn=$('continueBattleBtnTop') || $('continueBattleBtn') || $('deathRetryBtn');
-        const nav=this.navMove(pad);
-        if(nav){ this.ensureMenuCursor($('battleVictory')); this.moveMenuCursor($('battleVictory'), nav.dy || nav.dx || 1); return; }
-        if((south || start || east) && btn){ btn.click(); return; }
-        return;
-      }
-
-      if(storyActive){
-        const root=$('storyOverlay')?.querySelector('.story-actions');
-        if(root){
-          this.ensureMenuCursor(root);
-          const nav=this.navMove(pad);
-          if(nav){ this.moveMenuCursor(root, nav.dy || nav.dx || 1); return; }
-          if(south || start){ this.confirmMenuCursor(root); return; }
-        }
-        if(east){ finishStory(); return; }
-        return;
-      }
-
-      if(bootOpen && (south || start)){ startIntroVideo(); return; }
-
-      if(menuOpen){
-        const root=this.controllerRootForState(true);
-        this.ensureMenuCursor(root);
-        const nav=this.navMove(pad);
-        if(nav){ this.moveMenuCursor(root, nav.dy || nav.dx || 1); return; }
-        if(south || start){ this.confirmMenuCursor(root); return; }
-        return;
-      }
-
-      if(select && !battleOpen && !preBattleOpen){ openOverlay('playtestOverlay'); this.menuRoot=null; this.menuIndex=0; return; }
-
-      if(preBattleOpen){
-        const nav=this.navMove(pad);
-        if(nav){ movePreBattleCommand(nav.dx, nav.dy); return; }
-        if(south || start){ selectPreBattleCommand(); return; }
-        if(east){ closePreBattleDialog(); return; }
-        return;
-      }
-
-      if(battleOpen){
-        const nav=this.navMove(pad);
-        if(nav){ moveBattleCommand(nav.dx, nav.dy); return; }
-        if(south){ triggerBattleCommand(0); return; }
-        if(east){ triggerBattleCommand(1); return; }
-        if(west){ triggerBattleCommand(2); return; }
-        if(north){ triggerBattleCommand(3); return; }
-        if(lt || lb){ triggerBattleCommand(4); return; }
-        if(rb){ triggerBattleCommand(5); return; }
-        if(rt){ triggerBattleCommand(6); return; }
-        if(start){ selectBattleCommand(); return; }
-        return;
-      }
-
-      if(overlayOpen){
-        const root=this.controllerRootForState(false);
-        this.ensureMenuCursor(root);
-        const nav=this.navMove(pad);
-        if(nav){ this.moveMenuCursor(root, nav.dy || nav.dx || 1); return; }
-        if(south){ this.confirmMenuCursor(root); return; }
-        if(east || start){ closeOverlays(); this.menuRoot=null; this.menuIndex=0; return; }
-        return;
-      }
-
-      if(!appOpen || storyActive) return;
-
-      const mv=this.movement(pad);
-      const now=performance.now();
       if(!mv.dx && !mv.dy){
         this.lastMoveDir='';
         this.lastMoveNeutralAt=now;
       } else {
-        const changedDir = mv.key !== this.lastMoveDir;
+        const freshPress = this.lastMoveDir === '';
         const enoughDelay = now - this.lastMoveAt >= this.moveDelay;
-        const releasedRecently = now - this.lastMoveNeutralAt < 220;
-        // V140: one deliberate step, then held stick/D-pad waits the full delay.
-        if((changedDir && releasedRecently && now-this.lastMoveAt > 180) || enoughDelay){
+        // V141: one step per deliberate push, then a slow held repeat.
+        // Direction jitter no longer bypasses the cooldown.
+        if(freshPress || enoughDelay){
           this.lastMoveDir = mv.key;
           this.lastMoveAt = now;
           tryMove(mv.dx,mv.dy,'controller');
@@ -5836,7 +5772,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
