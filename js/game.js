@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.51 // HARD MAP LOCK PASS',
+    'Version 0.9.52 // SEALED COLLISION PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.51';
+  const BUILD_VERSION = '0.9.52';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -554,12 +554,18 @@
   function stageDef(key=currentStageKey()){ return STAGE_DEFS[key] || STAGE_DEFS.f001; }
   function battleBgForStage(key=currentStageKey()){ return stageDef(key).bg || STAGE_DEFS.f001.bg; }
   function sanitizeStageRows(rows){
-    const out=(rows||[]).map(r => Array.isArray(r) ? r.join('') : String(r || ''));
-    if(!out.length) return out;
-    return out.map((row,y)=>{
-      const chars=row.split('');
-      for(let x=0;x<chars.length;x++){
-        if(y===0 || y===out.length-1 || x===0 || x===chars.length-1){
+    const raw=(rows||[]).map(r => Array.isArray(r) ? r.join('') : String(r || ''));
+    if(!raw.length) return raw;
+    const width=Math.max(1, ...raw.map(r=>r.length));
+    const height=raw.length;
+    return raw.map((row,y)=>{
+      const chars=row.padEnd(width,'#').split('');
+      for(let x=0;x<width;x++){
+        // Two-tile sealed border prevents sprite/controller edge tunneling.
+        if(y<=1 || y>=height-2 || x<=1 || x>=width-2){
+          chars[x] = '#';
+        }
+        if(!['.','P','S','C','H','L','E','B','X','D','#'].includes(chars[x])){
           chars[x] = '#';
         }
       }
@@ -2480,7 +2486,7 @@
     state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
     invalidateCollisionRegion();
-    sanitizeLiveMapEdges();
+    normalizeLiveMap();
     clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
@@ -2889,7 +2895,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); sanitizeLiveMapEdges(); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); normalizeLiveMap(); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3225,80 +3231,99 @@
   function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
-  function rowLength(y){ const row=rowAt(y); return row ? row.length : 0; }
-  function mapWidth(){ return Math.max(0, ...(state?.map || []).map(r => r ? r.length : 0)); }
   function mapHeight(){ return state?.map?.length || 0; }
+  function mapWidth(){ return Math.max(0, ...(state?.map || []).map(r => r ? r.length : 0)); }
+  function rowLength(y){ return mapWidth(); }
+  function normalizeLiveMap(){
+    if(!state?.map || !Array.isArray(state.map)) return false;
+    let changed=false;
+    const width=Math.max(1, mapWidth());
+    const height=state.map.length;
+    state.map=state.map.map((row,y)=>{
+      let str=Array.isArray(row) ? row.join('') : String(row || '');
+      if(str.length < width){ str=str.padEnd(width,'#'); changed=true; }
+      if(str.length > width){ str=str.slice(0,width); changed=true; }
+      const chars=str.split('');
+      for(let x=0;x<width;x++){
+        const old=chars[x];
+        if(y<=1 || y>=height-2 || x<=1 || x>=width-2){
+          chars[x]='#';
+        } else if(!['.','P','S','C','H','L','E','B','X','D','#'].includes(chars[x])){
+          chars[x]='#';
+        }
+        if(chars[x]!==old) changed=true;
+      }
+      return chars;
+    });
+    if(changed) invalidateCollisionRegion();
+    return changed;
+  }
   function inMapBounds(x,y){
-    return Number.isInteger(x) && Number.isInteger(y) && y >= 0 && x >= 0 && y < mapHeight() && x < rowLength(y);
+    normalizeLiveMap();
+    return Number.isInteger(x) && Number.isInteger(y) && y >= 0 && x >= 0 && y < mapHeight() && x < mapWidth();
   }
   function isOuterMapEdge(x,y){
-    return !inMapBounds(x,y) || x <= 0 || y <= 0 || y >= mapHeight()-1 || x >= rowLength(y)-1;
+    return !Number.isInteger(x) || !Number.isInteger(y) || x <= 1 || y <= 1 || y >= mapHeight()-2 || x >= mapWidth()-2;
   }
-  function tileAt(x,y){ return inMapBounds(x,y) ? (rowAt(y)?.[x] ?? '#') : '#'; }
+  function tileAt(x,y){
+    normalizeLiveMap();
+    return (Number.isInteger(x) && Number.isInteger(y) && y>=0 && x>=0 && y<mapHeight() && x<mapWidth()) ? (state.map[y]?.[x] ?? '#') : '#';
+  }
   function setRowChar(y,x,v){
-    const row=rowAt(y);
-    if(!inMapBounds(x,y) || !row) return false;
-    if(Array.isArray(row)){ row[x]=v; return true; }
-    if(typeof row === 'string'){ state.map[y]=row.slice(0,x) + v + row.slice(x+1); return true; }
-    return false;
+    normalizeLiveMap();
+    if(!Number.isInteger(x) || !Number.isInteger(y) || y<0 || x<0 || y>=mapHeight() || x>=mapWidth()) return false;
+    if(isOuterMapEdge(x,y)) v='#';
+    state.map[y][x]=['.','P','S','C','H','L','E','B','X','D','#'].includes(v) ? v : '#';
+    return true;
   }
   function setTile(x,y,v){
     const ok=setRowChar(y,x,v);
     if(ok) invalidateCollisionRegion();
     return ok;
   }
-  function sanitizeLiveMapEdges(){
-    if(!state?.map) return false;
-    let changed=false;
-    for(let y=0;y<state.map.length;y++){
-      const len=rowLength(y);
-      for(let x=0;x<len;x++){
-        if(y===0 || y===state.map.length-1 || x===0 || x===len-1){
-          if(tileAt(x,y) !== '#'){
-            setRowChar(y,x,'#');
-            changed=true;
-          }
-        }
-      }
-    }
-    if(changed) invalidateCollisionRegion();
-    return changed;
-  }
+  function sanitizeLiveMapEdges(){ return normalizeLiveMap(); }
   function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
   function isEventWalkableTile(c){ return ['.','P','S','C','H','L','E','B','X'].includes(c); }
   function isRegionPassableTile(c){ return ['.','P','S','C','H','L','E','B','X','D'].includes(c); }
   function isBlocked(c){ return !isKnownMapTile(c) || c==='#' || c==='D'; }
 
-  let collisionRegionCache = {stage:null, map:null, set:null, start:null};
+  let collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
+  let controllerStepLockAt = 0;
   function invalidateCollisionRegion(){
-    collisionRegionCache = {stage:null, map:null, set:null, start:null};
+    collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
   }
   function rawSpawnForStage(key=currentStageKey()){
     const parsed=parseStageMap(key);
     return {x:parsed.px, y:parsed.py};
   }
   function regionPassableAt(x,y){
-    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
+    normalizeLiveMap();
+    if(!Number.isInteger(x) || !Number.isInteger(y) || y<0 || x<0 || y>=mapHeight() || x>=mapWidth()) return false;
+    if(isOuterMapEdge(x,y)) return false;
     const c=tileAt(x,y);
     if(!isRegionPassableTile(c)) return false;
-    if(!inMapBounds(x+1,y) || !inMapBounds(x-1,y) || !inMapBounds(x,y+1) || !inMapBounds(x,y-1)) return false;
+    // Full 8-neighbor guard: no standing next to void/row seams.
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){
+      const nx=x+dx, ny=y+dy;
+      if(!Number.isInteger(nx) || !Number.isInteger(ny) || ny<0 || nx<0 || ny>=mapHeight() || nx>=mapWidth()) return false;
+    }
     return true;
   }
   function fallbackRegionStart(){
     const spawn=rawSpawnForStage();
     if(regionPassableAt(spawn.x,spawn.y)) return spawn;
-    for(let y=1;y<mapHeight()-1;y++){
-      for(let x=1;x<rowLength(y)-1;x++){
+    for(let y=2;y<mapHeight()-2;y++){
+      for(let x=2;x<mapWidth()-2;x++){
         if(regionPassableAt(x,y)) return {x,y};
       }
     }
-    return {x:1,y:1};
+    return {x:2,y:2};
   }
   function collisionRegion(){
-    if(collisionRegionCache.stage===currentStageKey() && collisionRegionCache.map===state.map && collisionRegionCache.set){
+    normalizeLiveMap();
+    if(collisionRegionCache.stage===currentStageKey() && collisionRegionCache.map===state.map && collisionRegionCache.set && collisionRegionCache.width===mapWidth() && collisionRegionCache.height===mapHeight()){
       return collisionRegionCache;
     }
-    sanitizeLiveMapEdges();
     const start=fallbackRegionStart();
     const seen=new Set();
     const q=[];
@@ -3317,27 +3342,27 @@
         q.push({x:nx,y:ny});
       }
     }
-    collisionRegionCache = {stage:currentStageKey(), map:state.map, set:seen, start};
+    collisionRegionCache = {stage:currentStageKey(), map:state.map, set:seen, start, width:mapWidth(), height:mapHeight()};
     return collisionRegionCache;
   }
   function canStandAt(x,y){
     if(!regionPassableAt(x,y)) return false;
-    const c=tileAt(x,y);
-    if(!isEventWalkableTile(c)) return false;
+    if(!isEventWalkableTile(tileAt(x,y))) return false;
     return collisionRegion().set.has(`${x},${y}`);
   }
   function findSafeSpawn(){
+    normalizeLiveMap();
     const region=collisionRegion();
     if(region.start && canStandAt(region.start.x, region.start.y)) return {...region.start};
     for(const k of region.set){
       const [x,y]=k.split(',').map(Number);
       if(canStandAt(x,y)) return {x,y};
     }
-    return {x:1,y:1};
+    return {x:2,y:2};
   }
   function clampPlayerToMap(){
     if(!state?.player || !state?.map) return false;
-    sanitizeLiveMapEdges();
+    normalizeLiveMap();
     const x=Math.floor(Number(state.player.x));
     const y=Math.floor(Number(state.player.y));
     if(canStandAt(x,y)){
@@ -3349,13 +3374,18 @@
     state.player.y=safe.y;
     state.visited ||= {};
     state.visited[`${safe.x},${safe.y}`]=1;
-    log('AVOS hard safety tether pulled Vyra back inside the playable collision region.');
-    toast('Boundary safety tether restored position.');
+    log('AVOS sealed collision lock restored Vyra to the playable route.');
+    toast('Boundary lock restored position.');
     return true;
   }
   function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
     if(battle) return;
+    if(source==='controller'){
+      const now=performance.now();
+      if(now < controllerStepLockAt) return;
+      controllerStepLockAt = now + 1050;
+    }
     clampPlayerToMap();
     dx=Math.sign(Number(dx)||0);
     dy=Math.sign(Number(dy)||0);
@@ -3363,8 +3393,9 @@
     if(!dx && !dy) return;
     state.player.facing = dx>0?'right':dx<0?'left':dy<0?'up':'down';
     const nx=state.player.x+dx, ny=state.player.y+dy;
-    if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny) || !collisionRegion().set.has(`${nx},${ny}`)){
+    if(!collisionRegion().set.has(`${nx},${ny}`) || isOuterMapEdge(nx,ny)){
       toast('Map boundary reached.');
+      clampPlayerToMap();
       renderAll();
       return;
     }
@@ -3372,7 +3403,7 @@
     const npcBlock=npcAt(nx,ny);
     if(npcBlock){ toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return; }
     if(c==='D'){ handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
-    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); renderAll(); return; }
+    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); clampPlayerToMap(); renderAll(); return; }
     state.player.x=nx;
     state.player.y=ny;
     SfxManager.step();
@@ -4680,7 +4711,7 @@
     return '';
   }
   function render(){
-    sanitizeLiveMapEdges();
+    normalizeLiveMap();
     clampPlayerToMap();
     ctx.clearRect(0,0,VIEW_W,VIEW_H);
     const maxCamX=Math.max(0, mapWidth()*TILE - VIEW_W);
@@ -5484,9 +5515,9 @@
     lastNavDir: '',
     menuRoot: null,
     menuIndex: 0,
-    deadzone: 0.78,
-    moveDelay: 950,
-    navDelay: 240,
+    deadzone: 0.82,
+    moveDelay: 1100,
+    navDelay: 260,
     loopId: null,
     scanTimer: null,
     nextScanAt: 0,
@@ -5633,8 +5664,7 @@
       } else {
         const freshPress = this.lastMoveDir === '';
         const enoughDelay = now - this.lastMoveAt >= this.moveDelay;
-        // V141: one step per deliberate push, then a slow held repeat.
-        // Direction jitter no longer bypasses the cooldown.
+        // V142: one slow step per push. Held movement waits over one second.
         if(freshPress || enoughDelay){
           this.lastMoveDir = mv.key;
           this.lastMoveAt = now;
@@ -5659,6 +5689,7 @@
     setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000);
     setInterval(()=>{ processRespawns(); renderUI(); }, 1000);
     setInterval(processRespawns, 500);
+    setInterval(()=>{ if(state?.map && state?.player) clampPlayerToMap(); }, 250);
   }
 
   // v47: hard menu router. This runs in capture phase so menu protocols work
