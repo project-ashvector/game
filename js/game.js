@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.53 // COLLISION LOADING FIX PASS',
+    'Version 0.9.54 // INTRO FADE BOUNDARY BLOCK PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.53';
+  const BUILD_VERSION = '0.9.54';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -3052,7 +3052,66 @@
     queueAutosave();
     toast('Tutorial tips reset.');
   }
-  let introVideoActive=false; let introFadeTimer=null;
+  let introVideoActive=false; let introFadeTimer=null; let introForceMenuTimer=null; let introProgressGuardTimer=null;
+  function clearIntroVideoGuards(){
+    if(introForceMenuTimer){ clearTimeout(introForceMenuTimer); introForceMenuTimer=null; }
+    if(introProgressGuardTimer){ clearInterval(introProgressGuardTimer); introProgressGuardTimer=null; }
+  }
+  function forceIntroMenuRecovery(){
+    const bootScreen=$('bootScreen');
+    const mainMenu=$('mainMenu');
+    const video=$('introVideo');
+    clearIntroVideoGuards();
+    introVideoActive=false;
+    clearIntroVideoGuards();
+    if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
+    try{ if(video){ video.pause(); video.controls=false; video.style.opacity=''; } }catch(err){}
+    document.body.classList.remove('intro-video-active');
+    if(bootScreen){
+      bootScreen.classList.remove('intro-video-playing','intro-video-fading');
+      bootScreen.classList.add('hidden');
+    }
+    hideAll();
+    uiState.mode='menu';
+    uiState.returnStack.length=0;
+    document.body.classList.remove('game-active','intro-video-active');
+    document.body.classList.add('fullscreen-mode');
+    if(mainMenu) mainMenu.classList.remove('hidden');
+    try{ AudioManager.play('pause'); }catch(err){}
+  }
+  function armIntroVideoGuards(video, prog){
+    clearIntroVideoGuards();
+    if(!video) return;
+    const finishSafely=(fade=true)=>{
+      if(!introVideoActive && !document.body.classList.contains('intro-video-active')) return;
+      finishIntroVideo({fade});
+    };
+    video.onended=()=>finishSafely(true);
+    video.onerror=()=>{ toast('Intro video missing or blocked. Opening main menu.'); finishIntroVideo({fade:false}); };
+    video.onwebkitendfullscreen=()=>{};
+    video.ontimeupdate=()=>{
+      if(prog && Number.isFinite(video.duration) && video.duration>0){
+        prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
+      }
+      if(introVideoActive && Number.isFinite(video.duration) && video.duration>0 && video.currentTime >= video.duration - 0.18){
+        finishSafely(true);
+      }
+    };
+    video.onloadedmetadata=()=>{
+      if(introForceMenuTimer){ clearTimeout(introForceMenuTimer); introForceMenuTimer=null; }
+      const dur=(Number.isFinite(video.duration) && video.duration>1) ? video.duration : 75;
+      introForceMenuTimer=setTimeout(()=>finishSafely(true), Math.ceil((dur+2.5)*1000));
+    };
+    introProgressGuardTimer=setInterval(()=>{
+      if(!introVideoActive) return;
+      if(video.ended){ finishSafely(true); return; }
+      if(Number.isFinite(video.duration) && video.duration>0 && video.currentTime >= video.duration - 0.25){
+        finishSafely(true);
+      }
+    }, 300);
+    introForceMenuTimer=setTimeout(()=>finishSafely(true), 90000);
+  }
+
   function boot(){
     uiState.mode='boot';
     bootDone=true;
@@ -3076,14 +3135,7 @@
       video.playsInline=true;
       video.setAttribute('playsinline','true');
       video.setAttribute('webkit-playsinline','true');
-      video.onended=()=>finishIntroVideo({fade:true});
-      video.onerror=()=>{ toast('Intro video missing or blocked. Opening main menu.'); finishIntroVideo(); };
-      video.onwebkitendfullscreen=()=>{};
-      video.ontimeupdate=()=>{
-        if(prog && Number.isFinite(video.duration) && video.duration>0){
-          prog.style.width=Math.min(100, (video.currentTime/video.duration)*100)+'%';
-        }
-      };
+      armIntroVideoGuards(video, prog);
       try{ video.load(); }catch(err){}
     }
     if(bootScreen) bootScreen.classList.remove('intro-video-playing','intro-video-fading');
@@ -3129,6 +3181,7 @@
     video.setAttribute('playsinline','true');
     video.setAttribute('webkit-playsinline','true');
     try{ video.currentTime=0; }catch(err){}
+    armIntroVideoGuards(video, prog);
     const tryPlay=()=>{
       const p=video.play();
       if(p && p.catch){
@@ -3162,19 +3215,23 @@
     const gate=$('introVideoGate');
     const shade=$('introVideoShade');
     const shouldFade=!!opts.fade;
+    clearIntroVideoGuards();
     if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
+
     if(shouldFade && bootScreen && !bootScreen.classList.contains('hidden')){
       if(video) video.controls=false;
       bootScreen.classList.add('intro-video-fading');
-      // Let the video fade out first, then swap into the main menu cleanly.
-      introFadeTimer=setTimeout(()=>finishIntroVideo({fade:false}), 950);
+      introFadeTimer=setTimeout(()=>finishIntroVideo({fade:false}), 750);
+      // Last-resort recovery if a browser freezes after ended/fullscreen.
+      introForceMenuTimer=setTimeout(forceIntroMenuRecovery, 1400);
       return;
     }
+
     introVideoActive=false;
     exitIntroFullscreen();
     document.body.classList.remove('intro-video-active');
     if(video){
-      video.pause();
+      try{ video.pause(); }catch(err){}
       video.controls=false;
       video.muted=false;
       video.style.opacity='';
@@ -3187,6 +3244,11 @@
     if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
     if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
     showMenu();
+    // Double-check the menu actually became visible.
+    setTimeout(()=>{
+      const menu=$('mainMenu');
+      if(menu && menu.classList.contains('hidden')) forceIntroMenuRecovery();
+    }, 120);
   }
   function stopIntroVideoForGame(){
     introVideoActive=false;
@@ -3246,6 +3308,15 @@
     normalizedMapRef = null;
     resetCollisionCacheOnly();
   }
+  function stageManualBlockAt(x,y,key=currentStageKey()){
+    // V144: seal the F-001 shelf/roof strips that let the player break out near Fermilat/boss route.
+    if(key==='f001'){
+      if(y>=16 && y<=19 && x>=19 && x<=22) return true;
+      if(y>=18 && y<=19 && x>=32 && x<=38) return true;
+    }
+    return false;
+  }
+
   function normalizeLiveMap(force=false){
     if(!state?.map || !Array.isArray(state.map)) return false;
     if(!force && normalizedMapRef === state.map) return false;
@@ -3270,6 +3341,8 @@
       for(let x=0;x<width;x++){
         const old=chars[x];
         if(y<=1 || y>=height-2 || x<=1 || x>=width-2){
+          chars[x]='#';
+        } else if(stageManualBlockAt(x,y)){
           chars[x]='#';
         } else if(!['.','P','S','C','H','L','E','B','X','D','#'].includes(chars[x])){
           chars[x]='#';
