@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.54 // INTRO FADE BOUNDARY BLOCK PASS',
+    'Version 0.9.55 // BOOT GATE ESCAPE FIX PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.54';
+  const BUILD_VERSION = '0.9.55';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -3052,18 +3052,36 @@
     queueAutosave();
     toast('Tutorial tips reset.');
   }
-  let introVideoActive=false; let introFadeTimer=null; let introForceMenuTimer=null; let introProgressGuardTimer=null;
+  let introVideoActive=false; let introFadeTimer=null; let introForceMenuTimer=null; let introProgressGuardTimer=null; let bootGateFallbackTimer=null;
   function clearIntroVideoGuards(){
     if(introForceMenuTimer){ clearTimeout(introForceMenuTimer); introForceMenuTimer=null; }
     if(introProgressGuardTimer){ clearInterval(introProgressGuardTimer); introProgressGuardTimer=null; }
+  }
+  function clearBootGateFallback(){
+    if(bootGateFallbackTimer){ clearTimeout(bootGateFallbackTimer); bootGateFallbackTimer=null; }
+  }
+  function bootGateIsWaiting(){
+    const bootScreen=$('bootScreen');
+    return !!bootScreen && !bootScreen.classList.contains('hidden') && !introVideoActive && !document.body.classList.contains('intro-video-active');
+  }
+  function armBootGateFallback(){
+    clearBootGateFallback();
+    bootGateFallbackTimer=setTimeout(()=>{
+      if(bootGateIsWaiting()){
+        toast('Intro gate timed out. Opening main menu.');
+        forceIntroMenuRecovery();
+      }
+    }, 12000);
   }
   function forceIntroMenuRecovery(){
     const bootScreen=$('bootScreen');
     const mainMenu=$('mainMenu');
     const video=$('introVideo');
     clearIntroVideoGuards();
+    clearBootGateFallback();
     introVideoActive=false;
     clearIntroVideoGuards();
+    clearBootGateFallback();
     if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
     try{ if(video){ video.pause(); video.controls=false; video.style.opacity=''; } }catch(err){}
     document.body.classList.remove('intro-video-active');
@@ -3140,6 +3158,7 @@
     }
     if(bootScreen) bootScreen.classList.remove('intro-video-playing','intro-video-fading');
     if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
+    armBootGateFallback();
   }
   function requestVideoFullscreen(video){
     document.body.classList.add('fullscreen-mode','intro-video-active');
@@ -3164,6 +3183,7 @@
       if(bootScreen) bootScreen.classList.remove('hidden');
       uiState.mode='boot';
     } else if(!bootScreen || bootScreen.classList.contains('hidden')) return;
+    clearBootGateFallback();
     introVideoActive=true;
     AudioManager.stopMusic();
     document.body.classList.add('fullscreen-mode','intro-video-active');
@@ -3191,10 +3211,8 @@
           if(mutedTry && mutedTry.catch){
             mutedTry.then(()=>{ requestVideoFullscreen(video); toast('Video started muted by browser. Use video controls to unmute.'); }).catch(()=>{
               introVideoActive=false;
-              if(bootScreen) bootScreen.classList.remove('intro-video-playing');
-              if(gate){ gate.classList.remove('hidden'); gate.style.display=''; gate.style.opacity=''; gate.style.pointerEvents=''; }
-              if(shade){ shade.classList.remove('hidden'); shade.style.display=''; shade.style.opacity=''; }
-              toast('Video playback blocked. Tap the start button again.');
+              toast('Video playback blocked. Opening main menu.');
+              forceIntroMenuRecovery();
             });
           } else requestVideoFullscreen(video);
         });
@@ -5842,13 +5860,22 @@
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
       routeMainMenuAction(btn.id || 'newGameBtn');
     }, true);
-    if($('enterBtn')) $('enterBtn').onclick=()=>startIntroVideo(); if($('introSkipVideoBtn')) $('introSkipVideoBtn').onclick=finishIntroVideo; document.addEventListener('keydown',e=>{
+    if($('enterBtn')) $('enterBtn').onclick=(e)=>{ if(e){e.preventDefault(); e.stopPropagation();} startIntroVideo(); };
+    if($('introSkipVideoBtn')) $('introSkipVideoBtn').onclick=(e)=>{ if(e){e.preventDefault(); e.stopPropagation();} forceIntroMenuRecovery(); };
+    document.addEventListener('pointerdown', e=>{
+      if(!bootGateIsWaiting()) return;
+      if(e.target && e.target.closest && e.target.closest('#introSkipVideoBtn')) return;
+      if(e.target && e.target.closest && e.target.closest('#enterBtn, #bootLogo, #introVideoGate, #bootScreen')){
+        e.preventDefault();
+        startIntroVideo();
+      }
+    }, {capture:true, passive:false}); document.addEventListener('keydown',e=>{
       if(storyActive && ['Enter',' ','Escape'].includes(e.key)){ e.preventDefault(); if(e.key==='Escape') finishStory(); else advanceStory(); return; }
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       // v44: hard launch fallback. If the main menu is visible, Enter or Space always starts gameplay.
       if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
-      if((e.key==='Enter'||e.key===' ') && !$('bootScreen').classList.contains('hidden')){ e.preventDefault(); startIntroVideo(); return; }
+      if(!$('bootScreen').classList.contains('hidden')){ if(e.key==='Escape'){ e.preventDefault(); forceIntroMenuRecovery(); return; } if(e.key==='Enter'||e.key===' '){ e.preventDefault(); startIntroVideo(); return; } }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
       if(battle && !$('battleOverlay').classList.contains('hidden')){
         const tag = (e.target && e.target.tagName || '').toLowerCase();
