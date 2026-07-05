@@ -8,9 +8,11 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
+  const BUILD_VERSION = '0.9.59';
+  const BUILD_TITLE = 'NPC SAFE MOVE MOBILE INTRO PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.57 // INTRO MOBILE AUDIO PASS',
+    `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,8 +30,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.57';
-  const MAP_VERSION = 'sector_stage_v11_npc_salvage';
+  const MAP_VERSION = 'sector_stage_v12_v148_version_sync_cleanup';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
     level1: 'assets/music/level1.mp3',
@@ -363,6 +364,18 @@
   function testSfxSetting(){ SfxManager.item(); }
   function testMusicSetting(){ AudioManager.force(activeMusicForState()); }
 
+  function syncBuildLabels(){
+    const label=`v${BUILD_VERSION} // ${BUILD_TITLE}`;
+    const bootBuild=$('bootBuildLabel');
+    if(bootBuild) bootBuild.textContent=label;
+    const bootLinesEl=$('bootLines');
+    if(bootLinesEl && bootLinesEl.textContent.includes('Intro file detected')){
+      bootLinesEl.textContent=`> Intro file detected: assets/video/intro.mp4\n> Press Enter, tap the screen, or use Start Intro.\n> Main menu opens after the intro or if playback is blocked.`;
+    }
+    document.title=`Project: ASH VECTOR // v${BUILD_VERSION}`;
+  }
+
+
   // v53: Maze-first F-001 layout. Walls are collision first, art second.
   // v90: proper level layout pass.
   // The old routes were functional, but they read like maze noise after the tileset swap.
@@ -590,7 +603,7 @@
       name: 'Fermilat',
       asset: 'assets/npcs/fermilat.png',
       stages: {
-        f001:{x:23,y:21,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
+        f001:{x:13,y:17,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
         f004:{x:26,y:21,scene:'fermilatF004'}, f005:{x:24,y:21,scene:'fermilatF005'}, f006:{x:25,y:21,scene:'fermilatF006'},
         f007:{x:28,y:20,scene:'fermilatF006'}, f008:{x:30,y:18,scene:'fermilatF006'}, f009:{x:27,y:23,scene:'fermilatF006'},
         f010:{x:32,y:21,scene:'fermilatF006'}, f011:{x:29,y:24,scene:'fermilatF006'}, f012:{x:34,y:22,scene:'fermilatF006'}
@@ -2895,7 +2908,7 @@
     });
   }
   function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for v0.9.30 intro video boot pass.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for current map/collision data.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3074,6 +3087,7 @@
     }, 12000);
   }
   function forceIntroMenuRecovery(){
+    syncBuildLabels();
     const bootScreen=$('bootScreen');
     const mainMenu=$('mainMenu');
     const video=$('introVideo');
@@ -3081,9 +3095,6 @@
     clearBootGateFallback();
     hideIntroAudioPrompt();
     introVideoActive=false;
-    clearIntroVideoGuards();
-    clearBootGateFallback();
-    hideIntroAudioPrompt();
     if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
     try{ if(video){ video.pause(); video.controls=false; video.style.opacity=''; } }catch(err){}
     document.body.classList.remove('intro-video-active');
@@ -3157,7 +3168,7 @@
     prompt.id='introAudioPrompt';
     prompt.type='button';
     prompt.textContent='TAP TO START INTRO WITH SOUND';
-    prompt.style.cssText='position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:100005;padding:14px 18px;border-radius:999px;border:1px solid rgba(0,217,255,.75);background:rgba(0,8,14,.92);color:#eaffff;font:700 13px monospace;letter-spacing:.08em;box-shadow:0 0 22px rgba(0,217,255,.35);';
+    prompt.style.cssText='position:fixed;left:50%;bottom:max(72px,calc(env(safe-area-inset-bottom,0px) + 72px));transform:translateX(-50%);z-index:100005;width:min(420px,calc(100vw - 28px));min-height:44px;padding:11px 14px;border-radius:16px;border:1px solid rgba(0,217,255,.75);background:rgba(0,8,14,.94);color:#eaffff;font:800 clamp(10px,3.2vw,13px) monospace;letter-spacing:.06em;line-height:1.15;text-align:center;white-space:normal;box-shadow:0 0 22px rgba(0,217,255,.35);';
     prompt.onclick=(e)=>{
       e.preventDefault();
       e.stopPropagation();
@@ -3190,6 +3201,7 @@
     const gate=$('introVideoGate');
     const shade=$('introVideoShade');
     const prog=$('bootProgress')?.firstElementChild;
+    syncBuildLabels();
     if(bootScreen) bootScreen.classList.remove('hidden');
     if(shade) shade.style.display='';
     if(prog) prog.style.width='0%';
@@ -3354,8 +3366,8 @@
       if(!current) open();
     }catch(err){}
   }
-  function showMenu(){setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function showMenu(){syncBuildLabels(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
+  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -3374,18 +3386,21 @@
     resetCollisionCacheOnly();
   }
   function stageManualBlockAt(x,y,key=currentStageKey()){
-    // V146: seal the exact F-001 Fermilat/bench dead spot and roof strips.
-    // The screenshot spot is under/behind Fermilat near the cyan route corner.
-    // Keep the main boss route row open, but block the broken lower pocket.
+    // V148: manual collision blockers for known F-001 dead spots.
+    // Supports both the older compact F-001 and the expanded V118 F-001 map.
     if(key==='f001'){
-      // Upper roof/shelf strip near the approach.
+      // Compact map patches from V144-V146.
       if(y>=16 && y<=19 && x>=19 && x<=22) return true;
-      // Boss-yard top strip.
       if(y>=18 && y<=19 && x>=32 && x<=38) return true;
-      // Fermilat + bench dead zone pocket. This is the reported break spot.
       if(y>=21 && y<=23 && x>=16 && x<=26) return true;
-      // Extra one-tile lip directly above that pocket, without closing the boss route.
       if(y===20 && x>=21 && x<=26) return true;
+
+      // Expanded V118 map: reported Fermilat / bench / cyan-corner dead shelf.
+      // This was the real active layout after V118 overwrote the early compact map.
+      if(y>=27 && y<=28 && x>=35 && x<=48) return true;
+      if(y>=25 && y<=26 && x>=47 && x<=48) return true;
+      // Keep the boss yard open, but block its top decorative shelf.
+      if(y>=27 && y<=28 && x>=55 && x<=68) return true;
     }
     return false;
   }
@@ -10944,8 +10959,8 @@
 };
   const V118_FERMILAT_STAGES = {
     "f001": {
-        "x": 46,
-        "y": 28,
+        "x": 42,
+        "y": 26,
         "scene": "fermilatF001"
     },
     "f002": {
