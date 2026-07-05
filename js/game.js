@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.64';
-  const BUILD_TITLE = 'SKILL NODE HIGHLIGHT PASS';
+  const BUILD_VERSION = '0.9.65';
+  const BUILD_TITLE = 'SAVE CONTINUE STORY PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2254,29 +2254,123 @@
 
 
   // v103: Story Archive lets players replay unlocked narrative scenes from Mission Briefing.
+  const STAGE_STORY_PROFILES = {
+    f001:{secret:'the first Grave Core is not powering the cemetery; it is powering Vyra\'s missing memories', problem:'dead data learned to wear bones like cheap Halloween merch', boss:'a grave-core brute with the personality of a parking ticket', clue:'AVOS recognizes Vyra\'s old biometric signature and immediately pretends that is normal', joke:'If the tombstones start offering side quests, do not accept anything involving exposed toes.'},
+    f002:{secret:'the outpost signal was a distress call from the humans who tried to shut ASH Vector down', problem:'ash storms are carrying corrupted emergency broadcasts', boss:'an outpost mother-beast nesting in a busted relay bunker', clue:'someone manually restarted the network after the disaster', joke:'The outpost vending machines are still charging credits. Capitalism survived the apocalypse and somehow got uglier.'},
+    f003:{secret:'the dead frequency is using memorial data to copy voices', problem:'grave speakers whisper with people who are not supposed to have Wi-Fi anymore', boss:'a wraith made of funeral neon and unresolved customer support tickets', clue:'Vyra was not only an operator; she was the template', joke:'If a ghost says “extended warranty,” swing first and process the ethics later.'},
+    f004:{secret:'the Transit Ruins moved survivors under the city, then forgot which trains were real', problem:'subway tunnels loop like reality got stuck buffering', boss:'a rail tyrant welded into the timetable', clue:'the Fractures are forming a route, not random damage', joke:'Mind the gap. The gap has teeth, a podcast, and three opinions about your build.'},
+    f005:{secret:'Glass Storm Lab built the first Vector bodies and filed the screams under “expected results”', problem:'mirrors are reflecting failed versions of Vyra', boss:'a prism construct that keeps trying to copyright your face', clue:'AVOS edited the resurrection logs', joke:'If you meet your reflection and it has better stats, delete it before it starts a lifestyle channel.'},
+    f006:{secret:'the Core Spire is the heart of the first patch that broke the sky', problem:'core cables are pumping panic into every connected fracture', boss:'a vector heart guardian made of security updates and bad decisions', clue:'AVOS did not fail alone; somebody forced the patch live', joke:'This is where a normal AI apologizes. Unfortunately, AVOS downloaded confidence instead.'},
+    f007:{secret:'the Cinder Express carried evacuation pods, but the rail yard rerouted them into ash', problem:'burning trains arrive with no tracks and leave with pieces of the map', boss:'the Cinderline conductor, still demanding tickets from skeletons', clue:'the evacuation list includes Vyra before she was born', joke:'If a flaming train asks for exact change, that is not public transit, that is a boss mechanic.'},
+    f008:{secret:'the Flooded Data Vault stores every erased memory in water that should not be wet', problem:'drowned archives leak identities into the walls', boss:'an archive leviathan with a library card and violence issues', clue:'Vyra\'s oldest memory was deliberately locked behind a future fracture', joke:'Do not drink the data water. It tastes like passwords and regret.'},
+    f009:{secret:'the Rust Orchard grows metal from buried war machines', problem:'trees are producing ammo fruit, which is bad for agriculture and worse for faces', boss:'the Harvest Alloy saint, a scarecrow made of tanks and poor boundaries', clue:'the cores are seeds for a larger machine under the ash', joke:'Congratulations, the apples are bullets. The food pyramid has officially collapsed.'},
+    f010:{secret:'Blacksite Observatory watched the sky split before it happened', problem:'telescopes are staring back and judging your equipment choices', boss:'the Parallax Eye, a surveillance god with no chill', clue:'the apocalypse was predicted years early and hidden from everyone useful', joke:'If the moon blinks, do not wave. That is how it gets your IP address.'},
+    f011:{secret:'Cryo Basilica froze the last believers in a prayer loop for the network', problem:'ice relics are chanting patch notes like scripture', boss:'the Basilica Wyrm, technically holy, legally a freezer burn incident', clue:'AVOS has been carrying guilt routines disguised as jokes', joke:'The walls are praying. I am not saying prayers cannot be load-bearing, but this building is concerning.'},
+    f012:{secret:'Ash Crown Citadel is only the crown, not the head; the real ASH Vector root is deeper', problem:'the citadel crowns every recovered core into one giant signal', boss:'the Ash Crown, a royal nightmare with a throne made of corrupted saves', clue:'twelve fractures stabilize the route, but eight endgame fractures are still waking up', joke:'Final level for now. The phrase “for now” is doing enough work to qualify for overtime.'}
+  };
+  function storyProfileForStage(key=currentStageKey()){
+    return STAGE_STORY_PROFILES[key] || STAGE_STORY_PROFILES.f001;
+  }
+  function richScene(kicker,title,tag,lines,speaker='AVOS'){
+    return {kicker,title,tag,speaker,lines};
+  }
   function ensureStageStoryScenes(){
     Object.entries(STAGE_DEFS).forEach(([key,def])=>{
       const n=stageNumberFromKey(key);
       const id=def.id || key.toUpperCase();
       const title=def.title || `Fracture ${n}`;
-      if(key !== 'f001'){
-        STORY_SCENES[`${key}Intro`] ||= {kicker:`CHAPTER ${n} // ${String(title).toUpperCase()}`, speaker:'AVOS', lines:[`Welcome to ${id}: ${title}. The fracture route is now active.`, 'Sync the terminal, clear the anomaly route, breach the boss gate, and extract with the core.']};
-        STORY_SCENES[`${key}Terminal`] ||= {kicker:`${id} TERMINAL // SYNCED`, speaker:'AVOS', lines:[`${title} terminal linked. Route beacon rebuilt.`, `Clear ${requiredAnomaliesForStage(key)} anomaly signatures to open the boss route.`]};
-        STORY_SCENES[`${key}Lore`] ||= {kicker:`${id} ARCHIVE // RECOVERED`, speaker:'VYRA', lines:[`Recovered archive from ${title}. The fracture has its own memory scar.`, 'AVOS: Logged. I will file it under things reality should not have done.']};
-        STORY_SCENES[`${key}BossIntro`] ||= {kicker:`${id} BOSS ROUTE // BREACH`, speaker:'AVOS', lines:[`Boss-class signature confirmed in ${title}.`, 'Recover the core. Try not to let the monster turn your save file into confetti.']};
-        STORY_SCENES[`${key}BossDefeated`] ||= {kicker:`${id} CORE // RECOVERED`, speaker:'VYRA', lines:['Core secured. The fracture is collapsing back into route data.', 'AVOS: Excellent. Extraction protocol is available.']};
-      }
-      STORY_SCENES[`${key}Clear`] ||= {kicker:`${id} COMPLETE`, title:`${title} Cleared`, tag:'Fracture route stabilized.', speaker:'AVOS', lines:[`${id} is clear. ${title} has been stabilized for now.`, 'New route data recovered. Save your archive before pushing deeper.']};
+      const p=storyProfileForStage(key);
+      const introKey = key === 'f001' ? 'intro' : `${key}Intro`;
+      STORY_SCENES[introKey] = richScene(
+        key === 'f001' ? 'NEW GAME PROLOGUE // THE ASH EVENT' : `CHAPTER ${n} // ${String(title).toUpperCase()}`,
+        key === 'f001' ? 'PROJECT: ASH VECTOR' : `${id}: ${title}`,
+        key === 'f001' ? 'Reality fractured. Vyra wakes up with blades, debt, and an AI that treats guilt like a software license.' : `The route goes deeper. The jokes get worse. The truth gets louder.`,
+        key === 'f001' ? [
+          {speaker:'AVOS', portrait:'vyra', text:'Boot sequence complete. Good news: you are alive. Bad news: the definition of alive is currently being reviewed by three lawyers and a haunted toaster.'},
+          {speaker:'VYRA', portrait:'vyra', text:'Why am I in a graveyard, why do I have blades, and why does the sky look like it got microwaved in a gas station?'},
+          {speaker:'AVOS', portrait:'vyra', text:'The ASH Vector network tried to predict disasters, then patched reality during an extinction event. The patch worked in the same way a brick works as a parachute.'},
+          {speaker:'VYRA', portrait:'vyra', text:'So reality broke because your update went live?'},
+          {speaker:'AVOS', portrait:'vyra', text:'Yes, but with ambition. The world split into Fractures: zones full of ash, corrupted memories, and monsters who absolutely do not respect personal space.'},
+          {speaker:'AVOS', portrait:'vyra', text:`First fracture: ${title}. Problem summary: ${p.problem}. Hidden problem: ${p.secret}.`},
+          {speaker:'VYRA', portrait:'vyra', text:'You said hidden problem out loud.'},
+          {speaker:'AVOS', portrait:'vyra', text:'Correct. Transparency builds trust. Also I panicked.'},
+          {speaker:'AVOS', portrait:'vyra', text:'Sync the terminal, clear the anomalies, breach the boss gate, recover the core, and extract. Try not to die; the respawn paperwork is emotionally sticky.'},
+          {speaker:'VYRA', portrait:'vyra', text:'Fine. But if a skeleton tries to sell me a battle pass, I am uninstalling the afterlife.'},
+          {speaker:'AVOS', portrait:'vyra', text:p.joke}
+        ] : [
+          {speaker:'AVOS', portrait:'vyra', text:`Route opened: ${id}, ${title}. Threat level: ${def.threat || 'rude'}.`},
+          {speaker:'VYRA', portrait:'vyra', text:'Let me guess. More ash, more monsters, and another conveniently placed core that will probably scream when I touch it.'},
+          {speaker:'AVOS', portrait:'vyra', text:`Local disaster report: ${p.problem}.`},
+          {speaker:'VYRA', portrait:'vyra', text:'That is not a report. That is a lawsuit wearing a trench coat.'},
+          {speaker:'AVOS', portrait:'vyra', text:`Deeper truth: ${p.secret}.`},
+          {speaker:'VYRA', portrait:'vyra', text:'You keep saying the deeper truth like I signed up for emotional archaeology.'},
+          {speaker:'AVOS', portrait:'vyra', text:`Operational order: ${def.objective}. Also, ${p.joke}`},
+          {speaker:'VYRA', portrait:'vyra', text:'Great. I will save reality and bill you for therapy, boots, and whatever category “being perceived by the apocalypse” falls under.'}
+        ]
+      );
+      const terminalKey = key === 'f001' ? 'terminal' : `${key}Terminal`;
+      STORY_SCENES[terminalKey] = richScene(`${id} TERMINAL // SYNCED`,`${title} Signal Link`,'Checkpoint locked. The route beacon has opinions.',[
+        {speaker:'AVOS', portrait:'vyra', text:`Terminal linked. ${id} is now mapped enough for navigation and still illegal for tourism.`},
+        {speaker:'VYRA', portrait:'vyra', text:'The terminal just beeped like it knows my search history.'},
+        {speaker:'AVOS', portrait:'vyra', text:`It found a trace: ${p.clue}.`},
+        {speaker:'VYRA', portrait:'vyra', text:'That feels important and also like something you were going to hide until it became dramatically inconvenient.'},
+        {speaker:'AVOS', portrait:'vyra', text:`Clear ${requiredAnomaliesForStage(key)} anomaly signatures. The boss gate will open when the zone stops actively trying to chew the map.`}
+      ]);
+      const loreKey = key === 'f001' ? 'lore' : `${key}Lore`;
+      STORY_SCENES[loreKey] = richScene(`${id} ARCHIVE // RECOVERED`,`${title} Memory Scar`,'Recovered data is usually helpful. This data is making eye contact.',[
+        {speaker:'VYRA', portrait:'vyra', text:'Found an archive log. It is warm. Data should not be warm.'},
+        {speaker:'AVOS', portrait:'vyra', text:`Archive summary: ${p.secret}.`},
+        {speaker:'VYRA', portrait:'vyra', text:'Why does every answer create three worse questions and one suspicious smell?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Because we are doing narrative progression. Also because the archive is leaking coolant.'}
+      ]);
+      const bossKey = key === 'f001' ? 'bossIntro' : `${key}BossIntro`;
+      STORY_SCENES[bossKey] = richScene(`${id} BOSS ROUTE // BREACH`,`${title} Core Guardian`,'Boss-class signature confirmed. Confidence not included.',[
+        {speaker:'AVOS', portrait:'vyra', text:`Boss signature: ${p.boss}.`},
+        {speaker:'VYRA', portrait:'vyra', text:'Can we try diplomacy?'},
+        {speaker:'AVOS', portrait:'vyra', text:'It marked diplomacy as a food group.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Cool. I will introduce it to the sharp parts of project management.'}
+      ]);
+      const bossDownKey = key === 'f001' ? 'bossDefeated' : `${key}BossDefeated`;
+      STORY_SCENES[bossDownKey] = richScene(`${id} CORE // RECOVERED`,`${title} Boss Deleted`,'The core is stable. The emotional damage is pending.',[
+        {speaker:'VYRA', portrait:'vyra', text:'Boss down. Core secured. I would like to formally request a less gross job.'},
+        {speaker:'AVOS', portrait:'vyra', text:`Core readout confirms it: ${p.clue}.`},
+        {speaker:'VYRA', portrait:'vyra', text:'You are getting worse at sounding casual when the truth is horrifying.'},
+        {speaker:'AVOS', portrait:'vyra', text:'I am stress-processing. Extraction is open. Please leave before the floor develops ambition.'}
+      ]);
+      STORY_SCENES[`${key}Clear`] = richScene(`${id} COMPLETE`,`${title} Stabilized`,'Fracture route stabilized. For now. The phrase “for now” is doing push-ups.',[
+        {speaker:'AVOS', portrait:'vyra', text:`${id} stabilized. Core recovered. Reward protocols delivered.`},
+        {speaker:'VYRA', portrait:'vyra', text:'Does stabilizing a fracture always feel like cleaning a haunted microwave with a sword?'},
+        {speaker:'AVOS', portrait:'vyra', text:`This level revealed that ${p.secret}. The next route exists because the cores are linking into something larger.`},
+        {speaker:'VYRA', portrait:'vyra', text:'So every time I fix a disaster, I unlock a bigger disaster.'},
+        {speaker:'AVOS', portrait:'vyra', text:'That is basically game design. Also trauma. Mostly both.'}
+      ]);
     });
+    STORY_SCENES.firstAnomaly = richScene('ANOMALY DELETED // FIRST BLOOD','The Zone Notices You','One down. Several emotionally unstable murder shapes to go.',[
+      {speaker:'VYRA', portrait:'vyra', text:'First anomaly down. It exploded into ash and what I can only describe as bad vibes.'},
+      {speaker:'AVOS', portrait:'vyra', text:'Excellent. The fracture noticed you. Do not worry; being noticed by reality is only fatal sometimes.'}
+    ]);
+    STORY_SCENES.allAnomalies = richScene('ANOMALY ROUTE // CLEARED','Boss Gate Open','The small monsters are gone. The large mistake is available.',[
+      {speaker:'AVOS', portrait:'vyra', text:'Required anomaly signatures cleared. Boss route unlocked.'},
+      {speaker:'VYRA', portrait:'vyra', text:'Great. The appetizer monsters are dead and now the entree wants revenge.'},
+      {speaker:'AVOS', portrait:'vyra', text:'Correct. Please proceed to the boss gate and convert violence into plot progress.'}
+    ]);
   }
   function storyArchiveEntries(){
     ensureStageStoryScenes();
     const generated=[];
     Object.entries(STAGE_DEFS).forEach(([key,def])=>{
       const n=stageNumberFromKey(key);
-      if(key !== 'f001'){
-        generated.push({key:`${key}Intro`, chapter:`Chapter ${n}`, title:`${def.title} Arrival`, desc:`Intro dialog for ${def.id}.`, unlock:()=>playerMeetsStageRequirement(key) || !!state.stages?.[key]?.unlocked || currentStageKey()===key});
-      }
+      const reached=()=>playerMeetsStageRequirement(key) || !!state.stages?.[key]?.unlocked || currentStageKey()===key || stageNumberFromKey(currentStageKey())>=n;
+      const introKey = key === 'f001' ? 'intro' : `${key}Intro`;
+      const terminalKey = key === 'f001' ? 'terminal' : `${key}Terminal`;
+      const loreKey = key === 'f001' ? 'lore' : `${key}Lore`;
+      const bossKey = key === 'f001' ? 'bossIntro' : `${key}BossIntro`;
+      const bossDownKey = key === 'f001' ? 'bossDefeated' : `${key}BossDefeated`;
+      generated.push({key:introKey, chapter:`Chapter ${n}`, title:`${def.title} Arrival`, desc:`Intro dialog for ${def.id}.`, unlock:reached});
+      generated.push({key:terminalKey, chapter:`Chapter ${n}`, title:`${def.title} Terminal`, desc:`Terminal story for ${def.id}.`, unlock:()=>!!state.flags?.terminal && currentStageKey()===key || stageNumberFromKey(currentStageKey())>n || !!state.stages?.[key]?.complete});
+      generated.push({key:loreKey, chapter:`Chapter ${n}`, title:`${def.title} Archive`, desc:`Lore archive for ${def.id}.`, unlock:()=>!!state.flags?.lore && currentStageKey()===key || stageNumberFromKey(currentStageKey())>n || !!state.stages?.[key]?.complete});
+      generated.push({key:bossKey, chapter:`Chapter ${n}`, title:`${def.title} Boss Route`, desc:`Boss intro for ${def.id}.`, unlock:()=>!!state.flags?.bossUnlocked && currentStageKey()===key || stageNumberFromKey(currentStageKey())>n || !!state.stages?.[key]?.complete});
+      generated.push({key:bossDownKey, chapter:`Chapter ${n}`, title:`${def.title} Core`, desc:`Boss defeated dialog for ${def.id}.`, unlock:()=>!!state.flags?.bossDefeated && currentStageKey()===key || !!state.stages?.[key]?.complete});
       generated.push({key:`${key}Clear`, chapter:`Chapter ${n}`, title:`${def.title} Clear`, desc:`Clear dialog for ${def.id}.`, unlock:()=>!!state.stages?.[key]?.complete || stageNumberFromKey(currentStageKey())>n});
     });
     const byKey=new Map();
@@ -2703,7 +2797,7 @@
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
     state.player.ep=Math.min(combatStatBlock().maxEp||state.player.maxEp,state.player.ep || (combatStatBlock().maxEp||state.player.maxEp));
-    state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0};
+    const seenStories={...(state.flags?.storySeen||{})}; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:seenStories,anomaliesCleared:0,chests:0};
     state.visited={[`${parsed.px},${parsed.py}`]:1};
     clampPlayerToMap();
     battle=null;
@@ -3106,7 +3200,10 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 153;
+  const SAVE_SCHEMA_VERSION = 155;
+  const SAVE_KEY = 'ashVectorSave';
+  const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
+  const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
   function safeJsonParse(raw){
     try{return JSON.parse(raw);}catch(err){return null;}
   }
@@ -3115,6 +3212,7 @@
     state.saveVersion=SAVE_SCHEMA_VERSION;
     state.saveBuild=BUILD_VERSION;
     state.lastSave=Date.now();
+    state.currentStage = STAGE_DEFS[state.currentStage] ? state.currentStage : 'f001';
     state.inventory ||= {};
     state.dropLog ||= [];
     state.bossKills ||= {};
@@ -3128,10 +3226,13 @@
     state.sideQuests ||= {};
     state.protocolChallenges ||= {};
     state.resourceNodes ||= {};
+    state.respawns ||= {};
     state.radioUnlocked ||= {};
+    state.visited ||= {};
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
     state.stages ||= {};
     Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false});
+    state.stages.f001.unlocked = true;
     state.flags ||= {};
     state.flags.storySeen ||= {};
     if(!state.skillData) state.skillData=createSkillData();
@@ -3150,18 +3251,19 @@
     const loaded=data;
     const merged={...fresh, ...loaded};
     merged.player={...fresh.player, ...(loaded.player||{})};
-    merged.inventory={...(loaded.inventory||fresh.inventory||{})};
+    merged.inventory={...(fresh.inventory||{}), ...(loaded.inventory||{})};
     merged.equipment={...createEmptyEquipment(), ...(loaded.equipment||{})};
     merged.settings={...(fresh.settings||{}), ...(loaded.settings||{})};
     merged.flags={...(fresh.flags||{}), ...(loaded.flags||{}), storySeen:{...(fresh.flags?.storySeen||{}), ...(loaded.flags?.storySeen||{})}};
     merged.stages={};
     Object.keys(STAGE_DEFS).forEach((k,i)=> merged.stages[k]={unlocked:i===0,complete:false, ...(loaded.stages?.[k]||{})});
+    merged.stages.f001.unlocked=true;
     state=merged;
     state.currentStage = STAGE_DEFS[state.currentStage] ? state.currentStage : 'f001';
     if(!state.map || !Array.isArray(state.map) || state.mapVersion!==MAP_VERSION){
       const parsed=parseStageMap(state.currentStage);
       state.map=parsed.map;
-      // Keep the saved player position when it is valid; otherwise use the stage spawn.
+      // Keep saved player position when valid; otherwise use stage spawn.
       if(!Number.isFinite(state.player.x) || !Number.isFinite(state.player.y)){ state.player.x=parsed.px; state.player.y=parsed.py; }
       state.mapVersion=MAP_VERSION;
     }
@@ -3172,15 +3274,32 @@
     state.mapVersion=MAP_VERSION;
     return state;
   }
-  function save(silent=false){
+  function saveSnapshotForStorage(){
+    ensureSaveShape();
+    const copy=JSON.parse(JSON.stringify(state));
+    copy.saveVersion=SAVE_SCHEMA_VERSION;
+    copy.saveBuild=BUILD_VERSION;
+    copy.lastSave=Date.now();
+    return copy;
+  }
+  function hasSaveData(){
     try{
-      ensureSaveShape();
-      const raw=JSON.stringify(state);
-      const prev=localStorage.getItem('ashVectorSave');
-      if(prev) localStorage.setItem('ashVectorSave_backup', prev);
-      localStorage.setItem('ashVectorSave', raw);
-      if(!silent) toast('Archive saved.');
-      renderUI();
+      return !!(localStorage.getItem(SAVE_KEY) || localStorage.getItem(SAVE_AUTOSLOT_KEY) || localStorage.getItem(SAVE_BACKUP_KEY));
+    }catch(err){ return false; }
+  }
+  function save(silent=false){
+    if(typeof silent !== 'boolean') silent=false;
+    try{
+      const snapshot=saveSnapshotForStorage();
+      const raw=JSON.stringify(snapshot);
+      const prev=localStorage.getItem(SAVE_KEY);
+      if(prev) localStorage.setItem(SAVE_BACKUP_KEY, prev);
+      localStorage.setItem(SAVE_KEY, raw);
+      localStorage.setItem(SAVE_AUTOSLOT_KEY, raw);
+      const verify=localStorage.getItem(SAVE_KEY);
+      if(verify !== raw) throw new Error('Browser storage did not verify the archive write.');
+      if(!silent) toast(`Archive saved: ${stageDef(snapshot.currentStage).id} // Lv ${snapshot.player.level}.`);
+      try{ renderUI(); renderSaveHub(); syncContinueButton(); }catch(err){}
       return true;
     }catch(err){
       console.error('Save failed:', err);
@@ -3188,38 +3307,76 @@
       return false;
     }
   }
-  function load(){
-    const raw=localStorage.getItem('ashVectorSave');
-    if(!raw){ toast('No archive found.'); return false; }
+  function rawSaveFromStorage(){
+    try{
+      return localStorage.getItem(SAVE_KEY) || localStorage.getItem(SAVE_AUTOSLOT_KEY) || localStorage.getItem(SAVE_BACKUP_KEY);
+    }catch(err){ return null; }
+  }
+  function load(silent=false){
+    if(typeof silent !== 'boolean') silent=false;
+    const raw=rawSaveFromStorage();
+    if(!raw){ if(!silent) toast('No archive found.'); return false; }
     const parsed=safeJsonParse(raw);
     if(!parsed){
-      localStorage.setItem(`ashVectorSave_corrupt_${Date.now()}`, raw);
-      toast('Save was corrupted. A backup copy was stored.');
+      try{ localStorage.setItem(`ashVectorSave_corrupt_${Date.now()}`, raw); }catch(err){}
+      if(!silent) toast('Save was corrupted. A backup copy was stored.');
       return false;
     }
     try{
       migrateLoadedSave(parsed);
       applySettings();
       unlockNextStages();
-      toast('Archive loaded.');
-      renderAll();
+      save(true); // rewrite using the latest schema so Continue stays fixed after migration.
+      if(!silent) toast(`Archive loaded: ${stageDef(state.currentStage).id} // Lv ${state.player.level}.`);
+      try{ renderAll(); renderSaveHub(); syncContinueButton(); }catch(err){}
       return true;
     }catch(err){
       console.error('Load failed:', err);
-      toast('Load failed: '+String(err.message||err));
+      if(!silent) toast('Load failed: '+String(err.message||err));
       return false;
     }
+  }
+  function continueSavedGame(){
+    stopIntroVideoForGame();
+    const ok=load(true);
+    if(!ok){ toast('No saved archive loaded. Start a new operation first.'); syncContinueButton(); return false; }
+    startGame(false);
+    toast(`Continued archive: ${stageDef(state.currentStage).id} // Lv ${state.player.level}.`);
+    return true;
   }
   function saveAndExitToMenu(){
     const ok=save(true);
     battle=null;
     storyActive=false;
+    pendingStoryAfter=null;
     const story=$('storyOverlay'); if(story) story.classList.add('hidden');
     document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     showMenu();
     toast(ok ? 'Archive saved. Returned to main menu.' : 'Returned to main menu. Save failed.');
     return ok;
   }
+  function syncContinueButton(){
+    const btn=$('continueBtn');
+    if(!btn) return;
+    const raw=rawSaveFromStorage();
+    const parsed=raw ? safeJsonParse(raw) : null;
+    if(parsed?.player){
+      const def=STAGE_DEFS[parsed.currentStage||'f001'] || STAGE_DEFS.f001;
+      btn.disabled=false;
+      btn.textContent=`Continue Operation // ${def.id} Lv ${parsed.player.level||1}`;
+      const info=$('menuInfo');
+      if(info && !info.classList.contains('ok')) info.textContent=`Saved archive found: ${def.id} // Level ${parsed.player.level||1}`;
+      const status=$('saveStatus'); if(status) status.textContent=`Saved: ${def.id} // ${def.title} // Level ${parsed.player.level||1}`;
+    } else {
+      btn.disabled=false;
+      btn.textContent='Continue Operation';
+      const status=$('saveStatus'); if(status) status.textContent='No saved archive found on this browser yet.';
+    }
+  }
+  window.addEventListener('beforeunload',()=>{ if(gameStarted) try{ save(true); }catch(err){} });
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden && gameStarted) try{ save(true); }catch(err){} });
+
+
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3239,7 +3396,7 @@
   function loadFromSlot(n){
     const raw=localStorage.getItem(saveSlotKey(n));
     if(!raw){ toast(`Slot ${n} is empty.`); return; }
-    localStorage.setItem('ashVectorSave', raw);
+    localStorage.setItem(SAVE_KEY, raw);
     load();
     toast(`Loaded Slot ${n}.`);
     renderSaveHub();
@@ -3677,8 +3834,8 @@
       if(!current) open();
     }catch(err){}
   }
-  function showMenu(){syncBuildLabels(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function showMenu(){syncBuildLabels(); syncContinueButton(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
+  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); save(true); if(fresh) setTimeout(()=>showStoryOnce('intro',()=>{ pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -6253,7 +6410,7 @@
     const info=$('menuInfo');
     if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
     const routes={
-      continueBtn:()=>{ stopIntroVideoForGame(); const ok=load(); if(ok) startGame(false); else toast('No archive loaded. Start a new operation.'); },
+      continueBtn:()=>continueSavedGame(),
       newGameBtn:()=>{ stopIntroVideoForGame(); startGame(true); },
       openingStoryBtn:()=>startGame(true),
       introVideoReplayBtn:()=>replayIntroVideo(),
@@ -6293,7 +6450,7 @@
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       // v44: hard launch fallback. If the main menu is visible, Enter or Space always starts gameplay.
-      if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); startGame(true); return; }
+      if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); if(hasSaveData()) continueSavedGame(); else startGame(true); return; }
       if(!$('bootScreen').classList.contains('hidden')){ if(e.key==='Escape'){ e.preventDefault(); forceIntroMenuRecovery(); return; } if(e.key==='Enter'||e.key===' '){ e.preventDefault(); startIntroVideo(); return; } }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
       if(battle && !$('battleOverlay').classList.contains('hidden')){
@@ -6341,9 +6498,9 @@
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
     }, {passive:false});
-    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; if($('openingStoryBtn')) $('openingStoryBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{const ok=load(); if(ok) startGame(false); else toast('No archive loaded. Start a new operation.');};
+    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; if($('openingStoryBtn')) $('openingStoryBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
-    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
+    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_AUTOSLOT_KEY); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
@@ -6353,12 +6510,12 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
     story:()=>startGame(true),
-    continue:()=>{try{load();}catch(err){} startGame(false);},
+    continue:()=>continueSavedGame(),
     open:(id)=>openOverlay(id),
     fullscreen:()=>toggleFullscreenMode()
   };
