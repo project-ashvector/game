@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.66';
-  const BUILD_TITLE = 'NEW GAME STORY START FIX PASS';
+  const BUILD_VERSION = '0.9.67';
+  const BUILD_TITLE = 'LEVEL 1 STORY HARD FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3836,37 +3836,46 @@
   }
   function showMenu(){syncBuildLabels(); syncContinueButton(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
   function startOpeningStorySequence(){
+    ensureStageStoryScenes();
     ensureStoryFlags();
-    // New Game should always show the opening story, even if an older save marked it read.
+    // New Game must always show Level 1 intro, even if an old save/read flag exists.
     state.flags.storySeen.intro=false;
+    delete state.flags.storySeen.intro;
     const afterIntro=()=>{
+      ensureStoryFlags();
       state.flags.storySeen.intro=true;
       save(true);
+      requestNativeFullscreen();
       pulseObjective(currentObjectiveText());
       showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.');
     };
     const open=()=>{
       try{
+        ensureStageStoryScenes();
         showStory('intro', afterIntro);
         const overlay=$('storyOverlay');
         if(overlay){
           mountStoryOverlay(overlay);
-          overlay.classList.remove('hidden');
-          overlay.style.display='grid';
-          overlay.style.zIndex='120000';
-          overlay.style.pointerEvents='auto';
-          document.body.classList.add('story-open');
+          applyStoryOverlaySafety(overlay);
+          const line=$('storyLine');
+          if(!line || !line.textContent){
+            console.warn('[AV Story] opening story mounted but no line text found; forcing first line.');
+          }
+        } else {
+          console.warn('[AV Story] story overlay did not create.');
         }
       }catch(err){
         console.error('Opening story failed:', err);
-        afterIntro();
+        toast('Opening story failed to render. Check console.');
       }
     };
-    // Give fullscreen/game layout a moment to settle before mounting the dialog.
-    setTimeout(open, 650);
+    // Open immediately, then run two safety retries if the browser/fullscreen hides it.
+    setTimeout(open, 80);
+    setTimeout(()=>{ const overlay=$('storyOverlay'); if(!storyActive || !overlay || overlay.classList.contains('hidden') || overlay.style.display==='none') open(); }, 420);
+    setTimeout(()=>{ const overlay=$('storyOverlay'); if(storyActive && overlay) applyStoryOverlaySafety(overlay); }, 900);
   }
 
-  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); save(true); if(fresh) startOpeningStorySequence(); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); if(!fresh) requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); save(true); if(fresh) startOpeningStorySequence(); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -4565,10 +4574,28 @@
     const host=storyOverlayHost();
     if(overlay && host && overlay.parentElement !== host) host.appendChild(overlay);
   }
+  function applyStoryOverlaySafety(overlay){
+    if(!overlay) return;
+    overlay.className='story-overlay';
+    overlay.style.position='fixed';
+    overlay.style.inset='0';
+    overlay.style.zIndex='120000';
+    overlay.style.display='grid';
+    overlay.style.placeItems='center';
+    overlay.style.padding='16px';
+    overlay.style.background='rgba(0,0,0,.78)';
+    overlay.style.pointerEvents='auto';
+    const card=overlay.querySelector('.story-card');
+    if(card){
+      card.style.maxHeight='calc(100svh - 32px)';
+      card.style.overflow='auto';
+    }
+    document.body.classList.add('story-open');
+  }
   document.addEventListener('fullscreenchange',()=>{
     if(storyActive){
       const overlay=$('storyOverlay');
-      if(overlay){ mountStoryOverlay(overlay); overlay.classList.remove('hidden'); overlay.style.display='grid'; overlay.style.zIndex='120000'; }
+      if(overlay){ mountStoryOverlay(overlay); applyStoryOverlaySafety(overlay); }
     }
   });
   function showStory(key, after){
@@ -4588,6 +4615,7 @@
       $('storySkip').onclick=finishStory;
     }
     mountStoryOverlay(overlay);
+    applyStoryOverlaySafety(overlay);
     const storyPortrait = document.querySelector('#storyOverlay .story-body img');
     const lineData = raw => {
       if(raw && typeof raw === 'object') return raw;
@@ -4609,7 +4637,7 @@
     overlay.style.pointerEvents='auto';
     overlay.classList.remove('hidden');
     document.body.classList.add('story-open');
-    requestAnimationFrame(()=>{ mountStoryOverlay(overlay); overlay.classList.remove('hidden'); overlay.style.display='grid'; });
+    requestAnimationFrame(()=>{ mountStoryOverlay(overlay); applyStoryOverlaySafety(overlay); });
     const draw=()=>{
       const line=lineData(scene.lines[i]);
       if(storyPortrait){ storyPortrait.src = portraitSrc(line); storyPortrait.alt = `${line.speaker || 'Speaker'} portrait`; }
@@ -6451,7 +6479,7 @@
     if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
     const routes={
       continueBtn:()=>continueSavedGame(),
-      newGameBtn:()=>{ stopIntroVideoForGame(); startGame(true); },
+      newGameBtn:()=>{ stopIntroVideoForGame(); const old=$('storyOverlay'); if(old) old.remove(); storyActive=false; pendingStoryAfter=null; startGame(true); },
       introVideoReplayBtn:()=>replayIntroVideo(),
       fractureIndexBtn:()=>openOverlay('fractureOverlay'),
       operatorFilesBtn:()=>openOverlay('operatorOverlay'),
@@ -6537,7 +6565,7 @@
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
     }, {passive:false});
-    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
+    $('newGameBtn').onclick=(e)=>{e.preventDefault(); const old=$('storyOverlay'); if(old) old.remove(); storyActive=false; pendingStoryAfter=null; startGame(true);}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_AUTOSLOT_KEY); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
