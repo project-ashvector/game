@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.61';
-  const BUILD_TITLE = 'NPC PROXIMITY CRASH FIX PASS';
+  const BUILD_VERSION = '0.9.62';
+  const BUILD_TITLE = 'RADIO LEVEL MUSIC PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -33,11 +33,41 @@
   const MAP_VERSION = 'sector_stage_v12_v148_version_sync_cleanup';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
-    level1: 'assets/music/level1.mp3',
+    pause: 'assets/music/pause.mp3',
     battle: 'assets/music/battle.mp3',
     boss: 'assets/music/boss.mp3',
-    pause: 'assets/music/pause.mp3'
+    level1: 'assets/music/level1.mp3',
+    level2: 'assets/music/level2.mp3',
+    level3: 'assets/music/level3.mp3',
+    level4: 'assets/music/level4.mp3',
+    level5: 'assets/music/level5.mp3',
+    level6: 'assets/music/level6.mp3',
+    level7: 'assets/music/level7.mp3',
+    level8: 'assets/music/level8.mp3',
+    level9: 'assets/music/level9.mp3',
+    level10: 'assets/music/level10.mp3',
+    level11: 'assets/music/level11.mp3',
+    level12: 'assets/music/level12.mp3'
   };
+  const RADIO_TRACKS = [
+    {key:'pause', title:'Main Menu / Pause Theme', subtitle:'Unlocked from start', stage:0},
+    {key:'level1', title:'Level 1 — Forbidden Graveyard', subtitle:'F-001 field music', stage:1},
+    {key:'level2', title:'Level 2 — Ash Wastes Outpost', subtitle:'F-002 field music', stage:2},
+    {key:'level3', title:'Level 3 — Neon Graveyard', subtitle:'F-003 field music', stage:3},
+    {key:'level4', title:'Level 4 — Transit Ruins', subtitle:'F-004 field music', stage:4},
+    {key:'level5', title:'Level 5 — Prism Lab', subtitle:'F-005 field music', stage:5},
+    {key:'level6', title:'Level 6 — Core Spire', subtitle:'F-006 field music', stage:6},
+    {key:'level7', title:'Level 7 — Fracture Seven', subtitle:'F-007 field music', stage:7},
+    {key:'level8', title:'Level 8 — Fracture Eight', subtitle:'F-008 field music', stage:8},
+    {key:'level9', title:'Level 9 — False Ending', subtitle:'F-009 field music', stage:9},
+    {key:'level10', title:'Level 10 — Vector Collapse', subtitle:'F-010 field music', stage:10},
+    {key:'level11', title:'Level 11 — Ashline Final', subtitle:'F-011 field music', stage:11},
+    {key:'level12', title:'Level 12 — Current Final Level', subtitle:'F-012 field music', stage:12},
+    {key:'battle', title:'Battle Music', subtitle:'Unlocked after entering combat', special:'battle'},
+    {key:'boss', title:'Boss Fight Music', subtitle:'Unlocked after reaching a boss route', special:'boss'}
+  ];
+  let radioMode=false;
+  let radioTrack='pause';
 
   const AudioManager = {
     tracks: {},
@@ -314,14 +344,93 @@
 
   const uiState = { mode: 'boot', returnStack: [] };
   let gameStarted = false;
+  function musicKeyForStage(key=currentStageKey()){
+    const n=Math.max(1, Math.min(12, stageNumberFromKey(key)));
+    return MUSIC[`level${n}`] ? `level${n}` : 'level1';
+  }
+  function ensureRadioState(){
+    if(!state) return;
+    state.radioUnlocked ||= {};
+    state.radioUnlocked.pause=true;
+    state.radioUnlocked.level1=true;
+    const current=stageNumberFromKey(currentStageKey());
+    for(let i=1;i<=current;i++) state.radioUnlocked[`level${i}`]=true;
+    Object.entries(state.stages||{}).forEach(([key,data])=>{
+      const n=stageNumberFromKey(key);
+      if(data?.complete){
+        for(let i=1;i<=n;i++) state.radioUnlocked[`level${i}`]=true;
+      }
+    });
+    if(Object.values(state.enemyKills||{}).some(v=>Number(v)>0)) state.radioUnlocked.battle=true;
+    if(Object.values(state.bossKills||{}).some(v=>Number(v)>0) || state.flags?.bossUnlocked || state.flags?.bossDefeated) state.radioUnlocked.boss=true;
+  }
+  function unlockRadioTrack(key){
+    if(!state || !key) return;
+    ensureRadioState();
+    state.radioUnlocked[key]=true;
+    queueAutosave();
+  }
+  function radioTrackUnlocked(track){
+    if(!track) return false;
+    ensureRadioState();
+    if(track.stage != null){
+      if(track.stage <= 1) return true;
+      return !!state.radioUnlocked?.[track.key];
+    }
+    return !!state.radioUnlocked?.[track.key];
+  }
+  function radioHighestStageText(){
+    ensureRadioState();
+    let max=1;
+    Object.keys(state.radioUnlocked||{}).forEach(k=>{
+      const m=k.match(/^level(\d+)$/);
+      if(m && state.radioUnlocked[k]) max=Math.max(max, Number(m[1]));
+    });
+    return `Unlocked through Level ${max}`;
+  }
+  function radioTrackButtonHtml(track){
+    const unlocked=radioTrackUnlocked(track);
+    const active=radioMode && radioTrack===track.key;
+    const lockText=track.stage ? `Reach Level ${track.stage} to unlock` : 'Locked until heard in game';
+    return `<button class="radio-track-btn ${unlocked?'unlocked':'locked'} ${active?'active':''}" ${unlocked?'':'disabled'} onclick="window.AV.playRadioTrack('${track.key}')"><b>${safeHtml(track.title)}</b><span>${unlocked?safeHtml(track.subtitle):safeHtml(lockText)}</span><em>${unlocked?(active?'PLAYING':'UNLOCKED'):'LOCKED'}</em></button>`;
+  }
+  function renderRadioDb(){
+    const list=$('radioTrackList');
+    if(!list) return;
+    ensureRadioState();
+    list.innerHTML=RADIO_TRACKS.map(radioTrackButtonHtml).join('');
+    const status=$('radioStatus');
+    if(status) status.innerHTML=`<b>${safeHtml(radioHighestStageText())}</b><br><span>Only songs you have reached/heard are available here.</span>`;
+    const now=$('radioNowPlaying');
+    if(now){
+      const track=RADIO_TRACKS.find(t=>t.key===radioTrack);
+      now.textContent=radioMode && track ? `Now Playing: ${track.title}` : 'Choose an unlocked song.';
+    }
+  }
+  function playRadioTrack(key){
+    const track=RADIO_TRACKS.find(t=>t.key===key);
+    if(!track || !radioTrackUnlocked(track)){ toast('Radio track locked. Reach that level first.'); return false; }
+    radioMode=true;
+    radioTrack=key;
+    AudioManager.force(key);
+    renderRadioDb();
+    toast(`Radio playing: ${track.title}`);
+    return true;
+  }
+  function stopRadio(){
+    radioMode=false;
+    AudioManager.play(activeMusicForState(), true);
+    renderRadioDb();
+  }
+
   function activeMusicForState(){
-    // v58: music follows real UI/game state.
-    // The old intro music route now uses pause.mp3; the intro video handles its own audio.
+    // v152: music follows current stage, and radio mode owns playback while open.
+    if(radioMode) return radioTrack || 'pause';
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
     if(uiState.mode === 'overlay') return 'pause';
-    if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return 'level1';
+    if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return musicKeyForStage();
     if(uiState.mode === 'menu' || !document.querySelector('#mainMenu.hidden')) return 'pause';
-    return gameStarted ? 'level1' : 'pause';
+    return gameStarted ? musicKeyForStage() : 'pause';
   }
   function refreshMusic(){ AudioManager.play(activeMusicForState()); }
 
@@ -2539,7 +2648,7 @@
     log(`${def.id} // ${def.title} loaded${force?' from QA console':''}.`);
     save(true);
     hideAll(); uiState.mode='game'; gameStarted=true; document.body.classList.add('game-active','fullscreen-mode'); $('app').classList.remove('hidden');
-    document.body.dataset.stage=def.key; ensureMobileActionPad(); setMobilePlayMode(); renderAll(); AudioManager.play('level1'); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
+    document.body.dataset.stage=def.key; ensureMobileActionPad(); setMobilePlayMode(); renderAll(); unlockRadioTrack(musicKeyForStage(key)); AudioManager.play(activeMusicForState()); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
     return true;
   }
   function qaLoadStage(key){
@@ -3394,7 +3503,7 @@
     }catch(err){}
   }
   function showMenu(){syncBuildLabels(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
-  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); AudioManager.play('level1'); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); if(fresh) setTimeout(()=>showStory('intro',()=>{ state.flags.storySeen.intro=true; pulseObjective(currentObjectiveText()); showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }), 320); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -4504,7 +4613,7 @@
     if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
     battle={code,x,y,enemy:def,turn:'player',guard:false,enemyStatus:{},playerStatus:{},evadeNext:false};
     battleCommandIndex = 0;
-    uiState.mode='combat'; AudioManager.play(code==='B'?'boss':'battle');
+    uiState.mode='combat'; unlockRadioTrack(code==='B'?'boss':'battle'); AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
     if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
     $('battleEnemy').src=def.img;
@@ -5269,6 +5378,7 @@
       if(id==='playtestOverlay') renderUI();
       if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
+      if(id==='radioOverlay'){ radioMode=true; radioTrack=radioTrack||'pause'; renderRadioDb(); AudioManager.play(radioTrack, true); }
     }catch(err){
       console.error('Overlay render failed:', id, err);
       target.querySelector('.database-modal')?.insertAdjacentHTML('beforeend', `<p class="menu-info warn">Overlay opened, but a render error occurred: ${String(err.message||err)}</p>`);
@@ -5279,6 +5389,7 @@
   }
 
   function closeOverlays(){
+    radioMode=false;
     document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     document.body.classList.remove('menu-protocol-open');
     const previous = uiState.returnStack.pop() || (gameStarted && !$('app').classList.contains('hidden') ? 'game' : 'menu');
@@ -5942,6 +6053,7 @@
       inventoryDbBtn:()=>openOverlay('inventoryOverlay'),
       progressionBtn:()=>openOverlay('progressionOverlay'),
       missionMenuBtn:()=>openOverlay('missionOverlay'),
+      radioMenuBtn:()=>openOverlay('radioOverlay'),
       configBtn:()=>openOverlay('configOverlay'),
       menuFullscreenBtn:()=>toggleFullscreenMode()
     };
@@ -6024,8 +6136,8 @@
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
-    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
-    ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
+    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
+    ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closeRadio','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
