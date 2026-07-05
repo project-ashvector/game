@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.63';
-  const BUILD_TITLE = 'SAVE STORY SKILL SCALE PASS';
+  const BUILD_VERSION = '0.9.64';
+  const BUILD_TITLE = 'SKILL NODE HIGHLIGHT PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5339,39 +5339,73 @@
     const x=node.x*TILE, y=node.y*TILE;
     const near=Math.abs(node.x-state.player.x)+Math.abs(node.y-state.player.y)<=1;
     const req=node.levelReq || skillingLevelReqForItem(node.item,node.stage);
-    const locked=skillLevel(node.skill) < req;
+    const currentLvl=skillLevel(node.skill);
+    const locked=currentLvl < req;
+    const highlight=locked?'#ff3048':'#5dff7a';
+    const fill=locked?'#4f1b24':node.color;
+    const pulse=(Math.sin(Date.now()/260 + node.x*.7 + node.y*.3)+1)/2;
     ctx.save();
+
+    // v154: always-visible trainability highlight.
+    // Green means you can use it now. Red means your skill level is too low.
+    ctx.shadowColor=highlight;
+    ctx.shadowBlur=locked ? 13 + pulse*5 : 11 + pulse*4;
+    ctx.strokeStyle=locked ? 'rgba(255,48,72,.95)' : 'rgba(93,255,122,.95)';
+    ctx.lineWidth=near?3:2;
+    ctx.beginPath();
+    ctx.arc(x+TILE/2,y+22,18 + (near?2:0),0,Math.PI*2);
+    ctx.stroke();
+
+    ctx.fillStyle=locked ? 'rgba(255,48,72,.16)' : 'rgba(93,255,122,.15)';
+    ctx.beginPath();
+    ctx.arc(x+TILE/2,y+22,16,0,Math.PI*2);
+    ctx.fill();
+
     ctx.fillStyle='rgba(0,0,0,.42)';
+    ctx.shadowBlur=0;
     ctx.beginPath();
     ctx.ellipse(x+TILE/2,y+TILE-6,15,6,0,0,Math.PI*2);
     ctx.fill();
-    ctx.shadowColor=locked?'#ff3048':node.color;
-    ctx.shadowBlur=near?16:8;
-    ctx.fillStyle=locked?'#4f1b24':node.color;
-    ctx.globalAlpha=.95;
+
+    ctx.shadowColor=highlight;
+    ctx.shadowBlur=near?18:10;
+    ctx.fillStyle=fill;
+    ctx.globalAlpha=.96;
     ctx.beginPath();
     ctx.roundRect ? ctx.roundRect(x+9,y+8,24,24,6) : ctx.rect(x+9,y+8,24,24);
     ctx.fill();
     ctx.globalAlpha=1;
+
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=highlight;
+    ctx.lineWidth=near?3:2;
+    ctx.strokeRect(x+8.5,y+7.5,25,25);
+
     ctx.fillStyle='#061018';
     ctx.font='bold 18px monospace';
     ctx.textAlign='center';
     ctx.textBaseline='middle';
     ctx.fillText(node.glyph, x+TILE/2, y+20);
-    ctx.shadowBlur=0;
-    ctx.strokeStyle=near?'rgba(255,255,255,.92)':'rgba(255,255,255,.32)';
-    ctx.lineWidth=near?2:1;
-    ctx.strokeRect(x+8.5,y+7.5,25,25);
+
+    // Small status dot on every object so lock state is readable even zoomed out.
+    ctx.fillStyle=highlight;
+    ctx.beginPath();
+    ctx.arc(x+32,y+10,4,0,Math.PI*2);
+    ctx.fill();
+
     if(near){
-      const labelW=76, labelH=14;
-      const labelX=x+(TILE-labelW)/2, labelY=y+TILE-12;
-      ctx.fillStyle='rgba(8,12,14,.88)';
+      const labelW=locked?94:82, labelH=16;
+      const labelX=x+(TILE-labelW)/2, labelY=y+TILE-13;
+      ctx.fillStyle=locked?'rgba(38,4,9,.92)':'rgba(4,34,14,.92)';
       ctx.fillRect(labelX,labelY,labelW,labelH);
-      ctx.strokeStyle=node.color;
+      ctx.strokeStyle=highlight;
+      ctx.lineWidth=1;
       ctx.strokeRect(labelX+.5,labelY+.5,labelW-1,labelH-1);
-      ctx.fillStyle='#fff';
-      ctx.font='10px monospace';
-      ctx.fillText('PRESS E', x+TILE/2, labelY+10);
+      ctx.fillStyle=locked?'#ffb8c1':'#caffcf';
+      ctx.font='bold 10px monospace';
+      ctx.textAlign='center';
+      ctx.textBaseline='alphabetic';
+      ctx.fillText(locked?`REQ LV ${req}`:'PRESS E', x+TILE/2, labelY+11);
     }
     ctx.restore();
   }
