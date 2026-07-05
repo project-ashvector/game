@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.60';
-  const BUILD_TITLE = 'NPC POSITION CORRECTION PASS';
+  const BUILD_VERSION = '0.9.61';
+  const BUILD_TITLE = 'NPC PROXIMITY CRASH FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -751,8 +751,9 @@
     return stageNpcs(key).find(n => n.x === x && n.y === y) || null;
   }
   function nearbyNpc(){
+    if(!state?.player) return null;
     const px = state.player.x, py = state.player.y;
-    return stageNpcs().find(n => Math.max(Math.abs(n.x-px), Math.abs(n.y-py)) <= 1) || null;
+    return stageNpcs().find(n => Number.isFinite(n.x) && Number.isFinite(n.y) && Math.max(Math.abs(n.x-px), Math.abs(n.y-py)) <= 1) || null;
   }
   function npcPlayerNearby(npc){
     if(!state?.player || !npc) return false;
@@ -873,14 +874,21 @@
       ctx.fillStyle='#b9ff7c';
       ctx.font='10px monospace';
       ctx.textAlign='center';
-      ctx.fillText(locked?`REQ ${req}`:'PRESS E', x+TILE/2, labelY+10);
+      ctx.fillText('PRESS E', x+TILE/2, labelY+10);
     }
     ctx.strokeStyle=near?'rgba(148,255,98,.88)':'rgba(148,255,98,.38)';
     ctx.lineWidth=near?2:1;
     ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
     ctx.restore();
   }
-  function drawNpcs(){ stageNpcs().forEach(drawNpc); }
+  function drawNpcs(){
+    stageNpcs().forEach(npc=>{
+      try{ drawNpc(npc); }
+      catch(err){
+        console.warn('[AV NPC] draw skipped:', npc?.id, err);
+      }
+    });
+  }
   function handleCanvasNpcClick(evt){
     if(storyActive || battle || $('app').classList.contains('hidden')) return;
     const rect = canvas.getBoundingClientRect();
