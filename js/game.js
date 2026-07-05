@@ -10,7 +10,7 @@
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
-    'Version 0.9.56 // F001 DEAD SPOT BLOCK PASS',
+    'Version 0.9.57 // INTRO MOBILE AUDIO PASS',
     'Initializing...',
     'Connecting to ASH Network...',
     'Connection Established.',
@@ -28,7 +28,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const BUILD_VERSION = '0.9.56';
+  const BUILD_VERSION = '0.9.57';
   const MAP_VERSION = 'sector_stage_v11_npc_salvage';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
@@ -3079,9 +3079,11 @@
     const video=$('introVideo');
     clearIntroVideoGuards();
     clearBootGateFallback();
+    hideIntroAudioPrompt();
     introVideoActive=false;
     clearIntroVideoGuards();
     clearBootGateFallback();
+    hideIntroAudioPrompt();
     if(introFadeTimer){ clearTimeout(introFadeTimer); introFadeTimer=null; }
     try{ if(video){ video.pause(); video.controls=false; video.style.opacity=''; } }catch(err){}
     document.body.classList.remove('intro-video-active');
@@ -3130,6 +3132,53 @@
     introForceMenuTimer=setTimeout(()=>finishSafely(true), 90000);
   }
 
+  function prepIntroVideoAudio(video){
+    if(!video) return;
+    try{
+      video.muted=false;
+      video.defaultMuted=false;
+      video.volume=1;
+      video.removeAttribute('muted');
+      video.controls=false;
+      video.playsInline=true;
+      video.setAttribute('playsinline','true');
+      video.setAttribute('webkit-playsinline','true');
+    }catch(err){}
+  }
+  function hideIntroAudioPrompt(){
+    const old=$('introAudioPrompt');
+    if(old) old.remove();
+  }
+  function showIntroAudioPrompt(video){
+    hideIntroAudioPrompt();
+    const bootScreen=$('bootScreen');
+    if(!bootScreen || !video) return;
+    const prompt=document.createElement('button');
+    prompt.id='introAudioPrompt';
+    prompt.type='button';
+    prompt.textContent='TAP TO START INTRO WITH SOUND';
+    prompt.style.cssText='position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:100005;padding:14px 18px;border-radius:999px;border:1px solid rgba(0,217,255,.75);background:rgba(0,8,14,.92);color:#eaffff;font:700 13px monospace;letter-spacing:.08em;box-shadow:0 0 22px rgba(0,217,255,.35);';
+    prompt.onclick=(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      prepIntroVideoAudio(video);
+      hideIntroAudioPrompt();
+      introVideoActive=true;
+      const p=video.play();
+      if(p && p.then){
+        p.then(()=>{ prepIntroVideoAudio(video); requestVideoFullscreen(video); }).catch(()=>{
+          toast('Phone blocked video audio. Check silent mode, then tap START INTRO again.');
+          introVideoActive=false;
+          armBootGateFallback();
+        });
+      } else {
+        prepIntroVideoAudio(video);
+        requestVideoFullscreen(video);
+      }
+    };
+    bootScreen.appendChild(prompt);
+  }
+
   function boot(){
     uiState.mode='boot';
     bootDone=true;
@@ -3150,9 +3199,7 @@
       video.loop=false;
       video.controls=false;
       video.preload='auto';
-      video.playsInline=true;
-      video.setAttribute('playsinline','true');
-      video.setAttribute('webkit-playsinline','true');
+      prepIntroVideoAudio(video);
       armIntroVideoGuards(video, prog);
       try{ video.load(); }catch(err){}
     }
@@ -3195,28 +3242,28 @@
     if(!video){ finishIntroVideo(); return; }
     video.controls=false;
     video.loop=false;
-    video.muted=false;
-    video.volume=1;
-    video.playsInline=true;
-    video.setAttribute('playsinline','true');
-    video.setAttribute('webkit-playsinline','true');
+    prepIntroVideoAudio(video);
+    hideIntroAudioPrompt();
     try{ video.currentTime=0; }catch(err){}
     armIntroVideoGuards(video, prog);
     const tryPlay=()=>{
+      prepIntroVideoAudio(video);
       const p=video.play();
       if(p && p.catch){
-        p.then(()=>requestVideoFullscreen(video)).catch(()=>{
-          video.muted=true;
-          const mutedTry=video.play();
-          if(mutedTry && mutedTry.catch){
-            mutedTry.then(()=>{ requestVideoFullscreen(video); toast('Video started muted by browser. Use video controls to unmute.'); }).catch(()=>{
-              introVideoActive=false;
-              toast('Video playback blocked. Opening main menu.');
-              forceIntroMenuRecovery();
-            });
-          } else requestVideoFullscreen(video);
+        p.then(()=>{
+          prepIntroVideoAudio(video);
+          requestVideoFullscreen(video);
+        }).catch(()=>{
+          // Do not fall back to muted playback on phones. Ask for one more direct tap
+          // so mobile browsers can grant audio permission.
+          introVideoActive=false;
+          showIntroAudioPrompt(video);
+          toast('Tap the sound button to start the intro with audio.');
         });
-      } else requestVideoFullscreen(video);
+      } else {
+        prepIntroVideoAudio(video);
+        requestVideoFullscreen(video);
+      }
     };
     tryPlay();
   }
