@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.59';
-  const BUILD_TITLE = 'NPC SAFE MOVE MOBILE INTRO PASS';
+  const BUILD_VERSION = '0.9.60';
+  const BUILD_TITLE = 'NPC POSITION CORRECTION PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -603,7 +603,7 @@
       name: 'Fermilat',
       asset: 'assets/npcs/fermilat.png',
       stages: {
-        f001:{x:13,y:17,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
+        f001:{x:28,y:20,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
         f004:{x:26,y:21,scene:'fermilatF004'}, f005:{x:24,y:21,scene:'fermilatF005'}, f006:{x:25,y:21,scene:'fermilatF006'},
         f007:{x:28,y:20,scene:'fermilatF006'}, f008:{x:30,y:18,scene:'fermilatF006'}, f009:{x:27,y:23,scene:'fermilatF006'},
         f010:{x:32,y:21,scene:'fermilatF006'}, f011:{x:29,y:24,scene:'fermilatF006'}, f012:{x:34,y:22,scene:'fermilatF006'}
@@ -625,7 +625,7 @@
       name: 'Kessa Field Medic',
       asset: 'assets/npcs/medic.png',
       stages: {
-        f001:{x:51,y:28,scene:'npcMedic'}, f002:{x:54,y:27,scene:'npcMedic'}, f003:{x:53,y:30,scene:'npcMedic'},
+        f001:{x:12,y:15,scene:'npcMedic'}, f002:{x:54,y:27,scene:'npcMedic'}, f003:{x:53,y:30,scene:'npcMedic'},
         f004:{x:50,y:29,scene:'npcMedic'}, f005:{x:55,y:27,scene:'npcMedic'}, f006:{x:57,y:28,scene:'npcMedic'},
         f007:{x:52,y:31,scene:'npcMedic'}, f008:{x:49,y:29,scene:'npcMedic'}, f009:{x:56,y:30,scene:'npcMedic'},
         f010:{x:54,y:28,scene:'npcMedic'}, f011:{x:51,y:30,scene:'npcMedic'}, f012:{x:58,y:29,scene:'npcMedic'}
@@ -636,7 +636,7 @@
       name: 'Ashline Warden',
       asset: 'assets/npcs/warden.png',
       stages: {
-        f001:{x:34,y:11,scene:'npcWarden'}, f002:{x:36,y:12,scene:'npcWarden'}, f003:{x:33,y:10,scene:'npcWarden'},
+        f001:{x:18,y:11,scene:'npcWarden'}, f002:{x:36,y:12,scene:'npcWarden'}, f003:{x:33,y:10,scene:'npcWarden'},
         f004:{x:39,y:11,scene:'npcWarden'}, f005:{x:37,y:13,scene:'npcWarden'}, f006:{x:35,y:12,scene:'npcWarden'},
         f007:{x:38,y:10,scene:'npcWarden'}, f008:{x:34,y:12,scene:'npcWarden'}, f009:{x:40,y:11,scene:'npcWarden'},
         f010:{x:36,y:13,scene:'npcWarden'}, f011:{x:35,y:11,scene:'npcWarden'}, f012:{x:41,y:12,scene:'npcWarden'}
@@ -722,10 +722,29 @@
     return `<section class="fracture-card side-quest-board"><div class="record-kicker">SIDE QUEST // FERMILAT FAVOR</div><h3>${safeHtml(def.title)}</h3><p>${safeHtml(q?.status==='claimed' ? def.done : def.ask)}</p><div class="statrow">Progress ${q?.progress||0}/${q?.target||def.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Status</b><span>${safeHtml(sideQuestStatusText(stage))}</span></div><div><b>Reward</b><span>${safeHtml(reward)}</span></div></div><button onclick="window.AV.claimFermilatQuest('${stage}')" ${q?.status==='complete'?'':'disabled'}>${q?.status==='complete'?'Claim Reward':'Talk / Hunt to Progress'}</button></section>`;
   }
 
+  const NPC_SAFE_FALLBACKS = {
+    f001:{
+      fermilat:{x:28,y:20},
+      scavenger:{x:8,y:8},
+      medic:{x:12,y:15},
+      warden:{x:18,y:11}
+    }
+  };
+  function npcPlacementSafe(pos,key=currentStageKey()){
+    if(!pos) return false;
+    try{
+      if(typeof stageManualBlockAt === 'function' && stageManualBlockAt(pos.x,pos.y,key)) return false;
+      if(typeof canStandAt === 'function' && state?.map) return canStandAt(pos.x,pos.y);
+    }catch(err){}
+    return Number.isFinite(pos.x) && Number.isFinite(pos.y);
+  }
   function stageNpcs(key=currentStageKey()){
     return Object.values(NPC_DEFS).map(n => {
-      const pos = n.stages[key];
-      return pos ? {...n, ...pos, stage:key} : null;
+      const original = n.stages[key];
+      if(!original) return null;
+      const fallback = NPC_SAFE_FALLBACKS[key]?.[n.id];
+      const pos = npcPlacementSafe(original,key) ? original : {...original, ...(fallback || {})};
+      return {...n, ...pos, stage:key};
     }).filter(Boolean);
   }
   function npcAt(x,y,key=currentStageKey()){
