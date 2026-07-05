@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.62';
-  const BUILD_TITLE = 'RADIO LEVEL MUSIC PASS';
+  const BUILD_VERSION = '0.9.63';
+  const BUILD_TITLE = 'SAVE STORY SKILL SCALE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1069,77 +1069,110 @@
     forgenetics:'#d2a8ff',
     system_hacking:'#ffffff'
   };
-  const SKILL_NODE_REQS = [1,3,5,8];
-  const TRAINING_NODE_CATALOG = {
+  const TRAINING_SKILLS = ['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
+  const TRAINING_NODE_BASES = {
     cryptomining:[
-      {label:'Ash Pebble Pile', item:'Ash Pebble', req:1, xp:10, glyph:'◆', verb:'mined'},
-      {label:'Ash Ore Vein', item:'Ash Ore', req:3, xp:16, glyph:'◇', verb:'mined'},
-      {label:'Dense Ash Vein', item:'Dense Ash Ore', req:5, xp:24, glyph:'⬙', verb:'mined'},
-      {label:'Vector Crystal Seam', item:'Vector Crystal', req:8, xp:34, glyph:'✦', verb:'mined'}
+      {label:'Ash Pebble Pile', item:'Ash Pebble', xp:8, glyph:'◆', verb:'mined'},
+      {label:'Ash Ore Vein', item:'Ash Ore', xp:12, glyph:'◇', verb:'mined'},
+      {label:'Dense Ash Vein', item:'Dense Ash Ore', xp:17, glyph:'⬙', verb:'mined'},
+      {label:'Vector Crystal Seam', item:'Vector Crystal', xp:24, glyph:'✦', verb:'mined'},
+      {label:'Obsidian Core Deposit', item:'Obsidian Core Ore', xp:32, glyph:'◆', verb:'mined'}
     ],
     datafishing:[
-      {label:'Static Packet Stream', item:'Static Packet', req:1, xp:10, glyph:'≋', verb:'decoded'},
-      {label:'Encrypted Data Stream', item:'Encrypted Data', req:3, xp:17, glyph:'⌁', verb:'decoded'},
-      {label:'Ghost Log Pool', item:'Ghost Log', req:5, xp:25, glyph:'☰', verb:'decoded'},
-      {label:'Blackbox Signal', item:'Blackbox File', req:8, xp:36, glyph:'▤', verb:'decoded'}
+      {label:'Static Packet Stream', item:'Static Packet', xp:8, glyph:'≋', verb:'decoded'},
+      {label:'Encrypted Data Stream', item:'Encrypted Data', xp:13, glyph:'⌁', verb:'decoded'},
+      {label:'Ghost Log Pool', item:'Ghost Log', xp:18, glyph:'☰', verb:'decoded'},
+      {label:'Blackbox Signal', item:'Blackbox File', xp:25, glyph:'▤', verb:'decoded'},
+      {label:'Deep Archive Current', item:'Deep Archive Packet', xp:34, glyph:'▥', verb:'decoded'}
     ],
     codecraft:[
-      {label:'Wire Scrap Bench', item:'Wire Scrap', req:1, xp:9, glyph:'⚙', verb:'salvaged'},
-      {label:'Circuit Scrap Bench', item:'Circuit Scrap', req:3, xp:16, glyph:'⚒', verb:'salvaged'},
-      {label:'Logic Board Station', item:'Logic Board', req:5, xp:24, glyph:'▧', verb:'salvaged'},
-      {label:'Quantum Relay Rack', item:'Quantum Relay', req:8, xp:34, glyph:'⌬', verb:'salvaged'}
+      {label:'Wire Scrap Bench', item:'Wire Scrap', xp:7, glyph:'⚙', verb:'salvaged'},
+      {label:'Circuit Scrap Bench', item:'Circuit Scrap', xp:12, glyph:'⚒', verb:'salvaged'},
+      {label:'Logic Board Station', item:'Logic Board', xp:18, glyph:'▧', verb:'salvaged'},
+      {label:'Quantum Relay Rack', item:'Quantum Relay', xp:25, glyph:'⌬', verb:'salvaged'},
+      {label:'Null Module Forge', item:'Null Module Part', xp:33, glyph:'⚙', verb:'salvaged'}
     ],
     forgenetics:[
-      {label:'Spore Sample Pod', item:'Spore Sample', req:1, xp:11, glyph:'✣', verb:'harvested'},
-      {label:'Mutagen Sample Pod', item:'Mutagen Sample', req:3, xp:18, glyph:'✤', verb:'harvested'},
-      {label:'Mutated Tissue Bloom', item:'Mutated Tissue', req:5, xp:27, glyph:'✹', verb:'harvested'},
-      {label:'Vector DNA Bloom', item:'Vector DNA', req:8, xp:38, glyph:'❋', verb:'harvested'}
+      {label:'Spore Sample Pod', item:'Spore Sample', xp:9, glyph:'✣', verb:'harvested'},
+      {label:'Mutagen Sample Pod', item:'Mutagen Sample', xp:14, glyph:'✤', verb:'harvested'},
+      {label:'Mutated Tissue Bloom', item:'Mutated Tissue', xp:20, glyph:'✹', verb:'harvested'},
+      {label:'Vector DNA Bloom', item:'Vector DNA', xp:28, glyph:'❋', verb:'harvested'},
+      {label:'Ash Genome Vat', item:'Ash Genome Strand', xp:36, glyph:'✣', verb:'harvested'}
     ],
     system_hacking:[
-      {label:'Broken Token Relay', item:'Broken Token', req:1, xp:10, glyph:'▣', verb:'hacked'},
-      {label:'Access Fragment Relay', item:'Access Fragment', req:3, xp:17, glyph:'▢', verb:'hacked'},
-      {label:'Security Keybit Panel', item:'Security Keybit', req:5, xp:26, glyph:'▨', verb:'hacked'},
-      {label:'Root Cipher Console', item:'Root Cipher', req:8, xp:37, glyph:'▩', verb:'hacked'}
+      {label:'Broken Token Relay', item:'Broken Token', xp:8, glyph:'▣', verb:'hacked'},
+      {label:'Access Fragment Relay', item:'Access Fragment', xp:13, glyph:'▢', verb:'hacked'},
+      {label:'Security Keybit Panel', item:'Security Keybit', xp:19, glyph:'▨', verb:'hacked'},
+      {label:'Root Cipher Console', item:'Root Cipher', xp:27, glyph:'▩', verb:'hacked'},
+      {label:'Admin Ghost Terminal', item:'Admin Ghost Key', xp:35, glyph:'▣', verb:'hacked'}
     ]
   };
-  const TRAINING_SKILLS = ['cryptomining','datafishing','codecraft','forgenetics','system_hacking'];
-
+  function stageSkillReqStart(key=currentStageKey()){
+    return Math.max(1, (stageNumberFromKey(key)-1)*5 + 1);
+  }
+  function stageSkillReqRange(key=currentStageKey()){
+    const start=stageSkillReqStart(key);
+    return {start, end:start+4};
+  }
+  function stageTrainingItemName(base, key=currentStageKey()){
+    const stage=stageDef(key);
+    return `${stage.id} ${base.item}`;
+  }
+  function stageTrainingLabel(base, key=currentStageKey()){
+    const stage=stageDef(key);
+    return `${stage.id} ${base.label}`;
+  }
   function catalogNodeForSkill(skill, stageKey=currentStageKey(), variant=0){
-    const list=TRAINING_NODE_CATALOG[skill] || [];
+    const list=TRAINING_NODE_BASES[skill] || [];
     if(!list.length) return null;
     const tier=Math.max(0, Math.min(list.length-1, variant));
     const base=list[tier];
-    return {...base, skill, color:SKILL_COLOR[skill] || '#ffffff', tier};
+    const req=stageSkillReqStart(stageKey)+tier;
+    const stage=stageNumberFromKey(stageKey);
+    return {
+      ...base,
+      label:stageTrainingLabel(base, stageKey),
+      item:stageTrainingItemName(base, stageKey),
+      skill,
+      color:SKILL_COLOR[skill] || '#ffffff',
+      tier,
+      req,
+      xp:Math.max(1, Math.floor(base.xp + (stage-1)*2.2 + tier*1.5))
+    };
   }
 
   function SKILLING_RULES_FROM_CATALOG(){
     const rules={};
-    Object.entries(TRAINING_NODE_CATALOG).forEach(([skill,nodes])=>{
-      nodes.forEach((n,tier)=>rules[n.item]={skill, baseXp:n.xp, levelBase:n.req, zoneStep:0, itemTier:tier});
+    Object.keys(STAGE_DEFS).forEach(stageKey=>{
+      TRAINING_SKILLS.forEach(skill=>{
+        (TRAINING_NODE_BASES[skill]||[]).forEach((base,tier)=>{
+          const node=catalogNodeForSkill(skill, stageKey, tier);
+          rules[node.item]={skill, baseXp:node.xp, levelBase:node.req, zoneStep:0, itemTier:tier, stage:stageKey};
+        });
+      });
     });
+    // Backward-compatible older materials already in saves/cache loot.
     rules['Scrap Metal']={skill:'codecraft',baseXp:8,levelBase:1,zoneStep:0,itemTier:0};
-    rules['Burnt Alloy']={skill:'cryptomining',baseXp:22,levelBase:3,zoneStep:0,itemTier:1};
-    rules['Corrupted Catalyst']={skill:'forgenetics',baseXp:32,levelBase:5,zoneStep:0,itemTier:2};
-    rules['Rust Core']={skill:'cryptomining',baseXp:34,levelBase:8,zoneStep:0,itemTier:3};
-    rules['Archive Log 001']={skill:'datafishing',baseXp:18,levelBase:3,zoneStep:0,itemTier:1};
+    rules['Burnt Alloy']={skill:'cryptomining',baseXp:22,levelBase:6,zoneStep:0,itemTier:1};
+    rules['Corrupted Catalyst']={skill:'forgenetics',baseXp:32,levelBase:11,zoneStep:0,itemTier:2};
+    rules['Rust Core']={skill:'cryptomining',baseXp:34,levelBase:16,zoneStep:0,itemTier:3};
+    rules['Archive Log 001']={skill:'datafishing',baseXp:18,levelBase:6,zoneStep:0,itemTier:1};
     rules['Vector Cell']={skill:'system_hacking',baseXp:14,levelBase:1,zoneStep:0,itemTier:0};
-    rules['Zone Cache Voucher']={skill:'system_hacking',baseXp:40,levelBase:8,zoneStep:0,itemTier:3};
+    rules['Zone Cache Voucher']={skill:'system_hacking',baseXp:40,levelBase:21,zoneStep:0,itemTier:4};
     return rules;
   }
   const SKILLING_ITEM_RULES = SKILLING_RULES_FROM_CATALOG();
 
   function skillingRuleForItem(name, fallbackSkill='cryptomining'){
-    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:7, levelBase:1, zoneStep:0, itemTier:0};
+    return SKILLING_ITEM_RULES[name] || {skill:fallbackSkill, baseXp:7, levelBase:stageSkillReqStart(), zoneStep:0, itemTier:0};
   }
   function skillingLevelReqForItem(name, stageKey=currentStageKey()){
     const rule=skillingRuleForItem(name);
-    return Math.max(1, Math.min(99, rule.levelBase || 1));
+    return Math.max(1, Math.min(99, rule.levelBase || stageSkillReqStart(stageKey)));
   }
   function skillingXpForItem(name, stageKey=currentStageKey(), qty=1){
     const rule=skillingRuleForItem(name);
-    const stage=stageNumberFromKey(stageKey);
-    const stageBoost=Math.floor(Math.max(0, stage-1) * (0.8 + (rule.itemTier || 0)*0.35));
-    return Math.max(1, Math.floor((rule.baseXp + stageBoost) * Math.max(1, qty || 1)));
+    return Math.max(1, Math.floor((rule.baseXp || 7) * Math.max(1, qty || 1)));
   }
   function canTrainFromItem(name, stageKey=currentStageKey()){
     const rule=skillingRuleForItem(name);
@@ -1147,12 +1180,13 @@
     const lvl=skillLevel(rule.skill);
     return {ok:lvl>=req, req, lvl, skill:rule.skill, xp:skillingXpForItem(name, stageKey, 1)};
   }
-
   function zoneProfile(key=currentStageKey()){
-    const stage=stageNumberFromKey(key);
-    const items=TRAINING_SKILLS.flatMap(skill => (TRAINING_NODE_CATALOG[skill]||[]).map(n=>n.item));
-    return {zone:`Stage ${stage} Full Skill Grid`, skills:[...TRAINING_SKILLS], items};
+    const range=stageSkillReqRange(key);
+    const skills=[...TRAINING_SKILLS];
+    const items=skills.flatMap(skill => (TRAINING_NODE_BASES[skill]||[]).map(base=>stageTrainingItemName(base,key)));
+    return {zone:`${stageDef(key).id} Skill Range Lv. ${range.start}-${range.end}`, skills, items};
   }
+
   function ensureTrainingNodeState(){
     if(!state) return;
     state.resourceNodes ||= {};
@@ -1193,25 +1227,24 @@
     const nodes=[];
     if(!floor.length) return nodes;
 
-    // Every map gets 4 different training objects per skill:
-    // req Lv. 1, 3, 5, and 8.
+    // Every map gets 5 different training objects per skill.
+    // Level 1 uses Lv. 1-5, Level 2 uses Lv. 6-10, ... Level 12 uses Lv. 56-60.
     let cursor=0;
     TRAINING_SKILLS.forEach((skill, skillIndex)=>{
-      for(let tier=0;tier<4;tier++){
+      for(let tier=0;tier<5;tier++){
         const catalog=catalogNodeForSkill(skill,key,tier);
         if(!catalog) continue;
         let chosen=null;
         for(let tries=0;tries<floor.length;tries++){
-          const idx=(skillIndex*17 + tier*11 + stageNumberFromKey(key)*7 + tries + cursor) % floor.length;
+          const idx=(skillIndex*19 + tier*13 + stageNumberFromKey(key)*7 + tries + cursor) % floor.length;
           const t=floor[idx];
-          const pos=`${t.x},${t.y}`;
           if(!nodes.some(n=>n.x===t.x && n.y===t.y)){
             chosen=t;
             cursor=idx+1;
             break;
           }
         }
-        if(!chosen) chosen=floor[(skillIndex*4+tier) % floor.length];
+        if(!chosen) chosen=floor[(skillIndex*5+tier) % floor.length];
         nodes.push({
           id:`${key}:skillnode:${skill}:${tier}`,
           stage:key,
@@ -2221,6 +2254,36 @@
 
 
   // v103: Story Archive lets players replay unlocked narrative scenes from Mission Briefing.
+  function ensureStageStoryScenes(){
+    Object.entries(STAGE_DEFS).forEach(([key,def])=>{
+      const n=stageNumberFromKey(key);
+      const id=def.id || key.toUpperCase();
+      const title=def.title || `Fracture ${n}`;
+      if(key !== 'f001'){
+        STORY_SCENES[`${key}Intro`] ||= {kicker:`CHAPTER ${n} // ${String(title).toUpperCase()}`, speaker:'AVOS', lines:[`Welcome to ${id}: ${title}. The fracture route is now active.`, 'Sync the terminal, clear the anomaly route, breach the boss gate, and extract with the core.']};
+        STORY_SCENES[`${key}Terminal`] ||= {kicker:`${id} TERMINAL // SYNCED`, speaker:'AVOS', lines:[`${title} terminal linked. Route beacon rebuilt.`, `Clear ${requiredAnomaliesForStage(key)} anomaly signatures to open the boss route.`]};
+        STORY_SCENES[`${key}Lore`] ||= {kicker:`${id} ARCHIVE // RECOVERED`, speaker:'VYRA', lines:[`Recovered archive from ${title}. The fracture has its own memory scar.`, 'AVOS: Logged. I will file it under things reality should not have done.']};
+        STORY_SCENES[`${key}BossIntro`] ||= {kicker:`${id} BOSS ROUTE // BREACH`, speaker:'AVOS', lines:[`Boss-class signature confirmed in ${title}.`, 'Recover the core. Try not to let the monster turn your save file into confetti.']};
+        STORY_SCENES[`${key}BossDefeated`] ||= {kicker:`${id} CORE // RECOVERED`, speaker:'VYRA', lines:['Core secured. The fracture is collapsing back into route data.', 'AVOS: Excellent. Extraction protocol is available.']};
+      }
+      STORY_SCENES[`${key}Clear`] ||= {kicker:`${id} COMPLETE`, title:`${title} Cleared`, tag:'Fracture route stabilized.', speaker:'AVOS', lines:[`${id} is clear. ${title} has been stabilized for now.`, 'New route data recovered. Save your archive before pushing deeper.']};
+    });
+  }
+  function storyArchiveEntries(){
+    ensureStageStoryScenes();
+    const generated=[];
+    Object.entries(STAGE_DEFS).forEach(([key,def])=>{
+      const n=stageNumberFromKey(key);
+      if(key !== 'f001'){
+        generated.push({key:`${key}Intro`, chapter:`Chapter ${n}`, title:`${def.title} Arrival`, desc:`Intro dialog for ${def.id}.`, unlock:()=>playerMeetsStageRequirement(key) || !!state.stages?.[key]?.unlocked || currentStageKey()===key});
+      }
+      generated.push({key:`${key}Clear`, chapter:`Chapter ${n}`, title:`${def.title} Clear`, desc:`Clear dialog for ${def.id}.`, unlock:()=>!!state.stages?.[key]?.complete || stageNumberFromKey(currentStageKey())>n});
+    });
+    const byKey=new Map();
+    [...STORY_ARCHIVE_ENTRIES, ...generated].forEach(entry=>{ if(!byKey.has(entry.key)) byKey.set(entry.key, entry); });
+    return [...byKey.values()];
+  }
+
   const STORY_ARCHIVE_ENTRIES = [
     {key:'intro', chapter:'Prologue', title:'The Ash Event', desc:'Vyra wakes up, AVOS explains how reality got aggressively educational.', unlock:()=>true},
     {key:'f001Clear', chapter:'Chapter 1', title:'The First Vector Wakes', desc:'Grave Core recovered and the route to Ash Wastes Outpost opens.', unlock:()=>!!state.stages?.f001?.complete || ['f002','f003','f004','f005','f006','f007','f008','f009','f010','f011','f012'].includes(currentStageKey())},
@@ -2241,7 +2304,7 @@
     if(!grid) return;
     let panel = $('storyArchiveBoard');
     if(!panel){ panel = document.createElement('section'); panel.id = 'storyArchiveBoard'; panel.className = 'fracture-card story-archive-board'; grid.appendChild(panel); }
-    const rows = STORY_ARCHIVE_ENTRIES.map(entry => {
+    const rows = storyArchiveEntries().map(entry => {
       const unlocked = !!entry.unlock();
       return `<div class="story-archive-row ${unlocked?'unlocked':'locked'}"><div><b>${safeHtml(entry.chapter)} // ${safeHtml(entry.title)}</b><span>${safeHtml(entry.desc)}</span></div><button ${unlocked?'':'disabled'} onclick="window.AV.showStory('${entry.key}')">${unlocked?'Replay':'Locked'}</button></div>`;
     }).join('');
@@ -3043,8 +3106,120 @@
       images[p] = im;
     });
   }
-  function save(silent=false){state.lastSave = Date.now(); localStorage.setItem('ashVectorSave', JSON.stringify(state)); if(!silent) toast('Archive saved.'); renderUI();}
-  function load(){const s=localStorage.getItem('ashVectorSave'); if(s){state=JSON.parse(s); ensureProgression(); state.dropLog ||= []; state.bossKills ||= {}; state.anomalyResearch ||= {}; state.contracts ||= {}; state.contractHistory ||= []; state.contractCounter ||= 0; state.npcTalks ||= {}; state.npcRewards ||= {}; state.sideQuests ||= {}; state.protocolChallenges ||= {}; ensureContracts(); ensureProtocolChallenges(); state.stages ||= {}; Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false}); const rebuildRoute=()=>{ const key=state.currentStage||'f001'; const parsed=parseStageMap(key); state.map=parsed.map; state.player.x=parsed.px; state.player.y=parsed.py; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}; state.visited={[`${parsed.px},${parsed.py}`]:1}; state.checkpoint=null; state.mapVersion=MAP_VERSION; log(`${stageDef(key).id} route rebuilt for current map/collision data.`); }; if(!state.map || !Array.isArray(state.map)){ const keep={player:state.player,inventory:state.inventory,equipment:state.equipment,operatorSyncRank:state.operatorSyncRank,dropLog:state.dropLog,bossKills:state.bossKills,contracts:state.contracts,contractHistory:state.contractHistory,contractCounter:state.contractCounter,npcTalks:state.npcTalks,npcRewards:state.npcRewards,sideQuests:state.sideQuests,protocolChallenges:state.protocolChallenges,resourceNodes:state.resourceNodes,settings:state.settings,skillData:state.skillData,upgrades:state.upgrades,stages:state.stages,currentStage:state.currentStage,qaUnlockAllStages:state.qaUnlockAllStages,protocolChallenges:state.protocolChallenges}; state=newGameState(); Object.assign(state, keep); rebuildRoute(); } else if(state.mapVersion!==MAP_VERSION){ rebuildRoute(); } state.mapVersion=MAP_VERSION; state.lastSave ||= Date.now(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); syncHpCap(); unlockNextStages(); toast('Archive loaded.'); applySettings(); renderAll();} else toast('No archive found.');}
+  const SAVE_SCHEMA_VERSION = 153;
+  function safeJsonParse(raw){
+    try{return JSON.parse(raw);}catch(err){return null;}
+  }
+  function ensureSaveShape(){
+    if(!state || !state.player) state=newGameState();
+    state.saveVersion=SAVE_SCHEMA_VERSION;
+    state.saveBuild=BUILD_VERSION;
+    state.lastSave=Date.now();
+    state.inventory ||= {};
+    state.dropLog ||= [];
+    state.bossKills ||= {};
+    state.enemyKills ||= {};
+    state.anomalyResearch ||= {};
+    state.contracts ||= {};
+    state.contractHistory ||= [];
+    state.contractCounter ||= 0;
+    state.npcTalks ||= {};
+    state.npcRewards ||= {};
+    state.sideQuests ||= {};
+    state.protocolChallenges ||= {};
+    state.resourceNodes ||= {};
+    state.radioUnlocked ||= {};
+    state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
+    state.stages ||= {};
+    Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false});
+    state.flags ||= {};
+    state.flags.storySeen ||= {};
+    if(!state.skillData) state.skillData=createSkillData();
+    if(!state.equipment) state.equipment=createEmptyEquipment();
+    ensureProgression();
+    ensureContracts();
+    ensureProtocolChallenges();
+    ensureSideQuests();
+    ensureRadioState();
+    syncHpCap();
+    return state;
+  }
+  function migrateLoadedSave(data){
+    if(!data || typeof data !== 'object') throw new Error('Save data is empty or invalid.');
+    const fresh=newGameState();
+    const loaded=data;
+    const merged={...fresh, ...loaded};
+    merged.player={...fresh.player, ...(loaded.player||{})};
+    merged.inventory={...(loaded.inventory||fresh.inventory||{})};
+    merged.equipment={...createEmptyEquipment(), ...(loaded.equipment||{})};
+    merged.settings={...(fresh.settings||{}), ...(loaded.settings||{})};
+    merged.flags={...(fresh.flags||{}), ...(loaded.flags||{}), storySeen:{...(fresh.flags?.storySeen||{}), ...(loaded.flags?.storySeen||{})}};
+    merged.stages={};
+    Object.keys(STAGE_DEFS).forEach((k,i)=> merged.stages[k]={unlocked:i===0,complete:false, ...(loaded.stages?.[k]||{})});
+    state=merged;
+    state.currentStage = STAGE_DEFS[state.currentStage] ? state.currentStage : 'f001';
+    if(!state.map || !Array.isArray(state.map) || state.mapVersion!==MAP_VERSION){
+      const parsed=parseStageMap(state.currentStage);
+      state.map=parsed.map;
+      // Keep the saved player position when it is valid; otherwise use the stage spawn.
+      if(!Number.isFinite(state.player.x) || !Number.isFinite(state.player.y)){ state.player.x=parsed.px; state.player.y=parsed.py; }
+      state.mapVersion=MAP_VERSION;
+    }
+    invalidateCollisionRegion();
+    normalizeLiveMap(true);
+    clampPlayerToMap();
+    ensureSaveShape();
+    state.mapVersion=MAP_VERSION;
+    return state;
+  }
+  function save(silent=false){
+    try{
+      ensureSaveShape();
+      const raw=JSON.stringify(state);
+      const prev=localStorage.getItem('ashVectorSave');
+      if(prev) localStorage.setItem('ashVectorSave_backup', prev);
+      localStorage.setItem('ashVectorSave', raw);
+      if(!silent) toast('Archive saved.');
+      renderUI();
+      return true;
+    }catch(err){
+      console.error('Save failed:', err);
+      if(!silent) toast('Save failed: '+String(err.message||err));
+      return false;
+    }
+  }
+  function load(){
+    const raw=localStorage.getItem('ashVectorSave');
+    if(!raw){ toast('No archive found.'); return false; }
+    const parsed=safeJsonParse(raw);
+    if(!parsed){
+      localStorage.setItem(`ashVectorSave_corrupt_${Date.now()}`, raw);
+      toast('Save was corrupted. A backup copy was stored.');
+      return false;
+    }
+    try{
+      migrateLoadedSave(parsed);
+      applySettings();
+      unlockNextStages();
+      toast('Archive loaded.');
+      renderAll();
+      return true;
+    }catch(err){
+      console.error('Load failed:', err);
+      toast('Load failed: '+String(err.message||err));
+      return false;
+    }
+  }
+  function saveAndExitToMenu(){
+    const ok=save(true);
+    battle=null;
+    storyActive=false;
+    const story=$('storyOverlay'); if(story) story.classList.add('hidden');
+    document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
+    showMenu();
+    toast(ok ? 'Archive saved. Returned to main menu.' : 'Returned to main menu. Save failed.');
+    return ok;
+  }
 
   // v85: save slots + export/import backup terminal.
   // This is useful for GitHub Pages/mobile testing because localStorage is device/browser-specific.
@@ -3120,8 +3295,8 @@
     try{
       const imported=decodeSaveData($('saveCodeText').value);
       if(!imported || !imported.player) throw new Error('Save data is missing player info.');
-      localStorage.setItem('ashVectorSave', JSON.stringify(imported));
-      load();
+      migrateLoadedSave(imported);
+      save(true);
       $('saveCodeOverlay')?.classList.add('hidden');
       toast('Save imported.');
       renderSaveHub();
@@ -4203,6 +4378,7 @@
     if(overlay && host && overlay.parentElement !== host) host.appendChild(overlay);
   }
   function showStory(key, after){
+    ensureStageStoryScenes();
     const scene = STORY_SCENES[key];
     if(!scene){ if(after) after(); return; }
     storyActive=true; pendingStoryAfter=after||null;
@@ -5323,7 +5499,7 @@
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
     $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Research ${researchStats.discovered}/${researchStats.total}</div><div class="statrow">Respawn ${respawnText} // Research Kills ${researchStats.kills}</div><div class="statrow">Checkpoint ${safeHtml(checkpointSummaryText())}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
-    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // 4 per skill // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
+    $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // 5 per skill // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
     $('inventory').innerHTML=`<button class="open-bag-btn" onclick="window.AV.openOverlay('inventoryOverlay')">Open Bag / Bank</button><div class="quick-bag-grid">${Object.entries(state.inventory).slice(0,12).map(([k,v])=>{ const item=findItemRecord(k); return `<div class="quick-bag-slot ${rarityClass(item.rarity)}" title="${safeHtml(k)}">${itemIconHtml(item,v)}<span>${safeHtml(k)}</span></div>`; }).join('') || '<div class="invrow">No recovered assets.</div>'}</div>`;
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
     $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
@@ -6043,7 +6219,7 @@
     const info=$('menuInfo');
     if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
     const routes={
-      continueBtn:()=>{ stopIntroVideoForGame(); try{load();}catch(err){} startGame(false); },
+      continueBtn:()=>{ stopIntroVideoForGame(); const ok=load(); if(ok) startGame(false); else toast('No archive loaded. Start a new operation.'); },
       newGameBtn:()=>{ stopIntroVideoForGame(); startGame(true); },
       openingStoryBtn:()=>startGame(true),
       introVideoReplayBtn:()=>replayIntroVideo(),
@@ -6131,9 +6307,9 @@
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
     }, {passive:false});
-    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; if($('openingStoryBtn')) $('openingStoryBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{try{load();}catch(err){} startGame(false)};
+    $('newGameBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; if($('openingStoryBtn')) $('openingStoryBtn').onclick=(e)=>{e.preventDefault(); startGame(true);}; $('continueBtn').onclick=()=>{const ok=load(); if(ok) startGame(false); else toast('No archive loaded. Start a new operation.');};
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
-    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=save; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
+    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem('ashVectorSave'); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
