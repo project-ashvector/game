@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.75';
-  const BUILD_TITLE = 'IDLE ONLY SCALE NORMALIZATION PASS';
+  const BUILD_VERSION = '0.9.76';
+  const BUILD_TITLE = 'VEXA CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3023,7 +3023,7 @@
     state.equipment ||= createEmptyEquipment();
     EQUIPMENT_SLOTS.forEach(s=>{ if(!(s in state.equipment)) state.equipment[s]=null; });
     state.operatorSyncRank ||= 0;
-    state.unlockedOperators ||= {vyra:true};
+    ensureCharacterState();
     state.inventory ||= {};
     if(!state._v65StarterGear){
       if(!state.inventory['Vector Training Blade']) state.inventory['Vector Training Blade']=1;
@@ -3232,11 +3232,152 @@
           downLeft: ['assets/operators/av001/sprites/animations/idle/south-west/frame_000.png','assets/operators/av001/sprites/animations/idle/south-west/frame_001.png','assets/operators/av001/sprites/animations/idle/south-west/frame_002.png','assets/operators/av001/sprites/animations/idle/south-west/frame_003.png']
         }
       }
+    },
+
+    vexa: {
+      id: 'vexa',
+      code: 'AV-002',
+      displayName: 'Vexa',
+      codename: 'ASH RIFT',
+      title: 'Rift Scavenger',
+      meta: 'Operator Unit 002 • Rift Scavenger • Locked',
+      quote: '“I do not loot ruins. I negotiate with garbage that lost the argument.”',
+      className: 'Rift Scavenger',
+      affinity: 'Ash / Static',
+      rarity: 'Unlockable / Prototype',
+      clearance: 'Level 8',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Vexa',
+      shardName: 'Operator Shard: Vexa',
+      shardCost: 35,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/vexa/portrait.png',
+      battle: 'assets/operators/vexa/battle.png',
+      avatar: 'assets/operators/vexa/avatar.png',
+      icon: 'assets/operators/vexa/icon.png',
+      menu: 'assets/operators/vexa/menu.png',
+      profile: 'assets/operators/vexa/profile.png',
+      operatorCard: 'assets/operators/vexa/operator_card.png',
+      partyIcon: 'assets/operators/vexa/party_icon.png',
+      battleIcon: 'assets/operators/vexa/battle_icon.png',
+      spriteSheet: 'assets/operators/vexa/sprite_sheet.png',
+      mapSprite: 'assets/operators/vexa/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/vexa/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/vexa/weapon.png',
+      rotations: {
+        down: 'assets/operators/vexa/sprites/rotations/south.png',
+        downRight: 'assets/operators/vexa/sprites/rotations/south-east.png',
+        right: 'assets/operators/vexa/sprites/rotations/east.png',
+        upRight: 'assets/operators/vexa/sprites/rotations/north-east.png',
+        up: 'assets/operators/vexa/sprites/rotations/north.png',
+        upLeft: 'assets/operators/vexa/sprites/rotations/north-west.png',
+        left: 'assets/operators/vexa/sprites/rotations/west.png',
+        downLeft: 'assets/operators/vexa/sprites/rotations/south-west.png'
+      },
+      animations: { walking: {
+          down: ['assets/operators/vexa/sprites/animations/walking/south/frame_000.png','assets/operators/vexa/sprites/animations/walking/south/frame_001.png','assets/operators/vexa/sprites/animations/walking/south/frame_002.png','assets/operators/vexa/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/vexa/sprites/animations/walking/south-east/frame_000.png','assets/operators/vexa/sprites/animations/walking/south-east/frame_001.png','assets/operators/vexa/sprites/animations/walking/south-east/frame_002.png','assets/operators/vexa/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/vexa/sprites/animations/walking/east/frame_000.png','assets/operators/vexa/sprites/animations/walking/east/frame_001.png','assets/operators/vexa/sprites/animations/walking/east/frame_002.png','assets/operators/vexa/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/vexa/sprites/animations/walking/north-east/frame_000.png','assets/operators/vexa/sprites/animations/walking/north-east/frame_001.png','assets/operators/vexa/sprites/animations/walking/north-east/frame_002.png','assets/operators/vexa/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/vexa/sprites/animations/walking/north/frame_000.png','assets/operators/vexa/sprites/animations/walking/north/frame_001.png','assets/operators/vexa/sprites/animations/walking/north/frame_002.png','assets/operators/vexa/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/vexa/sprites/animations/walking/north-west/frame_000.png','assets/operators/vexa/sprites/animations/walking/north-west/frame_001.png','assets/operators/vexa/sprites/animations/walking/north-west/frame_002.png','assets/operators/vexa/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/vexa/sprites/animations/walking/west/frame_000.png','assets/operators/vexa/sprites/animations/walking/west/frame_001.png','assets/operators/vexa/sprites/animations/walking/west/frame_002.png','assets/operators/vexa/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/vexa/sprites/animations/walking/south-west/frame_000.png','assets/operators/vexa/sprites/animations/walking/south-west/frame_001.png','assets/operators/vexa/sprites/animations/walking/south-west/frame_002.png','assets/operators/vexa/sprites/animations/walking/south-west/frame_003.png']
+        }, idle: {
+          down: ['assets/operators/vexa/sprites/animations/idle/south/frame_000.png','assets/operators/vexa/sprites/animations/idle/south/frame_001.png','assets/operators/vexa/sprites/animations/idle/south/frame_002.png','assets/operators/vexa/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/vexa/sprites/animations/idle/south-east/frame_000.png','assets/operators/vexa/sprites/animations/idle/south-east/frame_001.png','assets/operators/vexa/sprites/animations/idle/south-east/frame_002.png','assets/operators/vexa/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/vexa/sprites/animations/idle/east/frame_000.png','assets/operators/vexa/sprites/animations/idle/east/frame_001.png','assets/operators/vexa/sprites/animations/idle/east/frame_002.png','assets/operators/vexa/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/vexa/sprites/animations/idle/north-east/frame_000.png','assets/operators/vexa/sprites/animations/idle/north-east/frame_001.png','assets/operators/vexa/sprites/animations/idle/north-east/frame_002.png','assets/operators/vexa/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/vexa/sprites/animations/idle/north/frame_000.png','assets/operators/vexa/sprites/animations/idle/north/frame_001.png','assets/operators/vexa/sprites/animations/idle/north/frame_002.png','assets/operators/vexa/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/vexa/sprites/animations/idle/north-west/frame_000.png','assets/operators/vexa/sprites/animations/idle/north-west/frame_001.png','assets/operators/vexa/sprites/animations/idle/north-west/frame_002.png','assets/operators/vexa/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/vexa/sprites/animations/idle/west/frame_000.png','assets/operators/vexa/sprites/animations/idle/west/frame_001.png','assets/operators/vexa/sprites/animations/idle/west/frame_002.png','assets/operators/vexa/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/vexa/sprites/animations/idle/south-west/frame_000.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_001.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_002.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_003.png']
+        } }
     }
   };
+
+  const CHARACTER_SHARD_BASE_CHANCE = 0.04;
+  const CHARACTER_SHARD_BOSS_CHANCE = 0.07;
+  function ensureCharacterState(){
+    if(!state) return;
+    state.unlockedOperators ||= {};
+    if(state.unlockedOperators.vyra){ state.unlockedOperators.av001 = true; delete state.unlockedOperators.vyra; }
+    Object.values(OPERATOR_DEFS).forEach(op=>{
+      if(op.unlockedByDefault || op.id === ACTIVE_OPERATOR_ID) state.unlockedOperators[op.id]=true;
+      else state.unlockedOperators[op.id]=!!state.unlockedOperators[op.id];
+    });
+    if(!OPERATOR_DEFS[state.activeOperator] || !state.unlockedOperators[state.activeOperator]) state.activeOperator = ACTIVE_OPERATOR_ID;
+    state.inventory ||= {};
+  }
+  function operatorUnlocked(id){ ensureCharacterState(); return !!state.unlockedOperators?.[id]; }
+  function operatorShardName(id){ return OPERATOR_DEFS[id]?.shardName || OPERATOR_DEFS[id]?.unlockShard || `Operator Shard: ${OPERATOR_DEFS[id]?.displayName || id}`; }
+  function operatorShardCost(id){ return Number(OPERATOR_DEFS[id]?.shardCost || 0); }
+  function ownedOperatorShards(id){ ensureCharacterState(); return Number(state.inventory?.[operatorShardName(id)] || 0); }
+  function operatorUnlockProgress(id){ const cost=operatorShardCost(id); const owned=ownedOperatorShards(id); return {owned,cost,needed:Math.max(0,cost-owned),unlocked:operatorUnlocked(id)}; }
+  function unlockOperator(id){
+    ensureCharacterState();
+    const op=OPERATOR_DEFS[id];
+    if(!op){ toast('Character file missing.'); return false; }
+    if(operatorUnlocked(id)){ toast(`${op.displayName} already unlocked.`); return true; }
+    const shard=operatorShardName(id), cost=operatorShardCost(id), owned=ownedOperatorShards(id);
+    if(owned < cost){ toast(`${op.displayName} locked: need ${cost-owned} more shards.`); renderCharacterMenuDb(id); return false; }
+    state.inventory[shard]=owned-cost;
+    if(state.inventory[shard]<=0) delete state.inventory[shard];
+    state.unlockedOperators[id]=true;
+    log(`${op.displayName} unlocked with ${cost} shards.`);
+    toast(`${op.displayName} unlocked.`);
+    save(true); renderAll(); renderCharacterMenuDb(id);
+    return true;
+  }
+  function selectOperator(id){
+    if(!operatorUnlocked(id)){ renderCharacterMenuDb(id); toast(`${OPERATOR_DEFS[id]?.displayName || 'Character'} is locked.`); return false; }
+    return setActiveOperator(id);
+  }
+  function lockedDropOperators(){
+    ensureCharacterState();
+    return Object.values(OPERATOR_DEFS).filter(op=>!operatorUnlocked(op.id) && operatorShardCost(op.id)>0);
+  }
+  function maybeDropOperatorShard(wasBoss=false, source='Battle'){
+    const locked=lockedDropOperators();
+    if(!locked.length) return null;
+    const chance=wasBoss ? CHARACTER_SHARD_BOSS_CHANCE : CHARACTER_SHARD_BASE_CHANCE;
+    if(Math.random() > chance) return null;
+    const total=locked.reduce((sum,op)=>sum+Number(op.dropWeight||1),0);
+    let roll=Math.random()*Math.max(1,total);
+    let pick=locked[0];
+    for(const op of locked){ roll-=Number(op.dropWeight||1); if(roll<=0){ pick=op; break; } }
+    const shard=operatorShardName(pick.id);
+    addItem(shard,1);
+    recordDrop(shard, source, wasBoss ? 'Epic' : 'Rare');
+    const progress=operatorUnlockProgress(pick.id);
+    log(`Rare character shard recovered: ${shard} (${progress.owned}/${progress.cost}).`);
+    return shard;
+  }
+  function characterCardHtml(op){
+    const progress=operatorUnlockProgress(op.id);
+    const active=currentOperatorId()===op.id;
+    const locked=!progress.unlocked;
+    return `<button class="character-card-btn ${active?'active':''} ${locked?'locked':'unlocked'}" onclick="window.AV.showCharacterFile('${op.id}')"><img src="${op.icon || op.portrait}" alt="${safeHtml(op.displayName)}"><b>${safeHtml(op.displayName)}</b><span>${locked?`LOCKED // ${progress.owned}/${progress.cost} shards`:(active?'ACTIVE':'UNLOCKED')}</span></button>`;
+  }
+  function renderCharacterMenuDb(selectedId=currentOperatorId()){
+    ensureCharacterState();
+    const op=OPERATOR_DEFS[selectedId] || currentOperator();
+    const list=$('characterList');
+    const file=$('characterFile');
+    if(!list || !file) return;
+    list.innerHTML=Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
+    const progress=operatorUnlockProgress(op.id);
+    const locked=!progress.unlocked;
+    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="record-grid"><div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Unlockable')}</span></div><div><b>Status</b><span>${locked?'Locked':'Unlocked'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><div class="story-actions"><button onclick="window.AV.unlockOperator('${op.id}')" ${(!locked || progress.owned<progress.cost)?'disabled':''}>Unlock ${safeHtml(op.displayName)}</button><button onclick="window.AV.selectOperator('${op.id}')" ${locked?'disabled':''}>${currentOperatorId()===op.id?'Active':'Select Character'}</button></div><p class="menu-info">Character shards are rare drops from any battle. Bosses have a slightly higher chance, but not by much.</p></div>`;
+  }
+  function showCharacterFile(id){ renderCharacterMenuDb(id); }
+
   function currentOperatorId(){
     const id = state?.activeOperator || ACTIVE_OPERATOR_ID;
-    return OPERATOR_DEFS[id] ? id : ACTIVE_OPERATOR_ID;
+    if(!OPERATOR_DEFS[id]) return ACTIVE_OPERATOR_ID;
+    if(state?.unlockedOperators && id !== ACTIVE_OPERATOR_ID && !state.unlockedOperators[id]) return ACTIVE_OPERATOR_ID;
+    return id;
   }
   function currentOperator(){
     return OPERATOR_DEFS[currentOperatorId()] || OPERATOR_DEFS[ACTIVE_OPERATOR_ID];
@@ -3303,11 +3444,14 @@
   }
   function setActiveOperator(id, {silent=false}={}){
     if(!OPERATOR_DEFS[id]) return false;
+    if(!operatorUnlocked(id)){ toast(`${OPERATOR_DEFS[id].displayName} is locked.`); renderCharacterMenuDb(id); return false; }
     state.activeOperator = id;
     applyOperatorVisuals();
     loadImages();
     renderAll();
+    renderCharacterMenuDb(id);
     if(!silent) save(true);
+    toast(`${OPERATOR_DEFS[id].displayName} selected.`);
     return true;
   }
   function applyOperatorVisuals(){
@@ -3335,11 +3479,11 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, unlockedOperators:{av001:true}, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
-      ...operatorAssetPaths(),
+      ...Object.values(OPERATOR_DEFS).flatMap(op=>operatorAssetPaths(op)),
       ...legacyOperatorAssetPaths(),
       ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
@@ -3358,7 +3502,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 165;
+  const SAVE_SCHEMA_VERSION = 166;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -3387,7 +3531,7 @@
     state.respawns ||= {};
     state.radioUnlocked ||= {};
     state.visited ||= {};
-    state.activeOperator = OPERATOR_DEFS[state.activeOperator] ? state.activeOperator : ACTIVE_OPERATOR_ID;
+    ensureCharacterState();
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
     state.stages ||= {};
     Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false});
@@ -5642,6 +5786,8 @@
       for(let i=0;i<cellQty;i++) loot.push('Vector Cell');
       addItem('Vector Cell', cellQty);
     }
+    const characterShardDrop = maybeDropOperatorShard(wasBoss, e.name);
+    if(characterShardDrop) loot.push(characterShardDrop);
     const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
     gainXp(xpGain); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
@@ -6111,6 +6257,7 @@
     renderFullscreenHud();
     renderObjectiveCompass();
     renderOperatorDb();
+    renderCharacterMenuDb();
   }
   function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud();}
   function openOverlay(id){
@@ -6139,6 +6286,7 @@
       if(id==='anomalyOverlay') renderAnomalyDb();
       if(id==='inventoryOverlay') renderInventoryDb();
       if(id==='operatorOverlay') renderOperatorDb();
+      if(id==='characterOverlay') renderCharacterMenuDb();
       if(id==='fractureOverlay') renderFractureDb();
       if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); }
       if(id==='playtestOverlay') renderUI();
@@ -6814,6 +6962,7 @@
       introVideoReplayBtn:()=>replayIntroVideo(),
       fractureIndexBtn:()=>openOverlay('fractureOverlay'),
       operatorFilesBtn:()=>openOverlay('operatorOverlay'),
+      characterMenuBtn:()=>openOverlay('characterOverlay'),
       anomalyIndexBtn:()=>openOverlay('anomalyOverlay'),
       inventoryDbBtn:()=>openOverlay('inventoryOverlay'),
       progressionBtn:()=>openOverlay('progressionOverlay'),
@@ -6900,15 +7049,15 @@
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_AUTOSLOT_KEY); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
-    $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
-    ['operatorFilesBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
-    ['closeOperatorDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closeRadio','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
+    $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); if($('characterMenuTopBtn')) $('characterMenuTopBtn').onclick=()=>openOverlay('characterOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
+    ['operatorFilesBtn','characterMenuBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
+    ['closeOperatorDb','closeCharacterDb','closeAnomalyDb','closeFractureDb','closeInventoryDb','closeProgression','closeMission','closeRadio','closePlaytest','closeConfig'].forEach(id=>$(id) && ($(id).onclick=closeOverlays));
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, currentOperator};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
