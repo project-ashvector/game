@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.12';
-  const BUILD_TITLE = 'PLAYTEST BUFF QA PASS';
+  const BUILD_VERSION = '1.0.13';
+  const BUILD_TITLE = 'LOCKDOWN BALANCE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5731,7 +5731,7 @@
     const left=Math.max(0,Math.ceil(((w.endsAt||Date.now())-Date.now())/1000));
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     if($('lockdownText')) $('lockdownText').textContent=lockdownMobileCompact()?'Free-roam event incoming':'Free-roam survival incoming. Normal battles/NPCs/items pause during the mini-game.';
-    if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 100</span>';
+    if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 30</span>';
     if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML=''; ensureLockdownBuffDock().classList.add('hidden');
     if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML='<span>Move anywhere. Auto-fire starts when the surge begins.</span>';
   }
@@ -5756,14 +5756,14 @@
     state.rogueEvent={
       active:true, freeRoam:true, startedAt:now, lastFrameAt:now, duration:60000,
       arena:lockdownArenaBounds(state.player.x,state.player.y), tier, operatorBonus:opBonus,
-      maxHostiles:100, allowedHostiles:18, enemies:[], projectiles:[], floaters:[],
+      maxHostiles:30, allowedHostiles:8, enemies:[], projectiles:[], floaters:[],
       projectileCount:Math.max(1,1+(opBonus.projectiles||0)), projectileDamage:Math.max(8,12+(opBonus.damage||0)),
       projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), pierce:0,
-      nextUpgradeAt:now+5000, nextSpawnAt:now+650, nextShotAt:now+320, spawnDelay:900,
+      nextUpgradeAt:now+5000, nextSpawnAt:now+900, nextShotAt:now+360, spawnDelay:1350,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
       debuffResist:opBonus.debuffResist||0, abilities:{}, abilityStacks:{}, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}, nextOrbitalAt:now+2400
     };
-    for(let i=0;i<10;i++) spawnLockdownEnemy(state.rogueEvent);
+    for(let i=0;i<5;i++) spawnLockdownEnemy(state.rogueEvent);
     log('VECTOR LOCKDOWN STARTED: free-roam survival active. Normal map interactions are paused.');
     pulseObjective('VECTOR LOCKDOWN: survive 60 seconds. Keep moving — normal interactions are locked.');
     ensureRogueHud().classList.remove('hidden');
@@ -5796,8 +5796,8 @@
     const pick=roster[(Math.floor(Math.random()*roster.length)+stageN*3+(e.kills||0))%roster.length];
     const p=lockdownSpawnPointAwayFromPlayer(); const pressure=Math.max(0,Math.min(1,(Date.now()-(e.startedAt||Date.now()))/(e.duration||60000)));
     const typeRoll=Math.random(); const type= typeRoll>.82?'tank':(typeRoll<.28?'fast':'normal');
-    const baseHp=(type==='tank'?34:type==='fast'?16:24) + Math.floor(pressure*42) + Math.floor((e.threatLevel||1)*2.4);
-    const speed=(type==='tank'?.00072:(type==='fast'?.00145:.00102))*(1+pressure*.42)*(e.tier?.speed||1);
+    const baseHp=(type==='tank'?25:type==='fast'?11:17) + Math.floor(pressure*24) + Math.floor((e.threatLevel||1)*1.6);
+    const speed=(type==='tank'?.00052:(type==='fast'?.00108:.00076))*(1+pressure*.28)*(e.tier?.speed||1);
     e.enemies.push({
       name:pick.name||pick.display||'Vector Hostile', img:pick.battle, icon:iconPathFor(pick), x:p.x, y:p.y, phase:Math.random()*99,
       hp:Math.ceil(baseHp*(e.tier?.hp||1)), maxHp:Math.ceil(baseHp*(e.tier?.hp||1)), speed,
@@ -5875,7 +5875,7 @@
       const now=Date.now(); const dt=Math.min(180, now-(e.lastFrameAt||now)); e.lastFrameAt=now;
       const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000)));
       e.threatLevel=1+Math.floor(pressure*8)+Math.floor((e.kills||0)/6);
-      e.allowedHostiles=Math.min(e.maxHostiles||100, 18 + Math.floor(pressure*62) + Math.floor((e.kills||0)/4));
+      e.allowedHostiles=Math.min(e.maxHostiles||30, 8 + Math.floor(pressure*18) + Math.floor((e.kills||0)/12));
       if(now>=e.nextUpgradeAt){
         const mod=chooseLockdownModifier(e);
         applyLockdownModifierToEvent(e, mod, 'roll');
@@ -5887,10 +5887,10 @@
       }
       if(now>=e.nextSpawnAt){
         spawnLockdownEnemy(e);
-        if(pressure>.20 && (e.enemies||[]).length < Math.min(e.allowedHostiles||100,24+Math.floor(pressure*44)) && Math.random()<.62) spawnLockdownEnemy(e);
-        if(pressure>.58 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.45) spawnLockdownEnemy(e);
-        if(pressure>.82 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.36) spawnLockdownEnemy(e);
-        e.spawnDelay=Math.max(290, Math.floor(920-pressure*520-(e.threatLevel||1)*24));
+        if(pressure>.30 && (e.enemies||[]).length < Math.min(e.allowedHostiles||30,12+Math.floor(pressure*14)) && Math.random()<.34) spawnLockdownEnemy(e);
+        if(pressure>.68 && (e.enemies||[]).length < (e.allowedHostiles||30) && Math.random()<.22) spawnLockdownEnemy(e);
+        if(pressure>.86 && (e.enemies||[]).length < (e.allowedHostiles||30) && Math.random()<.16) spawnLockdownEnemy(e);
+        e.spawnDelay=Math.max(620, Math.floor(1380-pressure*430-(e.threatLevel||1)*12));
         e.nextSpawnAt=now+e.spawnDelay;
       }
       if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(185,e.fireRate); }
@@ -5921,7 +5921,7 @@
       m.y += (dy/d)*m.speed*speedMult*dt + sepY*dt;
       m.x=Math.max(.25,Math.min(mapWidth()-.25,m.x)); m.y=Math.max(.25,Math.min(mapHeight()-.25,m.y));
       if(d<.58 && now>(m.touchAt||0)){
-        const hit=Math.max(3, Math.floor((4+Math.random()*5+Math.min(11,(e.threatLevel||1)*1.05))*(e.contactDamageMult||1)));
+        const hit=Math.max(2, Math.floor((3+Math.random()*3+Math.min(7,(e.threatLevel||1)*0.72))*(e.contactDamageMult||1)));
         state.player.hp=Math.max(0,(state.player.hp||0)-hit); e.damageTaken=(e.damageTaken||0)+hit; m.touchAt=now+980;
         const thornPct=Math.min(.75,e.abilities?.thorns||0); if(thornPct>0){ const thorn=Math.max(1,Math.floor(hit*thornPct)); m.hp-=thorn; m.hitFlashAt=now; addLockdownFloat(e,m.x,m.y,`THORN ${thorn}`,'hit'); }
         showXpFloat(`-${hit} HP`,'locked'); addLockdownFloat(e,px,py,`-${hit} HP`,'hurt');
