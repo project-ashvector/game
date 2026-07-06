@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.71';
-  const BUILD_TITLE = 'VYRA LEGACY MIRROR PASS';
+  const BUILD_VERSION = '0.9.72';
+  const BUILD_TITLE = 'BOOT MENU CHARACTER FRAMEWORK FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3171,12 +3171,7 @@
     const op=currentOperator();
     panel.innerHTML=`<div><b>Shard Sync</b><span>Owned ${owned} // Next rank cost ${cost} shards</span></div><div><b>Rank Bonus</b><span>Each rank adds +2 ATK, +1 DEF, +8 HP, +3 EP.</span></div><button onclick="window.AV.syncVyra()" ${owned<cost?'disabled':''}>Synchronize ${safeHtml(op.displayName)}</button>`;
   }
-  let state = newGameState();
-  let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
-  let battleCommandIndex = 0;
-  let preBattleCommandIndex = 0;
-  const images = {};
-
+  // v162: operator framework must be defined before state=newGameState().
   const ACTIVE_OPERATOR_ID = 'av001';
   const OPERATOR_DEFS = {
     av001: {
@@ -3265,6 +3260,12 @@
     if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
     if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{}))].join('\n');
   }
+  let state = newGameState();
+  let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
+  let battleCommandIndex = 0;
+  let preBattleCommandIndex = 0;
+  const images = {};
+
   function newGameState(){
     const parsed = parseStageMap('f001');
     return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
@@ -3290,7 +3291,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 160;
+  const SAVE_SCHEMA_VERSION = 162;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
