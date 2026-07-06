@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Project: ASH VECTOR - v1.0.02 Developer Build</title>
+  <title>Project: ASH VECTOR - v1.0.03 Developer Build</title>
   <link rel="icon" type="image/png" href="assets/logos/favicon.png" />
   <link rel="stylesheet" href="css/style.css?v=191" />
 
@@ -341,6 +341,29 @@
     }
 
 
+    /* v193: whole-phone readability and lockdown reward screen polish */
+    .lockdown-reward-card #lockdownContinueBtn{pointer-events:auto;min-height:42px;width:100%;margin-top:10px;}
+    .lockdown-reward-loot span{border-color:rgba(112,215,255,.52)!important;color:#eaffff!important;background:rgba(0,217,255,.08)!important;}
+    @media (max-width: 720px), (pointer: coarse){
+      body.mobile-play .database-modal{width:min(96vw,760px)!important;max-height:88svh!important;padding:12px!important;overflow:auto!important;}
+      body.mobile-play .db-header{grid-template-columns:1fr!important;gap:4px!important;font-size:10px!important;text-align:center!important;}
+      body.mobile-play .record-grid{grid-template-columns:1fr!important;gap:6px!important;}
+      body.mobile-play .fracture-grid,
+      body.mobile-play .inventory-db-layout,
+      body.mobile-play .anomaly-layout{grid-template-columns:1fr!important;gap:10px!important;}
+      body.mobile-play .top-nav, body.mobile-play .hud-panel{font-size:11px!important;}
+      body.mobile-play .mobile-action-pad button{min-width:38px!important;min-height:36px!important;padding:4px 5px!important;}
+      body.mobile-play .mobile-action-pad button span{font-size:8px!important;}
+      body.vector-lockdown-active .mobile-action-pad,
+      body.vector-lockdown-warning .mobile-action-pad{transform:scale(.86);transform-origin:bottom right;opacity:.82;}
+      body.vector-lockdown-active canvas#game,
+      body.vector-lockdown-warning canvas#game{max-height:58svh!important;}
+      .lockdown-reward-card{max-height:min(56svh,360px)!important;}
+      .lockdown-reward-card h2{font-size:clamp(22px,7vw,34px)!important;}
+      .lockdown-reward-loot{max-height:64px!important;overflow:auto!important;}
+    }
+
+
   </style>
 </head>
 <body>
@@ -348,7 +371,7 @@
     <video id="introVideo" class="intro-video" preload="auto" playsinline webkit-playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1;" src="assets/video/intro.mp4?v=183"></video>
     <div id="introVideoShade" style="position:absolute;inset:0;z-index:2;background:radial-gradient(circle at 50% 40%, rgba(0,217,255,.10), rgba(0,0,0,.55) 58%, rgba(0,0,0,.88));pointer-events:none;"></div>
     <div id="introVideoGate" class="boot-terminal avos-crt" style="position:relative;z-index:3;max-width:760px;margin:auto;text-align:center;background:rgba(0,6,12,.78);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 32px rgba(0,217,255,.18);padding:28px;border-radius:18px;">
-      <div class="boot-header"><span>ASH VECTOR INTRO SEQUENCE</span><span id="bootBuildLabel">v1.0.02 // PROJECTILE ASSET SWAP PASS</span></div>
+      <div class="boot-header"><span>ASH VECTOR INTRO SEQUENCE</span><span id="bootBuildLabel">v1.0.03 // LOCKDOWN POLISH MEGA PASS</span></div>
       <div class="boot-lines" id="bootLines">&gt; Intro file detected: assets/video/intro.mp4
 &gt; Press Enter or tap the icon to open the fullscreen intro.
 &gt; Main menu opens after the full video completes.</div>
@@ -386,7 +409,7 @@
       </div>
       <div class="quick-start-hint">Press <b>Enter</b> or click <b>New Game</b> to start.</div>
       <div id="menuInfo" class="menu-info">Select a database protocol.</div><div id="saveStatus" class="menu-info">Save status checking...</div>
-      <div class="ui-kit-note"><b>AVOS UI KIT v1.0.02</b> // projectile asset swap pass online</div>
+      <div class="ui-kit-note"><b>AVOS UI KIT v1.0.03</b> // lockdown polish mega pass online</div>
     </div>
   </div>
 
@@ -430,7 +453,7 @@ assets/operators/av001/icon.png</code></section></div></div></div>
   <div id="characterOverlay" class="overlay hidden"><div class="database-modal avos-crt character-modal"><button id="closeCharacterDb" class="modal-close">Close Characters</button><div class="db-header"><div>ASH VECTOR CHARACTER ROSTER</div><div>LOCKED OPERATORS // v1.0.00</div></div><div class="character-layout"><aside id="characterList" class="character-list"><div class="menu-info">Loading character files...</div></aside><section id="characterFile" class="character-file"><div class="record-kicker">SELECT CHARACTER</div><h2>Operator Files</h2><p>View operators, unlock them, then press Play As to immediately switch the playable character.</p></section></div></div></div>
 <div id="anomalyOverlay" class="overlay hidden"><div class="database-modal anomaly-modal avos-crt"><button id="closeAnomalyDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR ANOMALY INDEX</div><div>THREAT DATABASE // v1.0.00</div></div><div class="anomaly-layout"><aside class="anomaly-list" id="anomalyList"></aside><section class="anomaly-file" id="anomalyFile"><div class="record-kicker">SELECT ANOMALY RECORD</div><h2>THREAT FILE LOCKED</h2><p>Choose an anomaly from the index. Try not to lick the evidence.</p></section></div></div></div>
 
-  <div id="fractureOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeFractureDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR FRACTURE INDEX</div><div>MAP DATABASE // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE FRACTURE</div><h2>F-001 // MOBILE LOCKDOWN SCALING PASS</h2><p>Forbidden graveyard route under a broken neon district. Threats include haunted crypt stones, dead-tree corridors, cursed stashes, and one boss that absolutely should have stayed buried.</p><div class="record-grid"><div><b>Status</b><span id="fractureExplore">Explored 0%</span></div><div><b>Threat Level</b><span>LOW → BOSS CLASS</span></div><div><b>Reality Integrity</b><span>81%</span></div><div><b>Archives</b><span>1 / 8 online</span></div></div><h3>Rooms</h3><div class="protocol-list"><div><b>Grave Entry</b><span>Spawn / briefing.</span></div><div><b>Haunted Rows</b><span>Enemy patrols.</span></div><div><b>Lantern Checkpoint</b><span>Save terminal + healing station.</span></div><div><b>Crypt Boss Route</b><span>Boss route.</span></div></div></section><section class="fracture-card"><h3>Legend</h3><div class="legend"><span># Wall</span><span>. Floor</span><span>C Chest</span><span>K Key</span><span>D Locked Door</span><span>S Save Terminal</span><span>H Heal Station</span><span>L Lore Terminal</span><span>E Anomaly</span><span>B Boss</span><span>X Exit</span></div><h3>Final Replaceable Asset Paths</h3><code class="asset-code">assets/fractures/fracture001/background.png
+  <div id="fractureOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeFractureDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR FRACTURE INDEX</div><div>MAP DATABASE // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE FRACTURE</div><h2>F-001 // LOCKDOWN POLISH MEGA PASS</h2><p>Forbidden graveyard route under a broken neon district. Threats include haunted crypt stones, dead-tree corridors, cursed stashes, and one boss that absolutely should have stayed buried.</p><div class="record-grid"><div><b>Status</b><span id="fractureExplore">Explored 0%</span></div><div><b>Threat Level</b><span>LOW → BOSS CLASS</span></div><div><b>Reality Integrity</b><span>81%</span></div><div><b>Archives</b><span>1 / 8 online</span></div></div><h3>Rooms</h3><div class="protocol-list"><div><b>Grave Entry</b><span>Spawn / briefing.</span></div><div><b>Haunted Rows</b><span>Enemy patrols.</span></div><div><b>Lantern Checkpoint</b><span>Save terminal + healing station.</span></div><div><b>Crypt Boss Route</b><span>Boss route.</span></div></div></section><section class="fracture-card"><h3>Legend</h3><div class="legend"><span># Wall</span><span>. Floor</span><span>C Chest</span><span>K Key</span><span>D Locked Door</span><span>S Save Terminal</span><span>H Heal Station</span><span>L Lore Terminal</span><span>E Anomaly</span><span>B Boss</span><span>X Exit</span></div><h3>Final Replaceable Asset Paths</h3><code class="asset-code">assets/fractures/fracture001/background.png
 assets/fractures/fracture001/minimap.png
 assets/fractures/fracture001/tileset.png
 data/fractures/fracture001/layout.json
@@ -450,7 +473,7 @@ assets/items/operator_shard_vyra.png</code></section></div></div></div>
 
   <div id="progressionOverlay" class="overlay hidden"><div class="database-modal avos-crt progression-modal"><button id="closeProgression" class="modal-close">Close Matrix</button><div class="db-header"><div>ASH VECTOR PROGRESSION MATRIX</div><div>CODE REUSE // CIW SYSTEMS ADAPTED</div></div><div class="progression-layout"><section class="fracture-card"><div class="record-kicker">COMBAT STYLE</div><h2>Training Focus</h2><p>Adapted from the old Cryptic Idle Worlds code: combat awards style XP using a RuneScape-style XP curve. No legacy art assets are required for this system.</p><div id="combatStylePicker" class="style-picker"></div><div id="upgradeStation" class="upgrade-station"></div><h3>Legacy Systems Reused</h3><div class="protocol-list"><div><b>XP Curve</b><span>99-level RuneScape-style progression table.</span></div><div><b>Skill Matrix</b><span>Attack / Strength / Defense / Magic / Ranged plus future non-combat tracks.</span></div><div><b>Code Reuse Only</b><span>Progression, XP curve, enemy data patterns, and combat log logic adapted from the old project.</span></div></div></section><section class="fracture-card"><div class="record-kicker">SKILL DATABASE</div><h2>Operator Growth</h2><div id="progressionList" class="progression-list"></div></section></div></div></div>
 
-  <div id="configOverlay" class="overlay hidden"><div class="database-modal avos-crt config-modal"><button id="closeConfig" class="modal-close">Close Config</button><div class="db-header"><div>ASH VECTOR CONFIGURATION</div><div>LOCAL SETTINGS // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACCESSIBILITY / DISPLAY</div><h2>Playtest Settings</h2><p>These settings are local-only and built for testing before GitHub deployment.</p><label class="setting-row"><span>CRT Scanlines</span><input id="settingCrt" type="checkbox" checked></label><label class="setting-row"><span>Reduced Motion</span><input id="settingMotion" type="checkbox"></label><label class="setting-row"><span>Large Text Mode</span><input id="settingLargeText" type="checkbox"></label><label class="setting-row"><span>Tutorial Tips</span><input id="settingTutorialTips" type="checkbox" checked></label><label class="setting-row"><span>Route Beacon</span><input id="settingRouteBeacon" type="checkbox" checked></label><label class="setting-row"><span>Objective Compass</span><input id="settingObjectiveCompass" type="checkbox" checked></label><label class="setting-row"><span>Minimap Route</span><input id="settingMinimapRoute" type="checkbox" checked></label></section><section class="fracture-card"><h3>Controls</h3><div class="legend"><span>Arrow Keys/WASD: Move</span><span>E / Click: Talk to NPCs</span><span>Controller: left stick/D-pad move</span><span>Xbox / PS / Switch labels auto-detect</span><span>F9 or View/Share/-: QA Console</span><span>Buttons: Mobile Movement</span></div><h3>Build Note</h3><p class="menu-info">v192 replaces the built-in lockdown projectile shapes with the uploaded transparent projectile PNG asset set.</p></section></div></div></div>
+  <div id="configOverlay" class="overlay hidden"><div class="database-modal avos-crt config-modal"><button id="closeConfig" class="modal-close">Close Config</button><div class="db-header"><div>ASH VECTOR CONFIGURATION</div><div>LOCAL SETTINGS // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACCESSIBILITY / DISPLAY</div><h2>Playtest Settings</h2><p>These settings are local-only and built for testing before GitHub deployment.</p><label class="setting-row"><span>CRT Scanlines</span><input id="settingCrt" type="checkbox" checked></label><label class="setting-row"><span>Reduced Motion</span><input id="settingMotion" type="checkbox"></label><label class="setting-row"><span>Large Text Mode</span><input id="settingLargeText" type="checkbox"></label><label class="setting-row"><span>Tutorial Tips</span><input id="settingTutorialTips" type="checkbox" checked></label><label class="setting-row"><span>Route Beacon</span><input id="settingRouteBeacon" type="checkbox" checked></label><label class="setting-row"><span>Objective Compass</span><input id="settingObjectiveCompass" type="checkbox" checked></label><label class="setting-row"><span>Minimap Route</span><input id="settingMinimapRoute" type="checkbox" checked></label></section><section class="fracture-card"><h3>Controls</h3><div class="legend"><span>Arrow Keys/WASD: Move</span><span>E / Click: Talk to NPCs</span><span>Controller: left stick/D-pad move</span><span>Xbox / PS / Switch labels auto-detect</span><span>F9 or View/Share/-: QA Console</span><span>Buttons: Mobile Movement</span></div><h3>Build Note</h3><p class="menu-info">v193 polishes lockdown projectile behavior, rewards, character bonuses, enemy spread, and phone scaling.</p></section></div></div></div>
 
 
 
@@ -465,7 +488,7 @@ assets/items/operator_shard_vyra.png</code></section></div></div></div>
     <div id="battlePanel" class="battle" style="background-image:url('assets/battle_backgrounds/toxic_sewers_battle.png')">
       <div class="battle-hud-top">
         <div><span class="battle-kicker">COMBAT PROTOCOL</span><b id="battleTitle">Hostile Entity</b></div>
-        <div class="battle-location">F-001 // MOBILE LOCKDOWN SCALING PASS</div>
+        <div class="battle-location">F-001 // LOCKDOWN POLISH MEGA PASS</div>
       </div>
       <div class="battle-stage">
         <div class="combatant hero-side"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><span id="battleHeroLabel" class="combatant-name">AV-001 VYRA</span></div>
