@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.09';
-  const BUILD_TITLE = 'FREE ROAM LOCKDOWN PASS';
+  const BUILD_VERSION = '1.0.10';
+  const BUILD_TITLE = 'BUFF EMBLEM HUD PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -477,9 +477,14 @@
     const label=`v${BUILD_VERSION} // ${BUILD_TITLE}`;
     const bootBuild=$('bootBuildLabel');
     if(bootBuild) bootBuild.textContent=label;
+    document.querySelectorAll('[data-build-label]').forEach(el=>{ el.textContent=label; });
+    const titleTag=document.querySelector('title');
+    if(titleTag) titleTag.textContent=`Project: ASH VECTOR - v${BUILD_VERSION} Developer Build`;
     const bootLinesEl=$('bootLines');
     if(bootLinesEl && bootLinesEl.textContent.includes('Intro file detected')){
-      bootLinesEl.textContent=`> Intro file detected: assets/video/intro.mp4\n> Press Enter, tap the screen, or use Start Intro.\n> Main menu opens after the intro or if playback is blocked.`;
+      bootLinesEl.textContent=`> Intro file detected: assets/video/intro.mp4
+> Press Enter, tap the screen, or use Start Intro.
+> Main menu opens after the intro or if playback is blocked.`;
     }
     document.title=`Project: ASH VECTOR // v${BUILD_VERSION}`;
   }
