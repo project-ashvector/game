@@ -1532,7 +1532,7 @@
     lore: 'assets/imported/props/signage/blue_banner.png',
     terminal: 'assets/imported/props/buildings/magic_stone_tower.png',
     door: 'assets/imported/environment/fences/wooden_fence_horizontal.png',
-    exit: 'assets/imported/props/signage/flag.png',
+    exit: 'assets/tilesets/custom/next_level_exit_portal.png',
     // v53: non-colliding decorative prop stamps disabled.
     // Map blockers now come from # tiles only, so visuals match collision.
     props: []
@@ -1567,7 +1567,7 @@
       lore: 'assets/tilesets/forbidden/signpost_02.png',
       terminal: 'assets/tilesets/forbidden/lantern_01.png',
       door: 'assets/tilesets/forbidden/stone_fence_01.png',
-      exit: 'assets/tilesets/forbidden/signpost_01.png',
+      exit: 'assets/tilesets/custom/next_level_exit_portal.png',
       floorTint: 'rgba(24, 18, 32, .22)',
       pathTint: 'rgba(86, 55, 122, .16)',
       wallTint: 'rgba(13, 9, 18, .96)',
@@ -7310,7 +7310,7 @@
       // v92: field letter rings are hidden; door marker stays on the minimap only.
     }
     if(c==='X'){
-      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,32,46,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,42,42,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
       // v92: field letter rings are hidden; exit marker stays on the minimap only.
     }
   }
