@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.11';
-  const BUILD_TITLE = 'BOTTOM BUFF DOCK PASS';
+  const BUILD_VERSION = '1.0.12';
+  const BUILD_TITLE = 'PLAYTEST BUFF QA PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5599,6 +5599,76 @@
       if(ticks>=7){ clearInterval(window._avLockdownRollTimer); window._avLockdownRollTimer=null; setTimeout(()=>{ if(el) el.style.display='none'; },2200); }
     },110);
   }
+  function applyLockdownModifierToEvent(e, mod, source='roll'){
+    if(!e?.active || !mod) return false;
+    e.abilities ||= {}; e.abilityStacks ||= {};
+    const stackKey = mod.stackKey || mod.name;
+    mod.apply(e);
+    e.upgradeHistory ||= [];
+    e.abilityStacks[stackKey] = (e.abilityStacks[stackKey] || 0) + 1;
+    e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,stack:e.abilityStacks[stackKey],stackKey,source,at:Date.now()});
+    e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':(h.type==='ability'?'◆ ':'✓ '))+h.name+(h.stack>1?` x${h.stack}`:''));
+    if(source==='qa'){
+      showLockdownRoll({...mod, desc:`QA TEST // ${mod.desc}${e.abilityStacks[stackKey]>1?` // Stack ${e.abilityStacks[stackKey]}`:''}`});
+      toast(`QA buff added: ${mod.name} x${e.abilityStacks[stackKey]}`);
+      log(`QA Lockdown Buff: ${mod.name} — ${mod.desc}. Stack ${e.abilityStacks[stackKey]}.`);
+    }
+    renderLockdownIconStrip(e);
+    updateVectorLockdownHud();
+    return true;
+  }
+  function lockdownBuffQaList(){
+    return ROGUE_UPGRADES.filter(u=>u.type==='buff' || u.type==='ability');
+  }
+  function lockdownModifierIcon(mod){
+    const byName={
+      'Split Chamber':'split_chamber.png','Ash Rifling':'ash_rifling.png','Rust Accelerator':'rust_accelerator.png','Vector Velocity':'vector_velocity.png','Piercing Static':'piercing_static.png','Twin Feed':'twin_feed.png','Core-Tipped Rounds':'core_tipped_rounds.png','Scatter Vector':'scatter_vector.png','Overcharged Barrel':'overcharged_barrel.png','Rapid Vector Feed':'rapid_vector_feed.png',
+      'Blood Circuit':'blood_circuit.png','Static Crit Loop':'static_crit_loop.png','Chain Static':'chain_static.png','Gravity Leak':'gravity_leak.png','Orbiting Scrap':'orbiting_scrap.png','Cache Magnet':'cache_magnet.png'
+    };
+    const file=byName[mod?.name] || LOCKDOWN_ICON_DEFS[mod?.stackKey]?.icon?.split('/').pop();
+    return file ? `assets/buffs/${file}` : '';
+  }
+  function renderQaLockdownBuffBoard(){
+    const board=$('qaLockdownBuffBoard');
+    if(!board) return;
+    const active=!!state.rogueEvent?.active;
+    const rows=lockdownBuffQaList().map(mod=>{
+      const icon=lockdownModifierIcon(mod);
+      const stack=state.rogueEvent?.abilityStacks?.[mod.stackKey || mod.name] || 0;
+      const img=icon ? `<img src="${safeHtml(icon)}?v=${BUILD_VERSION}" alt="${safeHtml(mod.name)}">` : `<b>${safeHtml((mod.name||'?').slice(0,2).toUpperCase())}</b>`;
+      return `<button class="qa-buff-card ${mod.type}" data-qa-lockdown-buff="${safeHtml(mod.name)}"><span class="qa-buff-icon">${img}</span><span class="qa-buff-copy"><strong>${safeHtml(mod.name)} ${stack?`x${stack}`:''}</strong><em>${safeHtml(mod.desc)}</em></span></button>`;
+    }).join('');
+    board.innerHTML=`<div class="qa-buff-toolbar"><button id="qaStartLockdownNow">Start Lockdown Test</button><button id="qaEndLockdownNow" ${active?'':'disabled'}>End Event / Show Rewards</button><span>${active?'Lockdown active — click a buff to stack it.':'Start a Lockdown test, then click any buff.'}</span></div><div class="qa-buff-grid">${rows}</div>`;
+    const start=$('qaStartLockdownNow');
+    if(start) start.onclick=()=>qaStartLockdownNow();
+    const end=$('qaEndLockdownNow');
+    if(end) end.onclick=()=>{ if(state.rogueEvent?.active) completeVectorLockdown(); renderQaLockdownBuffBoard(); };
+    board.querySelectorAll('[data-qa-lockdown-buff]').forEach(btn=>btn.onclick=()=>qaApplyLockdownBuff(btn.dataset.qaLockdownBuff));
+  }
+  function qaStartLockdownNow(){
+    if(!gameStarted){ toast('Start or load a game first.'); return false; }
+    if(battle || storyActive){ toast('Close battle/story before starting Lockdown QA.'); return false; }
+    if(!state.rogueEvent?.active){
+      state.rogueWarning={active:false};
+      startVectorLockdown({active:false});
+      toast('QA Vector Lockdown started.');
+    }else{
+      toast('Vector Lockdown already active.');
+    }
+    renderQaLockdownBuffBoard();
+    return true;
+  }
+  function qaApplyLockdownBuff(name){
+    const mod=lockdownBuffQaList().find(u=>u.name===name);
+    if(!mod){ toast('QA buff not found.'); return false; }
+    if(!state.rogueEvent?.active){ qaStartLockdownNow(); }
+    if(!state.rogueEvent?.active){ return false; }
+    const ok=applyLockdownModifierToEvent(state.rogueEvent, mod, 'qa');
+    renderQaLockdownBuffBoard();
+    renderAll();
+    return ok;
+  }
+
   function vectorLockdownBlocked(){ return !gameStarted || !!battle || !!storyActive || !!state.rogueEvent?.active || !!state.rogueWarning?.active; }
   function lockdownMobileCompact(){ return !!(window.matchMedia && (window.matchMedia('(max-width:720px)').matches || window.matchMedia('(pointer: coarse)').matches)); }
   function maybeTriggerVectorLockdown(){ if(vectorLockdownBlocked()) return; const now=Date.now(); if(now-(state.rogueLastAt||0)<70000) return; if(Math.random()>0.085) return; startVectorLockdownWarning(); }
@@ -5808,17 +5878,12 @@
       e.allowedHostiles=Math.min(e.maxHostiles||100, 18 + Math.floor(pressure*62) + Math.floor((e.kills||0)/4));
       if(now>=e.nextUpgradeAt){
         const mod=chooseLockdownModifier(e);
-        e.abilities ||= {}; e.abilityStacks ||= {};
-        const stackKey = mod.stackKey || mod.name;
-        mod.apply(e);
-        e.upgradeHistory ||= [];
-        e.abilityStacks[stackKey] = (e.abilityStacks[stackKey] || 0) + 1;
-        e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,stack:e.abilityStacks[stackKey],stackKey,at:now});
-        e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':(h.type==='ability'?'◆ ':'✓ '))+h.name+(h.stack>1?` x${h.stack}`:''));
-        e.nextUpgradeAt += 5000; showLockdownRoll({...mod, desc:mod.desc+(e.abilityStacks[stackKey]>1?` // Stack ${e.abilityStacks[stackKey]}`:'')});
+        applyLockdownModifierToEvent(e, mod, 'roll');
+        const stack=e.abilityStacks?.[mod.stackKey || mod.name] || 1;
+        e.nextUpgradeAt += 5000; showLockdownRoll({...mod, desc:mod.desc+(stack>1?` // Stack ${stack}`:'')});
         const label = mod.type==='debuff' ? 'Lockdown debuff' : (mod.type==='ability' ? 'Stacking ability' : 'Projectile buff');
-        toast(`${label}: ${mod.name}${e.abilityStacks[stackKey]>1?' x'+e.abilityStacks[stackKey]:''}`);
-        log(`Lockdown ${mod.type}: ${mod.name} — ${mod.desc}. Stack ${e.abilityStacks[stackKey]}.`);
+        toast(`${label}: ${mod.name}${stack>1?' x'+stack:''}`);
+        log(`Lockdown ${mod.type}: ${mod.name} — ${mod.desc}. Stack ${stack}.`);
       }
       if(now>=e.nextSpawnAt){
         spawnLockdownEnemy(e);
@@ -8259,7 +8324,7 @@
       if(id==='characterOverlay') renderCharacterMenuDb();
       if(id==='fractureOverlay') renderFractureDb();
       if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); }
-      if(id==='playtestOverlay') renderUI();
+      if(id==='playtestOverlay'){ renderUI(); renderQaLockdownBuffBoard(); }
       if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
       if(id==='radioOverlay'){ radioMode=true; radioTrack=radioTrack||'pause'; renderRadioDb(); AudioManager.play(radioTrack, true); }
@@ -9061,9 +9126,9 @@
       if(unlockBtn){ e.preventDefault(); e.stopPropagation(); unlockOperator(unlockBtn.dataset.characterUnlock); return; }
       if(cardBtn && cardBtn.closest('#characterOverlay')){ e.preventDefault(); e.stopPropagation(); characterCardClick(cardBtn.dataset.characterCard); return; }
     }, true);
-    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards);
+    $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
