@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.92';
-  const BUILD_TITLE = 'LEVEL 1 BOSS WING HARD FIX PASS';
+  const BUILD_VERSION = '0.9.93';
+  const BUILD_TITLE = 'CHARACTER PROGRESSION + VECTOR LOCKDOWN PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2035,6 +2035,52 @@
     {name:'Emergency Flex', dmg:-18, ep:6, heal:true, text:'Weaponized ego restores HP.'}
   ];
 
+
+
+  // v183: active operators now have their own RPG progression, stat identity, and battle protocols.
+  // The older Player Level still controls stage locks, but every character starts at Lv. 1 and levels separately.
+  const OPERATOR_RPG_DEFS = {
+    av001: {role:'Balanced starter', base:{hp:18,ep:4,atk:3,def:1,crit:0.015}, growth:{hp:7,ep:1,atk:1.15,def:0.45,crit:0.0015}, passive:'Reliable all-rounder. Good HP, balanced damage, and safe recovery.', moves:[{name:'Ash Slash',dmg:14,ep:0,text:'Vyra cuts a bright ash-vector across the target.',status:'bleed'},{name:'Phantom Dash',dmg:10,ep:4,text:'Vyra vanishes through the strike lane and primes an evade.',special:'evade',status:'shock'},{name:'Crimson Cascade',dmg:19,ep:8,text:'Vyra drops a red cascade into the anomaly core.',status:'corrosion'},{name:'Emergency Flex',dmg:-20,ep:6,heal:true,text:'Vyra weaponizes confidence and patches the damage.'}]},
+    vexa: {role:'Fast scavenger', base:{hp:8,ep:9,atk:5,def:0,crit:0.045,xpBonus:0.04}, growth:{hp:4,ep:2,atk:1.45,def:0.25,crit:0.002}, passive:'High speed damage and better rewards. Lower defenses mean mistakes hurt.', moves:[{name:'Static Shiv',dmg:12,ep:0,text:'Vexa jabs a crackling scrap blade into the target.',status:'shock'},{name:'Lootline Spark',dmg:9,ep:3,text:'Vexa marks weak points with scavenged voltage.',special:'loot'},{name:'Overclock Cut',dmg:22,ep:9,text:'Vexa overclocks her weapon for a reckless burst.',status:'burn'},{name:'Junkyard Patch',dmg:-16,ep:5,heal:true,text:'Vexa slaps a questionable repair kit into place.'}]},
+    knox: {role:'Heavy defender', base:{hp:34,ep:0,atk:1,def:5,crit:-0.01,block:2}, growth:{hp:10,ep:0.5,atk:0.75,def:0.9,crit:0.0005,block:0.12}, passive:'Slow tank profile. Harder to kill, stronger guard value, lower burst.', moves:[{name:'Iron Hook',dmg:11,ep:0,text:'Knox drags the anomaly into a heavy hook.'},{name:'Bulwark Bash',dmg:13,ep:4,text:'Knox shields forward and crushes the impact zone.',special:'guard'},{name:'Wrecking Slam',dmg:21,ep:8,text:'Knox drops a brutal two-handed slam.',status:'corrosion'},{name:'Armor Lock',dmg:-14,ep:5,heal:true,text:'Knox locks armor plates and stabilizes vitals.'}]},
+    nyra: {role:'Crit assassin', base:{hp:3,ep:6,atk:7,def:-1,crit:0.075}, growth:{hp:3.5,ep:1.2,atk:1.8,def:0.15,crit:0.003}, passive:'Very high crit damage. Fragile until leveled.', moves:[{name:'Glass Needle',dmg:13,ep:0,text:'Nyra threads a precise hit through the enemy shell.',status:'bleed'},{name:'Blink Step',dmg:9,ep:4,text:'Nyra blinks behind the strike and fades out.',special:'evade'},{name:'Heartseeker',dmg:24,ep:10,text:'Nyra drives a surgical strike into the core.',status:'bleed'},{name:'Shadow Suture',dmg:-15,ep:6,heal:true,text:'Nyra stitches herself together with shadow thread.'}]},
+    rivet: {role:'Scrap engineer', base:{hp:16,ep:10,atk:2,def:2,crit:0.02,xpBonus:0.02}, growth:{hp:6,ep:2,atk:1.0,def:0.45,crit:0.001}, passive:'Utility fighter with steady EP and bonus XP.', moves:[{name:'Bolt Jab',dmg:11,ep:0,text:'Rivet stabs with a charged tool spike.',status:'shock'},{name:'Patch Drone',dmg:-22,ep:7,heal:true,text:'Rivet deploys a jittery repair drone.'},{name:'Scrap Arc',dmg:18,ep:8,text:'Rivet fires a welded scrap arc.',status:'corrosion'},{name:'Overtighten',dmg:15,ep:4,text:'Rivet locks the enemy plating in place.',special:'guard'}]},
+    moxie: {role:'Speed bruiser', base:{hp:10,ep:7,atk:5,def:1,crit:0.04}, growth:{hp:5,ep:1.5,atk:1.35,def:0.25,crit:0.002}, passive:'Fast pressure and dodge setups.', moves:[{name:'Bottle Rocket',dmg:12,ep:0,text:'Moxie launches a wild close-range shot.',status:'burn'},{name:'Side-Step Pop',dmg:10,ep:4,text:'Moxie slips sideways and answers fast.',special:'evade'},{name:'Neon Haymaker',dmg:23,ep:9,text:'Moxie swings hard enough to insult physics.'},{name:'Quick Wrap',dmg:-15,ep:5,heal:true,text:'Moxie wraps the wound and keeps moving.'}]},
+    brakk: {role:'Heavy defender', base:{hp:36,ep:1,atk:1,def:5,crit:-0.005,block:2}, growth:{hp:10,ep:0.5,atk:0.8,def:0.9,crit:0.0005,block:0.12}, passive:'Big HP and guard power with slower damage scaling.', moves:[{name:'Iron Hook',dmg:11,ep:0,text:'Brakk drags the anomaly into a heavy hook.'},{name:'Bulwark Bash',dmg:13,ep:4,text:'Brakk shields forward and crushes the impact zone.',special:'guard'},{name:'Wrecking Slam',dmg:21,ep:8,text:'Brakk drops a brutal two-handed slam.',status:'corrosion'},{name:'Armor Lock',dmg:-14,ep:5,heal:true,text:'Brakk locks armor plates and stabilizes vitals.'}]},
+    sable: {role:'Crit assassin', base:{hp:4,ep:6,atk:7,def:-1,crit:0.075}, growth:{hp:3.8,ep:1.2,atk:1.75,def:0.15,crit:0.003}, passive:'Very high crit damage. Fragile until leveled.', moves:[{name:'Glass Needle',dmg:13,ep:0,text:'Sable threads a precise hit through the enemy shell.',status:'bleed'},{name:'Blink Step',dmg:9,ep:4,text:'Sable blinks behind the strike and fades out.',special:'evade'},{name:'Heartseeker',dmg:24,ep:10,text:'Sable drives a surgical strike into the core.',status:'bleed'},{name:'Shadow Suture',dmg:-15,ep:6,heal:true,text:'Sable stitches herself together with shadow thread.'}]},
+    pip: {role:'Lucky support', base:{hp:12,ep:12,atk:1,def:1,crit:0.025,xpBonus:0.08}, growth:{hp:4.5,ep:2.3,atk:0.65,def:0.35,crit:0.001,xpBonus:0.001}, passive:'Lower attack but excellent XP and sustain.', moves:[{name:'Pebble Pop',dmg:9,ep:0,text:'Pip lands a weirdly accurate pebble hit.'},{name:'Lucky Spark',dmg:13,ep:5,text:'Pip triggers a lucky static burst.',status:'shock'},{name:'Pocket Miracle',dmg:-26,ep:8,heal:true,text:'Pip finds exactly the right medicine somehow.'},{name:'Jackpot Jab',dmg:19,ep:9,text:'Pip gambles on one clean hit.',special:'loot'}]},
+    dex: {role:'Tech ranged', base:{hp:9,ep:14,atk:4,def:0,crit:0.035}, growth:{hp:4,ep:2.6,atk:1.25,def:0.2,crit:0.0015}, passive:'EP-heavy ranged kit with status control.', moves:[{name:'Pulse Shot',dmg:12,ep:0,text:'Dex fires a clean pulse shot.',status:'shock'},{name:'Trip Mine',dmg:16,ep:6,text:'Dex snaps a mine under the anomaly path.',status:'corrosion'},{name:'Rail Burst',dmg:23,ep:11,text:'Dex unloads a rail burst into the core.'},{name:'Battery Swap',dmg:-16,ep:4,heal:true,text:'Dex redirects spare battery heat into recovery.'}]},
+    luma: {role:'Ash medic', base:{hp:18,ep:15,atk:-1,def:2,crit:0.005,xpBonus:0.04}, growth:{hp:6,ep:2.4,atk:0.55,def:0.55,crit:0.001,xpBonus:0.001}, passive:'Best recovery profile, lower raw damage.', moves:[{name:'Light Scalpel',dmg:10,ep:0,text:'Luma cuts with a sterile ash-light line.'},{name:'Cauterize',dmg:13,ep:5,text:'Luma burns the wound into the enemy instead.',status:'burn'},{name:'Field Triage',dmg:-30,ep:9,heal:true,text:'Luma performs clean field triage.'},{name:'Halo Break',dmg:19,ep:10,text:'Luma breaks a hard halo of light over the target.',status:'shock'}]},
+    gutter: {role:'Poison brawler', base:{hp:24,ep:4,atk:4,def:3,crit:0.015}, growth:{hp:7,ep:1,atk:1.2,def:0.55,crit:0.001}, passive:'Durable damage-over-time bruiser.', moves:[{name:'Pipe Crack',dmg:12,ep:0,text:'Gutter cracks the target with a pipe.'},{name:'Toxic Splash',dmg:14,ep:5,text:'Gutter splashes corrosive gutter sludge.',status:'poison'},{name:'Mold Maw',dmg:21,ep:9,text:'Gutter bites into the anomaly with rotten force.',status:'corrosion'},{name:'Bad Medicine',dmg:-18,ep:5,heal:true,text:'Gutter drinks something unsafe and heals anyway.'}]},
+    tilda: {role:'Support cook', base:{hp:20,ep:8,atk:0,def:2,crit:0,xpBonus:0.06}, growth:{hp:6,ep:1.8,atk:0.7,def:0.5,crit:0.001,xpBonus:0.001}, passive:'Lower attack, better sustain and XP gain.', moves:[{name:'Pan Slam',dmg:10,ep:0,text:'Tilda delivers a disrespectful frying pan answer.'},{name:'Spice Cloud',dmg:12,ep:5,text:'Tilda throws a burning spice cloud.',status:'burn'},{name:'Kitchen Rush',dmg:17,ep:8,text:'Tilda turns dinner prep into battlefield violence.',status:'poison'},{name:'Emergency Stew',dmg:-24,ep:7,heal:true,text:'Tilda serves emergency stew. It should not work, but it does.'}]}
+  };
+  function defaultOperatorRpgDef(id){ return OPERATOR_RPG_DEFS[id] || OPERATOR_RPG_DEFS.av001; }
+  function operatorNextXp(level){ return Math.floor(50 + Math.pow(Math.max(1, level), 1.72) * 28); }
+  function ensureOperatorProgress(){
+    if(!state) return;
+    state.operatorProgress ||= {};
+    Object.keys(OPERATOR_DEFS || {}).forEach(id=>{
+      const rec=state.operatorProgress[id] ||= {level:1,xp:0,nextXp:operatorNextXp(1)};
+      rec.level=Math.max(1, Math.min(99, Number(rec.level||1)));
+      rec.xp=Math.max(0, Number(rec.xp||0));
+      rec.nextXp=operatorNextXp(rec.level);
+    });
+  }
+  function activeOperatorProgress(){ ensureOperatorProgress(); return state.operatorProgress[currentOperatorId()] || {level:1,xp:0,nextXp:operatorNextXp(1)}; }
+  function operatorProgressFor(id){ ensureOperatorProgress(); return state.operatorProgress[id] || {level:1,xp:0,nextXp:operatorNextXp(1)}; }
+  function operatorStatBonus(id=currentOperatorId()){
+    const def=defaultOperatorRpgDef(id), prog=operatorProgressFor(id), lv=Math.max(1,prog.level||1), g=def.growth||{}, b=def.base||{};
+    const by=(k)=>Number(b[k]||0) + Number(g[k]||0) * (lv-1);
+    return {role:def.role||'Operator', passive:def.passive||'', level:lv, xp:prog.xp||0, nextXp:prog.nextXp||operatorNextXp(lv), hp:Math.floor(by('hp')), ep:Math.floor(by('ep')), atk:Math.floor(by('atk')), def:Math.floor(by('def')), crit:Number(by('crit')||0), block:Math.floor(by('block')), xpBonus:Number(by('xpBonus')||0)};
+  }
+  function activeBattleMoves(){ const op=currentOperatorId(); return (defaultOperatorRpgDef(op).moves || attacks).map((m,i)=>({...attacks[i%attacks.length], ...m})); }
+  function gainOperatorXp(amount){
+    ensureOperatorProgress(); const id=currentOperatorId(); const rec=state.operatorProgress[id]; const op=currentOperator();
+    if(!rec || rec.level>=99) return;
+    rec.xp += Math.max(0, Math.floor(amount||0)); if(amount) showXpFloat(`+${Math.floor(amount)} ${op.displayName} XP`, 'skill');
+    let leveled=false; while(rec.level < 99 && rec.xp >= rec.nextXp){ rec.xp -= rec.nextXp; rec.level += 1; rec.nextXp = operatorNextXp(rec.level); leveled=true; log(`${op.displayName} reached Operator Lv. ${rec.level}.`); }
+    if(leveled){ toast(`${op.displayName} leveled up.`); const caps=combatStatBlock(); state.player.hp=Math.min(caps.maxHp, state.player.hp + 12); state.player.ep=Math.min(caps.maxEp || state.player.maxEp, state.player.ep + 4); }
+  }
   // v78: lightweight battle status system. No new assets required.
   // Status effects make fights less repetitive and give Guard / Vector Cell more value.
   const STATUS_DEFS = {
@@ -2861,17 +2907,19 @@
     ensureProgression();
     const atkLv=skillLevel('attack'), strLv=skillLevel('strength'), defLv=skillLevel('defense'), hpLv=skillLevel('health');
     const gear=equipmentBonuses();
+    const opBonus=operatorStatBonus();
     return {
       atkLv,strLv,defLv,hpLv,
-      atk: state.player.atk + Math.floor((atkLv-1)/5) + gear.atk,
+      opLevel: opBonus.level,
+      atk: state.player.atk + opBonus.atk + Math.floor((atkLv-1)/5) + gear.atk,
       strBonus: Math.floor((strLv-1)/3) + gear.str,
-      def: state.player.def + Math.floor((defLv-1)/4) + gear.def,
-      maxHp: state.player.maxHp + Math.floor((hpLv-1)*2.5) + gear.hp,
-      maxEp: state.player.maxEp + gear.ep,
-      hpBonus: Math.floor((hpLv-1)*2.5) + gear.hp,
-      crit: Math.min(0.35, 0.08 + atkLv * 0.0025 + gear.crit),
-      xpBonus: gear.xpBonus || 0,
-      block: Math.floor((defLv-1)/5)
+      def: state.player.def + opBonus.def + Math.floor((defLv-1)/4) + gear.def,
+      maxHp: state.player.maxHp + opBonus.hp + Math.floor((hpLv-1)*2.5) + gear.hp,
+      maxEp: state.player.maxEp + opBonus.ep + gear.ep,
+      hpBonus: opBonus.hp + Math.floor((hpLv-1)*2.5) + gear.hp,
+      crit: Math.max(0.01, Math.min(0.45, 0.08 + opBonus.crit + atkLv * 0.0025 + gear.crit)),
+      xpBonus: (gear.xpBonus || 0) + (opBonus.xpBonus || 0),
+      block: Math.floor((defLv-1)/5) + (opBonus.block || 0)
     };
   }
   function syncHpCap(){
@@ -4085,6 +4133,7 @@
       else state.unlockedOperators[op.id]=!!state.unlockedOperators[op.id];
     });
     if(!OPERATOR_DEFS[state.activeOperator] || !state.unlockedOperators[state.activeOperator]) state.activeOperator = ACTIVE_OPERATOR_ID;
+    ensureOperatorProgress();
   }
   function operatorUnlocked(id){ ensureCharacterState(); return !!state.unlockedOperators?.[id]; }
   function operatorShardName(id){ return OPERATOR_DEFS[id]?.shardName || OPERATOR_DEFS[id]?.unlockShard || `Operator Shard: ${OPERATOR_DEFS[id]?.displayName || id}`; }
@@ -4149,7 +4198,11 @@
     const active=currentOperatorId()===op.id;
     const unlockDisabled = (!locked || progress.owned<progress.cost) ? 'disabled' : '';
     const playDisabled = locked ? 'disabled' : '';
-    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="record-grid"><div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Unlockable')}</span></div><div><b>Status</b><span>${locked?'Locked':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'Unlock with shards first, or use Playtest → Unlock All Characters.':'Press Play As to switch the overworld sprite, battle sprite, portrait, and active operator save file.'}</p></div>`;
+    const rpg=operatorStatBonus(op.id);
+    const prog=operatorProgressFor(op.id);
+    const moves=defaultOperatorRpgDef(op.id).moves || attacks;
+    const moveHtml=moves.map(m=>`<div><b>${safeHtml(m.name)}</b><span>${safeHtml(m.heal?'Heal / Sustain':(m.special?m.special.toUpperCase():'Damage'))} // ${m.ep?m.ep+' EP':'Free'} // ${safeHtml(m.text||'')}</span></div>`).join('');
+    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'Unlock with shards first, or use Playtest → Unlock All Characters.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div>`;
     const activeCard=list.querySelector(`[data-character-card="${CSS && CSS.escape ? CSS.escape(currentOperatorId()) : currentOperatorId()}"]`);
     if(activeCard) activeCard.classList.add('active');
   }
@@ -4245,6 +4298,7 @@
       }
     }
     state.activeOperator = id;
+    syncHpCap();
     if(state.player) state.player.lastMoveAt = 0;
     applyOperatorVisuals();
     loadImages();
@@ -4286,7 +4340,7 @@
     if($('operatorDisplayName')) $('operatorDisplayName').textContent = String(op.displayName || 'VYRA').toUpperCase();
     if($('operatorDisplayCodename')) $('operatorDisplayCodename').textContent = `// ${String(op.codename || 'ASH VECTOR').toUpperCase()}`;
     if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
-    if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
+    if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Operator Level</b><span>Lv. ${activeOperatorProgress().level} // ${activeOperatorProgress().xp}/${activeOperatorProgress().nextXp} XP</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
     if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking'), ...operatorAnimationPaths(op,'idle')].join('\n');
   }
   let state = newGameState();
@@ -4297,7 +4351,7 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -4321,7 +4375,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 182;
+  const SAVE_SCHEMA_VERSION = 183;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -4351,6 +4405,7 @@
     state.radioUnlocked ||= {};
     state.visited ||= {};
     ensureCharacterState();
+    ensureOperatorProgress();
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
     state.stages ||= {};
     Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false});
@@ -4374,6 +4429,7 @@
     const merged={...fresh, ...loaded};
     merged.player={...fresh.player, ...(loaded.player||{})};
     merged.inventory={...(fresh.inventory||{}), ...(loaded.inventory||{})};
+    merged.operatorProgress={...(fresh.operatorProgress||{}), ...(loaded.operatorProgress||{})};
     merged.equipment={...createEmptyEquipment(), ...(loaded.equipment||{})};
     merged.settings={...(fresh.settings||{}), ...(loaded.settings||{})};
     merged.flags={...(fresh.flags||{}), ...(loaded.flags||{}), storySeen:{...(fresh.flags?.storySeen||{}), ...(loaded.flags?.storySeen||{})}};
@@ -5449,6 +5505,21 @@
     toast('Boundary lock restored position.');
     return true;
   }
+
+  // v183: Vector Lockdown rogue-lite room event.
+  function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(hud) return hud; hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; hud.innerHTML='<div class="lockdown-card avos-crt"><div class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Room sealed. Survive the surge.</p><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; document.body.appendChild(hud); return hud; }
+  const ROGUE_UPGRADES = [
+    {name:'Ash Blades', desc:'+12% damage pressure', apply:e=>e.damage += .12}, {name:'Rust Reflex', desc:'+10% attack speed simulation', apply:e=>e.speed += .10}, {name:'Bone Armor', desc:'+4 temporary defense', apply:e=>e.def += 4},
+    {name:'Vector Heart', desc:'+18 temporary HP', apply:e=>{e.maxHp += 18; state.player.hp=Math.min(combatStatBlock().maxHp+e.maxHp, state.player.hp+18);}}, {name:'Static Pulse', desc:'pulse damage aura', apply:e=>e.pulse += 1},
+    {name:'Blood Circuit', desc:'heal on clear', apply:e=>e.heal += 8}, {name:'Scrap Magnet', desc:'+reward roll', apply:e=>e.rewards += 1}, {name:'Ember Edge', desc:'burn edge', apply:e=>e.burn += 1},
+    {name:'Null Plating', desc:'less surge damage', apply:e=>e.damageTaken += .08}, {name:'Core Battery', desc:'+8 EP', apply:e=>{e.ep += 8; state.player.ep=Math.min((combatStatBlock().maxEp||state.player.maxEp)+e.ep, state.player.ep+8);}}
+  ];
+  function maybeTriggerVectorLockdown(){ if(!gameStarted || battle || storyActive || state.rogueEvent?.active) return; if((state.player?.level||1)<2 && (state.flags?.anomaliesCleared||0)<1) return; const now=Date.now(); if(now-(state.rogueLastAt||0)<135000) return; if(Math.random()>0.045) return; startVectorLockdown(); }
+  function startVectorLockdown(){ const gear=equipmentBonuses(); const event={active:true,startedAt:Date.now(),duration:60000,nextUpgradeAt:Date.now()+5000,nextHazardAt:Date.now()+8000,upgrades:[],damage:0,speed:0,def:0,maxHp:0,ep:0,pulse:0,heal:0,rewards:1,burn:0,damageTaken:0,starterWeapon:gear.atk?`Gear ATK +${gear.atk}`:'Current equipped weapon'}; state.rogueEvent=event; state.rogueLastAt=Date.now(); document.body.classList.add('vector-lockdown-active'); log('VECTOR LOCKDOWN: room sealed for 60 seconds. Survive the surge.'); pulseObjective('VECTOR LOCKDOWN: survive 60 seconds.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownHud(); if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=setInterval(tickVectorLockdown,1000); renderAll(); }
+  function tickVectorLockdown(){ const e=state.rogueEvent; if(!e?.active){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; return; } const now=Date.now(); if(now>=e.nextUpgradeAt){ const pool=ROGUE_UPGRADES.filter(u=>!e.upgrades.includes(u.name)); const up=pool[Math.floor(Math.random()*pool.length)] || ROGUE_UPGRADES[Math.floor(Math.random()*ROGUE_UPGRADES.length)]; up.apply(e); e.upgrades.push(up.name); e.nextUpgradeAt += 5000; toast(`Lockdown upgrade: ${up.name}`); log(`Lockdown Upgrade: ${up.name} — ${up.desc}.`); } if(now>=e.nextHazardAt){ const mitigated=Math.max(1,Math.floor((5+Math.random()*8)*Math.max(.35,1-(e.damageTaken||0))-(e.def||0)*.25)); if(mitigated>0){ state.player.hp=Math.max(1,state.player.hp-mitigated); showXpFloat(`LOCKDOWN -${mitigated} HP`,'locked'); } e.nextHazardAt += 8000; } const left=Math.ceil((e.duration-(now-e.startedAt))/1000); if(left<=0){ completeVectorLockdown(); return; } updateVectorLockdownHud(); renderUI(); }
+  function updateVectorLockdownHud(){ const e=state.rogueEvent; const hud=ensureRogueHud(); if(!e?.active){ hud.classList.add('hidden'); return; } const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000)); $('lockdownTimer').textContent=`${left}s`; $('lockdownText').textContent=`Room sealed. Starter: ${e.starterWeapon}. Upgrades arrive every 5 seconds.`; $('lockdownUpgrades').innerHTML=(e.upgrades||[]).slice(-8).map(u=>`<span>${safeHtml(u)}</span>`).join('') || '<span>First upgrade incoming...</span>'; }
+  function completeVectorLockdown(){ const e=state.rogueEvent||{}; if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; document.body.classList.remove('vector-lockdown-active'); ensureRogueHud().classList.add('hidden'); const rewardRolls=2+Math.min(5,e.rewards||0); const rewards=['Scrap','Rust Core','Vector Cell','Med Patch','Operator Shard: Vexa','Burnt Alloy','Corrupted Catalyst']; const won=[]; for(let i=0;i<rewardRolls;i++){ const item=rewards[Math.floor(Math.random()*rewards.length)]; won.push(item); addItem(item,1); recordDrop(item,'Vector Lockdown','Event'); } const heal=Math.max(12,Number(e.heal||0)); state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal); gainOperatorXp(28+(e.upgrades?.length||0)*4); advanceProtocolChallenge('victories',1); log(`VECTOR LOCKDOWN CLEARED: rewards recovered — ${won.join(', ')}.`); toast('Vector Lockdown cleared. Rewards recovered.'); state.rogueEvent={active:false,lastRewards:won,clearedAt:Date.now()}; pulseObjective(`Lockdown cleared: ${won.join(', ')}`); renderAll(); queueAutosave(); }
+
   function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
     if(battle) return;
@@ -5486,6 +5557,7 @@
     SfxManager.step();
     state.visited[`${nx},${ny}`]=1;
     handleTile(c,nx,ny);
+    if(c==='.' || c==='P') maybeTriggerVectorLockdown();
     clampPlayerToMap();
     renderAll();
     queueAutosave();
@@ -6643,7 +6715,7 @@
       $('attackButtons').appendChild(b);
       return b;
     };
-    attacks.forEach((a,i)=>{
+    activeBattleMoves().forEach((a,i)=>{
       const cost=Math.max(0,a.ep-mod.epDiscount);
       addCommandButton('', controllerDirect[i], a.name, `${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}`, state.player.ep<cost || battle.turn!=='player', ()=>playerAttack(i));
     });
@@ -6706,7 +6778,7 @@
   }
   function playerAttack(i){
     if(!battle||battle.turn!=='player')return;
-    const a=attacks[i]; const mod=combatModifiers(); const cost=Math.max(0,a.ep-mod.epDiscount);
+    const a=activeBattleMoves()[i]; const mod=combatModifiers(); const cost=Math.max(0,a.ep-mod.epDiscount);
     if(state.player.ep<cost){toast('Not enough EP.');return;}
     state.player.ep-=cost;
     if(a.heal){
@@ -6721,8 +6793,12 @@
       SfxManager.slash();
       const stats=combatStatBlock(); let crit=Math.random()<(stats.crit+mod.critBonus); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
       battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
-      const statusNote = applyPlayerStatusFromAttack(i,dmg);
-      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.${statusNote?' '+statusNote:''}`;
+      let specialText='';
+      if(a.special==='evade'){ battle.evadeNext=true; specialText=' Evade primed.'; }
+      if(a.special==='guard'){ battle.guard=true; specialText=' Guard primed.'; }
+      if(a.special==='loot' && Math.random()<0.22){ addCredits(2); specialText=' +2 scavenged credits.'; }
+      const statusNote = a.status ? addBattleStatus('enemy', a.status, 2, Math.max(2, Math.floor(dmg/8))) : applyPlayerStatusFromAttack(i,dmg);
+      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.${statusNote?' '+statusNote:''}${specialText}`;
       showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
       flashCombatant('battleEnemy');
       shakeBattle(crit ? 420 : 260);
@@ -6896,7 +6972,7 @@
     const characterShardDrop = maybeDropOperatorShard(wasBoss, e.name);
     if(characterShardDrop) loot.push(characterShardDrop);
     const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
-    gainXp(xpGain); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
+    gainXp(xpGain); gainOperatorXp(Math.max(8, Math.floor(xpGain * 0.75))); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
     showVictoryPanel(e, loot, {wasBoss, wasAnomaly}); queueAutosave();
   }
@@ -7357,11 +7433,11 @@
     const researchStats = researchSummary();
     if($('sectorName')) $('sectorName').textContent=`${def.id}:`;
     if($('sectorObjective')) $('sectorObjective').textContent=`// Objective: ${def.objective}`;
-    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Research ${researchStats.discovered}/${researchStats.total}</div><div class="statrow">Respawn ${respawnText} // Research Kills ${researchStats.kills}</div><div class="statrow">Checkpoint ${safeHtml(checkpointSummaryText())}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div>`;
+    $('stats').innerHTML=`<div class="statrow stat-hero-line"><b>Player Lv. ${p.level}</b> // <b>${safeHtml(currentOperator().displayName)} Op Lv. ${activeOperatorProgress().level}</b> // ${def.id} ${def.title}</div><div class="statrow">Credits ${p.credits} // Focus ${(skillList[state.combatStyle||'attack']||{}).name||'Attack'} // Upgrades ${upTotal}</div><div class="statrow">ATK ${stats.atk}+${stats.strBonus} // DEF ${stats.def} // Gear ${gearPower()} // Autosave ${saveAge}s</div><div class="statrow">Kills ${stageKills} // Research ${researchStats.discovered}/${researchStats.total}</div><div class="statrow">Respawn ${respawnText} // Research Kills ${researchStats.kills}</div><div class="statrow">Checkpoint ${safeHtml(checkpointSummaryText())}</div><div class="statrow">HP ${p.hp}/${stats.maxHp}<div class="bar"><span style="width:${100*p.hp/stats.maxHp}%"></span></div></div><div class="statrow">EP ${p.ep}/${stats.maxEp||p.maxEp}<div class="bar ep"><span style="width:${100*p.ep/(stats.maxEp||p.maxEp)}%"></span></div></div><div class="statrow">Player Sync ${p.xp}/${p.nextXp}<div class="bar xp"><span style="width:${100*p.xp/p.nextXp}%"></span></div></div><div class="statrow">Operator XP ${activeOperatorProgress().xp}/${activeOperatorProgress().nextXp}<div class="bar xp operator-xp"><span style="width:${100*activeOperatorProgress().xp/activeOperatorProgress().nextXp}%"></span></div></div>`;
     $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // 5 per skill // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
     $('inventory').innerHTML=`<button class="open-bag-btn" onclick="window.AV.openOverlay('inventoryOverlay')">Open Bag / Bank</button><div class="quick-bag-grid">${Object.entries(state.inventory).slice(0,12).map(([k,v])=>{ const item=findItemRecord(k); return `<div class="quick-bag-slot ${rarityClass(item.rarity)}" title="${safeHtml(k)}">${itemIconHtml(item,v)}<span>${safeHtml(k)}</span></div>`; }).join('') || '<div class="invrow">No recovered assets.</div>'}</div>`;
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
-    $('roster').innerHTML=`<div class="statrow"><b>${currentOperator().code} ${safeHtml(currentOperator().displayName)}</b><br>Active Operator</div>`;
+    $('roster').innerHTML=`<div class="statrow"><b>${currentOperator().code} ${safeHtml(currentOperator().displayName)}</b><br>Operator Lv. ${activeOperatorProgress().level} // ${safeHtml(operatorStatBonus().role)}<br><span class="fineprint">${safeHtml(operatorStatBonus().passive)}</span></div>`;
     const objectives=[['Reach recovery terminal',state.flags.terminal],[`Clear ${requiredAnomalyGoal} anomalies (${anomalyClears}/${requiredAnomalyGoal})`,anomalyClears>=requiredAnomalyGoal],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
     const activeText=currentObjectiveText();
     const contract=activeContract();
@@ -8216,7 +8292,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
