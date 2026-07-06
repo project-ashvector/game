@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.73';
-  const BUILD_TITLE = 'VYRA WALKING ANIMATION FRAMEWORK PASS';
+  const BUILD_VERSION = '0.9.75';
+  const BUILD_TITLE = 'IDLE ONLY SCALE NORMALIZATION PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3220,6 +3220,16 @@
           upLeft: ['assets/operators/av001/sprites/animations/walking/north-west/frame_000.png','assets/operators/av001/sprites/animations/walking/north-west/frame_001.png','assets/operators/av001/sprites/animations/walking/north-west/frame_002.png','assets/operators/av001/sprites/animations/walking/north-west/frame_003.png'],
           left: ['assets/operators/av001/sprites/animations/walking/west/frame_000.png','assets/operators/av001/sprites/animations/walking/west/frame_001.png','assets/operators/av001/sprites/animations/walking/west/frame_002.png','assets/operators/av001/sprites/animations/walking/west/frame_003.png'],
           downLeft: ['assets/operators/av001/sprites/animations/walking/south-west/frame_000.png','assets/operators/av001/sprites/animations/walking/south-west/frame_001.png','assets/operators/av001/sprites/animations/walking/south-west/frame_002.png','assets/operators/av001/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/av001/sprites/animations/idle/south/frame_000.png','assets/operators/av001/sprites/animations/idle/south/frame_001.png','assets/operators/av001/sprites/animations/idle/south/frame_002.png','assets/operators/av001/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/av001/sprites/animations/idle/south-east/frame_000.png','assets/operators/av001/sprites/animations/idle/south-east/frame_001.png','assets/operators/av001/sprites/animations/idle/south-east/frame_002.png','assets/operators/av001/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/av001/sprites/animations/idle/east/frame_000.png','assets/operators/av001/sprites/animations/idle/east/frame_001.png','assets/operators/av001/sprites/animations/idle/east/frame_002.png','assets/operators/av001/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/av001/sprites/animations/idle/north-east/frame_000.png','assets/operators/av001/sprites/animations/idle/north-east/frame_001.png','assets/operators/av001/sprites/animations/idle/north-east/frame_002.png','assets/operators/av001/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/av001/sprites/animations/idle/north/frame_000.png','assets/operators/av001/sprites/animations/idle/north/frame_001.png','assets/operators/av001/sprites/animations/idle/north/frame_002.png','assets/operators/av001/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/av001/sprites/animations/idle/north-west/frame_000.png','assets/operators/av001/sprites/animations/idle/north-west/frame_001.png','assets/operators/av001/sprites/animations/idle/north-west/frame_002.png','assets/operators/av001/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/av001/sprites/animations/idle/west/frame_000.png','assets/operators/av001/sprites/animations/idle/west/frame_001.png','assets/operators/av001/sprites/animations/idle/west/frame_002.png','assets/operators/av001/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/av001/sprites/animations/idle/south-west/frame_000.png','assets/operators/av001/sprites/animations/idle/south-west/frame_001.png','assets/operators/av001/sprites/animations/idle/south-west/frame_002.png','assets/operators/av001/sprites/animations/idle/south-west/frame_003.png']
         }
       }
     }
@@ -3236,7 +3246,7 @@
     return Object.values(bank).flatMap(frames => Array.isArray(frames) ? frames : []).filter(Boolean);
   }
   function operatorAssetPaths(op=currentOperator()){
-    return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{}), ...operatorAnimationPaths(op,'walking')].filter(Boolean);
+    return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{}), ...operatorAnimationPaths(op,'walking'), ...operatorAnimationPaths(op,'idle')].filter(Boolean);
   }
   function legacyOperatorAssetPaths(){
     // v161: mirror list keeps old `assets/operators/vyra/` references alive during GitHub cache/update transitions.
@@ -3258,10 +3268,21 @@
     }
     return null;
   }
+  function operatorIdleFrameForFacing(facing='down'){
+    const op = currentOperator();
+    const dir = normalizeOperatorFacing(facing);
+    const frames = op.animations?.idle?.[dir] || [];
+    if(frames.length){
+      // v164: use a normalized idle frame box so Vyra does not shrink when movement stops.
+      // Keep the first frame stable to avoid needing a constant render loop.
+      return frames[0];
+    }
+    return null;
+  }
   function currentOperatorMapSpriteForFacing(facing='down'){
     const op = currentOperator();
     const dir = normalizeOperatorFacing(facing);
-    return operatorWalkingFrameForFacing(dir) || (op.rotations && op.rotations[dir]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
+    return operatorWalkingFrameForFacing(dir) || operatorIdleFrameForFacing(dir) || (op.rotations && op.rotations[dir]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
   }
   let playerStepAnimId = null;
   function triggerPlayerStepAnimation(){
@@ -3304,7 +3325,7 @@
     if($('operatorDisplayCodename')) $('operatorDisplayCodename').textContent = `// ${String(op.codename || 'ASH VECTOR').toUpperCase()}`;
     if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
     if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
-    if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking')].join('\n');
+    if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking'), ...operatorAnimationPaths(op,'idle')].join('\n');
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
@@ -3337,7 +3358,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 163;
+  const SAVE_SCHEMA_VERSION = 165;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
