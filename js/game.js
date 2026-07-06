@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.72';
-  const BUILD_TITLE = 'BOOT MENU CHARACTER FRAMEWORK FIX PASS';
+  const BUILD_VERSION = '0.9.73';
+  const BUILD_TITLE = 'VYRA WALKING ANIMATION FRAMEWORK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3209,6 +3209,18 @@
         upLeft: 'assets/operators/av001/sprites/rotations/north-west.png',
         left: 'assets/operators/av001/sprites/rotations/west.png',
         downLeft: 'assets/operators/av001/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/av001/sprites/animations/walking/south/frame_000.png','assets/operators/av001/sprites/animations/walking/south/frame_001.png','assets/operators/av001/sprites/animations/walking/south/frame_002.png','assets/operators/av001/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/av001/sprites/animations/walking/south-east/frame_000.png','assets/operators/av001/sprites/animations/walking/south-east/frame_001.png','assets/operators/av001/sprites/animations/walking/south-east/frame_002.png','assets/operators/av001/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/av001/sprites/animations/walking/east/frame_000.png','assets/operators/av001/sprites/animations/walking/east/frame_001.png','assets/operators/av001/sprites/animations/walking/east/frame_002.png','assets/operators/av001/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/av001/sprites/animations/walking/north-east/frame_000.png','assets/operators/av001/sprites/animations/walking/north-east/frame_001.png','assets/operators/av001/sprites/animations/walking/north-east/frame_002.png','assets/operators/av001/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/av001/sprites/animations/walking/north/frame_000.png','assets/operators/av001/sprites/animations/walking/north/frame_001.png','assets/operators/av001/sprites/animations/walking/north/frame_002.png','assets/operators/av001/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/av001/sprites/animations/walking/north-west/frame_000.png','assets/operators/av001/sprites/animations/walking/north-west/frame_001.png','assets/operators/av001/sprites/animations/walking/north-west/frame_002.png','assets/operators/av001/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/av001/sprites/animations/walking/west/frame_000.png','assets/operators/av001/sprites/animations/walking/west/frame_001.png','assets/operators/av001/sprites/animations/walking/west/frame_002.png','assets/operators/av001/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/av001/sprites/animations/walking/south-west/frame_000.png','assets/operators/av001/sprites/animations/walking/south-west/frame_001.png','assets/operators/av001/sprites/animations/walking/south-west/frame_002.png','assets/operators/av001/sprites/animations/walking/south-west/frame_003.png']
+        }
       }
     }
   };
@@ -3219,16 +3231,50 @@
   function currentOperator(){
     return OPERATOR_DEFS[currentOperatorId()] || OPERATOR_DEFS[ACTIVE_OPERATOR_ID];
   }
+  function operatorAnimationPaths(op=currentOperator(), anim='walking'){
+    const bank = op?.animations?.[anim] || {};
+    return Object.values(bank).flatMap(frames => Array.isArray(frames) ? frames : []).filter(Boolean);
+  }
   function operatorAssetPaths(op=currentOperator()){
-    return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{})].filter(Boolean);
+    return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{}), ...operatorAnimationPaths(op,'walking')].filter(Boolean);
   }
   function legacyOperatorAssetPaths(){
     // v161: mirror list keeps old `assets/operators/vyra/` references alive during GitHub cache/update transitions.
     return operatorAssetPaths(OPERATOR_DEFS.av001).map(p => p.replace('assets/operators/av001/', 'assets/operators/vyra/'));
   }
+  function normalizeOperatorFacing(facing='down'){
+    const f=String(facing||'down');
+    return ({south:'down', north:'up', east:'right', west:'left', 'south-east':'downRight', 'north-east':'upRight', 'north-west':'upLeft', 'south-west':'downLeft'})[f] || f;
+  }
+  function operatorWalkingFrameForFacing(facing='down'){
+    const op = currentOperator();
+    const dir = normalizeOperatorFacing(facing);
+    const frames = op.animations?.walking?.[dir] || [];
+    const movedAt = Number(state?.player?.lastMoveAt || 0);
+    const moving = movedAt && Date.now() - movedAt < 420;
+    if(moving && frames.length){
+      const frameIndex = Math.floor((Date.now() - movedAt) / 105) % frames.length;
+      return frames[frameIndex];
+    }
+    return null;
+  }
   function currentOperatorMapSpriteForFacing(facing='down'){
     const op = currentOperator();
-    return (op.rotations && op.rotations[facing]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
+    const dir = normalizeOperatorFacing(facing);
+    return operatorWalkingFrameForFacing(dir) || (op.rotations && op.rotations[dir]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
+  }
+  let playerStepAnimId = null;
+  function triggerPlayerStepAnimation(){
+    if(!state?.player) return;
+    state.player.lastMoveAt = Date.now();
+    if(playerStepAnimId) cancelAnimationFrame(playerStepAnimId);
+    const endAt = state.player.lastMoveAt + 430;
+    const tick = ()=>{
+      try{ render(); }catch(err){}
+      if(Date.now() < endAt && gameStarted && !battle){ playerStepAnimId = requestAnimationFrame(tick); }
+      else { playerStepAnimId = null; try{ render(); }catch(err){} }
+    };
+    playerStepAnimId = requestAnimationFrame(tick);
   }
   function storyPortraitForLine(line={}){
     if(line?.portrait && NPC_DEFS?.[line.portrait]?.asset) return NPC_DEFS[line.portrait].asset;
@@ -3258,7 +3304,7 @@
     if($('operatorDisplayCodename')) $('operatorDisplayCodename').textContent = `// ${String(op.codename || 'ASH VECTOR').toUpperCase()}`;
     if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
     if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
-    if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{}))].join('\n');
+    if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking')].join('\n');
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
@@ -3268,7 +3314,7 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
@@ -3291,7 +3337,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 162;
+  const SAVE_SCHEMA_VERSION = 163;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -4180,6 +4226,7 @@
 
     state.player.x=nx;
     state.player.y=ny;
+    triggerPlayerStepAnimation();
     SfxManager.step();
     state.visited[`${nx},${ny}`]=1;
     handleTile(c,nx,ny);
