@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Project: ASH VECTOR - v1.0.05 Developer Build</title>
+  <link rel="icon" type="image/png" href="assets/logos/favicon.png" />
+  <link rel="stylesheet" href="css/style.css?v=191" />
+
+  <style>
+    #bootScreen.intro-video-playing #introVideoGate,
+    body.intro-video-active #introVideoGate,
+    #bootScreen.intro-video-playing #introVideoShade,
+    body.intro-video-active #introVideoShade {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    body.intro-video-active #bootScreen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99998 !important;
+      background: #000 !important;
+    }
+    body.intro-video-active #introVideo {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      object-fit: contain !important;
+      background: #000 !important;
+      transition: opacity .95s ease;
+    }
+    #bootScreen.intro-video-fading {
+      background: #000 !important;
+      transition: opacity .95s ease;
+    }
+    #bootScreen.intro-video-fading #introVideo {
+      opacity: 0 !important;
+    }
+    #bootScreen.intro-video-fading::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #000;
+      opacity: .22;
+      z-index: 100000;
+      pointer-events: none;
+    }
+  
+    /* v149: mobile intro gate button fit */
+    @media (max-width: 720px){
+      #introVideoGate{
+        max-width:calc(100vw - 18px)!important;
+        max-height:calc(100svh - 18px)!important;
+        overflow:auto!important;
+        padding:14px!important;
+        border-radius:14px!important;
+      }
+      #bootLogo{
+        display:grid!important;
+        gap:8px!important;
+        justify-items:center!important;
+      }
+      #bootLogo img{
+        max-height:88px!important;
+        width:auto!important;
+      }
+      #enterBtn,
+      #introSkipVideoBtn{
+        display:block!important;
+        width:min(360px, calc(100vw - 54px))!important;
+        margin:6px auto 0!important;
+        min-height:42px!important;
+        padding:10px 12px!important;
+        font-size:clamp(11px,3.1vw,14px)!important;
+        line-height:1.1!important;
+      }
+      #introSkipVideoBtn{
+        margin-left:auto!important;
+      }
+      #bootProgress{
+        margin-top:10px!important;
+      }
+    }
+
+  
+    /* v152: Radio menu */
+    .radio-track-list{display:grid;gap:10px;max-height:min(62vh,620px);overflow:auto;padding-right:4px}
+    .radio-track-btn{display:grid;grid-template-columns:1fr auto;gap:4px 12px;text-align:left;padding:12px;border:1px solid rgba(0,217,255,.35);border-radius:12px;background:rgba(0,10,18,.74);color:#e8fbff}
+    .radio-track-btn b{font-size:14px;letter-spacing:.03em}
+    .radio-track-btn span{grid-column:1/2;color:#9fb7c4;font-size:12px}
+    .radio-track-btn em{grid-column:2/3;grid-row:1/3;align-self:center;font-style:normal;font-size:11px;color:#91ffbd}
+    .radio-track-btn.locked{opacity:.45;border-color:rgba(255,255,255,.18);filter:grayscale(.75)}
+    .radio-track-btn.active{border-color:rgba(145,255,189,.82);box-shadow:0 0 18px rgba(145,255,189,.18)}
+    .radio-controls{display:grid;gap:8px;margin-top:12px}
+    @media (max-width:720px){.radio-layout{grid-template-columns:1fr!important}.radio-track-list{max-height:54vh}.radio-track-btn{grid-template-columns:1fr}.radio-track-btn em{grid-column:1;grid-row:auto}}
+
+  
+    /* v157: hard story dialog visibility fallback */
+    #storyOverlay.story-overlay{
+      position:fixed!important;
+      inset:0!important;
+      z-index:120000!important;
+      display:grid;
+      place-items:center;
+      padding:16px;
+      background:rgba(0,0,0,.78);
+      pointer-events:auto!important;
+    }
+    #storyOverlay.hidden{display:none!important;}
+    #storyOverlay .story-card{
+      width:min(760px,calc(100vw - 24px));
+      max-height:calc(100svh - 32px);
+      overflow:auto;
+      background:rgba(4,8,14,.96);
+      border:1px solid rgba(0,217,255,.68);
+      border-radius:18px;
+      box-shadow:0 0 42px rgba(0,217,255,.25), inset 0 0 28px rgba(255,31,58,.08);
+      padding:18px;
+      color:#ecfbff;
+    }
+    #storyOverlay .story-kicker{font:700 12px monospace;color:#00d9ff;letter-spacing:.12em;margin-bottom:8px;}
+    #storyOverlay .story-scene-title{font:900 clamp(22px,5vw,38px) monospace;color:#fff;margin-bottom:6px;}
+    #storyOverlay .story-scene-tag{color:#b9cbd6;margin-bottom:14px;}
+    #storyOverlay .story-body{display:grid;grid-template-columns:92px 1fr;gap:14px;align-items:start;}
+    #storyOverlay .story-body img{width:92px;height:92px;object-fit:contain;filter:drop-shadow(0 0 14px rgba(0,217,255,.35));}
+    #storyOverlay .story-speaker{font:900 14px monospace;color:#ff3652;margin-bottom:6px;}
+    #storyOverlay #storyLine{font-size:16px;line-height:1.45;margin:0;}
+    #storyOverlay .story-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+    #storyOverlay .story-actions button{min-height:42px;padding:10px 16px;}
+    #storyOverlay .story-controller-tip{margin-top:10px;color:#9fb7c4;font-size:12px;text-align:right;}
+    @media (max-width:640px){
+      #storyOverlay{padding:10px!important;align-items:end!important;}
+      #storyOverlay .story-card{max-height:calc(100svh - 20px);padding:14px;}
+      #storyOverlay .story-body{grid-template-columns:64px 1fr;gap:10px;}
+      #storyOverlay .story-body img{width:64px;height:64px;}
+      #storyOverlay #storyLine{font-size:14px;}
+      #storyOverlay .story-actions button{flex:1;}
+    }
+
+  
+    /* v158: story dialog hard override */
+    #storyOverlay.story-hard-open{
+      position:fixed!important;
+      inset:0!important;
+      width:100vw!important;
+      height:100svh!important;
+      z-index:2147483000!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      padding:14px!important;
+      background:radial-gradient(circle at 50% 25%,rgba(0,217,255,.18),rgba(0,0,0,.84) 55%,rgba(0,0,0,.96))!important;
+      pointer-events:auto!important;
+      visibility:visible!important;
+      opacity:1!important;
+    }
+    #storyOverlay.story-hard-open .story-hard-card{
+      width:min(820px,calc(100vw - 24px))!important;
+      max-height:calc(100svh - 28px)!important;
+      overflow:auto!important;
+      border:1px solid rgba(0,217,255,.76)!important;
+      border-radius:18px!important;
+      background:rgba(3,8,14,.98)!important;
+      box-shadow:0 0 50px rgba(0,217,255,.28),0 0 110px rgba(255,48,72,.12)!important;
+      padding:18px!important;
+      color:#ecfbff!important;
+      font-family:system-ui,Arial,sans-serif!important;
+    }
+    #storyOverlay.story-hard-open .story-hard-kicker{font:800 12px monospace;color:#00d9ff;letter-spacing:.12em;margin-bottom:6px;text-transform:uppercase;}
+    #storyOverlay.story-hard-open .story-hard-title{font:900 clamp(24px,5.4vw,42px) monospace;color:#fff;margin-bottom:6px;}
+    #storyOverlay.story-hard-open .story-hard-tag{color:#b9cbd6;margin-bottom:14px;}
+    #storyOverlay.story-hard-open .story-hard-body{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:start;}
+    #storyOverlay.story-hard-open .story-hard-body img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(0,217,255,.45));}
+    #storyOverlay.story-hard-open .story-hard-speaker{font:900 14px monospace;color:#ff3652;margin-bottom:6px;}
+    #storyOverlay.story-hard-open .story-hard-line{font-size:16px;line-height:1.45;margin:0;}
+    #storyOverlay.story-hard-open .story-hard-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px;}
+    #storyOverlay.story-hard-open .story-hard-actions button{min-height:42px;padding:10px 16px;}
+    @media(max-width:640px){
+      #storyOverlay.story-hard-open{align-items:end!important;padding:10px!important;}
+      #storyOverlay.story-hard-open .story-hard-card{max-height:calc(100svh - 20px)!important;padding:14px!important;}
+      #storyOverlay.story-hard-open .story-hard-body{grid-template-columns:62px 1fr!important;gap:10px!important;}
+      #storyOverlay.story-hard-open .story-hard-body img{width:62px!important;height:62px!important;}
+      #storyOverlay.story-hard-open .story-hard-line{font-size:14px!important;}
+      #storyOverlay.story-hard-open .story-hard-actions button{flex:1!important;}
+    }
+
+  
+    /* v159: new game story root fix */
+    #storyOverlay.story-root-open{
+      position:fixed!important;
+      left:0!important;
+      top:0!important;
+      right:0!important;
+      bottom:0!important;
+      width:100vw!important;
+      height:100svh!important;
+      z-index:2147483647!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      padding:14px!important;
+      background:radial-gradient(circle at 50% 20%,rgba(0,217,255,.20),rgba(0,0,0,.82) 52%,rgba(0,0,0,.96))!important;
+      visibility:visible!important;
+      opacity:1!important;
+      pointer-events:auto!important;
+    }
+    #storyOverlay.story-root-open .story-root-card{
+      width:min(860px,calc(100vw - 24px))!important;
+      max-height:calc(100svh - 28px)!important;
+      overflow:auto!important;
+      padding:18px!important;
+      border-radius:18px!important;
+      border:1px solid rgba(0,217,255,.8)!important;
+      background:rgba(3,8,14,.98)!important;
+      box-shadow:0 0 56px rgba(0,217,255,.30),0 0 120px rgba(255,48,72,.16)!important;
+      color:#ecfbff!important;
+      font-family:system-ui,Arial,sans-serif!important;
+    }
+    #storyOverlay.story-root-open .story-root-kicker{font:900 12px monospace;color:#00d9ff;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px;}
+    #storyOverlay.story-root-open .story-root-title{font:900 clamp(25px,5.5vw,44px) monospace;color:#fff;margin:0 0 6px;}
+    #storyOverlay.story-root-open .story-root-tag{color:#b9cbd6;margin-bottom:14px;}
+    #storyOverlay.story-root-open .story-root-body{display:grid;grid-template-columns:88px 1fr;gap:14px;align-items:start;}
+    #storyOverlay.story-root-open .story-root-body img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 0 16px rgba(0,217,255,.45));}
+    #storyOverlay.story-root-open .story-root-speaker{font:900 14px monospace;color:#ff3652;margin-bottom:6px;}
+    #storyOverlay.story-root-open .story-root-line{font-size:16px;line-height:1.45;margin:0;}
+    #storyOverlay.story-root-open .story-root-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:16px;}
+    #storyOverlay.story-root-open .story-root-actions button{min-height:42px;padding:10px 16px;}
+    @media(max-width:640px){
+      #storyOverlay.story-root-open{align-items:end!important;padding:10px!important;}
+      #storyOverlay.story-root-open .story-root-card{max-height:calc(100svh - 20px)!important;padding:14px!important;}
+      #storyOverlay.story-root-open .story-root-body{grid-template-columns:62px 1fr!important;gap:10px!important;}
+      #storyOverlay.story-root-open .story-root-body img{width:62px!important;height:62px!important;}
+      #storyOverlay.story-root-open .story-root-line{font-size:14px!important;}
+      #storyOverlay.story-root-open .story-root-actions button{flex:1!important;}
+    }
+
+  
+    /* v166: character roster */
+    .character-layout{display:grid;grid-template-columns:280px 1fr;gap:16px;min-height:520px}.character-list{display:grid;gap:10px;align-content:start;max-height:70vh;overflow:auto}.character-card-btn{display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:center;text-align:left;border:1px solid rgba(112,215,255,.25);background:rgba(0,0,0,.32);border-radius:12px;padding:8px;color:#eaffff}.character-card-btn img{width:54px;height:54px;object-fit:contain}.character-card-btn b{display:block}.character-card-btn span{font-size:11px;color:#9fb7c4}.character-card-btn.active{border-color:#00d9ff;box-shadow:0 0 16px rgba(0,217,255,.22)}.character-card-btn.locked{filter:saturate(.65);opacity:.82}.character-preview{display:grid;place-items:center;min-height:280px;background:radial-gradient(circle at 50% 30%,rgba(0,217,255,.13),rgba(0,0,0,.24));border:1px solid rgba(255,255,255,.08);border-radius:14px;margin:10px 0}.character-preview img{max-height:420px;max-width:100%;object-fit:contain}@media(max-width:820px){.character-layout{grid-template-columns:1fr}.character-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:240px}.character-preview{min-height:220px}}
+
+
+    /* v190: mobile lockdown scaling pass */
+    .vector-lockdown-hud{
+      position:fixed;
+      top:max(66px, calc(env(safe-area-inset-top, 0px) + 58px));
+      right:max(12px, env(safe-area-inset-right, 0px));
+      z-index:100020;
+      width:min(340px, calc(100vw - 24px));
+      pointer-events:none;
+      color:#f6fbff;
+      font-family:monospace;
+    }
+    .vector-lockdown-hud.hidden{display:none!important;}
+    .vector-lockdown-hud .lockdown-card{
+      border:1px solid rgba(255,48,72,.78);
+      border-radius:16px;
+      background:linear-gradient(180deg,rgba(6,8,16,.96),rgba(4,5,10,.91));
+      box-shadow:0 0 30px rgba(255,48,72,.24), inset 0 0 30px rgba(255,48,72,.06);
+      padding:14px;
+      overflow:hidden;
+    }
+    .vector-lockdown-warning .vector-lockdown-hud .lockdown-card{
+      border-color:rgba(255,206,80,.82);
+      box-shadow:0 0 30px rgba(255,206,80,.22), inset 0 0 30px rgba(255,206,80,.06);
+    }
+    .vector-lockdown-hud h2{
+      margin:2px 0 6px;
+      font:900 clamp(38px,5vw,54px)/.92 monospace;
+      letter-spacing:.02em;
+      color:#fff;
+      text-shadow:0 0 18px rgba(255,48,72,.38);
+    }
+    .vector-lockdown-hud p{
+      margin:6px 0 8px;
+      font:800 12px/1.35 monospace;
+      color:#f1f7ff;
+    }
+    .lockdown-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px;}
+    .lockdown-stats span,.lockdown-upgrades span{
+      display:block;
+      border:1px solid rgba(255,48,72,.45);
+      border-radius:8px;
+      background:rgba(0,0,0,.38);
+      padding:5px 7px;
+      font:800 11px/1.15 monospace;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .lockdown-upgrades{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;max-height:86px;overflow:hidden;}
+    #lockdownRetryBtn{pointer-events:auto;min-height:42px;width:100%;margin-top:10px;}
+    @media (max-width: 720px), (pointer: coarse){
+      .boot-header{display:grid!important;grid-template-columns:1fr!important;gap:3px!important;text-align:center!important;font-size:clamp(10px,3vw,13px)!important;line-height:1.2!important;}
+      .vector-lockdown-hud{
+        top:max(48px, calc(env(safe-area-inset-top, 0px) + 42px));
+        left:max(8px, env(safe-area-inset-left, 0px));
+        right:max(8px, env(safe-area-inset-right, 0px));
+        width:auto;
+        display:flex;
+        justify-content:center;
+      }
+      .vector-lockdown-hud .lockdown-card{
+        width:min(360px, calc(100vw - 14px));
+        max-height:min(30svh, 176px);
+        overflow:auto;
+        padding:7px 8px;
+        border-radius:12px;
+        -webkit-overflow-scrolling:touch;
+      }
+      .vector-lockdown-hud .record-kicker{font-size:clamp(9px,2.5vw,11px)!important;letter-spacing:.12em!important;margin-bottom:2px!important;}
+      .vector-lockdown-hud h2{font-size:clamp(28px,10vw,44px)!important;margin:0 0 4px!important;}
+      .vector-lockdown-hud p{font-size:clamp(10px,2.8vw,12px)!important;line-height:1.25!important;margin:4px 0 6px!important;}
+      #lockdownHpWrap{margin:5px 0 6px!important;}
+      #lockdownHpWrap > div:first-child{font-size:9px!important;}
+      #lockdownRoll{
+        margin:5px 0!important;
+        padding:6px 7px!important;
+        font-size:clamp(10px,2.8vw,12px)!important;
+        line-height:1.15!important;
+      }
+      .lockdown-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin-top:4px;}
+      .lockdown-stats span,.lockdown-upgrades span{font-size:clamp(7px,2vw,9px)!important;padding:3px 4px!important;border-radius:6px;}
+      .lockdown-upgrades{gap:3px;margin-top:4px;max-height:28px;overflow:hidden;}
+      body.vector-lockdown-active .tutorial-tip,
+      body.vector-lockdown-warning .tutorial-tip{display:none!important;}
+    }
+    @media (max-width: 720px) and (orientation: landscape){
+      .vector-lockdown-hud{top:max(36px, calc(env(safe-area-inset-top, 0px) + 30px));align-items:flex-start;}
+      .vector-lockdown-hud .lockdown-card{max-height:34svh;width:min(540px, calc(100vw - 16px));display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:start;}
+      .vector-lockdown-hud .record-kicker{grid-column:1/-1;}
+      .vector-lockdown-hud h2{grid-row:2 / span 2;margin-right:4px!important;}
+      .vector-lockdown-hud p{margin-top:0!important;}
+      #lockdownHpWrap,.lockdown-stats,.lockdown-upgrades,#lockdownRoll{grid-column:1/-1;}
+      .lockdown-upgrades{max-height:32px;}
+    }
+
+
+    /* v193: whole-phone readability and lockdown reward screen polish */
+    .lockdown-reward-card #lockdownContinueBtn{pointer-events:auto;min-height:42px;width:100%;margin-top:10px;}
+    .lockdown-reward-loot span{border-color:rgba(112,215,255,.52)!important;color:#eaffff!important;background:rgba(0,217,255,.08)!important;}
+    @media (max-width: 720px), (pointer: coarse){
+      body.mobile-play .database-modal{width:min(96vw,760px)!important;max-height:88svh!important;padding:12px!important;overflow:auto!important;}
+      body.mobile-play .db-header{grid-template-columns:1fr!important;gap:4px!important;font-size:10px!important;text-align:center!important;}
+      body.mobile-play .record-grid{grid-template-columns:1fr!important;gap:6px!important;}
+      body.mobile-play .fracture-grid,
+      body.mobile-play .inventory-db-layout,
+      body.mobile-play .anomaly-layout{grid-template-columns:1fr!important;gap:10px!important;}
+      body.mobile-play .top-nav, body.mobile-play .hud-panel{font-size:11px!important;}
+      body.mobile-play .mobile-action-pad button{min-width:38px!important;min-height:36px!important;padding:4px 5px!important;}
+      body.mobile-play .mobile-action-pad button span{font-size:8px!important;}
+      body.vector-lockdown-active .mobile-action-pad,
+      body.vector-lockdown-warning .mobile-action-pad{transform:scale(.86);transform-origin:bottom right;opacity:.82;}
+      body.vector-lockdown-active canvas#game,
+      body.vector-lockdown-warning canvas#game{max-height:58svh!important;}
+      .lockdown-reward-card{max-height:min(56svh,360px)!important;}
+      .lockdown-reward-card h2{font-size:clamp(22px,7vw,34px)!important;}
+      .lockdown-reward-loot{max-height:64px!important;overflow:auto!important;}
+    }
+
+
+  </style>
+</head>
+<body>
+  <div id="bootScreen" class="boot-screen intro-video-boot">
+    <video id="introVideo" class="intro-video" preload="auto" playsinline webkit-playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1;" src="assets/video/intro.mp4?v=183"></video>
+    <div id="introVideoShade" style="position:absolute;inset:0;z-index:2;background:radial-gradient(circle at 50% 40%, rgba(0,217,255,.10), rgba(0,0,0,.55) 58%, rgba(0,0,0,.88));pointer-events:none;"></div>
+    <div id="introVideoGate" class="boot-terminal avos-crt" style="position:relative;z-index:3;max-width:760px;margin:auto;text-align:center;background:rgba(0,6,12,.78);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 32px rgba(0,217,255,.18);padding:28px;border-radius:18px;">
+      <div class="boot-header"><span>ASH VECTOR INTRO SEQUENCE</span><span id="bootBuildLabel">v1.0.05 // LOCKDOWN STABILITY FIX</span></div>
+      <div class="boot-lines" id="bootLines">&gt; Intro file detected: assets/video/intro.mp4
+&gt; Press Enter or tap the icon to open the fullscreen intro.
+&gt; Main menu opens after the full video completes.</div>
+      <div class="boot-logo" id="bootLogo">
+        <img src="assets/ui/game_logo.png" alt="Project: ASH VECTOR logo">
+        <p class="classified">INTRO READY</p>
+        <p>The gate disappears when playback starts so the video fills the screen.</p>
+        <button id="enterBtn">▶ START INTRO</button><button id="introSkipVideoBtn" style="margin-left:10px">SKIP TO MAIN MENU</button>
+      </div>
+      <div class="boot-progress" id="bootProgress"><span style="width:0%"></span></div>
+    </div>
+  </div>
+
+  <div id="mainMenu" class="main-menu hidden">
+    <div class="menu-card avos-crt">
+      <div class="menu-kicker">ASH VECTOR DATABASE // CLEARANCE: CIVILIAN</div>
+      <img src="assets/logos/splash_logo.png" alt="Project: ASH VECTOR logo" class="menu-logo">
+      <h1>PROJECT:<br><span>ASH VECTOR</span></h1>
+      <p class="menu-subtitle">Reality integrity compromised. Operator access required.</p>
+      <div class="menu-buttons">
+        <button id="continueBtn" onclick="window.AV_MENU&&window.AV_MENU.continue()">Continue Operation</button>
+        <button id="newGameBtn" onclick="window.AV_MENU&&window.AV_MENU.start()">New Game</button>
+<button id="introVideoReplayBtn" onclick="window.AV_MENU&&window.AV_MENU.rewatchIntro()">Rewatch Intro Video</button>
+        <button id="fractureIndexBtn" onclick="window.AV_MENU&&window.AV_MENU.open('fractureOverlay')">Fracture Index</button>
+        <button id="operatorFilesBtn" onclick="window.AV_MENU&&window.AV_MENU.open('operatorOverlay')">Operator Files</button>
+        <button id="characterMenuBtn" onclick="window.AV_MENU&&window.AV_MENU.open('characterOverlay')">Characters</button>
+        <button id="anomalyIndexBtn" onclick="window.AV_MENU&&window.AV_MENU.open('anomalyOverlay')">Anomaly Index</button>
+        <button id="inventoryDbBtn" onclick="window.AV_MENU&&window.AV_MENU.open('inventoryOverlay')">Inventory Database</button>
+        <button id="progressionBtn" onclick="window.AV_MENU&&window.AV_MENU.open('progressionOverlay')">Progression Matrix</button>
+        <button id="missionMenuBtn" onclick="window.AV_MENU&&window.AV_MENU.open('missionOverlay')">Mission Briefing</button>
+        <button id="radioMenuBtn" onclick="window.AV_MENU&&window.AV_MENU.open('radioOverlay')">Radio</button>
+        <button id="storyArchiveMenuBtn" onclick="window.AV_MENU&&window.AV_MENU.open('missionOverlay')">Story Archive</button>
+        <button id="configBtn" onclick="window.AV_MENU&&window.AV_MENU.open('configOverlay')">Configuration</button>
+        <button id="menuFullscreenBtn" onclick="window.AV_MENU&&window.AV_MENU.fullscreen()">Full Screen Mode</button>
+      </div>
+      <div class="quick-start-hint">Press <b>Enter</b> or click <b>New Game</b> to start.</div>
+      <div id="menuInfo" class="menu-info">Select a database protocol.</div><div id="saveStatus" class="menu-info">Save status checking...</div>
+      <div class="ui-kit-note"><b>AVOS UI KIT v1.0.05</b> // lockdown stability fix online</div>
+    </div>
+  </div>
+
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="brand"><img src="assets/ui/game_logo.png" alt="Project: ASH VECTOR logo"><span>PROJECT: ASH VECTOR</span></div>
+      <div class="top-actions">
+        <button id="saveBtn">Save Game</button><button id="saveExitBtn">Save & Exit to Main Menu</button><button id="loadBtn">Load Save</button><button id="missionBtn">Mission Briefing</button><button id="bagBtn">Bag</button><button id="progressionTopBtn">Progression Matrix</button><button id="characterMenuTopBtn">Characters</button><button id="playtestBtn">Playtest Console</button><button id="fullscreenBtn">Full Screen</button><button id="menuBtn">Database Menu</button><button id="resetBtn">Purge Archive</button>
+      </div>
+    </header>
+    <main class="layout">
+      <section class="game-card">
+        <div class="mission-strip"><b id="sectorName">SECTOR 01:</b> Abandoned Research Compound <span id="sectorObjective">// Objective: Follow Chapter 1 flow: terminal → 3 anomalies → boss → extraction.</span></div>
+        <div id="objectiveTracker" class="objective-tracker"></div>
+        <canvas id="game" width="1008" height="546" tabindex="0"></canvas>
+        <div class="mobile-pad">
+          <button data-move="up">▲</button><div><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div>
+        </div>
+      </section>
+      <aside class="panel">
+        <div class="hero-card"><img id="heroPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait"><div><h2 id="heroName">Vyra</h2><p id="heroMeta">Operator Unit 001 • Vector Assassin • Starter</p></div></div>
+        <div class="stats" id="stats"></div>
+        <div><h3>Fracture Status</h3><div id="fractureStatus" class="mini-db"></div></div>
+        <div><h3>Tactical Minimap</h3><canvas id="minimap" width="240" height="100" class="minimap"></canvas><div class="mini-hint">Red = Operator • Gold = Caches • White = Exit</div></div>
+        <div><h3>Operator Archive</h3><div id="roster"></div></div>
+        <div><h3>Equipment Database</h3><div id="inventory"></div></div>
+        <div><h3>Mission Progress</h3><div id="missionProgress" class="mini-db"></div></div>
+        <div><h3>Mission Log</h3><div id="log"></div></div>
+      </aside>
+    </main>
+  </div>
+
+  <div id="operatorOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeOperatorDb" class="modal-close">Close File</button><div class="db-header"><div>ASH VECTOR OPERATOR DATABASE</div><div>CLASSIFIED // v1.0.00</div></div><div class="operator-file"><section class="operator-art"><img id="operatorProfileArt" src="assets/operators/av001/profile.png" alt="Vyra full profile art"><div id="operatorFileStamp" class="file-stamp">OPERATOR ID: AV-001 // STATUS: ACTIVE</div></section><section class="operator-data"><div class="record-kicker">ACTIVE OPERATOR FILE</div><h2><span id="operatorDisplayName">VYRA</span> <span id="operatorDisplayCodename">// SHADOWBLADE</span></h2><p id="operatorQuote" class="operator-quote">“In the dark, we are the vector.”</p><div id="operatorRecordGrid" class="record-grid"><div><b>Class</b><span>Vector Assassin</span></div><div><b>Affinity</b><span>Cyan Vector</span></div><div><b>Rarity</b><span>Starter / 5-Star Prototype</span></div><div><b>Clearance</b><span>Level 5</span></div><div><b>Synchronization</b><span id="operatorSync">0%</span></div><div><b>File Status</b><span>Active</span></div></div><h3>Combat Protocols</h3><div class="protocol-list"><div><b>Vector Slash</b><span>Fast twin-blade strike.</span></div><div><b>Phantom Dash</b><span>High mobility strike and dodge setup.</span></div><div><b>Shadow Flurry</b><span>Rapid multi-hit blade pressure.</span></div><div><b>Null Field</b><span>Defensive field that cuts incoming damage.</span></div></div><h3>Final Replaceable Asset Paths</h3><code id="operatorAssetPaths" class="asset-code">assets/operators/av001/profile.png
+assets/operators/av001/portrait.png
+assets/operators/av001/battle.png
+assets/operators/av001/sprite_sheet.png
+assets/operators/av001/icon.png</code></section></div></div></div>
+
+  
+
+  <div id="characterOverlay" class="overlay hidden"><div class="database-modal avos-crt character-modal"><button id="closeCharacterDb" class="modal-close">Close Characters</button><div class="db-header"><div>ASH VECTOR CHARACTER ROSTER</div><div>LOCKED OPERATORS // v1.0.00</div></div><div class="character-layout"><aside id="characterList" class="character-list"><div class="menu-info">Loading character files...</div></aside><section id="characterFile" class="character-file"><div class="record-kicker">SELECT CHARACTER</div><h2>Operator Files</h2><p>View operators, unlock them, then press Play As to immediately switch the playable character.</p></section></div></div></div>
+<div id="anomalyOverlay" class="overlay hidden"><div class="database-modal anomaly-modal avos-crt"><button id="closeAnomalyDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR ANOMALY INDEX</div><div>THREAT DATABASE // v1.0.00</div></div><div class="anomaly-layout"><aside class="anomaly-list" id="anomalyList"></aside><section class="anomaly-file" id="anomalyFile"><div class="record-kicker">SELECT ANOMALY RECORD</div><h2>THREAT FILE LOCKED</h2><p>Choose an anomaly from the index. Try not to lick the evidence.</p></section></div></div></div>
+
+  <div id="fractureOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeFractureDb" class="modal-close">Close Index</button><div class="db-header"><div>ASH VECTOR FRACTURE INDEX</div><div>MAP DATABASE // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE FRACTURE</div><h2>F-001 // LOCKDOWN POLISH MEGA PASS</h2><p>Forbidden graveyard route under a broken neon district. Threats include haunted crypt stones, dead-tree corridors, cursed stashes, and one boss that absolutely should have stayed buried.</p><div class="record-grid"><div><b>Status</b><span id="fractureExplore">Explored 0%</span></div><div><b>Threat Level</b><span>LOW → BOSS CLASS</span></div><div><b>Reality Integrity</b><span>81%</span></div><div><b>Archives</b><span>1 / 8 online</span></div></div><h3>Rooms</h3><div class="protocol-list"><div><b>Grave Entry</b><span>Spawn / briefing.</span></div><div><b>Haunted Rows</b><span>Enemy patrols.</span></div><div><b>Lantern Checkpoint</b><span>Save terminal + healing station.</span></div><div><b>Crypt Boss Route</b><span>Boss route.</span></div></div></section><section class="fracture-card"><h3>Legend</h3><div class="legend"><span># Wall</span><span>. Floor</span><span>C Chest</span><span>K Key</span><span>D Locked Door</span><span>S Save Terminal</span><span>H Heal Station</span><span>L Lore Terminal</span><span>E Anomaly</span><span>B Boss</span><span>X Exit</span></div><h3>Final Replaceable Asset Paths</h3><code class="asset-code">assets/fractures/fracture001/background.png
+assets/fractures/fracture001/minimap.png
+assets/fractures/fracture001/tileset.png
+data/fractures/fracture001/layout.json
+data/fractures/fracture001/events.json</code></section></div></div></div>
+
+
+  <div id="inventoryOverlay" class="overlay hidden"><div class="database-modal avos-crt"><button id="closeInventoryDb" class="modal-close">Close Inventory</button><div class="db-header"><div>ASH VECTOR INVENTORY / OPERATOR STATUS</div><div>GEAR + LOOT // v1.0.00</div></div><div class="inventory-db-layout"><section class="fracture-card"><div class="record-kicker">RECOVERED ASSETS</div><h2>Inventory & Player Stats</h2><p>Consumables, Catalysts, Key Items, Archives, Credits, and Operator Shards are tracked here. Yes, the database judges your hoarding.</p><div id="inventoryDatabaseList" class="inventory-database-list"></div></section><section class="fracture-card"><h3>Cache Types</h3><div class="protocol-list"><div><b>Standard Cache</b><span>Basic supplies and credits.</span></div><div><b>Military Cache</b><span>Better consumables and catalysts.</span></div><div><b>Locked Cache</b><span>Requires keycards or story flags.</span></div><div><b>Corrupted Cache</b><span>High reward, future risk events.</span></div><div><b>Legendary Vault</b><span>Boss-tier loot and rare shards.</span></div></div><h3>Final Replaceable Item Paths</h3><code class="asset-code">assets/items/med_patch.png
+assets/items/scrap_metal.png
+assets/items/corrupted_catalyst.png
+assets/items/keycard_lv1.png
+assets/items/archive_log_001.png
+assets/items/operator_shard_vyra.png</code></section></div></div></div>
+
+
+
+
+
+  <div id="progressionOverlay" class="overlay hidden"><div class="database-modal avos-crt progression-modal"><button id="closeProgression" class="modal-close">Close Matrix</button><div class="db-header"><div>ASH VECTOR PROGRESSION MATRIX</div><div>CODE REUSE // CIW SYSTEMS ADAPTED</div></div><div class="progression-layout"><section class="fracture-card"><div class="record-kicker">COMBAT STYLE</div><h2>Training Focus</h2><p>Adapted from the old Cryptic Idle Worlds code: combat awards style XP using a RuneScape-style XP curve. No legacy art assets are required for this system.</p><div id="combatStylePicker" class="style-picker"></div><div id="upgradeStation" class="upgrade-station"></div><h3>Legacy Systems Reused</h3><div class="protocol-list"><div><b>XP Curve</b><span>99-level RuneScape-style progression table.</span></div><div><b>Skill Matrix</b><span>Attack / Strength / Defense / Magic / Ranged plus future non-combat tracks.</span></div><div><b>Code Reuse Only</b><span>Progression, XP curve, enemy data patterns, and combat log logic adapted from the old project.</span></div></div></section><section class="fracture-card"><div class="record-kicker">SKILL DATABASE</div><h2>Operator Growth</h2><div id="progressionList" class="progression-list"></div></section></div></div></div>
+
+  <div id="configOverlay" class="overlay hidden"><div class="database-modal avos-crt config-modal"><button id="closeConfig" class="modal-close">Close Config</button><div class="db-header"><div>ASH VECTOR CONFIGURATION</div><div>LOCAL SETTINGS // v1.0.00</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACCESSIBILITY / DISPLAY</div><h2>Playtest Settings</h2><p>These settings are local-only and built for testing before GitHub deployment.</p><label class="setting-row"><span>CRT Scanlines</span><input id="settingCrt" type="checkbox" checked></label><label class="setting-row"><span>Reduced Motion</span><input id="settingMotion" type="checkbox"></label><label class="setting-row"><span>Large Text Mode</span><input id="settingLargeText" type="checkbox"></label><label class="setting-row"><span>Tutorial Tips</span><input id="settingTutorialTips" type="checkbox" checked></label><label class="setting-row"><span>Route Beacon</span><input id="settingRouteBeacon" type="checkbox" checked></label><label class="setting-row"><span>Objective Compass</span><input id="settingObjectiveCompass" type="checkbox" checked></label><label class="setting-row"><span>Minimap Route</span><input id="settingMinimapRoute" type="checkbox" checked></label></section><section class="fracture-card"><h3>Controls</h3><div class="legend"><span>Arrow Keys/WASD: Move</span><span>E / Click: Talk to NPCs</span><span>Controller: left stick/D-pad move</span><span>Xbox / PS / Switch labels auto-detect</span><span>F9 or View/Share/-: QA Console</span><span>Buttons: Mobile Movement</span></div><h3>Build Note</h3><p class="menu-info">v193 polishes lockdown projectile behavior, rewards, character bonuses, enemy spread, and phone scaling.</p></section></div></div></div>
+
+
+
+  <div id="missionOverlay" class="overlay hidden"><div class="database-modal avos-crt mission-modal"><button id="closeMission" class="modal-close">Close Briefing</button><div class="db-header"><div>ASH VECTOR MISSION BRIEFING</div><div>CHAPTER 1 // THE AWAKENING</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">ACTIVE OPERATION</div><h2>Recover the Grave Core</h2><p>The ASH Vector network broke reality trying to save it. Vyra wakes inside Fracture 001 with corrupted memory, twin Vector Blades, and a forbidden graveyard full of things that should not legally have teeth.</p><div id="missionActiveHint" class="mission-active-hint">Current objective syncing...</div><div id="missionChecklist" class="mission-checklist"></div></section><section class="fracture-card"><h3>Chapter Flow</h3><div class="protocol-list"><div><b>1. Recovery Terminal</b><span>Sync the archive and receive the first briefing.</span></div><div><b>2. Three Anomalies</b><span>Clear roaming threats to force the boss route open.</span></div><div><b>3. Boss Gate</b><span>Push into the core chamber once AVOS unlocks the route.</span></div><div><b>4. Extraction</b><span>Defeat the boss, claim the Grave Core, and leave through X.</span></div></div><h3>Rewards</h3><div class="protocol-list"><div><b>Clear Reward</b><span>40 Credits, Corrupted Catalyst, Rust Core, Vyra Shards</span></div><div><b>Archive</b><span>Recovered File 001: The First Vector</span></div></div></section></div></div></div>
+
+
+  <div id="radioOverlay" class="overlay hidden"><div class="database-modal avos-crt radio-modal"><button id="closeRadio" class="modal-close">Close Radio</button><div class="db-header"><div>ASH VECTOR RADIO</div><div>UNLOCKED FIELD BROADCASTS</div></div><div class="fracture-grid radio-layout"><section class="fracture-card"><div class="record-kicker">RADIO DATABASE</div><h2>Recovered Songs</h2><p id="radioStatus" class="menu-info">Loading radio unlocks...</p><p id="radioNowPlaying" class="mission-active-hint">Choose an unlocked song.</p><div class="radio-controls"><button onclick="window.AV&&window.AV.stopRadio()">Stop Radio / Resume Game Music</button></div></section><section class="fracture-card"><div class="record-kicker">TRACK LIST</div><h3>Unlocked by Progress</h3><div id="radioTrackList" class="radio-track-list"></div></section></div></div></div>
+
+  <div id="playtestOverlay" class="overlay hidden"><div class="database-modal avos-crt playtest-modal"><button id="closePlaytest" class="modal-close">Close Console</button><div class="db-header"><div>ASH VECTOR PLAYTEST CONSOLE</div><div>LOCAL QA // STAGE JUMP ENABLED</div></div><div class="fracture-grid"><section class="fracture-card"><div class="record-kicker">SPRINT TEST TOOLS</div><h2>Milestone Bravo QA</h2><p>Use these buttons while testing each level before GitHub upload. The stage picker lets you jump straight into any current map. Character QA unlocks are hard-saved for roster testing.</p><div class="qa-stage-picker"><label for="qaStageSelect"><b>Test Level</b><span>Pick a fracture to load instantly</span></label><select id="qaStageSelect"><option value="f001">F-001 // Forbidden Graveyard</option><option value="f002">F-002 // Ash Wastes Outpost</option><option value="f003">F-003 // Neon Graveyard</option><option value="f004">F-004 // Transit Ruins</option><option value="f005">F-005 // Glass Storm Lab</option><option value="f006">F-006 // Vector Core Spire</option><option value="f007">F-007 // Cinder Express Yard</option><option value="f008">F-008 // Flooded Data Vault</option><option value="f009">F-009 // Rust Orchard</option><option value="f010">F-010 // Blacksite Observatory</option><option value="f011">F-011 // Cryo Basilica</option><option value="f012">F-012 // Ash Crown Citadel</option></select><div class="playtest-actions"><button id="qaLoadStage">Load Selected Level</button><button id="qaUnlockStages">Unlock All Levels</button><button id="qaUnlockCharacters" onclick="window.AV&&window.AV.qaUnlockAllCharacters&&window.AV.qaUnlockAllCharacters()">Unlock All Characters</button><button id="qaGrantCharacterShards" onclick="window.AV&&window.AV.qaGrantAllCharacterShards&&window.AV.qaGrantAllCharacterShards()">Grant Character Shards</button></div><div class="playtest-actions qa-direct-stage-actions"><button data-qa-stage="f001">Load F-001</button><button data-qa-stage="f002">Load F-002</button><button data-qa-stage="f003">Load F-003</button><button data-qa-stage="f004">Load F-004</button><button data-qa-stage="f005">Load F-005</button><button data-qa-stage="f006">Load F-006</button><button data-qa-stage="f007">Load F-007</button><button data-qa-stage="f008">Load F-008</button><button data-qa-stage="f009">Load F-009</button><button data-qa-stage="f010">Load F-010</button><button data-qa-stage="f011">Load F-011</button><button data-qa-stage="f012">Load F-012</button></div></div><div class="qa-level-picker"><label for="qaPlayerLevel"><b>Test Player Level</b><span>Use this to check locked stages and balance.</span></label><div class="qa-level-row"><input id="qaPlayerLevel" type="number" min="1" max="99" value="12"><button id="qaSetLevel">Set Level</button></div><div class="playtest-actions"><button data-qa-level="5">Lv 5</button><button data-qa-level="12">Lv 12</button><button data-qa-level="15">Lv 15</button><button data-qa-level="20">Lv 20</button><button data-qa-level="25">Lv 25</button><button data-qa-level="99">Lv 99</button></div></div><div class="playtest-actions"><button id="qaHeal">Full Heal</button><button id="qaCredits">Add 100 Credits</button><button id="qaClearAnomalies">Mark 3 Anomalies Cleared</button><button id="qaBossReady">Unlock Boss Route</button><button id="qaCompleteChapter">Force Chapter Complete</button><button id="qaResetRun">Reset Current Run</button><button id="qaReplayStory">Replay Opening Story</button><button id="qaReplayClearStory">Replay Stage Clear Story</button><button id="qaResetTips">Reset Tutorial Tips</button><button id="qaToggleNavAssist">Toggle Nav Assist</button><button id="qaRestoreCheckpoint">Restore Checkpoint</button><button id="qaResetChallenges">Reset Protocol Challenges</button><button id="qaPath">Show Test Route</button></div></section><section class="fracture-card"><h3>Current QA State</h3><div id="qaState" class="mini-db"></div><h3>Keyboard / Controller</h3><div class="legend"><span>Arrow Keys/WASD: Move</span><span>E / Click: Talk to NPCs</span><span>F9: Console</span><span>Controller: auto Xbox / PS / Switch</span><span>View / Share / -: QA Console</span><span>Save: localStorage</span></div><p class="menu-info">Goal: test boot → menu → new game → terminal → enemy fights → boss → exit → chapter complete.</p></section></div></div></div>
+
+  <div id="battleOverlay" class="overlay hidden">
+    <div id="battlePanel" class="battle" style="background-image:url('assets/battle_backgrounds/toxic_sewers_battle.png')">
+      <div class="battle-hud-top">
+        <div><span class="battle-kicker">COMBAT PROTOCOL</span><b id="battleTitle">Hostile Entity</b></div>
+        <div class="battle-location">F-001 // LOCKDOWN POLISH MEGA PASS</div>
+      </div>
+      <div class="battle-stage">
+        <div class="combatant hero-side"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><span id="battleHeroLabel" class="combatant-name">AV-001 VYRA</span></div>
+        <div id="damageLayer" class="damage-layer"></div>
+        <div class="combatant enemy-side"><img id="battleEnemy" class="battle-sprite enemy" src="" alt="enemy"><span id="battleEnemyLabel" class="combatant-name">ANOMALY</span></div>
+      </div>
+      <div class="battle-ui">
+        <section class="battle-status-panel">
+          <div id="battleHp" class="battle-bars"></div>
+          <p id="battleText" class="battle-log-line">Choose a combat protocol.</p>
+        </section>
+        <section class="battle-command-panel">
+          <div class="command-title">VECTOR PROTOCOLS</div>
+          <div id="attackButtons" class="attacks"></div>
+        </section>
+      </div>
+      <div id="battleVictory" class="battle-victory hidden"></div>
+    </div>
+  </div>
+  <script src="js/game.js?v=190"></script>
+</body>
+</html>
