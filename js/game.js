@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.90';
-  const BUILD_TITLE = 'BOSS ROUTE REACHABILITY FIX PASS';
+  const BUILD_VERSION = '0.9.91';
+  const BUILD_TITLE = 'LOCKED BOSS GATE ROUTE FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4321,7 +4321,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 180;
+  const SAVE_SCHEMA_VERSION = 181;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -5101,90 +5101,152 @@
     }
     return targets;
   }
-  function routeRepairPassableAt(x,y){
+  function routeRepairPassableAt(x,y,{doors=false, walls=false}={}){
     if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
-    return isRegionPassableTile(tileAt(x,y));
+    const c=tileAt(x,y);
+    if(c==='#') return !!walls;
+    if(c==='D') return !!doors;
+    return isRegionPassableTile(c);
   }
-  function routeRepairReachableTo(target){
+  function routePathTo(target,{doors=false,walls=false}={}){
     const start=fallbackRegionStart();
     const key=routeRepairTileKey;
     const seen=new Set();
     const q=[];
-    if(routeRepairPassableAt(start.x,start.y)){
+    const prev=new Map();
+
+    if(routeRepairPassableAt(start.x,start.y,{doors,walls})){
       seen.add(key(start.x,start.y));
       q.push(start);
     }
-    while(q.length){
-      const cur=q.shift();
-      if(cur.x===target.x && cur.y===target.y) return true;
-      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
-        const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
-        if(seen.has(k)) continue;
-        if(!routeRepairPassableAt(nx,ny)) continue;
-        seen.add(k);
-        q.push({x:nx,y:ny});
-      }
-    }
-    return false;
-  }
-  function routeRepairCarvePathTo(target){
-    const start=fallbackRegionStart();
-    const key=routeRepairTileKey;
-    const q=[start];
-    const seen=new Set([key(start.x,start.y)]);
-    const prev=new Map();
-    let found=null;
 
     while(q.length){
       const cur=q.shift();
-      if(cur.x===target.x && cur.y===target.y){ found=cur; break; }
-      const choices=[
+      if(cur.x===target.x && cur.y===target.y){
+        const path=[];
+        let p=cur;
+        while(p){
+          path.push(p);
+          p=prev.get(key(p.x,p.y));
+        }
+        return path.reverse();
+      }
+      const preferred=[
         [Math.sign(target.x-cur.x),0],
         [0,Math.sign(target.y-cur.y)],
         [1,0],[-1,0],[0,1],[0,-1]
       ];
-      for(const [dx,dy] of choices){
+      for(const [dx,dy] of preferred){
         if(!dx && !dy) continue;
         const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
         if(seen.has(k)) continue;
-        if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)) continue;
+        if(!routeRepairPassableAt(nx,ny,{doors,walls})) continue;
         seen.add(k);
-        prev.set(k, cur);
+        prev.set(k,cur);
         q.push({x:nx,y:ny});
       }
     }
-
-    if(!found) return 0;
-    const path=[];
-    let cur=found;
-    while(cur && !(cur.x===start.x && cur.y===start.y)){
-      path.push(cur);
-      cur=prev.get(key(cur.x,cur.y));
+    return null;
+  }
+  function routeReachableTo(target,{doors=false,walls=false}={}){
+    return !!routePathTo(target,{doors,walls});
+  }
+  function routeProtectedEventTile(x,y,target){
+    if(target && x===target.x && y===target.y) return true;
+    return ['S','E','B','X','C','H','L'].includes(tileAt(x,y));
+  }
+  function routeOpenTile(x,y,target=null){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
+    const c=tileAt(x,y);
+    if(routeProtectedEventTile(x,y,target)) return 0;
+    if(c==='#' || c==='D'){
+      setTile(x,y,'.');
+      return 1;
     }
-    path.reverse();
-
+    return 0;
+  }
+  function routeCarvePath(path,target=null){
     let carved=0;
+    if(!path || !path.length) return carved;
     path.forEach((p,i)=>{
-      const c=tileAt(p.x,p.y);
-      if(p.x===target.x && p.y===target.y) return;
-      // Keep functional event tiles and closed doors intact. Only open actual wall cells.
-      if(c==='#'){
-        setTile(p.x,p.y,'.');
-        carved++;
-      }
+      if(i===0) return;
+      carved += routeOpenTile(p.x,p.y,target);
     });
+    return carved;
+  }
+  function routeGateIndexForPath(path,target){
+    if(!path || path.length<4) return -1;
+    const startAt=Math.max(1, Math.floor(path.length*.45));
+    const endAt=Math.max(startAt, path.length-2);
+    for(let i=endAt;i>=startAt;i--){
+      const p=path[i];
+      if(!p || routeProtectedEventTile(p.x,p.y,target)) continue;
+      if(isOuterMapEdge(p.x,p.y)) continue;
+      return i;
+    }
+    for(let i=1;i<path.length-1;i++){
+      const p=path[i];
+      if(!routeProtectedEventTile(p.x,p.y,target) && !isOuterMapEdge(p.x,p.y)) return i;
+    }
+    return -1;
+  }
+  function routePlaceBossGate(path,target){
+    const idx=routeGateIndexForPath(path,target);
+    if(idx<0) return false;
+    const gate=path[idx];
+    const before=path[Math.max(0,idx-1)];
+    const after=path[Math.min(path.length-1,idx+1)];
 
-    // Give the player at least one open step next to event targets so the sprite can enter them cleanly.
-    for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
-      const nx=target.x+dx, ny=target.y+dy;
-      if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)) continue;
-      if(tileAt(nx,ny)==='#'){
-        setTile(nx,ny,'.');
-        carved++;
-        break;
+    // Make sure both sides of the gate have floor, then put the gate itself back.
+    if(before && !routeProtectedEventTile(before.x,before.y,target) && tileAt(before.x,before.y)==='#') setTile(before.x,before.y,'.');
+    if(after && !routeProtectedEventTile(after.x,after.y,target) && tileAt(after.x,after.y)==='#') setTile(after.x,after.y,'.');
+    setTile(gate.x,gate.y,'D');
+    return true;
+  }
+  function routeExistingReachableDoorNear(target){
+    const doors=[];
+    for(let y=2;y<mapHeight()-2;y++){
+      for(let x=2;x<rowLength(y)-2;x++){
+        if(tileAt(x,y)==='D'){
+          const dist=Math.abs(x-target.x)+Math.abs(y-target.y);
+          doors.push({x,y,dist});
+        }
       }
     }
+    doors.sort((a,b)=>a.dist-b.dist);
+    return doors.find(d=>routeReachableTo(d,{doors:true,walls:false}) || routeReachableTo(d,{doors:false,walls:false})) || null;
+  }
+  function routeRepairBasicTarget(target){
+    if(routeReachableTo(target,{doors:false,walls:false})) return 0;
+    const path=routePathTo(target,{doors:true,walls:true});
+    if(!path) return 0;
+    return routeCarvePath(path,target);
+  }
+  function routeRepairBossTarget(target){
+    const bossUnlocked=!!state.flags?.bossUnlocked;
+    let carved=0;
 
+    if(bossUnlocked){
+      // After requirements are met, every level should be openly playable through to boss/exit.
+      let path=routePathTo(target,{doors:true,walls:true});
+      if(path) carved += routeCarvePath(path,target);
+      return carved;
+    }
+
+    // Before requirements: carve a valid corridor but lock it with a real D gate.
+    let path=routePathTo(target,{doors:true,walls:true});
+    if(!path) return 0;
+    carved += routeCarvePath(path,target);
+    const placed=routePlaceBossGate(path,target);
+    if(placed) carved++;
+
+    // Audit the final state: gate must be reachable, boss must be blocked until unlock.
+    const door=routeExistingReachableDoorNear(target);
+    if(!door){
+      // Fallback: place the gate closer to the middle if the first choice was not reachable.
+      path=routePathTo(target,{doors:true,walls:true});
+      if(path) routePlaceBossGate(path,target);
+    }
     return carved;
   }
   function repairMissionRoutesForCurrentStage(forceLog=false){
@@ -5192,21 +5254,28 @@
     normalizeLiveMap();
     const targets=missionRouteTargets();
     let carved=0;
-    targets.forEach(target=>{
-      if(!routeRepairReachableTo(target)){
-        carved += routeRepairCarvePathTo(target);
-      }
-    });
+    const normalTargets=targets.filter(t=>t.c==='S' || t.c==='E');
+    const bossTargets=targets.filter(t=>t.c==='B');
+    const exitTargets=targets.filter(t=>t.c==='X');
+
+    normalTargets.forEach(target=>{ carved += routeRepairBasicTarget(target); });
+    bossTargets.forEach(target=>{ carved += routeRepairBossTarget(target); });
+
+    // Exit should be reachable after the boss gate opens, but should not create a bypass around the locked gate.
+    if(state.flags?.bossUnlocked || state.flags?.bossDefeated || state.flags?.chapterComplete){
+      exitTargets.forEach(target=>{ carved += routeRepairBasicTarget(target); });
+    }
+
     if(carved>0){
       invalidateCollisionRegion();
       normalizeLiveMap();
       resetCollisionCacheOnly();
-      const bossCount=targets.filter(t=>t.c==='B').length;
-      log(`Route repair opened ${carved} blocked tile${carved===1?'':'s'} so ${stageDef().id} mission targets remain reachable${bossCount?' including boss route.':'.'}`);
-      if(forceLog) toast(`${stageDef().id} route repaired: boss path is reachable.`);
+      log(`Route audit repaired ${carved} tile${carved===1?'':'s'} on ${stageDef().id}. Boss route is now locked by a gate until requirements are met.`);
+      if(forceLog) toast(`${stageDef().id} boss route fixed with a locked gate.`);
       return true;
     }
-    if(forceLog) log(`${stageDef().id} route audit passed: terminal, anomalies, boss, and exit are reachable.`);
+
+    if(forceLog) log(`${stageDef().id} route audit passed: boss gate and mission route are valid.`);
     return false;
   }
   function sanitizeLiveMapEdges(){ return normalizeLiveMap(true); }
