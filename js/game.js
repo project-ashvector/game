@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.68';
-  const BUILD_TITLE = 'STORY DIALOG OVERRIDE PASS';
+  const BUILD_VERSION = '0.9.69';
+  const BUILD_TITLE = 'NEW GAME STORY ROOT FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3836,30 +3836,28 @@
   }
   function showMenu(){syncBuildLabels(); syncContinueButton(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
   function startOpeningStorySequence(){
-    ensureStageStoryScenes();
-    ensureStoryFlags();
-    // v158: use a fully self-contained dialog path for Level 1.
-    state.flags.storySeen.intro=false;
-    delete state.flags.storySeen.intro;
     const afterIntro=()=>{
       ensureStoryFlags();
       state.flags.storySeen.intro=true;
       save(true);
       requestNativeFullscreen();
-      pulseObjective(currentObjectiveText());
-      showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.');
+      try{ pulseObjective(currentObjectiveText()); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
     };
-    try{
-      forceStoryDialogHard('intro', afterIntro);
-    }catch(err){
-      console.error('Hard opening story failed:', err);
-      toast('Story dialog failed. Opening fallback text.');
-      alert('PROJECT: ASH VECTOR\n\nVyra wakes in the Forbidden Graveyard. AVOS explains that the ASH Vector network broke reality while trying to patch the apocalypse. Sync the terminal, clear anomalies, defeat the boss, recover the Grave Core, and extract.');
-      afterIntro();
-    }
+    showOpeningStoryRoot(afterIntro);
   }
 
-  function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); if(!fresh) requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); save(true); if(fresh) startOpeningStorySequence(); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
+  function startGame(fresh=false){
+    syncBuildLabels(); setBattleMobileMode(false);
+    if(fresh) return newGameRootStart();
+    ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression();
+    hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
+    document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
+    ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
+    $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
+    renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
+    save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
+  }
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
   function rowAt(y){ return state?.map?.[y] || null; }
   function mapHeight(){ return state?.map?.length || 0; }
@@ -4648,6 +4646,121 @@
     return overlay;
   }
 
+  function openingStorySceneData(){
+    return {
+      kicker:'NEW GAME PROLOGUE // THE ASH EVENT',
+      title:'PROJECT: ASH VECTOR',
+      tag:'Reality fractured. Vyra wakes up with blades, debt, and an AI that treats guilt like a software license.',
+      lines:[
+        {speaker:'AVOS', portrait:'vyra', text:'Boot sequence complete. Good news: you are alive. Bad news: reality is not handling that information well.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Why am I in a graveyard, why do I have blades, and why does the sky look like it got microwaved in a gas station?'},
+        {speaker:'AVOS', portrait:'vyra', text:'The ASH Vector network tried to predict disasters, then patched reality during an extinction event. The patch worked in the same way a brick works as a parachute.'},
+        {speaker:'VYRA', portrait:'vyra', text:'So reality broke because your update went live?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Yes, but with ambition. The world split into Fractures: zones full of ash, corrupted memories, and monsters who absolutely do not respect personal space.'},
+        {speaker:'AVOS', portrait:'vyra', text:'First fracture: Forbidden Graveyard. Dead data learned to wear bones like cheap Halloween merch. Hidden problem: the Grave Core is powering pieces of your missing memories.'},
+        {speaker:'VYRA', portrait:'vyra', text:'You said hidden problem out loud.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Correct. Transparency builds trust. Also I panicked.'},
+        {speaker:'AVOS', portrait:'vyra', text:'Sync the terminal, clear the anomalies, breach the boss gate, recover the Grave Core, and extract. Try not to die; the respawn paperwork is emotionally sticky.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Fine. But if a skeleton tries to sell me a battle pass, I am uninstalling the afterlife.'}
+      ]
+    };
+  }
+  function showOpeningStoryRoot(after=null){
+    // v159: root cause fix. This does not depend on the older story system,
+    // fullscreen, renderAll, AudioManager, or STORY_SCENES. It creates the dialog directly.
+    const existing=document.getElementById('storyOverlay');
+    if(existing) existing.remove();
+    const scene=openingStorySceneData();
+    let i=0;
+    const overlay=document.createElement('div');
+    overlay.id='storyOverlay';
+    overlay.className='story-root-open';
+    overlay.innerHTML=`<div class="story-root-card avos-crt">
+      <div class="story-root-kicker" id="storyRootKicker"></div>
+      <h2 class="story-root-title" id="storyRootTitle"></h2>
+      <div class="story-root-tag" id="storyRootTag"></div>
+      <div class="story-root-body">
+        <img id="storyRootPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait">
+        <div><div class="story-root-speaker" id="storyRootSpeaker"></div><p class="story-root-line" id="storyRootLine"></p></div>
+      </div>
+      <div class="story-root-actions"><button id="storyRootNext">Continue</button><button id="storyRootSkip">Skip</button></div>
+      <div class="story-controller-tip">Enter / Space: continue. Escape: skip.</div>
+    </div>`;
+    document.body.appendChild(overlay);
+    storyActive=true;
+    pendingStoryAfter=after||null;
+    document.body.classList.add('story-open');
+    const draw=()=>{
+      const line=scene.lines[i] || scene.lines[scene.lines.length-1];
+      document.getElementById('storyRootKicker').textContent=scene.kicker;
+      document.getElementById('storyRootTitle').textContent=scene.title;
+      document.getElementById('storyRootTag').textContent=scene.tag;
+      document.getElementById('storyRootSpeaker').textContent=line.speaker || 'AVOS';
+      document.getElementById('storyRootLine').textContent=line.text || '';
+      const img=document.getElementById('storyRootPortrait');
+      if(img) img.src = line.portrait === 'fermilat' ? (NPC_DEFS?.fermilat?.asset || 'assets/operators/av001/portrait.png') : 'assets/operators/av001/portrait.png';
+      const next=document.getElementById('storyRootNext');
+      if(next) next.textContent = i >= scene.lines.length-1 ? 'Start Level 1' : 'Continue';
+      overlay.className='story-root-open';
+      overlay.style.cssText='position:fixed!important;inset:0!important;width:100vw!important;height:100svh!important;z-index:2147483647!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:14px!important;background:rgba(0,0,0,.88)!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;';
+    };
+    const close=()=>{
+      overlay.remove();
+      document.body.classList.remove('story-open');
+      storyActive=false;
+      const cb=pendingStoryAfter; pendingStoryAfter=null;
+      if(cb) setTimeout(cb,50);
+    };
+    const advance=()=>{
+      i++;
+      if(i>=scene.lines.length) close();
+      else draw();
+    };
+    overlay._advance=advance;
+    document.getElementById('storyRootNext').onclick=(e)=>{e.preventDefault(); advance();};
+    document.getElementById('storyRootSkip').onclick=(e)=>{e.preventDefault(); close();};
+    draw();
+    requestAnimationFrame(draw);
+    setTimeout(draw,100);
+    setTimeout(draw,400);
+    return overlay;
+  }
+  function newGameRootStart(){
+    stopIntroVideoForGame();
+    const old=document.getElementById('storyOverlay');
+    if(old) old.remove();
+    storyActive=false;
+    pendingStoryAfter=null;
+    state=newGameState();
+    ensureSaveShape();
+    gameStarted=true;
+    ensureProgression();
+    setCheckpoint('Fracture Entry');
+    hideAll();
+    uiState.mode='game';
+    uiState.returnStack.length=0;
+    document.body.classList.add('game-active','fullscreen-mode');
+    document.body.dataset.stage=stageDef().key;
+    try{ ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); }catch(err){ console.warn('[AV] mobile setup skipped', err); }
+    const app=document.getElementById('app');
+    if(app) app.classList.remove('hidden');
+    try{ canvas && canvas.focus && canvas.focus({preventScroll:true}); }catch(err){}
+    // Open the story before render/audio/save work, so unrelated errors cannot cancel it.
+    const afterIntro=()=>{
+      ensureStoryFlags();
+      state.flags.storySeen.intro=true;
+      save(true);
+      requestNativeFullscreen();
+      try{ pulseObjective(currentObjectiveText()); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
+    };
+    showOpeningStoryRoot(afterIntro);
+    try{ renderAll(); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
+    try{ unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); }catch(err){ console.warn('[AV] audio/radio skipped', err); }
+    try{ save(true); }catch(err){}
+    return true;
+  }
+
   document.addEventListener('fullscreenchange',()=>{
     if(storyActive){
       const overlay=$('storyOverlay');
@@ -4704,7 +4817,7 @@
     overlay._advance=()=>{ i++; if(i>=scene.lines.length) finishStory(); else draw(); };
     draw();
   }
-  function advanceStory(){ const overlay=$('storyOverlay'); if(overlay && overlay._advance) overlay._advance(); }
+  function advanceStory(){ const overlay=$('storyOverlay'); if(overlay && overlay._advance) overlay._advance(); else { const btn=document.getElementById('storyRootNext') || document.getElementById('storyNext'); if(btn) btn.click(); } }
   function finishStory(){
     const overlay=$('storyOverlay');
     if(overlay){ overlay.classList.add('hidden'); overlay.style.display=''; }
@@ -6535,7 +6648,7 @@
     if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); }
     const routes={
       continueBtn:()=>continueSavedGame(),
-      newGameBtn:()=>{ stopIntroVideoForGame(); const old=$('storyOverlay'); if(old) old.remove(); storyActive=false; pendingStoryAfter=null; startGame(true); },
+      newGameBtn:()=>newGameRootStart(),
       introVideoReplayBtn:()=>replayIntroVideo(),
       fractureIndexBtn:()=>openOverlay('fractureOverlay'),
       operatorFilesBtn:()=>openOverlay('operatorOverlay'),
@@ -6573,7 +6686,7 @@
       const gameIsOpen = !$('app').classList.contains('hidden');
       const overlayOpen = Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       // v44: hard launch fallback. If the main menu is visible, Enter or Space always starts gameplay.
-      if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); if(hasSaveData()) continueSavedGame(); else startGame(true); return; }
+      if((e.key==='Enter'||e.key===' ') && !$('mainMenu').classList.contains('hidden')){ e.preventDefault(); if(hasSaveData()) continueSavedGame(); else newGameRootStart(); return; }
       if(!$('bootScreen').classList.contains('hidden')){ if(e.key==='Escape'){ e.preventDefault(); forceIntroMenuRecovery(); return; } if(e.key==='Enter'||e.key===' '){ e.preventDefault(); startIntroVideo(); return; } }
       if(e.key==='F9'){ e.preventDefault(); openOverlay('playtestOverlay'); return; }
       if(battle && !$('battleOverlay').classList.contains('hidden')){
@@ -6621,7 +6734,7 @@
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
     }, {passive:false});
-    $('newGameBtn').onclick=(e)=>{e.preventDefault(); const old=$('storyOverlay'); if(old) old.remove(); storyActive=false; pendingStoryAfter=null; startGame(true);}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
+    $('newGameBtn').onclick=(e)=>{e.preventDefault(); newGameRootStart();}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_AUTOSLOT_KEY); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
@@ -6633,10 +6746,10 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
-    start:()=>startGame(true),
+    start:()=>newGameRootStart(),
     story:()=>{ state.flags.storySeen.intro=false; forceStoryDialogHard('intro'); },
     continue:()=>continueSavedGame(),
     open:(id)=>openOverlay(id),
