@@ -2598,3 +2598,87 @@ body.game-active .layout{gap:12px;padding:12px;background:radial-gradient(circle
   body.vector-lockdown-active .vector-lockdown-hud .lockdown-card,
   body.vector-lockdown-warning .vector-lockdown-hud .lockdown-card{max-height:28svh!important;}
 }
+
+/* V194: free-roam lockdown HUD + phone/desktop scale tightening */
+body.vector-lockdown-active canvas#game{
+  filter:contrast(1.08) saturate(.96) brightness(.90)!important;
+}
+.vector-lockdown-hud{
+  width:min(285px,calc(100vw - 28px))!important;
+  top:72px!important;
+  right:12px!important;
+}
+.lockdown-card{
+  padding:10px 11px!important;
+  border-radius:14px!important;
+}
+.lockdown-card h2{
+  font-size:clamp(26px,5.4vw,42px)!important;
+  margin:0 0 2px!important;
+  line-height:.95!important;
+}
+.lockdown-card p{
+  font-size:11px!important;
+  line-height:1.25!important;
+  margin-bottom:7px!important;
+}
+.lockdown-stats{
+  gap:5px!important;
+}
+.lockdown-stats span,
+.lockdown-upgrades span{
+  font-size:10px!important;
+  padding:4px 6px!important;
+}
+#lockdownRoll{
+  margin:6px 0!important;
+  padding:6px 8px!important;
+  font-size:10px!important;
+}
+body.vector-lockdown-active:after,
+body.vector-lockdown-warning:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:80000;
+  pointer-events:none;
+  box-shadow:inset 0 0 58px rgba(255,48,72,.34), inset 0 0 18px rgba(255,48,72,.28);
+  animation:av-lockdown-red-edge-pulse 1.25s ease-in-out infinite alternate;
+}
+body.vector-lockdown-warning:after{
+  box-shadow:inset 0 0 46px rgba(255,206,80,.27), inset 0 0 15px rgba(255,206,80,.22);
+}
+@keyframes av-lockdown-red-edge-pulse{
+  from{opacity:.45;}
+  to{opacity:.78;}
+}
+@media(max-width:720px), (pointer:coarse){
+  .vector-lockdown-hud{
+    width:min(244px,calc(100vw - 18px))!important;
+    top:max(24px,calc(env(safe-area-inset-top,0px) + 20px))!important;
+    right:8px!important;
+    bottom:auto!important;
+  }
+  .lockdown-card{
+    padding:7px 8px!important;
+    max-height:22svh!important;
+    overflow:hidden!important;
+  }
+  .lockdown-card h2{
+    font-size:24px!important;
+  }
+  .lockdown-card p{
+    font-size:9.5px!important;
+    margin-bottom:4px!important;
+  }
+  #lockdownHpWrap{
+    margin:4px 0 5px!important;
+  }
+  .lockdown-stats span,
+  .lockdown-upgrades span{
+    font-size:8.5px!important;
+    padding:3px 5px!important;
+  }
+  .lockdown-upgrades span:nth-child(n+4){display:none!important;}
+  #lockdownRoll{font-size:9px!important;padding:4px 6px!important;margin:4px 0!important;}
+}
