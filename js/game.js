@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.69';
-  const BUILD_TITLE = 'NEW GAME STORY ROOT FIX PASS';
+  const BUILD_VERSION = '0.9.70';
+  const BUILD_TITLE = 'CHARACTER FRAMEWORK + FULL VYRA REPLACEMENT PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3161,28 +3161,113 @@
   }
   function renderOperatorDb(){
     ensureEquipment();
+    applyOperatorVisuals();
     const sync=$('operatorSync'); if(sync) sync.textContent=`Rank ${state.operatorSyncRank}/10`;
     const host=document.querySelector('#operatorOverlay .operator-data'); if(!host) return;
     let panel=$('operatorShardPanel');
     if(!panel){ panel=document.createElement('div'); panel.id='operatorShardPanel'; panel.className='operator-shard-panel protocol-list'; host.appendChild(panel); }
     const cost=5+(state.operatorSyncRank||0)*3;
     const owned=state.inventory['Operator Shard: Vyra']||0;
-    panel.innerHTML=`<div><b>Shard Sync</b><span>Owned ${owned} // Next rank cost ${cost} shards</span></div><div><b>Rank Bonus</b><span>Each rank adds +2 ATK, +1 DEF, +8 HP, +3 EP.</span></div><button onclick="window.AV.syncVyra()" ${owned<cost?'disabled':''}>Synchronize Vyra</button>`;
+    const op=currentOperator();
+    panel.innerHTML=`<div><b>Shard Sync</b><span>Owned ${owned} // Next rank cost ${cost} shards</span></div><div><b>Rank Bonus</b><span>Each rank adds +2 ATK, +1 DEF, +8 HP, +3 EP.</span></div><button onclick="window.AV.syncVyra()" ${owned<cost?'disabled':''}>Synchronize ${safeHtml(op.displayName)}</button>`;
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   let battleCommandIndex = 0;
   let preBattleCommandIndex = 0;
   const images = {};
+
+  const ACTIVE_OPERATOR_ID = 'av001';
+  const OPERATOR_DEFS = {
+    av001: {
+      id: 'av001',
+      code: 'AV-001',
+      displayName: 'Vyra',
+      codename: 'ASH VECTOR',
+      title: 'Wasteland Operative',
+      meta: 'Operator Unit 001 • Wasteland Operative • Starter',
+      quote: '“The world already ended. I am just cleaning up the punchline.”',
+      className: 'Wasteland Operative',
+      affinity: 'Ash / Salvage',
+      rarity: 'Starter / Prototype',
+      clearance: 'Level 5',
+      fileStatus: 'Active',
+      portrait: 'assets/operators/av001/portrait.png',
+      battle: 'assets/operators/av001/battle.png',
+      avatar: 'assets/operators/av001/avatar.png',
+      icon: 'assets/operators/av001/icon.png',
+      menu: 'assets/operators/av001/menu.png',
+      profile: 'assets/operators/av001/profile.png',
+      operatorCard: 'assets/operators/av001/operator_card.png',
+      partyIcon: 'assets/operators/av001/party_icon.png',
+      battleIcon: 'assets/operators/av001/battle_icon.png',
+      spriteSheet: 'assets/operators/av001/sprite_sheet.png',
+      mapSprite: 'assets/operators/av001/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/av001/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/av001/weapon.png',
+      rotations: {
+        down: 'assets/operators/av001/sprites/rotations/south.png',
+        downRight: 'assets/operators/av001/sprites/rotations/south-east.png',
+        right: 'assets/operators/av001/sprites/rotations/east.png',
+        upRight: 'assets/operators/av001/sprites/rotations/north-east.png',
+        up: 'assets/operators/av001/sprites/rotations/north.png',
+        upLeft: 'assets/operators/av001/sprites/rotations/north-west.png',
+        left: 'assets/operators/av001/sprites/rotations/west.png',
+        downLeft: 'assets/operators/av001/sprites/rotations/south-west.png'
+      }
+    }
+  };
+  function currentOperatorId(){
+    const id = state?.activeOperator || ACTIVE_OPERATOR_ID;
+    return OPERATOR_DEFS[id] ? id : ACTIVE_OPERATOR_ID;
+  }
+  function currentOperator(){
+    return OPERATOR_DEFS[currentOperatorId()] || OPERATOR_DEFS[ACTIVE_OPERATOR_ID];
+  }
+  function operatorAssetPaths(op=currentOperator()){
+    return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{})].filter(Boolean);
+  }
+  function currentOperatorMapSpriteForFacing(facing='down'){
+    const op = currentOperator();
+    return (op.rotations && op.rotations[facing]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
+  }
+  function storyPortraitForLine(line={}){
+    if(line?.portrait && NPC_DEFS?.[line.portrait]?.asset) return NPC_DEFS[line.portrait].asset;
+    return currentOperator().portrait;
+  }
+  function setActiveOperator(id, {silent=false}={}){
+    if(!OPERATOR_DEFS[id]) return false;
+    state.activeOperator = id;
+    applyOperatorVisuals();
+    loadImages();
+    renderAll();
+    if(!silent) save(true);
+    return true;
+  }
+  function applyOperatorVisuals(){
+    const op = currentOperator();
+    const heroPortrait = $('heroPortrait');
+    if(heroPortrait){ heroPortrait.src = op.portrait; heroPortrait.alt = `${op.displayName} portrait`; }
+    if($('heroName')) $('heroName').textContent = op.displayName;
+    if($('heroMeta')) $('heroMeta').textContent = op.meta;
+    if($('battleHero')) $('battleHero').src = op.battle;
+    if($('battleHeroLabel')) $('battleHeroLabel').textContent = `${op.code} ${String(op.displayName||'').toUpperCase()}`;
+    const profile = $('operatorProfileArt');
+    if(profile){ profile.src = op.profile; profile.alt = `${op.displayName} full profile art`; }
+    if($('operatorFileStamp')) $('operatorFileStamp').textContent = `OPERATOR ID: ${op.code} // STATUS: ${String(op.fileStatus||'Active').toUpperCase()}`;
+    if($('operatorDisplayName')) $('operatorDisplayName').textContent = String(op.displayName || 'VYRA').toUpperCase();
+    if($('operatorDisplayCodename')) $('operatorDisplayCodename').textContent = `// ${String(op.codename || 'ASH VECTOR').toUpperCase()}`;
+    if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
+    if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
+    if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{}))].join('\n');
+  }
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function loadImages(){
     const paths = [
-      'assets/operators/av001/portrait.png',
-      'assets/operators/av001/battle.png',
-      'assets/operators/av001/sprites/map_sprite.png',
+      ...operatorAssetPaths(),
       ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
       ...mapArt.blocked,
@@ -3200,7 +3285,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 156;
+  const SAVE_SCHEMA_VERSION = 160;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -3229,6 +3314,7 @@
     state.respawns ||= {};
     state.radioUnlocked ||= {};
     state.visited ||= {};
+    state.activeOperator = OPERATOR_DEFS[state.activeOperator] ? state.activeOperator : ACTIVE_OPERATOR_ID;
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
     state.stages ||= {};
     Object.keys(STAGE_DEFS).forEach((k,i)=> state.stages[k] ||= {unlocked:i===0,complete:false});
@@ -4607,7 +4693,7 @@
       <div class="story-hard-title" id="storySceneTitle"></div>
       <div class="story-hard-tag" id="storySceneTag"></div>
       <div class="story-hard-body">
-        <img id="storyPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait">
+        <img id="storyPortrait" src="${currentOperator().portrait}" alt="${currentOperator().displayName} portrait">
         <div><div class="story-hard-speaker" id="storySpeaker"></div><p class="story-hard-line" id="storyLine"></p></div>
       </div>
       <div class="story-hard-actions"><button id="storyNext">Continue</button><button id="storySkip">Skip</button></div>
@@ -4617,7 +4703,7 @@
     storyActive=true;
     pendingStoryAfter=after||null;
     document.body.classList.add('story-open');
-    const portrait=line=>line.portrait==='fermilat' ? NPC_DEFS.fermilat.asset : 'assets/operators/av001/portrait.png';
+    const portrait=line=>storyPortraitForLine(line);
     const draw=()=>{
       const line=lines[i] || {speaker:scene.speaker||'AVOS', text:'Story data recovered.'};
       $('storyKicker').textContent=scene.kicker || 'ASH VECTOR STORY';
@@ -4680,7 +4766,7 @@
       <h2 class="story-root-title" id="storyRootTitle"></h2>
       <div class="story-root-tag" id="storyRootTag"></div>
       <div class="story-root-body">
-        <img id="storyRootPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait">
+        <img id="storyRootPortrait" src="${currentOperator().portrait}" alt="${currentOperator().displayName} portrait">
         <div><div class="story-root-speaker" id="storyRootSpeaker"></div><p class="story-root-line" id="storyRootLine"></p></div>
       </div>
       <div class="story-root-actions"><button id="storyRootNext">Continue</button><button id="storyRootSkip">Skip</button></div>
@@ -4698,7 +4784,7 @@
       document.getElementById('storyRootSpeaker').textContent=line.speaker || 'AVOS';
       document.getElementById('storyRootLine').textContent=line.text || '';
       const img=document.getElementById('storyRootPortrait');
-      if(img) img.src = line.portrait === 'fermilat' ? (NPC_DEFS?.fermilat?.asset || 'assets/operators/av001/portrait.png') : 'assets/operators/av001/portrait.png';
+      if(img) img.src = storyPortraitForLine(line);
       const next=document.getElementById('storyRootNext');
       if(next) next.textContent = i >= scene.lines.length-1 ? 'Start Level 1' : 'Continue';
       overlay.className='story-root-open';
@@ -4793,7 +4879,7 @@
     };
     const portraitSrc = line => line.portrait === 'fermilat' || String(line.speaker||'').toUpperCase().includes('FERMILAT')
       ? NPC_DEFS.fermilat.asset
-      : 'assets/operators/av001/portrait.png';
+      : currentOperator().portrait;
     $('storyKicker').textContent=scene.kicker;
     const card = overlay.querySelector('.story-card');
     if(card){ card.classList.toggle('opening-story-card', scene.variant === 'opening'); }
@@ -5188,7 +5274,8 @@
     if($('battleEnemyLabel')) $('battleEnemyLabel').textContent = def.id || 'ANOMALY';
     $('battleEnemy').src=def.img;
     $('battleEnemy').onerror=()=>{ $('battleText').textContent='Creature art missing: '+def.img; };
-    $('battleHero').src='assets/operators/av001/battle.png';
+    $('battleHero').src=currentOperator().battle;
+    if($('battleHeroLabel')) $('battleHeroLabel').textContent=`${currentOperator().code} ${String(currentOperator().displayName||'').toUpperCase()}`;
     $('battleText').textContent='Choose a combat protocol.';
     $('battleVictory')?.classList.add('hidden');
     $('battlePanel')?.classList.remove('battle-shake');
@@ -5212,7 +5299,7 @@
     const playerStatusText = statusSummary(battle.playerStatus);
     $('battleHp').innerHTML=`
       <div class="battle-meter enemy-meter"><div><b>${battle.enemy.name}</b><span>${battle.enemy.id || 'ANOMALY'} // HP ${battle.enemy.hp}/${battle.enemy.maxHp}${enemyStatusText?' // '+enemyStatusText:''}</span></div><div class="bar big"><span style="width:${enemyPct}%"></span></div></div>
-      <div class="battle-meter hero-meter"><div><b>Vyra</b><span>AV-001 // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}${playerStatusText?' // '+playerStatusText:''}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
+      <div class="battle-meter hero-meter"><div><b>${currentOperator().displayName}</b><span>${currentOperator().code} // Lv ${state.player.level} // HP ${state.player.hp}/${combatStatBlock().maxHp}${playerStatusText?' // '+playerStatusText:''}</span></div><div class="bar big"><span style="width:${heroPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Energy</b><span>EP ${state.player.ep}/${epMax}</span></div><div class="bar big ep"><span style="width:${epPct}%"></span></div></div>
       <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>
@@ -5686,7 +5773,7 @@
   }
 
   function drawPlayerSprite(x,y){
-    const spritePath = 'assets/operators/av001/sprites/map_sprite.png';
+    const spritePath = currentOperatorMapSpriteForFacing(state?.player?.facing || 'down');
     const im = images[spritePath];
     // v130: same map footprint as NPCs and monsters.
     const drawW = MAP_ENTITY_W;
@@ -5914,6 +6001,7 @@
   }
   function renderUI(){
     ensureProgression(); ensureContracts(); ensureResearch(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
+    applyOperatorVisuals();
     const p=state.player; const stats=combatStatBlock(); const def=stageDef();
     const saveAge=Math.floor((Date.now()-(state.lastSave||Date.now()))/1000);
     const upTotal=Object.values(state.upgrades||{}).reduce((a,b)=>a+(b||0),0);
@@ -5930,7 +6018,7 @@
     $('fractureStatus').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Required Lv: ${def.levelReq} // Threat: ${def.threat}</div><div class="statrow">Anomalies Cleared: ${anomalyClears}/${requiredAnomalyGoal} // Total Kills ${stageKills}</div><div class="statrow">Respawn Queue: ${respawnText}</div><div class="statrow">Skill Nodes: ${stageTrainingNodes().filter(trainingNodeReady).length}/${stageTrainingNodes().length} ready // 5 per skill // ${zoneProfile().zone}</div><div class="statrow">Research: ${researchStats.discovered}/${researchStats.total} entries // ${researchStats.kills} kills // ${researchStats.ranks} ranks</div><div class="statrow">Boss Route: ${state.flags.bossUnlocked?'Unlocked':'Locked'}</div><div class="statrow">Boss Defeated: ${state.flags.bossDefeated?'Yes':'No'}</div><div class="statrow">Stage Clear: ${state.flags.chapterComplete?'Complete':'Active'}</div><div class="statrow">Checkpoint: ${state.checkpoint?.label || 'None'}</div><div class="statrow">Side Quest: ${safeHtml(sideQuestStatusText())}</div>`;
     $('inventory').innerHTML=`<button class="open-bag-btn" onclick="window.AV.openOverlay('inventoryOverlay')">Open Bag / Bank</button><div class="quick-bag-grid">${Object.entries(state.inventory).slice(0,12).map(([k,v])=>{ const item=findItemRecord(k); return `<div class="quick-bag-slot ${rarityClass(item.rarity)}" title="${safeHtml(k)}">${itemIconHtml(item,v)}<span>${safeHtml(k)}</span></div>`; }).join('') || '<div class="invrow">No recovered assets.</div>'}</div>`;
     $('log').innerHTML=state.log.map(l=>`<div class="logrow">${l}</div>`).join('');
-    $('roster').innerHTML='<div class="statrow"><b>AV-001 Vyra</b><br>Active Operator</div>';
+    $('roster').innerHTML=`<div class="statrow"><b>${currentOperator().code} ${safeHtml(currentOperator().displayName)}</b><br>Active Operator</div>`;
     const objectives=[['Reach recovery terminal',state.flags.terminal],[`Clear ${requiredAnomalyGoal} anomalies (${anomalyClears}/${requiredAnomalyGoal})`,anomalyClears>=requiredAnomalyGoal],['Unlock boss gate',state.flags.bossUnlocked],['Defeat boss',state.flags.bossDefeated],['Extract / Stage Complete',state.flags.chapterComplete]];
     const activeText=currentObjectiveText();
     const contract=activeContract();
@@ -6746,7 +6834,7 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, currentOperator};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
@@ -11780,5 +11868,5 @@
   // Keep the first 12 stages paced for a 20-stage / Lv 99 final chain.
   Object.entries(V118_STAGE_LEVEL_REQS).forEach(([key,req])=>{ if(STAGE_DEFS[key]) STAGE_DEFS[key].levelReq=req; });
 
-  loadImages(); bind(); applySettings(); boot(); startAutosave(); renderAll();
+  loadImages(); bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave(); renderAll();
 })();
