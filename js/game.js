@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.81';
-  const BUILD_TITLE = 'CHARACTER MENU PLAY AS SWITCH PASS';
+  const BUILD_VERSION = '0.9.82';
+  const BUILD_TITLE = 'BRAKK CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3474,7 +3474,73 @@
           downLeft: ['assets/operators/moxie/sprites/animations/idle/south-west/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_003.png']
         }
       }
+    },
+
+    brakk: {
+      id: 'brakk',
+      code: 'AV-005',
+      displayName: 'Brakk Null',
+      codename: 'SCRAP WALL',
+      title: 'Ash Raider Tank',
+      meta: 'Operator Unit 005 • Ash Raider Tank • Locked',
+      quote: '“I said please before I hit it with the engine block. That counts as diplomacy.”',
+      className: 'Ash Raider Tank',
+      affinity: 'Ash / Impact',
+      rarity: 'Unlockable / Heavy Prototype',
+      clearance: 'Level 16',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Brakk',
+      shardName: 'Operator Shard: Brakk',
+      shardCost: 65,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/brakk/portrait.png',
+      battle: 'assets/operators/brakk/battle.png',
+      avatar: 'assets/operators/brakk/avatar.png',
+      icon: 'assets/operators/brakk/icon.png',
+      menu: 'assets/operators/brakk/menu.png',
+      profile: 'assets/operators/brakk/profile.png',
+      operatorCard: 'assets/operators/brakk/operator_card.png',
+      partyIcon: 'assets/operators/brakk/party_icon.png',
+      battleIcon: 'assets/operators/brakk/battle_icon.png',
+      spriteSheet: 'assets/operators/brakk/sprite_sheet.png',
+      mapSprite: 'assets/operators/brakk/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/brakk/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/brakk/weapon.png',
+      rotations: {
+        down: 'assets/operators/brakk/sprites/rotations/south.png',
+        downRight: 'assets/operators/brakk/sprites/rotations/south-east.png',
+        right: 'assets/operators/brakk/sprites/rotations/east.png',
+        upRight: 'assets/operators/brakk/sprites/rotations/north-east.png',
+        up: 'assets/operators/brakk/sprites/rotations/north.png',
+        upLeft: 'assets/operators/brakk/sprites/rotations/north-west.png',
+        left: 'assets/operators/brakk/sprites/rotations/west.png',
+        downLeft: 'assets/operators/brakk/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/brakk/sprites/animations/walking/south/frame_000.png','assets/operators/brakk/sprites/animations/walking/south/frame_001.png','assets/operators/brakk/sprites/animations/walking/south/frame_002.png','assets/operators/brakk/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/brakk/sprites/animations/walking/south-east/frame_000.png','assets/operators/brakk/sprites/animations/walking/south-east/frame_001.png','assets/operators/brakk/sprites/animations/walking/south-east/frame_002.png','assets/operators/brakk/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/brakk/sprites/animations/walking/east/frame_000.png','assets/operators/brakk/sprites/animations/walking/east/frame_001.png','assets/operators/brakk/sprites/animations/walking/east/frame_002.png','assets/operators/brakk/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/brakk/sprites/animations/walking/north-east/frame_000.png','assets/operators/brakk/sprites/animations/walking/north-east/frame_001.png','assets/operators/brakk/sprites/animations/walking/north-east/frame_002.png','assets/operators/brakk/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/brakk/sprites/animations/walking/north/frame_000.png','assets/operators/brakk/sprites/animations/walking/north/frame_001.png','assets/operators/brakk/sprites/animations/walking/north/frame_002.png','assets/operators/brakk/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/brakk/sprites/animations/walking/north-west/frame_000.png','assets/operators/brakk/sprites/animations/walking/north-west/frame_001.png','assets/operators/brakk/sprites/animations/walking/north-west/frame_002.png','assets/operators/brakk/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/brakk/sprites/animations/walking/west/frame_000.png','assets/operators/brakk/sprites/animations/walking/west/frame_001.png','assets/operators/brakk/sprites/animations/walking/west/frame_002.png','assets/operators/brakk/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/brakk/sprites/animations/walking/south-west/frame_000.png','assets/operators/brakk/sprites/animations/walking/south-west/frame_001.png','assets/operators/brakk/sprites/animations/walking/south-west/frame_002.png','assets/operators/brakk/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/brakk/sprites/animations/idle/south/frame_000.png','assets/operators/brakk/sprites/animations/idle/south/frame_001.png','assets/operators/brakk/sprites/animations/idle/south/frame_002.png','assets/operators/brakk/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/brakk/sprites/animations/idle/south-east/frame_000.png','assets/operators/brakk/sprites/animations/idle/south-east/frame_001.png','assets/operators/brakk/sprites/animations/idle/south-east/frame_002.png','assets/operators/brakk/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/brakk/sprites/animations/idle/east/frame_000.png','assets/operators/brakk/sprites/animations/idle/east/frame_001.png','assets/operators/brakk/sprites/animations/idle/east/frame_002.png','assets/operators/brakk/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/brakk/sprites/animations/idle/north-east/frame_000.png','assets/operators/brakk/sprites/animations/idle/north-east/frame_001.png','assets/operators/brakk/sprites/animations/idle/north-east/frame_002.png','assets/operators/brakk/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/brakk/sprites/animations/idle/north/frame_000.png','assets/operators/brakk/sprites/animations/idle/north/frame_001.png','assets/operators/brakk/sprites/animations/idle/north/frame_002.png','assets/operators/brakk/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/brakk/sprites/animations/idle/north-west/frame_000.png','assets/operators/brakk/sprites/animations/idle/north-west/frame_001.png','assets/operators/brakk/sprites/animations/idle/north-west/frame_002.png','assets/operators/brakk/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/brakk/sprites/animations/idle/west/frame_000.png','assets/operators/brakk/sprites/animations/idle/west/frame_001.png','assets/operators/brakk/sprites/animations/idle/west/frame_002.png','assets/operators/brakk/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/brakk/sprites/animations/idle/south-west/frame_000.png','assets/operators/brakk/sprites/animations/idle/south-west/frame_001.png','assets/operators/brakk/sprites/animations/idle/south-west/frame_002.png','assets/operators/brakk/sprites/animations/idle/south-west/frame_003.png']
+        }
+      }
     }
+
 
   };
 
@@ -3725,7 +3791,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 171;
+  const SAVE_SCHEMA_VERSION = 172;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
