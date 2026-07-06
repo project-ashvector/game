@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.01';
-  const BUILD_TITLE = 'MOBILE LOCKDOWN FIX PASS';
+  const BUILD_VERSION = '1.0.02';
+  const BUILD_TITLE = 'PROJECTILE ASSET SWAP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5578,6 +5578,27 @@
       return im;
     }catch(err){ return null; }
   }
+  const LOCKDOWN_PROJECTILE_ASSETS = [
+    {name:'Ash Bolt', path:'assets/projectiles/ash_bolt.png'},
+    {name:'Vector Pulse', path:'assets/projectiles/vector_pulse.png'},
+    {name:'Rust Spike', path:'assets/projectiles/rust_spike.png'},
+    {name:'Bone Dart', path:'assets/projectiles/bone_dart.png'},
+    {name:'Toxic Splinter', path:'assets/projectiles/toxic_splinter.png'},
+    {name:'Scrap Shot', path:'assets/projectiles/scrap_shot.png'},
+    {name:'Ember Round', path:'assets/projectiles/ember_round.png'},
+    {name:'Static Needle', path:'assets/projectiles/static_needle.png'},
+    {name:'Corrupted Shard', path:'assets/projectiles/corrupted_shard.png'},
+    {name:'Plasma Cube', path:'assets/projectiles/plasma_cube.png'},
+    {name:'Blood Spark', path:'assets/projectiles/blood_spark.png'},
+    {name:'Ash Disc', path:'assets/projectiles/ash_disc.png'},
+    {name:'Echo Pellet', path:'assets/projectiles/echo_pellet.png'},
+    {name:'Grave Flame', path:'assets/projectiles/grave_flame.png'},
+    {name:'Vector Core', path:'assets/projectiles/vector_core.png'}
+  ];
+  function lockdownProjectileAsset(index=0){
+    const list=LOCKDOWN_PROJECTILE_ASSETS;
+    return list[((Number(index)||0)%list.length+list.length)%list.length] || list[0];
+  }
   function randomLockdownMonsterDef(){
     const pool=lockdownMonsterPool();
     const rec=pool[Math.floor(Math.random()*pool.length)] || importedAnomalyRoster[0] || {};
@@ -5607,7 +5628,7 @@
     e.enemies.push({x:tx+.5,y:ty+.5,hp,maxHp:hp,speed,touchAt:0,phase:Math.random()*6.28,name:monster.name,img:monster.img,icon:monster.icon,atk:monster.atk,size,spawnSide:side});
   }
   function nearestLockdownEnemy(e){ let best=null, bestD=Infinity; const px=state.player.x+.5, py=state.player.y+.5; for(const m of e.enemies){ const d=Math.hypot(m.x-px,m.y-py); if(d<bestD){ best=m; bestD=d; } } return best; }
-  function fireLockdownVolley(e){ const target=nearestLockdownEnemy(e); if(!target) return; const px=state.player.x+.5, py=state.player.y+.5; const base=Math.atan2(target.y-py,target.x-px); const count=Math.max(1,Math.min(12,e.projectileCount|0)); const spread=Math.min(1.05, .12*(count-1)); const styles=['cyan','red','green','gold','violet']; for(let i=0;i<count;i++){ const offset=count===1?0:(-spread/2)+(spread*(i/(count-1))); const angle=base+offset; const style=styles[(i+(e.projectileStyle||0))%styles.length]; e.projectiles.push({x:px,y:py,vx:Math.cos(angle)*(e.projectileSpeed||7.2),vy:Math.sin(angle)*(e.projectileSpeed||7.2),damage:e.projectileDamage,life:1550,pierce:e.pierce,style,kind:(i+(e.projectileStyle||0))%5,spawnedAt:Date.now(),trail:[{x:px,y:py}]}); } e.projectileStyle=((e.projectileStyle||0)+1)%styles.length; }
+  function fireLockdownVolley(e){ const target=nearestLockdownEnemy(e); if(!target) return; const px=state.player.x+.5, py=state.player.y+.5; const base=Math.atan2(target.y-py,target.x-px); const count=Math.max(1,Math.min(12,e.projectileCount|0)); const spread=Math.min(1.05, .12*(count-1)); const styles=['cyan','red','green','gold','violet']; const assetCount=LOCKDOWN_PROJECTILE_ASSETS.length; for(let i=0;i<count;i++){ const offset=count===1?0:(-spread/2)+(spread*(i/(count-1))); const angle=base+offset; const volleySeed=(e.projectileStyle||0); const style=styles[(i+volleySeed)%styles.length]; const assetIndex=(volleySeed+i)%assetCount; const asset=lockdownProjectileAsset(assetIndex); e.projectiles.push({x:px,y:py,vx:Math.cos(angle)*(e.projectileSpeed||7.2),vy:Math.sin(angle)*(e.projectileSpeed||7.2),damage:e.projectileDamage,life:1550,pierce:e.pierce,style,kind:assetIndex%5,assetIndex,assetPath:asset.path,assetName:asset.name,spawnedAt:Date.now(),trail:[{x:px,y:py}]}); } e.projectileStyle=((e.projectileStyle||0)+1)%assetCount; }
   function tickVectorLockdown(){ const e=state.rogueEvent; if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; } const now=Date.now(); const dt=Math.min(240, now-(e.lastFrameAt||now)); e.lastFrameAt=now; const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000))); e.threatLevel=1+Math.floor(pressure*7)+Math.floor((e.kills||0)/7); if(now>=e.nextUpgradeAt){ const mod=chooseLockdownModifier(e); mod.apply(e); e.upgradeHistory ||= []; e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,at:now}); e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':'✓ ')+h.name); e.nextUpgradeAt += 5000; showLockdownRoll(mod); toast(`${mod.type==='debuff'?'Lockdown debuff':'Projectile buff'}: ${mod.name}`); log(`Lockdown ${mod.type==='debuff'?'Debuff':'Buff'}: ${mod.name} — ${mod.desc}.`); } if(now>=e.nextSpawnAt){ spawnLockdownEnemy(e); if(pressure>.25 && (e.enemies||[]).length < Math.min(e.maxHostiles||25,10+Math.floor(pressure*15)) && Math.random()<.55) spawnLockdownEnemy(e); if(pressure>.68 && (e.enemies||[]).length < (e.maxHostiles||25) && Math.random()<.35) spawnLockdownEnemy(e); e.spawnDelay=Math.max(650, Math.floor(2100-pressure*1200-(e.threatLevel||1)*80)); e.nextSpawnAt=now+e.spawnDelay; } if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(200,e.fireRate); } updateLockdownActors(e,dt); const left=Math.ceil((e.duration-(now-e.startedAt))/1000); if(left<=0){ completeVectorLockdown(); return; } updateVectorLockdownHud(); renderUI(); render(); }
   function lockdownSegmentDistance(px,py,x1,y1,x2,y2){ const vx=x2-x1, vy=y2-y1; const len=vx*vx+vy*vy; if(len<=0.0001) return Math.hypot(px-x1,py-y1); const t=Math.max(0,Math.min(1,((px-x1)*vx+(py-y1)*vy)/len)); return Math.hypot(px-(x1+vx*t), py-(y1+vy*t)); }
   function updateLockdownActors(e,dt){ const px=state.player.x+.5, py=state.player.y+.5; const now=Date.now(); for(const m of e.enemies){ const dx=px-m.x, dy=py-m.y, d=Math.max(.05, Math.hypot(dx,dy)); m.x += (dx/d)*m.speed*dt; m.y += (dy/d)*m.speed*dt; if(e.arena){ m.x=Math.max(e.arena.minX+.25, Math.min(e.arena.maxX+.75, m.x)); m.y=Math.max(e.arena.minY+.25, Math.min(e.arena.maxY+.75, m.y)); } if(d<.58 && now>(m.touchAt||0)){ const hit=Math.max(3, Math.floor(4+Math.random()*5+Math.min(9,(e.threatLevel||1)*.9))); state.player.hp=Math.max(0,(state.player.hp||0)-hit); e.damageTaken=(e.damageTaken||0)+hit; m.touchAt=now+1050; showXpFloat(`-${hit} HP`,'locked'); if(state.player.hp<=0){ failVectorLockdown(m); return; } } } const liveProjectiles=[]; for(const p of e.projectiles){ const oldX=p.x, oldY=p.y; p.x+=p.vx*(dt/1000); p.y+=p.vy*(dt/1000); p.life-=dt; if(p.trail){ p.trail.push({x:p.x,y:p.y}); if(p.trail.length>5) p.trail.shift(); } let keep=p.life>0 && pointInLockdownArena(Math.floor(p.x),Math.floor(p.y)); for(const m of e.enemies){ if(m.hp<=0) continue; if(lockdownSegmentDistance(m.x,m.y,oldX,oldY,p.x,p.y)<.78){ m.hp-=p.damage; showXpFloat(`${p.damage}`,'xp'); if(p.pierce>0){ p.pierce--; } else { keep=false; } if(m.hp<=0){ e.kills++; if(Math.random()<.14) e.rewards++; showXpFloat('KILL','good'); } if(!keep) break; } } if(keep) liveProjectiles.push(p); } e.projectiles=liveProjectiles.slice(-120); e.enemies=e.enemies.filter(m=>m.hp>0).slice(0,e.maxHostiles||25); }
@@ -7344,24 +7365,34 @@
       const colors=palette[p.style] || palette.cyan;
       const angle=Math.atan2(p.vy,p.vx);
       if(p.trail && p.trail.length>1){
-        ctx.strokeStyle=colors[1]; ctx.globalAlpha=.38; ctx.lineWidth=3; ctx.beginPath();
+        ctx.strokeStyle=colors[1]; ctx.globalAlpha=.34; ctx.lineWidth=lockdownMobileCompact()?4:3; ctx.beginPath();
         p.trail.forEach((t,i)=>{ const tx=t.x*TILE, ty=t.y*TILE; if(i===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty); }); ctx.stroke(); ctx.globalAlpha=1;
       }
+      const asset=p.assetPath || lockdownProjectileAsset(p.assetIndex||p.kind||0).path;
+      const im=ensureImageCached(asset);
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(angle);
       ctx.shadowColor=colors[1];
-      ctx.shadowBlur=14;
-      ctx.fillStyle=colors[0];
-      ctx.beginPath();
-      const kind=p.kind||0;
-      if(kind===1){ ctx.arc(0,0,lockdownMobileCompact()?8:7,0,Math.PI*2); }
-      else if(kind===2){ const r=lockdownMobileCompact()?7:6; ctx.rect(-r,-r,r*2,r*2); }
-      else if(kind===3){ const r=lockdownMobileCompact()?12:10; ctx.moveTo(r,0); ctx.lineTo(0,-r*.75); ctx.lineTo(-r,0); ctx.lineTo(0,r*.75); ctx.closePath(); }
-      else { const r=lockdownMobileCompact()?14:12; ctx.moveTo(r,0); ctx.lineTo(-r*.55,-r*.48); ctx.lineTo(-r*.18,0); ctx.lineTo(-r*.55,r*.48); ctx.closePath(); }
-      ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.65)';
-      ctx.stroke();
+      ctx.shadowBlur=16;
+      if(im && im.complete && im.naturalWidth){
+        const size=lockdownMobileCompact()?30:26;
+        const oldSmooth=ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled=true;
+        ctx.drawImage(im,-size/2,-size/2,size,size);
+        ctx.imageSmoothingEnabled=oldSmooth;
+      } else {
+        ctx.fillStyle=colors[0];
+        ctx.beginPath();
+        const kind=p.kind||0;
+        if(kind===1){ ctx.arc(0,0,lockdownMobileCompact()?8:7,0,Math.PI*2); }
+        else if(kind===2){ const r=lockdownMobileCompact()?7:6; ctx.rect(-r,-r,r*2,r*2); }
+        else if(kind===3){ const r=lockdownMobileCompact()?12:10; ctx.moveTo(r,0); ctx.lineTo(0,-r*.75); ctx.lineTo(-r,0); ctx.lineTo(0,r*.75); ctx.closePath(); }
+        else { const r=lockdownMobileCompact()?14:12; ctx.moveTo(r,0); ctx.lineTo(-r*.55,-r*.48); ctx.lineTo(-r*.18,0); ctx.lineTo(-r*.55,r*.48); ctx.closePath(); }
+        ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.65)';
+        ctx.stroke();
+      }
       ctx.restore();
     }
     ctx.restore();
