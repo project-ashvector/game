@@ -2733,3 +2733,35 @@ body.vector-lockdown-warning:after{
 .qa-buff-copy strong{display:block;font:900 12px monospace;letter-spacing:.06em;color:#fff;}
 .qa-buff-copy em{display:block;font:700 10px monospace;line-height:1.25;color:#a7c9d7;font-style:normal;margin-top:3px;}
 @media(max-width:720px), (pointer:coarse){.qa-buff-grid{grid-template-columns:1fr;}.qa-buff-card{grid-template-columns:40px 1fr;min-height:54px}.qa-buff-icon{width:36px;height:36px}.qa-buff-icon img{width:28px;height:28px}}
+
+
+/* V204: phone pause menu, landscape warning, and global mobile menu scaling */
+.mobile-pause-menu{position:fixed;inset:0;z-index:98000;display:grid;place-items:center;background:rgba(0,0,0,.68);padding:14px;}
+.mobile-pause-menu.hidden{display:none!important;}
+.mobile-pause-card{width:min(92vw,620px)!important;max-height:88svh!important;overflow:auto!important;padding:14px!important;}
+.mobile-pause-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0;}
+.mobile-pause-grid button{min-height:44px;border-radius:12px;font:800 12px monospace;letter-spacing:.06em;}
+.phone-rotate-warning{position:fixed;inset:0;z-index:120000;display:grid;place-items:center;background:rgba(0,0,0,.82);padding:18px;}
+.phone-rotate-warning.hidden{display:none!important;}
+.phone-rotate-warning>div{width:min(92vw,520px);border:1px solid rgba(255,48,72,.65);border-radius:18px;background:rgba(5,8,13,.96);box-shadow:0 0 32px rgba(255,48,72,.28);padding:18px;text-align:center;}
+.phone-rotate-warning b{display:block;font:900 clamp(20px,6vw,34px) monospace;color:#ff3652;text-transform:uppercase;margin-bottom:8px;}
+.phone-rotate-warning span{display:block;color:#dcecff;line-height:1.35;margin-bottom:14px;}
+.phone-rotate-warning button{min-height:42px;border-radius:12px;padding:9px 14px;}
+body.mobile-play .overlay:not(.hidden){padding:8px!important;}
+body.mobile-play .database-modal{width:min(96vw,880px)!important;max-height:90svh!important;overflow:auto!important;}
+body.mobile-play .playtest-modal .fracture-grid,body.mobile-play .mission-modal .fracture-grid{grid-template-columns:1fr!important;}
+body.mobile-play .playtest-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;}
+body.mobile-play .playtest-actions button{min-height:40px!important;font-size:10px!important;padding:7px!important;}
+body.mobile-play .qa-lockdown-buff-board{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;}
+@media(max-width:720px),(pointer:coarse){
+  .mobile-action-pad{grid-template-columns:repeat(2,52px)!important;right:calc(env(safe-area-inset-right) + 8px)!important;bottom:calc(env(safe-area-inset-bottom) + 10px)!important;}
+  .mobile-action-pad button{width:52px!important;height:42px!important;}
+  .vector-lockdown-hud{max-width:240px!important;}
+  .lockdown-card{max-height:30svh!important;overflow:auto!important;}
+}
+@media(max-width:900px) and (orientation:landscape){
+  .mobile-action-pad{grid-template-columns:repeat(7,44px)!important;left:50%!important;right:auto!important;bottom:calc(env(safe-area-inset-bottom) + 6px)!important;transform:translateX(-50%)!important;}
+  .mobile-action-pad button{width:44px!important;height:38px!important;}
+  .mobile-action-pad button span{font-size:6.5px!important;}
+  .lockdown-buff-dock{bottom:calc(env(safe-area-inset-bottom,0px) + 58px)!important;}
+}

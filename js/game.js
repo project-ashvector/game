@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.13';
-  const BUILD_TITLE = 'LOCKDOWN BALANCE PASS';
+  const BUILD_VERSION = '1.0.14';
+  const BUILD_TITLE = 'STABILITY MOBILE CONTROLLER PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4357,7 +4357,7 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function ensureImageCached(path){
     if(!path) return null;
@@ -4425,6 +4425,8 @@
     state.respawns ||= {};
     state.radioUnlocked ||= {};
     state.visited ||= {};
+    state.lockdownPersistentBuffs ||= {};
+    state.lockdownRunHistory ||= [];
     ensureCharacterState();
     ensureOperatorProgress();
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
@@ -4451,6 +4453,8 @@
     merged.player={...fresh.player, ...(loaded.player||{})};
     merged.inventory={...(fresh.inventory||{}), ...(loaded.inventory||{})};
     merged.operatorProgress={...(fresh.operatorProgress||{}), ...(loaded.operatorProgress||{})};
+    merged.lockdownPersistentBuffs={...(fresh.lockdownPersistentBuffs||{}), ...(loaded.lockdownPersistentBuffs||{})};
+    merged.lockdownRunHistory=Array.isArray(loaded.lockdownRunHistory)?loaded.lockdownRunHistory.slice(-20):[];
     merged.equipment={...createEmptyEquipment(), ...(loaded.equipment||{})};
     merged.settings={...(fresh.settings||{}), ...(loaded.settings||{})};
     merged.flags={...(fresh.flags||{}), ...(loaded.flags||{}), storySeen:{...(fresh.flags?.storySeen||{}), ...(loaded.flags?.storySeen||{})}};
@@ -5608,6 +5612,12 @@
     e.abilityStacks[stackKey] = (e.abilityStacks[stackKey] || 0) + 1;
     e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,stack:e.abilityStacks[stackKey],stackKey,source,at:Date.now()});
     e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':(h.type==='ability'?'◆ ':'✓ '))+h.name+(h.stack>1?` x${h.stack}`:''));
+    if(source!=='persistent' && mod.type!=='debuff'){
+      state.lockdownPersistentBuffs ||= {};
+      const persistKey=mod.name;
+      state.lockdownPersistentBuffs[persistKey]=Math.min(30,(state.lockdownPersistentBuffs[persistKey]||0)+1);
+      queueAutosave();
+    }
     if(source==='qa'){
       showLockdownRoll({...mod, desc:`QA TEST // ${mod.desc}${e.abilityStacks[stackKey]>1?` // Stack ${e.abilityStacks[stackKey]}`:''}`});
       toast(`QA buff added: ${mod.name} x${e.abilityStacks[stackKey]}`);
@@ -5616,6 +5626,31 @@
     renderLockdownIconStrip(e);
     updateVectorLockdownHud();
     return true;
+  }
+
+  function lockdownModifierByName(name){ return ROGUE_UPGRADES.find(u=>u.name===name); }
+  function applyPersistentLockdownBuffs(e){
+    if(!e?.active) return;
+    state.lockdownPersistentBuffs ||= {};
+    let applied=0;
+    Object.entries(state.lockdownPersistentBuffs).forEach(([name,count])=>{
+      const mod=lockdownModifierByName(name);
+      const n=Math.max(0,Math.min(30,Math.floor(Number(count)||0)));
+      if(!mod || mod.type==='debuff' || !n) return;
+      for(let i=0;i<n;i++){ applyLockdownModifierToEvent(e, mod, 'persistent'); applied++; }
+    });
+    if(applied){ log(`Vector Lockdown persistent buffs loaded: ${applied} stack(s).`); }
+  }
+  function lockdownPersistentSummary(){
+    const bank=state.lockdownPersistentBuffs||{};
+    return Object.entries(bank).filter(([_,n])=>n>0).map(([name,n])=>`${name} x${n}`).join(' // ') || 'No persistent Lockdown buffs yet';
+  }
+  function lockdownDifficultyScale(){
+    const stageN=Number((currentStageKey()||'f001').replace(/[^0-9]/g,''))||1;
+    const playerLv=Math.max(1,Number(state.player?.level||1));
+    const opLv=Math.max(1,Number(activeOperatorProgress()?.level||1));
+    const scale=1 + Math.min(.55,(stageN-1)*.045) + Math.min(.40,(playerLv-1)*.0045) + Math.min(.20,(opLv-1)*.0025);
+    return {stageN, playerLv, opLv, scale, hp:scale, speed:1+(scale-1)*.45, damage:1+(scale-1)*.38, spawn:1+(scale-1)*.65};
   }
   function lockdownBuffQaList(){
     return ROGUE_UPGRADES.filter(u=>u.type==='buff' || u.type==='ability');
@@ -5733,7 +5768,7 @@
     if($('lockdownText')) $('lockdownText').textContent=lockdownMobileCompact()?'Free-roam event incoming':'Free-roam survival incoming. Normal battles/NPCs/items pause during the mini-game.';
     if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 30</span>';
     if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML=''; ensureLockdownBuffDock().classList.add('hidden');
-    if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML='<span>Move anywhere. Auto-fire starts when the surge begins.</span>';
+    if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=`<span>Move anywhere. Auto-fire starts when the surge begins.</span><span>${safeHtml(lockdownPersistentSummary())}</span>`;
   }
   function tickVectorLockdownWarning(){
     const w=state.rogueWarning;
@@ -5749,21 +5784,22 @@
     document.body.classList.remove('vector-lockdown-warning');
     document.body.classList.add('vector-lockdown-active');
     state.rogueHudMode='active';
-    const now=Date.now(); const stats=combatStatBlock(); const tier=lockdownTier(); const opBonus=lockdownOperatorBonus();
+    const now=Date.now(); const stats=combatStatBlock(); const tier=lockdownTier(); const opBonus=lockdownOperatorBonus(); const difficulty=lockdownDifficultyScale();
     const maxHp=Math.max(1,stats.maxHp||state.player.maxHp||60)+(opBonus.hp||0);
     state.player.hp=Math.min(maxHp, Math.max(1,state.player.hp||maxHp));
     state.rogueWarning={active:false};
     state.rogueEvent={
-      active:true, freeRoam:true, startedAt:now, lastFrameAt:now, duration:60000,
+      active:true, freeRoam:true, startedAt:now, lastFrameAt:now, duration:60000, difficulty,
       arena:lockdownArenaBounds(state.player.x,state.player.y), tier, operatorBonus:opBonus,
-      maxHostiles:30, allowedHostiles:8, enemies:[], projectiles:[], floaters:[],
+      maxHostiles:30, allowedHostiles:Math.min(30,7+Math.floor((difficulty.scale-1)*5)), enemies:[], projectiles:[], floaters:[],
       projectileCount:Math.max(1,1+(opBonus.projectiles||0)), projectileDamage:Math.max(8,12+(opBonus.damage||0)),
       projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), pierce:0,
       nextUpgradeAt:now+5000, nextSpawnAt:now+900, nextShotAt:now+360, spawnDelay:1350,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
       debuffResist:opBonus.debuffResist||0, abilities:{}, abilityStacks:{}, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}, nextOrbitalAt:now+2400
     };
-    for(let i=0;i<5;i++) spawnLockdownEnemy(state.rogueEvent);
+    applyPersistentLockdownBuffs(state.rogueEvent);
+    for(let i=0;i<Math.max(3,Math.min(6,state.rogueEvent.allowedHostiles||5));i++) spawnLockdownEnemy(state.rogueEvent);
     log('VECTOR LOCKDOWN STARTED: free-roam survival active. Normal map interactions are paused.');
     pulseObjective('VECTOR LOCKDOWN: survive 60 seconds. Keep moving — normal interactions are locked.');
     ensureRogueHud().classList.remove('hidden');
@@ -5796,8 +5832,9 @@
     const pick=roster[(Math.floor(Math.random()*roster.length)+stageN*3+(e.kills||0))%roster.length];
     const p=lockdownSpawnPointAwayFromPlayer(); const pressure=Math.max(0,Math.min(1,(Date.now()-(e.startedAt||Date.now()))/(e.duration||60000)));
     const typeRoll=Math.random(); const type= typeRoll>.82?'tank':(typeRoll<.28?'fast':'normal');
-    const baseHp=(type==='tank'?25:type==='fast'?11:17) + Math.floor(pressure*24) + Math.floor((e.threatLevel||1)*1.6);
-    const speed=(type==='tank'?.00052:(type==='fast'?.00108:.00076))*(1+pressure*.28)*(e.tier?.speed||1);
+    const diff=e.difficulty||lockdownDifficultyScale();
+    const baseHp=((type==='tank'?24:type==='fast'?10:16) + Math.floor(pressure*(18+diff.stageN*.65)) + Math.floor((e.threatLevel||1)*1.25)) * (diff.hp||1);
+    const speed=(type==='tank'?.00050:(type==='fast'?.00102:.00072))*(1+pressure*.24)*(e.tier?.speed||1)*(diff.speed||1);
     e.enemies.push({
       name:pick.name||pick.display||'Vector Hostile', img:pick.battle, icon:iconPathFor(pick), x:p.x, y:p.y, phase:Math.random()*99,
       hp:Math.ceil(baseHp*(e.tier?.hp||1)), maxHp:Math.ceil(baseHp*(e.tier?.hp||1)), speed,
@@ -5874,8 +5911,9 @@
       ensureLockdownPlayerState(e);
       const now=Date.now(); const dt=Math.min(180, now-(e.lastFrameAt||now)); e.lastFrameAt=now;
       const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000)));
-      e.threatLevel=1+Math.floor(pressure*8)+Math.floor((e.kills||0)/6);
-      e.allowedHostiles=Math.min(e.maxHostiles||30, 8 + Math.floor(pressure*18) + Math.floor((e.kills||0)/12));
+      const diff=e.difficulty||lockdownDifficultyScale();
+      e.threatLevel=1+Math.floor(pressure*(6+diff.scale*1.7))+Math.floor((e.kills||0)/Math.max(8,14-diff.stageN*.3));
+      e.allowedHostiles=Math.min(e.maxHostiles||30, 7 + Math.floor(pressure*(15+diff.stageN*.55+diff.scale*2.5)) + Math.floor((e.kills||0)/14));
       if(now>=e.nextUpgradeAt){
         const mod=chooseLockdownModifier(e);
         applyLockdownModifierToEvent(e, mod, 'roll');
@@ -5890,7 +5928,7 @@
         if(pressure>.30 && (e.enemies||[]).length < Math.min(e.allowedHostiles||30,12+Math.floor(pressure*14)) && Math.random()<.34) spawnLockdownEnemy(e);
         if(pressure>.68 && (e.enemies||[]).length < (e.allowedHostiles||30) && Math.random()<.22) spawnLockdownEnemy(e);
         if(pressure>.86 && (e.enemies||[]).length < (e.allowedHostiles||30) && Math.random()<.16) spawnLockdownEnemy(e);
-        e.spawnDelay=Math.max(620, Math.floor(1380-pressure*430-(e.threatLevel||1)*12));
+        e.spawnDelay=Math.max(560, Math.floor((1420-pressure*390-(e.threatLevel||1)*10)/(diff.spawn||1)));
         e.nextSpawnAt=now+e.spawnDelay;
       }
       if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(185,e.fireRate); }
@@ -6145,12 +6183,15 @@
       return `<span>${safeHtml(last?.name || k)} x${v}</span>`;
     }).join('');
     const healText=e.healed?`<span>Blood Circuit healed ${Math.round(e.healed)} HP</span>`:'';
-    const hud=ensureRogueHud();
     state.rogueHudMode='reward';
+    const hud=ensureRogueHud();
     hud.classList.remove('hidden');
     hud.innerHTML=`<div class="lockdown-card avos-crt lockdown-reward-card"><div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Threat ${e.threatLevel||1}</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Stacked Abilities This Run</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div><button id="lockdownContinueBtn">Continue</button></div>`;
     log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} kills, +${opXp} operator XP, +${playerXp} player XP, rewards — ${won.join(', ')}.`);
     toast(`Vector Lockdown cleared: +${opXp} Operator XP, +${playerXp} XP.`);
+    state.lockdownRunHistory ||= [];
+    state.lockdownRunHistory.unshift({time:Date.now(),stage:currentStageKey(),op:currentOperatorId(),opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:{...(e.abilityStacks||{})}});
+    state.lockdownRunHistory=state.lockdownRunHistory.slice(0,20);
     state.rogueEvent={active:false,lastRewards:won,lastRewardSummary:{opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:e.abilityStacks||{}},clearedAt:Date.now(),kills:e.kills||0};
     pulseObjective(`Lockdown cleared: +${opXp} operator XP // +${playerXp} XP`);
     setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); ensureLockdownBuffDock().classList.add('hidden'); renderAll(); }; },0);
@@ -8586,7 +8627,7 @@
     }
     try{ canvas.style.touchAction = 'none'; }catch(err){}
     clearTimeout(mobileResizeTimer);
-    mobileResizeTimer = setTimeout(()=>{ try{ renderAll(); }catch(err){} }, 90);
+    mobileResizeTimer = setTimeout(()=>{ try{ renderAll(); updatePhoneOrientationWarning(); }catch(err){} }, 90);
   }
   function moveByName(dir){
     const moves={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
@@ -8628,7 +8669,8 @@
       <button type="button" data-mobile-action="cell"><b>R</b><span>EP</span></button>
       <button type="button" data-mobile-action="track"><b>N</b><span>Target</span></button>
       <button type="button" data-mobile-action="inv"><b>I</b><span>Inv</span></button>
-      <button type="button" data-mobile-action="map"><b>M</b><span>Map</span></button>`;
+      <button type="button" data-mobile-action="map"><b>M</b><span>Map</span></button>
+      <button type="button" data-mobile-action="pause"><b>☰</b><span>Pause</span></button>`;
     document.body.appendChild(pad);
     pad.querySelectorAll('button').forEach(btn=>{
       btn.addEventListener('pointerdown', e=>{
@@ -8641,8 +8683,43 @@
         if(action==='track') showObjectivePing();
         if(action==='inv') openOverlay('inventoryOverlay');
         if(action==='map') toggleSideHud();
+        if(action==='pause') showMobilePauseMenu();
       }, {passive:false});
     });
+  }
+
+  function showMobilePauseMenu(){
+    let panel=$('mobilePauseMenu');
+    if(!panel){
+      panel=document.createElement('div');
+      panel.id='mobilePauseMenu';
+      panel.className='overlay mobile-pause-menu hidden';
+      panel.innerHTML=`<div class="database-modal avos-crt mobile-pause-card"><button id="mobilePauseClose" class="modal-close">Close</button><div class="db-header"><div>PAUSE MENU</div><div>PHONE / TOUCH ACCESS</div></div><div class="mobile-pause-grid"><button data-mobile-menu="inventoryOverlay">Inventory</button><button data-mobile-menu="missionOverlay">Mission</button><button data-mobile-menu="progressionOverlay">Progress</button><button data-mobile-menu="operatorOverlay">Operators</button><button data-mobile-menu="characterOverlay">Characters</button><button data-mobile-menu="playtestOverlay">Playtest</button><button data-mobile-menu="configOverlay">Settings</button><button data-mobile-menu="save">Save</button></div><p class="menu-info">Rotate your phone sideways for the proper layout. Use Playtest here when debugging the mini-game.</p></div>`;
+      document.body.appendChild(panel);
+      $('mobilePauseClose').onclick=()=>panel.classList.add('hidden');
+      panel.addEventListener('click',e=>{
+        const btn=e.target.closest('[data-mobile-menu]'); if(!btn) return;
+        e.preventDefault(); const target=btn.dataset.mobileMenu;
+        if(target==='save'){ save(false); return; }
+        panel.classList.add('hidden'); openOverlay(target);
+      });
+    }
+    panel.classList.remove('hidden');
+  }
+  function updatePhoneOrientationWarning(){
+    let warn=$('phoneRotateWarning');
+    const mobile=isPhoneLike();
+    const portrait=window.matchMedia && window.matchMedia('(orientation: portrait)').matches;
+    if(!warn){
+      warn=document.createElement('div');
+      warn.id='phoneRotateWarning';
+      warn.className='phone-rotate-warning hidden';
+      warn.innerHTML=`<div><b>Tilt your phone dipshit</b><span>Project ASH VECTOR is built for landscape. Rotate sideways before starting for the menus and combat to fit right.</span><button id="phoneRotateDismiss">Got it</button></div>`;
+      document.body.appendChild(warn);
+      $('phoneRotateDismiss').onclick=()=>{ warn.dataset.dismissed='1'; warn.classList.add('hidden'); };
+    }
+    const shouldShow=mobile && portrait && warn.dataset.dismissed!=='1' && (!gameStarted || uiState.mode==='boot' || uiState.mode==='menu');
+    warn.classList.toggle('hidden', !shouldShow);
   }
   function setupMobilePlayability(){
     bindMobileMoveButtons();
@@ -8650,7 +8727,7 @@
     ensureMobileBattlePad();
     setMobilePlayMode();
     window.addEventListener('resize', setMobilePlayMode, {passive:true});
-    window.addEventListener('orientationchange', () => setTimeout(setMobilePlayMode, 220), {passive:true});
+    window.addEventListener('orientationchange', () => setTimeout(()=>{ setMobilePlayMode(); updatePhoneOrientationWarning(); }, 220), {passive:true});
     window.addEventListener('blur', stopMobileMove, {passive:true});
     document.addEventListener('visibilitychange', () => { if(document.hidden) stopMobileMove(); });
   }
@@ -8817,174 +8894,56 @@
     lastButtons: {},
     lastMoveAt: 0,
     lastMoveDir: '',
-    lastMoveNeutralAt: 0,
     lastNavAt: 0,
-    lastNavDir: '',
-    menuRoot: null,
-    menuIndex: 0,
-    deadzone: 0.82,
-    moveDelay: 1100,
-    navDelay: 260,
+    deadzone: 0.34,
+    moveDelay: 260,
+    navDelay: 210,
     loopId: null,
     scanTimer: null,
-    nextScanAt: 0,
-    lastErrorAt: 0,
 
     init(){
       if(this.ready) return;
-      this.ready = true;
+      this.ready=true;
       if(!('getGamepads' in navigator)) return;
-      window.addEventListener('gamepadconnected', e => this.connect(e.gamepad));
-      window.addEventListener('gamepaddisconnected', e => {
-        if(this.activeIndex === e.gamepad.index){
-          this.disconnect(false);
-        }
-      });
-      // Some browsers only refresh the Gamepad API after a user gesture/focus event.
-      ['pointerdown','mousedown','keydown','touchstart'].forEach(evt=>{
-        window.addEventListener(evt, () => this.scan(), {passive:true});
-      });
-      window.addEventListener('focus', () => { this.resetInputState(); this.scan(); }, {passive:true});
-      window.addEventListener('blur', () => this.resetInputState(), {passive:true});
-      document.addEventListener('visibilitychange', () => {
-        this.resetInputState();
-        if(!document.hidden) this.scan();
-      }, {passive:true});
+      window.addEventListener('gamepadconnected', e=>this.connect(e.gamepad,false));
+      window.addEventListener('gamepaddisconnected', e=>{ if(this.activeIndex===e.gamepad.index) this.disconnect(false); });
+      ['pointerdown','mousedown','keydown','touchstart','click'].forEach(evt=>window.addEventListener(evt,()=>this.scan(),{passive:true}));
+      window.addEventListener('focus',()=>{ this.resetInputState(); this.scan(); },{passive:true});
+      window.addEventListener('blur',()=>this.resetInputState(),{passive:true});
+      document.addEventListener('visibilitychange',()=>{ this.resetInputState(); if(!document.hidden) this.scan(); },{passive:true});
       this.scan();
-      this.scanTimer = setInterval(() => this.scan(), 1000);
+      this.scanTimer=setInterval(()=>this.scan(),500);
       this.loop();
     },
-
-    resetInputState(){
-      this.lastButtons = {};
-      this.lastMoveDir = '';
-      this.lastNavDir = '';
-      this.lastMoveAt = 0;
-      this.lastMoveNeutralAt = 0;
-      this.lastNavAt = 0;
+    resetInputState(){ this.lastButtons={}; this.lastMoveDir=''; this.lastMoveAt=0; this.lastNavAt=0; },
+    pads(){ try{return Array.from(navigator.getGamepads?navigator.getGamepads():[]).filter(Boolean).filter(p=>p.connected!==false);}catch(err){return [];} },
+    padHasInput(p){ if(!p) return false; const axes=Array.from(p.axes||[]).some(v=>Math.abs(Number(v)||0)>.22); const buttons=Array.from(p.buttons||[]).some(b=>b && (b.pressed || b.value>.35)); return axes||buttons; },
+    scan(){ const pads=this.pads(); if(!pads.length){ if(this.connected) this.disconnect(true); return; } const current=(this.activeIndex!=null)?pads.find(p=>p.index===this.activeIndex):null; const active=pads.find(p=>this.padHasInput(p)) || current || pads[0]; if(active) this.connect(active,true); },
+    connect(pad, quiet=false){ if(!pad) return; const changed=this.activeIndex!==pad.index || this.id!==(pad.id||'Controller'); this.activeIndex=pad.index; this.connected=true; this.id=pad.id||'Controller'; this.profile=this.detectProfile(this.id); if(changed) this.resetInputState(); if(battle) renderBattle(); if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); } },
+    disconnect(quiet=false){ this.connected=false; this.activeIndex=null; this.id=''; this.profile='Generic Controller'; this.resetInputState(); if(!quiet) toast('Controller disconnected.'); try{renderAll();}catch(err){} },
+    detectProfile(id=''){ const name=String(id||'').toLowerCase(); if(/dualsense|dualshock|playstation|wireless controller|ps4|ps5/.test(name)) return 'PlayStation Controller'; if(/xbox|xinput|microsoft/.test(name)) return 'Xbox Controller'; if(/switch|joy-con|joycon|pro controller|nintendo/.test(name)) return 'Switch Controller'; return 'Generic Controller'; },
+    labels(){ const p=this.profile; if(/PlayStation/.test(p)) return {south:'Cross',east:'Circle',west:'Square',north:'Triangle',start:'Options',select:'Share'}; if(/Switch/.test(p)) return {south:'B',east:'A',west:'Y',north:'X',start:'+',select:'-'}; if(/Xbox/.test(p)) return {south:'A',east:'B',west:'X',north:'Y',start:'Menu',select:'View'}; return {south:'Button 1',east:'Button 2',west:'Button 3',north:'Button 4',start:'Start',select:'Select'}; },
+    statusText(){ if(!('getGamepads' in navigator)) return 'Not supported by this browser'; const pad=this.currentPad(); if(!pad) return 'No controller detected'; const l=this.labels(); return `${this.profile} // ${l.south}: confirm/interact // ${l.east}: back/heal // ${l.start}: pause // ${l.select}: Playtest`; },
+    currentPad(){ const pads=this.pads(); if(!pads.length){ if(this.connected) this.disconnect(true); return null; } const current=(this.activeIndex!=null)?pads.find(p=>p.index===this.activeIndex):null; const active=current || pads.find(p=>this.padHasInput(p)) || pads[0]; if(active) this.connect(active,true); return active||null; },
+    pressed(pad,index){ const b=pad?.buttons?.[index]; return !!b && (b.pressed || b.value>.35); },
+    justPressed(pad,index){ const now=this.pressed(pad,index); const key=`b${index}`; const was=!!this.lastButtons[key]; this.lastButtons[key]=now; return now&&!was; },
+    axis(pad,index){ return Number(pad?.axes?.[index]||0); },
+    movement(pad){ let dx=0,dy=0; if(this.pressed(pad,14)) dx=-1; else if(this.pressed(pad,15)) dx=1; if(this.pressed(pad,12)) dy=-1; else if(this.pressed(pad,13)) dy=1; const ax=this.axis(pad,0), ay=this.axis(pad,1), rx=this.axis(pad,2), ry=this.axis(pad,3); const useX=Math.abs(ax)>=Math.abs(rx)?ax:rx; const useY=Math.abs(ay)>=Math.abs(ry)?ay:ry; if(!dx && Math.abs(useX)>this.deadzone) dx=useX>0?1:-1; if(!dy && Math.abs(useY)>this.deadzone) dy=useY>0?1:-1; if(dx&&dy){ if(Math.abs(useX)>=Math.abs(useY)) dy=0; else dx=0; } return {dx:Math.sign(dx||0),dy:Math.sign(dy||0),key:`${Math.sign(dx||0)},${Math.sign(dy||0)}`}; },
+    navMove(pad){ const mv=this.movement(pad); const now=performance.now(); if(!mv.dx&&!mv.dy){ this.lastMoveDir=''; return; } const fresh=this.lastMoveDir!==mv.key; const delay=now-this.lastMoveAt>=this.moveDelay; if(fresh||delay){ this.lastMoveDir=mv.key; this.lastMoveAt=now; tryMove(mv.dx,mv.dy,'controller'); } },
+    menuButtons(root=document){ return Array.from(root.querySelectorAll('button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])')).filter(el=>el.offsetParent!==null); },
+    moveFocus(delta=1){ const open=Array.from(document.querySelectorAll('.overlay:not(.hidden), #mainMenu:not(.hidden), #bootScreen:not(.hidden)')).pop() || document; const buttons=this.menuButtons(open); if(!buttons.length) return; let i=buttons.indexOf(document.activeElement); i=(i+delta+buttons.length)%buttons.length; try{buttons[i].focus({preventScroll:true});}catch(err){} },
+    clickFocused(){ const el=document.activeElement; if(el && typeof el.click==='function' && el!==document.body){ el.click(); return true; } return false; },
+    handle(pad){
+      const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
+      if(select){ openOverlay('playtestOverlay'); return; }
+      if(!$('bootScreen').classList.contains('hidden')){ if(south||start){ startIntroVideo(); return; } if(east||select){ forceIntroMenuRecovery(); return; } }
+      if(!$('mainMenu').classList.contains('hidden')){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ if(!this.clickFocused()){ if(hasSaveData()) continueSavedGame(); else newGameRootStart(); } return; } }
+      const overlayOpen=Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
+      if(overlayOpen){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ this.clickFocused(); return; } if(east){ closeOverlays(); return; } }
+      if(battle){ if(south) playerAttack(0); else if(east) playerAttack(1); else if(west) playerAttack(2); else if(north) playerAttack(3); else if(start) guardBattle(); return; }
+      if(!$('app').classList.contains('hidden')){ this.navMove(pad); if(south){ interactNearbyNpc(); return; } if(east){ useMedPatch(); return; } if(west){ useVectorCell(); return; } if(north){ showObjectivePing(); return; } if(start){ showMobilePauseMenu(); return; } }
     },
-
-    scan(){
-      if(!('getGamepads' in navigator)) return;
-      const pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
-      const current = (this.activeIndex != null) ? pads.find(p => p && p.index === this.activeIndex && p.connected !== false) : null;
-      const pad = current || pads.find(p => p && p.connected !== false);
-      if(pad) this.connect(pad, true);
-      else if(this.connected) this.disconnect(true);
-    },
-
-    connect(pad, quiet=false){
-      if(!pad) return;
-      const changed = this.activeIndex !== pad.index || this.id !== (pad.id || 'Controller');
-      this.activeIndex = pad.index;
-      this.connected = true;
-      this.id = pad.id || 'Controller';
-      this.profile = this.detectProfile(this.id);
-      if(changed) this.resetInputState();
-      if(battle) renderBattle();
-      if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); }
-    },
-
-    disconnect(quiet=false){
-      this.connected = false;
-      this.activeIndex = null;
-      this.id = '';
-      this.profile = 'Generic Controller';
-      this.resetInputState();
-      if(!quiet) toast('Controller disconnected.');
-      try{ renderAll(); }catch(err){}
-    },
-
-    detectProfile(id=''){
-      const name = id.toLowerCase();
-      if(/dualsense|dualshock|playstation|wireless controller|ps4|ps5/.test(name)) return 'PlayStation Controller';
-      if(/xbox|xinput|microsoft/.test(name)) return 'Xbox Controller';
-      if(/switch|joy-con|joycon|pro controller|nintendo/.test(name)) return 'Switch Controller';
-      return 'Generic Controller';
-    },
-
-    labels(){
-      const p=this.profile;
-      if(/PlayStation/.test(p)) return {south:'Cross', east:'Circle', west:'Square', north:'Triangle', start:'Options', select:'Share'};
-      if(/Switch/.test(p)) return {south:'B', east:'A', west:'Y', north:'X', start:'+', select:'-'};
-      if(/Xbox/.test(p)) return {south:'A', east:'B', west:'X', north:'Y', start:'Menu', select:'View'};
-      return {south:'Button 1', east:'Button 2', west:'Button 3', north:'Button 4', start:'Start', select:'Select'};
-    },
-
-    statusText(){
-      if(!('getGamepads' in navigator)) return 'Not supported by this browser';
-      const pad=this.currentPad();
-      if(!pad) return 'No controller detected';
-      const l=this.labels();
-      return `${this.profile} // Menus: D-pad hover + ${l.south} confirm // Battle: face buttons attack // ${l.select}: QA console`;
-    },
-
-    currentPad(){
-      if(!('getGamepads' in navigator)) return null;
-      const pads = navigator.getGamepads ? navigator.getGamepads() : [];
-      if(this.activeIndex != null){
-        const p = pads[this.activeIndex];
-        if(p && p.connected !== false) return p;
-      }
-      const pad = Array.from(pads).filter(Boolean).find(p => p.connected !== false);
-      if(pad) this.connect(pad, true);
-      else if(this.connected) this.disconnect(true);
-      return pad || null;
-    },
-
-    pressed(pad, index){
-      const b = pad && pad.buttons && pad.buttons[index];
-      return !!b && (b.pressed || b.value > 0.55);
-    },
-
-    justPressed(pad, index){
-      const now = this.pressed(pad,index);
-      const was = !!this.lastButtons[index];
-      this.lastButtons[index] = now;
-      return now && !was;
-    },
-
-    movement(pad){
-      let dx=0, dy=0;
-      if(this.pressed(pad,14)) dx=-1;
-      else if(this.pressed(pad,15)) dx=1;
-      if(this.pressed(pad,12)) dy=-1;
-      else if(this.pressed(pad,13)) dy=1;
-      const ax = Number(pad.axes?.[0] || 0);
-      const ay = Number(pad.axes?.[1] || 0);
-      if(!dx && Math.abs(ax) > this.deadzone) dx = ax > 0 ? 1 : -1;
-      if(!dy && Math.abs(ay) > this.deadzone) dy = ay > 0 ? 1 : -1;
-      if(dx && dy){
-        // Hard single-axis movement prevents corner clipping on controller.
-        if(Math.abs(ax) >= Math.abs(ay)) dy=0; else dx=0;
-      }
-      dx=Math.sign(dx||0); dy=Math.sign(dy||0);
-      return {dx,dy,key:`${dx},${dy}`};
-    },
-
-    navMove(pad){
-      const mv=this.movement(pad);
-      const now=performance.now();
-      if(!mv.dx && !mv.dy){
-        this.lastMoveDir='';
-        this.lastMoveNeutralAt=now;
-      } else {
-        const freshPress = this.lastMoveDir === '';
-        const enoughDelay = now - this.lastMoveAt >= this.moveDelay;
-        // V142: one slow step per push. Held movement waits over one second.
-        if(freshPress || enoughDelay){
-          this.lastMoveDir = mv.key;
-          this.lastMoveAt = now;
-          tryMove(mv.dx,mv.dy,'controller');
-          return;
-        }
-      }
-      if(south){ interactNearbyNpc(); return; }
-      if(east){ useMedPatch(); return; }
-      if(west){ useVectorCell(); return; }
-      if(north){ showObjectivePing(); return; }
-      if(start){ openOverlay('missionOverlay'); return; }
-    }
+    loop(){ const pad=this.currentPad(); if(pad){ try{ this.handle(pad); }catch(err){ const now=Date.now(); if(!this._lastErr || now-this._lastErr>2000){ console.warn('[AV] controller loop error',err); this._lastErr=now; } } } this.loopId=requestAnimationFrame(()=>this.loop()); }
   };
 
 
@@ -9128,7 +9087,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
