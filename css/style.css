@@ -2701,3 +2701,20 @@ body.vector-lockdown-warning:after{
 
 .lockdown-icon-chip img{width:18px;height:18px;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 0 6px rgba(255,255,255,.18));}
 @media(max-width:720px), (pointer:coarse){ .lockdown-icon-chip img{width:14px;height:14px;} }
+
+
+/* V201: bottom buff dock sits above the bottom menu/action buttons */
+.lockdown-buff-dock{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);transform:translateX(-50%);z-index:76000;display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;max-width:min(760px,calc(100vw - 24px));padding:8px 10px;border:1px solid rgba(112,215,255,.32);border-radius:18px;background:rgba(2,7,12,.70);backdrop-filter:blur(8px);box-shadow:0 0 24px rgba(0,217,255,.18), inset 0 0 18px rgba(255,255,255,.04);pointer-events:none;}
+.lockdown-buff-dock.hidden{display:none!important;}
+.lockdown-buff-dock .lockdown-icon-chip.big{position:relative;min-width:58px;min-height:58px;padding:6px 7px;border-radius:14px;}
+.lockdown-buff-dock .lockdown-icon-chip.big img{width:28px;height:28px;}
+.lockdown-buff-dock .lockdown-icon-chip.big b{font-size:12px;}
+.lockdown-buff-dock .lockdown-icon-chip.big small{font-size:10px;margin-top:4px;}
+.lockdown-buff-dock .lockdown-icon-chip.big em{position:absolute;right:-5px;top:-6px;min-width:22px;height:22px;padding:0 4px;border-radius:999px;display:grid;place-items:center;background:rgba(255,48,72,.95);border:1px solid rgba(255,255,255,.68);box-shadow:0 0 10px rgba(255,48,72,.65);color:#fff;font:900 10px monospace;font-style:normal;}
+@media(max-width:720px), (pointer:coarse){
+  .lockdown-buff-dock{bottom:calc(env(safe-area-inset-bottom,0px) + 76px);gap:5px;padding:6px 7px;max-width:calc(100vw - 16px);border-radius:14px;}
+  .lockdown-buff-dock .lockdown-icon-chip.big{min-width:48px;min-height:50px;padding:5px 5px;border-radius:12px;}
+  .lockdown-buff-dock .lockdown-icon-chip.big img{width:24px;height:24px;}
+  .lockdown-buff-dock .lockdown-icon-chip.big small{font-size:8.5px;}
+  .lockdown-buff-dock .lockdown-icon-chip.big em{right:-4px;top:-5px;min-width:19px;height:19px;font-size:9px;}
+}

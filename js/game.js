@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.10';
-  const BUILD_TITLE = 'BUFF EMBLEM HUD PASS';
+  const BUILD_VERSION = '1.0.11';
+  const BUILD_TITLE = 'BOTTOM BUFF DOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5541,7 +5541,7 @@
     {type:'buff', stackKey:'damage', name:'Overcharged Barrel', desc:'+14% damage and speed', apply:e=>{e.projectileDamage=Math.ceil(e.projectileDamage*1.14); e.projectileSpeed+=.9;}},
     {type:'buff', stackKey:'rate', name:'Rapid Vector Feed', desc:'+10% fire rate and +1 projectile', apply:e=>{e.fireRate=Math.max(150,Math.floor(e.fireRate*.90)); e.projectileCount=Math.min(24,(e.projectileCount||1)+1);}},
 
-    {type:'ability', stackKey:'healOnKill', name:'Blood Circuit', desc:'+3% max HP healed per kill', apply:e=>{e.abilities.healOnKill=(e.abilities.healOnKill||0)+0.03;}},
+    {type:'ability', stackKey:'healOnKill', name:'Blood Circuit', desc:'+1 HP healed per kill per stack', apply:e=>{e.abilities.healOnKill=(e.abilities.healOnKill||0)+1;}},
     {type:'ability', stackKey:'critChance', name:'Static Crit Loop', desc:'+5% projectile crit chance', apply:e=>{e.abilities.critChance=(e.abilities.critChance||0)+0.05;}},
     {type:'ability', stackKey:'chainLightning', name:'Chain Static', desc:'+12% chance shots chain to another enemy', apply:e=>{e.abilities.chainLightning=(e.abilities.chainLightning||0)+0.12;}},
     {type:'ability', stackKey:'thorns', name:'Reactive Armor', desc:'Return 10% contact damage to attackers', apply:e=>{e.abilities.thorns=(e.abilities.thorns||0)+0.10;}},
@@ -5603,7 +5603,7 @@
   function lockdownMobileCompact(){ return !!(window.matchMedia && (window.matchMedia('(max-width:720px)').matches || window.matchMedia('(pointer: coarse)').matches)); }
   function maybeTriggerVectorLockdown(){ if(vectorLockdownBlocked()) return; const now=Date.now(); if(now-(state.rogueLastAt||0)<70000) return; if(Math.random()>0.085) return; startVectorLockdownWarning(); }
   function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
-  function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); renderAll(); }
+  function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); ensureLockdownBuffDock().classList.add('hidden'); renderAll(); }
 
   function lockdownArenaBounds(cx=state.player.x, cy=state.player.y){
     const w=mapWidth(), h=mapHeight();
@@ -5662,7 +5662,7 @@
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     if($('lockdownText')) $('lockdownText').textContent=lockdownMobileCompact()?'Free-roam event incoming':'Free-roam survival incoming. Normal battles/NPCs/items pause during the mini-game.';
     if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 100</span>';
-    if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML='';
+    if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML=''; ensureLockdownBuffDock().classList.add('hidden');
     if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML='<span>Move anywhere. Auto-fire starts when the surge begins.</span>';
   }
   function tickVectorLockdownWarning(){
@@ -5790,6 +5790,7 @@
     state.rogueEvent = {active:false, abortedAt:Date.now(), reason:why};
     state.rogueHudMode=null;
     ensureRogueHud().classList.add('hidden');
+    ensureLockdownBuffDock().classList.add('hidden');
     console.error('[AV] Vector Lockdown aborted:', why);
     log(`VECTOR LOCKDOWN ABORTED: ${why}`);
     toast('Vector Lockdown auto-cancelled to protect the run.');
@@ -5894,14 +5895,15 @@
           if(p.pierce>0){ p.pierce--; } else { keep=false; }
           if(m.hp<=0 && !m.countedKill){
             m.countedKill=true; e.kills++; e.rewards += Math.random()<.18 ? 1 : 0;
-            const healPct=Math.min(.45,e.abilities?.healOnKill||0);
-            if(healPct>0){
+            const healStacks=Math.floor(e.abilities?.healOnKill||0);
+            if(healStacks>0){
               const max=Math.max(1,e.playerMaxHp||combatStatBlock().maxHp||state.player.maxHp||60);
-              const heal=Math.max(1,Math.floor(max*healPct));
+              const heal=Math.max(1,healStacks);
               const before=state.player.hp||0;
               state.player.hp=Math.min(max,before+heal);
-              e.healed=(e.healed||0)+(state.player.hp-before);
-              addLockdownFloat(e,state.player.x+.5,state.player.y+.5,`+${state.player.hp-before} HP`,'heal');
+              const gained=state.player.hp-before;
+              e.healed=(e.healed||0)+gained;
+              if(gained>0) addLockdownFloat(e,state.player.x+.5,state.player.y+.5,`+${gained} HP`,'heal');
             }
             addLockdownFloat(e,m.x,m.y,'KILL','kill'); showXpFloat('KILL','good');
           }
@@ -5932,6 +5934,17 @@
     const bar=$('lockdownHpBar'); if(bar) bar.style.width=`${pct}%`;
   }
 
+  function ensureLockdownBuffDock(){
+    let dock=$('lockdownBuffDock');
+    if(!dock){
+      dock=document.createElement('div');
+      dock.id='lockdownBuffDock';
+      dock.className='lockdown-buff-dock hidden';
+      document.body.appendChild(dock);
+    }
+    return dock;
+  }
+
   function formatLockdownIconValue(key, e){
     const a=e?.abilities||{};
     if(key==='shots') return `x${e?.projectileCount||1}`;
@@ -5939,7 +5952,7 @@
     if(key==='rate') return `${Math.round(1000/Math.max(1,e?.fireRate||1)*10)/10}/s`;
     if(key==='velocity') return `${Math.round((e?.projectileSpeed||0)*10)/10}`;
     if(key==='pierce') return `x${e?.pierce||0}`;
-    if(key==='healOnKill') return `${Math.round((a.healOnKill||0)*100)}%`;
+    if(key==='healOnKill') return `x${Math.floor(a.healOnKill||0)}`;
     if(key==='critChance') return `${Math.round((a.critChance||0)*100)}%`;
     if(key==='chainLightning') return `${Math.round((a.chainLightning||0)*100)}%`;
     if(key==='thorns') return `${Math.round((a.thorns||0)*100)}%`;
@@ -5949,19 +5962,29 @@
     return '';
   }
   function renderLockdownIconStrip(e){
-    const host=$('lockdownIconStrip');
-    if(!host || !e) return;
+    const dock=ensureLockdownBuffDock();
+    const hudHost=$('lockdownIconStrip');
+    if(!e?.active){
+      dock.classList.add('hidden');
+      dock.innerHTML='';
+      if(hudHost) hudHost.innerHTML='';
+      return;
+    }
+    dock.classList.remove('hidden');
+    if(hudHost) hudHost.innerHTML='';
     const keys=['shots','damage','rate','velocity','pierce'];
     const abilityOrder=['healOnKill','critChance','chainLightning','thorns','slowAura','orbital','lootBoost'];
     abilityOrder.forEach(k=>{ if((e.abilities?.[k]||0)>0) keys.push(k); });
     const compact=lockdownMobileCompact();
-    const slice=compact ? 7 : 12;
-    host.innerHTML=keys.slice(0,slice).map(key=>{
+    const slice=compact ? 9 : 12;
+    dock.innerHTML=keys.slice(0,slice).map(key=>{
       const meta=LOCKDOWN_ICON_DEFS[key]||{abbr:key.slice(0,3).toUpperCase(),color:'#bff6ff',label:key};
       const val=formatLockdownIconValue(key,e);
+      const stack=e.abilityStacks?.[key] || (['shots','damage','rate','velocity','pierce'].includes(key) ? 0 : Math.floor(e.abilities?.[key]||0));
+      const stackBadge=stack>0 ? `<em>x${stack}</em>` : '';
       const iconHtml=meta.icon ? `<img src="${safeHtml(meta.icon)}?v=${BUILD_VERSION}" alt="${safeHtml(meta.label)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">` : '';
       const textFallback=`<b style="${meta.icon?'display:none':''}">${safeHtml(meta.abbr)}</b>`;
-      return `<div class="lockdown-icon-chip" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}">${iconHtml}${textFallback}<small>${safeHtml(val)}</small></div>`;
+      return `<div class="lockdown-icon-chip big" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}">${iconHtml}${textFallback}${stackBadge}<small>${safeHtml(val)}</small></div>`;
     }).join('');
   }
 
@@ -5969,7 +5992,7 @@
     if(!e?.abilities) return '';
     const a=e.abilities;
     const rows=[];
-    if(a.healOnKill) rows.push(`Blood Circuit ${Math.round(a.healOnKill*100)}%`);
+    if(a.healOnKill) rows.push(`Blood Circuit +${Math.floor(a.healOnKill||0)} HP/kill`);
     if(a.critChance) rows.push(`Crit ${Math.round(a.critChance*100)}%`);
     if(a.chainLightning) rows.push(`Chain ${Math.round(a.chainLightning*100)}%`);
     if(a.thorns) rows.push(`Thorns ${Math.round(a.thorns*100)}%`);
@@ -6003,6 +6026,7 @@
     if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
     window._avLockdownTimer=null;
     document.body.classList.remove('vector-lockdown-active');
+    ensureLockdownBuffDock().classList.add('hidden');
     state.deaths=(state.deaths||0)+1;
     state.player.hp=0;
     const killerName=killer?.name || 'lockdown swarm';
@@ -6031,6 +6055,7 @@
     if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
     window._avLockdownTimer=null;
     document.body.classList.remove('vector-lockdown-active');
+    ensureLockdownBuffDock().classList.add('hidden');
     const lootBoost=Math.max(0,e.abilities?.lootBoost||0);
     const rewards=['Scrap Metal','Rust Core','Vector Cell','Med Patch','Operator Shard: Vexa','Burnt Alloy','Corrupted Catalyst','Projectile Coil','Ash Ammo Cache','Vector Shard Cache'];
     const baseRolls=2+(e.tier?.reward||1)+Math.floor((e.kills||0)/10)+(e.rewards||0);
@@ -6063,7 +6088,7 @@
     toast(`Vector Lockdown cleared: +${opXp} Operator XP, +${playerXp} XP.`);
     state.rogueEvent={active:false,lastRewards:won,lastRewardSummary:{opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:e.abilityStacks||{}},clearedAt:Date.now(),kills:e.kills||0};
     pulseObjective(`Lockdown cleared: +${opXp} operator XP // +${playerXp} XP`);
-    setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); renderAll(); }; },0);
+    setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); ensureLockdownBuffDock().classList.add('hidden'); renderAll(); }; },0);
     renderAll(); queueAutosave();
   }
 
