@@ -8,7 +8,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.07';
+  const BUILD_VERSION = '1.0.08';
   const BUILD_TITLE = 'FREE ROAM LOCKDOWN PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -5520,7 +5520,7 @@
   }
 
   // v184: Vector Lockdown now behaves like a short roguelike survival room.
-  function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(!hud){ hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; document.body.appendChild(hud); } if(!$('lockdownTimer')){ hud.innerHTML='<div class="lockdown-card avos-crt"><div id="lockdownKicker" class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Free-roam surge. Auto-fire online.</p><div id="lockdownHpWrap" style="margin:8px 0 10px"><div style="display:flex;justify-content:space-between;font:700 11px monospace;letter-spacing:.06em"><span>OPERATOR HP</span><span id="lockdownHpText">--/--</span></div><div style="height:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);border-radius:999px;overflow:hidden"><span id="lockdownHpBar" style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#37f7a5,#ffe36e,#ff3048);transition:width .18s linear"></span></div></div><div id="lockdownRoll" style="display:none;margin:8px 0;padding:8px 10px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.58);font:800 12px monospace;letter-spacing:.08em;text-transform:uppercase"></div><div id="lockdownStats" class="lockdown-stats"></div><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; } return hud; }
+  function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(!hud){ hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; document.body.appendChild(hud); } if((state.rogueHudMode==='reward' || state.rogueHudMode==='failed') && hud) return hud; if(!$('lockdownTimer')){ hud.innerHTML='<div class="lockdown-card avos-crt"><div id="lockdownKicker" class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Free-roam surge. Auto-fire online.</p><div id="lockdownHpWrap" style="margin:8px 0 10px"><div style="display:flex;justify-content:space-between;font:700 11px monospace;letter-spacing:.06em"><span>OPERATOR HP</span><span id="lockdownHpText">--/--</span></div><div style="height:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);border-radius:999px;overflow:hidden"><span id="lockdownHpBar" style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#37f7a5,#ffe36e,#ff3048);transition:width .18s linear"></span></div></div><div id="lockdownRoll" style="display:none;margin:8px 0;padding:8px 10px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.58);font:800 12px monospace;letter-spacing:.08em;text-transform:uppercase"></div><div id="lockdownIconStrip" class="lockdown-icon-strip"></div><div id="lockdownStats" class="lockdown-stats"></div><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; } return hud; }
   const ROGUE_UPGRADES = [
     {type:'buff', stackKey:'shots', name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount = Math.min(24,(e.projectileCount||1)+1)},
     {type:'buff', stackKey:'damage', name:'Ash Rifling', desc:'+18% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.18)},
@@ -5548,6 +5548,20 @@
     {type:'debuff', stackKey:'brittle', name:'Brittle Static', desc:'-1 pierce stack', apply:e=>e.pierce=Math.max(0,(e.pierce||0)-1)},
     {type:'debuff', stackKey:'surge', name:'Hostile Surge', desc:'monsters spawn sooner', apply:e=>{e.spawnDelay=Math.max(850,Math.floor((e.spawnDelay||2600)*.78)); e.nextSpawnAt=Math.min(e.nextSpawnAt||Date.now()+1200, Date.now()+900);}}
   ];
+  const LOCKDOWN_ICON_DEFS = {
+    shots:{abbr:'SH', color:'#7cf0ff', label:'Projectile Count'},
+    damage:{abbr:'DMG', color:'#ffd36e', label:'Projectile Damage'},
+    rate:{abbr:'FIR', color:'#ff9b6a', label:'Fire Rate'},
+    velocity:{abbr:'VEL', color:'#8af7bb', label:'Projectile Speed'},
+    pierce:{abbr:'PRC', color:'#d3a8ff', label:'Pierce'},
+    healOnKill:{abbr:'HL', color:'#6dff8d', label:'Blood Circuit'},
+    critChance:{abbr:'CRT', color:'#ff7adf', label:'Static Crit Loop'},
+    chainLightning:{abbr:'CHN', color:'#91d7ff', label:'Chain Static'},
+    thorns:{abbr:'THN', color:'#ff8a8a', label:'Reactive Armor'},
+    slowAura:{abbr:'SLW', color:'#82f2ff', label:'Gravity Leak'},
+    orbital:{abbr:'ORB', color:'#ffd06d', label:'Orbiting Scrap'},
+    lootBoost:{abbr:'LUT', color:'#fff07c', label:'Cache Magnet'}
+  };
   function chooseLockdownModifier(e){
     e.abilities ||= {};
     e.abilityStacks ||= {};
@@ -5581,7 +5595,7 @@
   function lockdownMobileCompact(){ return !!(window.matchMedia && (window.matchMedia('(max-width:720px)').matches || window.matchMedia('(pointer: coarse)').matches)); }
   function maybeTriggerVectorLockdown(){ if(vectorLockdownBlocked()) return; const now=Date.now(); if(now-(state.rogueLastAt||0)<70000) return; if(Math.random()>0.085) return; startVectorLockdownWarning(); }
   function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
-  function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; ensureRogueHud().classList.add('hidden'); renderAll(); }
+  function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); renderAll(); }
 
   function lockdownArenaBounds(cx=state.player.x, cy=state.player.y){
     const w=mapWidth(), h=mapHeight();
@@ -5640,6 +5654,7 @@
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     if($('lockdownText')) $('lockdownText').textContent=lockdownMobileCompact()?'Free-roam event incoming':'Free-roam survival incoming. Normal battles/NPCs/items pause during the mini-game.';
     if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 100</span>';
+    if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML='';
     if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML='<span>Move anywhere. Auto-fire starts when the surge begins.</span>';
   }
   function tickVectorLockdownWarning(){
@@ -5655,6 +5670,7 @@
     window._avLockdownWarningTimer=null;
     document.body.classList.remove('vector-lockdown-warning');
     document.body.classList.add('vector-lockdown-active');
+    state.rogueHudMode='active';
     const now=Date.now(); const stats=combatStatBlock(); const tier=lockdownTier(); const opBonus=lockdownOperatorBonus();
     const maxHp=Math.max(1,stats.maxHp||state.player.maxHp||60)+(opBonus.hp||0);
     state.player.hp=Math.min(maxHp, Math.max(1,state.player.hp||maxHp));
@@ -5764,6 +5780,7 @@
     const why = String(reason || 'runtime guard');
     state.rogueWarning = {active:false, cancelledAt:Date.now()};
     state.rogueEvent = {active:false, abortedAt:Date.now(), reason:why};
+    state.rogueHudMode=null;
     ensureRogueHud().classList.add('hidden');
     console.error('[AV] Vector Lockdown aborted:', why);
     log(`VECTOR LOCKDOWN ABORTED: ${why}`);
@@ -5907,6 +5924,37 @@
     const bar=$('lockdownHpBar'); if(bar) bar.style.width=`${pct}%`;
   }
 
+  function formatLockdownIconValue(key, e){
+    const a=e?.abilities||{};
+    if(key==='shots') return `x${e?.projectileCount||1}`;
+    if(key==='damage') return `${e?.projectileDamage||0}`;
+    if(key==='rate') return `${Math.round(1000/Math.max(1,e?.fireRate||1)*10)/10}/s`;
+    if(key==='velocity') return `${Math.round((e?.projectileSpeed||0)*10)/10}`;
+    if(key==='pierce') return `x${e?.pierce||0}`;
+    if(key==='healOnKill') return `${Math.round((a.healOnKill||0)*100)}%`;
+    if(key==='critChance') return `${Math.round((a.critChance||0)*100)}%`;
+    if(key==='chainLightning') return `${Math.round((a.chainLightning||0)*100)}%`;
+    if(key==='thorns') return `${Math.round((a.thorns||0)*100)}%`;
+    if(key==='slowAura') return `${Math.round((a.slowAura||0)*100)}%`;
+    if(key==='orbital') return `x${Math.floor(a.orbital||0)}`;
+    if(key==='lootBoost') return `+${Math.round((a.lootBoost||0)*100)}%`;
+    return '';
+  }
+  function renderLockdownIconStrip(e){
+    const host=$('lockdownIconStrip');
+    if(!host || !e) return;
+    const keys=['shots','damage','rate','velocity','pierce'];
+    const abilityOrder=['healOnKill','critChance','chainLightning','thorns','slowAura','orbital','lootBoost'];
+    abilityOrder.forEach(k=>{ if((e.abilities?.[k]||0)>0) keys.push(k); });
+    const compact=lockdownMobileCompact();
+    const slice=compact ? 7 : 12;
+    host.innerHTML=keys.slice(0,slice).map(key=>{
+      const meta=LOCKDOWN_ICON_DEFS[key]||{abbr:key.slice(0,3).toUpperCase(),color:'#bff6ff',label:key};
+      const val=formatLockdownIconValue(key,e);
+      return `<div class="lockdown-icon-chip" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}"><b>${safeHtml(meta.abbr)}</b><small>${safeHtml(val)}</small></div>`;
+    }).join('');
+  }
+
   function lockdownAbilitySummary(e){
     if(!e?.abilities) return '';
     const a=e.abilities;
@@ -5922,19 +5970,52 @@
   }
 
   function updateVectorLockdownHud(){
-    const e=state.rogueEvent; const hud=ensureRogueHud(); if(!e?.active){ hud.classList.add('hidden'); return; }
+    const e=state.rogueEvent; const hud=ensureRogueHud();
+    if(!e?.active){
+      if(state.rogueHudMode==='reward' || state.rogueHudMode==='failed') return;
+      hud.classList.add('hidden');
+      return;
+    }
     updateLockdownHpHud(); const compact=lockdownMobileCompact();
     if($('lockdownKicker')) $('lockdownKicker').textContent=compact?(e.tier?.name||'LOCKDOWN'):`VECTOR LOCKDOWN // ${e.tier?.name||'SURGE'}`;
     const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000));
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     if($('lockdownText')) $('lockdownText').textContent=compact?`${e.operatorBonus?.label||'Auto-fire'} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // ${e.operatorBonus?.label||'Auto-fire online'}. Normal interactions paused. Cap ${e.maxHostiles||100}.`;
     if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span><span>${Math.round(1000/e.fireRate*10)/10}/s</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Threat ${e.threatLevel||1}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
+    renderLockdownIconStrip(e);
     const hist=(e.upgradeHistory||[]).slice(compact?-4:-9);
     const histHtml=hist.length ? hist.map(h=>`<span style="border-color:${h.type==='debuff'?'rgba(255,48,72,.75)':(h.type==='ability'?'rgba(112,215,255,.62)':'rgba(55,247,165,.6)')};color:${h.type==='debuff'?'#ff8b99':(h.type==='ability'?'#bff6ff':'#baffea')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?' x'+h.stack:''}</span>`).join('') : '<span>First buff/debuff roll incoming...</span>';
     const abilityHtml=lockdownAbilitySummary(e);
     if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=histHtml + abilityHtml;
   }
-  function failVectorLockdown(killer=null){ const e=state.rogueEvent||{}; if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; document.body.classList.remove('vector-lockdown-active'); state.deaths=(state.deaths||0)+1; state.player.hp=0; const killerName=killer?.name || 'lockdown swarm'; const hud=ensureRogueHud(); hud.classList.remove('hidden'); hud.innerHTML=`<div class="lockdown-card avos-crt"><div class="record-kicker">VECTOR LOCKDOWN FAILED</div><h2>OPERATOR DOWN</h2><p>${safeHtml(killerName)} overwhelmed the operator. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>HP 0/${Math.max(1,e.playerMaxHp||combatStatBlock().maxHp||60)}</span><span>Deaths ${state.deaths}</span><span>No event rewards</span></div><button id="lockdownRetryBtn">Emergency Reboot</button></div>`; log(`VECTOR LOCKDOWN FAILED: operator downed by ${killerName}.`); toast('Vector Lockdown failed. Operator down.'); state.rogueEvent={active:false,failedAt:Date.now(),kills:e.kills||0}; pulseObjective('Operator down — emergency reboot required.'); const reboot=()=>{ const restored=restoreCheckpoint(); if(!restored) loadStage(currentStageKey(),{force:true}); const caps=combatStatBlock(); state.player.hp=caps.maxHp; state.player.ep=caps.maxEp||state.player.maxEp; ensureRogueHud().classList.add('hidden'); renderAll(); queueAutosave(); }; setTimeout(()=>{ const btn=$('lockdownRetryBtn'); if(btn) btn.onclick=reboot; },0); renderAll(); }
+  function failVectorLockdown(killer=null){
+    const e=state.rogueEvent||{};
+    if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
+    window._avLockdownTimer=null;
+    document.body.classList.remove('vector-lockdown-active');
+    state.deaths=(state.deaths||0)+1;
+    state.player.hp=0;
+    const killerName=killer?.name || 'lockdown swarm';
+    const hud=ensureRogueHud();
+    hud.classList.remove('hidden');
+    state.rogueHudMode='failed';
+    hud.innerHTML=`<div class="lockdown-card avos-crt"><div class="record-kicker">VECTOR LOCKDOWN FAILED</div><h2>OPERATOR DOWN</h2><p>${safeHtml(killerName)} overwhelmed the operator. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>HP 0/${Math.max(1,e.playerMaxHp||combatStatBlock().maxHp||60)}</span><span>Deaths ${state.deaths}</span><span>No event rewards</span></div><button id="lockdownRetryBtn">Emergency Reboot</button></div>`;
+    log(`VECTOR LOCKDOWN FAILED: operator downed by ${killerName}.`);
+    toast('Vector Lockdown failed. Operator down.');
+    state.rogueEvent={active:false,failedAt:Date.now(),kills:e.kills||0};
+    pulseObjective('Operator down — emergency reboot required.');
+    const reboot=()=>{
+      const restored=restoreCheckpoint();
+      if(!restored) loadStage(currentStageKey(),{force:true});
+      const caps=combatStatBlock();
+      state.player.hp=caps.maxHp; state.player.ep=caps.maxEp||state.player.maxEp;
+      state.rogueHudMode=null;
+      ensureRogueHud().classList.add('hidden');
+      renderAll(); queueAutosave();
+    };
+    setTimeout(()=>{ const btn=$('lockdownRetryBtn'); if(btn) btn.onclick=reboot; },0);
+    renderAll();
+  }
   function completeVectorLockdown(){
     const e=state.rogueEvent||{};
     if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
@@ -5965,13 +6046,14 @@
     }).join('');
     const healText=e.healed?`<span>Blood Circuit healed ${Math.round(e.healed)} HP</span>`:'';
     const hud=ensureRogueHud();
+    state.rogueHudMode='reward';
     hud.classList.remove('hidden');
     hud.innerHTML=`<div class="lockdown-card avos-crt lockdown-reward-card"><div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Threat ${e.threatLevel||1}</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Stacked Abilities This Run</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div><button id="lockdownContinueBtn">Continue</button></div>`;
     log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} kills, +${opXp} operator XP, +${playerXp} player XP, rewards — ${won.join(', ')}.`);
     toast(`Vector Lockdown cleared: +${opXp} Operator XP, +${playerXp} XP.`);
     state.rogueEvent={active:false,lastRewards:won,lastRewardSummary:{opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:e.abilityStacks||{}},clearedAt:Date.now(),kills:e.kills||0};
     pulseObjective(`Lockdown cleared: +${opXp} operator XP // +${playerXp} XP`);
-    setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ ensureRogueHud().classList.add('hidden'); renderAll(); }; },0);
+    setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ state.rogueHudMode=null; ensureRogueHud().classList.add('hidden'); renderAll(); }; },0);
     renderAll(); queueAutosave();
   }
 
