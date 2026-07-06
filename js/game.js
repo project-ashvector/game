@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.84';
-  const BUILD_TITLE = 'PIP CHARACTER UNLOCK PASS';
+  const BUILD_VERSION = '0.9.85';
+  const BUILD_TITLE = 'DEX CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3674,6 +3674,72 @@
         }
       }
     }
+,
+
+    dex: {
+      id: 'dex',
+      code: 'AV-008',
+      displayName: 'Dex Deadbolt Rusk',
+      codename: 'DOOR-BREAKER',
+      title: 'Door-Breaker',
+      meta: 'Operator Unit 008 • Door-Breaker • Locked',
+      quote: '“I respect locked doors. Then I respectfully remove them from the wall.”',
+      className: 'Door-Breaker',
+      affinity: 'Impact / Entry',
+      rarity: 'Unlockable / Breach Prototype',
+      clearance: 'Level 28',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Dex',
+      shardName: 'Operator Shard: Dex',
+      shardCost: 95,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/dex/portrait.png',
+      battle: 'assets/operators/dex/battle.png',
+      avatar: 'assets/operators/dex/avatar.png',
+      icon: 'assets/operators/dex/icon.png',
+      menu: 'assets/operators/dex/menu.png',
+      profile: 'assets/operators/dex/profile.png',
+      operatorCard: 'assets/operators/dex/operator_card.png',
+      partyIcon: 'assets/operators/dex/party_icon.png',
+      battleIcon: 'assets/operators/dex/battle_icon.png',
+      spriteSheet: 'assets/operators/dex/sprite_sheet.png',
+      mapSprite: 'assets/operators/dex/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/dex/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/dex/weapon.png',
+      rotations: {
+        down: 'assets/operators/dex/sprites/rotations/south.png',
+        downRight: 'assets/operators/dex/sprites/rotations/south-east.png',
+        right: 'assets/operators/dex/sprites/rotations/east.png',
+        upRight: 'assets/operators/dex/sprites/rotations/north-east.png',
+        up: 'assets/operators/dex/sprites/rotations/north.png',
+        upLeft: 'assets/operators/dex/sprites/rotations/north-west.png',
+        left: 'assets/operators/dex/sprites/rotations/west.png',
+        downLeft: 'assets/operators/dex/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/dex/sprites/animations/walking/south/frame_000.png','assets/operators/dex/sprites/animations/walking/south/frame_001.png','assets/operators/dex/sprites/animations/walking/south/frame_002.png','assets/operators/dex/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/dex/sprites/animations/walking/south-east/frame_000.png','assets/operators/dex/sprites/animations/walking/south-east/frame_001.png','assets/operators/dex/sprites/animations/walking/south-east/frame_002.png','assets/operators/dex/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/dex/sprites/animations/walking/east/frame_000.png','assets/operators/dex/sprites/animations/walking/east/frame_001.png','assets/operators/dex/sprites/animations/walking/east/frame_002.png','assets/operators/dex/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/dex/sprites/animations/walking/north-east/frame_000.png','assets/operators/dex/sprites/animations/walking/north-east/frame_001.png','assets/operators/dex/sprites/animations/walking/north-east/frame_002.png','assets/operators/dex/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/dex/sprites/animations/walking/north/frame_000.png','assets/operators/dex/sprites/animations/walking/north/frame_001.png','assets/operators/dex/sprites/animations/walking/north/frame_002.png','assets/operators/dex/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/dex/sprites/animations/walking/north-west/frame_000.png','assets/operators/dex/sprites/animations/walking/north-west/frame_001.png','assets/operators/dex/sprites/animations/walking/north-west/frame_002.png','assets/operators/dex/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/dex/sprites/animations/walking/west/frame_000.png','assets/operators/dex/sprites/animations/walking/west/frame_001.png','assets/operators/dex/sprites/animations/walking/west/frame_002.png','assets/operators/dex/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/dex/sprites/animations/walking/south-west/frame_000.png','assets/operators/dex/sprites/animations/walking/south-west/frame_001.png','assets/operators/dex/sprites/animations/walking/south-west/frame_002.png','assets/operators/dex/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/dex/sprites/animations/idle/south/frame_000.png','assets/operators/dex/sprites/animations/idle/south/frame_001.png','assets/operators/dex/sprites/animations/idle/south/frame_002.png','assets/operators/dex/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/dex/sprites/animations/idle/south-east/frame_000.png','assets/operators/dex/sprites/animations/idle/south-east/frame_001.png','assets/operators/dex/sprites/animations/idle/south-east/frame_002.png','assets/operators/dex/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/dex/sprites/animations/idle/east/frame_000.png','assets/operators/dex/sprites/animations/idle/east/frame_001.png','assets/operators/dex/sprites/animations/idle/east/frame_002.png','assets/operators/dex/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/dex/sprites/animations/idle/north-east/frame_000.png','assets/operators/dex/sprites/animations/idle/north-east/frame_001.png','assets/operators/dex/sprites/animations/idle/north-east/frame_002.png','assets/operators/dex/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/dex/sprites/animations/idle/north/frame_000.png','assets/operators/dex/sprites/animations/idle/north/frame_001.png','assets/operators/dex/sprites/animations/idle/north/frame_002.png','assets/operators/dex/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/dex/sprites/animations/idle/north-west/frame_000.png','assets/operators/dex/sprites/animations/idle/north-west/frame_001.png','assets/operators/dex/sprites/animations/idle/north-west/frame_002.png','assets/operators/dex/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/dex/sprites/animations/idle/west/frame_000.png','assets/operators/dex/sprites/animations/idle/west/frame_001.png','assets/operators/dex/sprites/animations/idle/west/frame_002.png','assets/operators/dex/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/dex/sprites/animations/idle/south-west/frame_000.png','assets/operators/dex/sprites/animations/idle/south-west/frame_001.png','assets/operators/dex/sprites/animations/idle/south-west/frame_002.png','assets/operators/dex/sprites/animations/idle/south-west/frame_003.png']
+        }
+      }
+    }
 };
 
   const CHARACTER_SHARD_BASE_CHANCE = 0.04;
@@ -3923,7 +3989,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 174;
+  const SAVE_SCHEMA_VERSION = 175;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
