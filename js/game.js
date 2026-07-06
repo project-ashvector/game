@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.88';
-  const BUILD_TITLE = 'TILDA CHARACTER UNLOCK PASS';
+  const BUILD_VERSION = '0.9.89';
+  const BUILD_TITLE = 'TRAINING OBJECT ART PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1107,6 +1107,134 @@
       {label:'Admin Ghost Terminal', item:'Admin Ghost Key', xp:35, glyph:'▣', verb:'hacked'}
     ]
   };
+
+  const TRAINING_OBJECT_ASSETS = {
+    "Ash Pebble Pile": "assets/training/objects/cryptomining/ash_pebble_pile.png",
+    "Ash Ore Vein": "assets/training/objects/cryptomining/ash_ore_vein.png",
+    "Dense Ash Vein": "assets/training/objects/cryptomining/dense_ash_vein.png",
+    "Vector Crystal Seam": "assets/training/objects/cryptomining/vector_crystal_seam.png",
+    "Obsidian Core Deposit": "assets/training/objects/cryptomining/obsidian_core_deposit.png",
+    "Static Packet Stream": "assets/training/objects/datafishing/static_packet_stream.png",
+    "Encrypted Data Stream": "assets/training/objects/datafishing/encrypted_data_stream.png",
+    "Ghost Log Pool": "assets/training/objects/datafishing/ghost_log_pool.png",
+    "Blackbox Signal": "assets/training/objects/datafishing/blackbox_signal.png",
+    "Deep Archive Current": "assets/training/objects/datafishing/deep_archive_current.png",
+    "Wire Scrap Bench": "assets/training/objects/codecraft/wire_scrap_bench.png",
+    "Circuit Scrap Bench": "assets/training/objects/codecraft/circuit_scrap_bench.png",
+    "Logic Board Station": "assets/training/objects/codecraft/logic_board_station.png",
+    "Quantum Relay Rack": "assets/training/objects/codecraft/quantum_relay_rack.png",
+    "Null Module Forge": "assets/training/objects/codecraft/null_module_forge.png",
+    "Spore Sample Pod": "assets/training/objects/forgenetics/spore_sample_pod.png",
+    "Mutagen Sample Pod": "assets/training/objects/forgenetics/mutagen_sample_pod.png",
+    "Mutated Tissue Bloom": "assets/training/objects/forgenetics/mutated_tissue_bloom.png",
+    "Vector DNA Bloom": "assets/training/objects/forgenetics/vector_dna_bloom.png",
+    "Ash Genome Vat": "assets/training/objects/forgenetics/ash_genome_vat.png",
+    "Broken Token Relay": "assets/training/objects/system_hacking/broken_token_relay.png",
+    "Access Fragment Relay": "assets/training/objects/system_hacking/access_fragment_relay.png",
+    "Security Keybit Panel": "assets/training/objects/system_hacking/security_keybit_panel.png",
+    "Root Cipher Console": "assets/training/objects/system_hacking/root_cipher_console.png",
+    "Admin Ghost Terminal": "assets/training/objects/system_hacking/admin_ghost_terminal.png",
+  };
+  const TRAINING_ITEM_ASSETS = {
+    "Ash Pebble": "assets/training/items/cryptomining/ash_pebble.png",
+    "Ash Ore": "assets/training/items/cryptomining/ash_ore.png",
+    "Dense Ash Ore": "assets/training/items/cryptomining/dense_ash_ore.png",
+    "Vector Crystal": "assets/training/items/cryptomining/vector_crystal.png",
+    "Obsidian Core Ore": "assets/training/items/cryptomining/obsidian_core_ore.png",
+    "Static Packet": "assets/training/items/datafishing/static_packet.png",
+    "Encrypted Data": "assets/training/items/datafishing/encrypted_data.png",
+    "Ghost Log": "assets/training/items/datafishing/ghost_log.png",
+    "Blackbox File": "assets/training/items/datafishing/blackbox_file.png",
+    "Deep Archive Packet": "assets/training/items/datafishing/deep_archive_packet.png",
+    "Wire Scrap": "assets/training/items/codecraft/wire_scrap.png",
+    "Circuit Scrap": "assets/training/items/codecraft/circuit_scrap.png",
+    "Logic Board": "assets/training/items/codecraft/logic_board.png",
+    "Quantum Relay": "assets/training/items/codecraft/quantum_relay.png",
+    "Null Module Part": "assets/training/items/codecraft/null_module_part.png",
+    "Spore Sample": "assets/training/items/forgenetics/spore_sample.png",
+    "Mutagen Sample": "assets/training/items/forgenetics/mutagen_sample.png",
+    "Mutated Tissue": "assets/training/items/forgenetics/mutated_tissue.png",
+    "Vector DNA": "assets/training/items/forgenetics/vector_dna.png",
+    "Ash Genome Strand": "assets/training/items/forgenetics/ash_genome_strand.png",
+    "Broken Token": "assets/training/items/system_hacking/broken_token.png",
+    "Access Fragment": "assets/training/items/system_hacking/access_fragment.png",
+    "Security Keybit": "assets/training/items/system_hacking/security_keybit.png",
+    "Root Cipher": "assets/training/items/system_hacking/root_cipher.png",
+    "Admin Ghost Key": "assets/training/items/system_hacking/admin_ghost_key.png",
+  };
+  const TRAINING_ITEM_SKILLS = {
+    "Ash Pebble": "cryptomining",
+    "Ash Ore": "cryptomining",
+    "Dense Ash Ore": "cryptomining",
+    "Vector Crystal": "cryptomining",
+    "Obsidian Core Ore": "cryptomining",
+    "Static Packet": "datafishing",
+    "Encrypted Data": "datafishing",
+    "Ghost Log": "datafishing",
+    "Blackbox File": "datafishing",
+    "Deep Archive Packet": "datafishing",
+    "Wire Scrap": "codecraft",
+    "Circuit Scrap": "codecraft",
+    "Logic Board": "codecraft",
+    "Quantum Relay": "codecraft",
+    "Null Module Part": "codecraft",
+    "Spore Sample": "forgenetics",
+    "Mutagen Sample": "forgenetics",
+    "Mutated Tissue": "forgenetics",
+    "Vector DNA": "forgenetics",
+    "Ash Genome Strand": "forgenetics",
+    "Broken Token": "system_hacking",
+    "Access Fragment": "system_hacking",
+    "Security Keybit": "system_hacking",
+    "Root Cipher": "system_hacking",
+    "Admin Ghost Key": "system_hacking",
+  };
+  const TRAINING_ITEM_RARITY = {
+    "Ash Pebble": "Common",
+    "Ash Ore": "Common",
+    "Dense Ash Ore": "Uncommon",
+    "Vector Crystal": "Rare",
+    "Obsidian Core Ore": "Epic",
+    "Static Packet": "Common",
+    "Encrypted Data": "Common",
+    "Ghost Log": "Uncommon",
+    "Blackbox File": "Rare",
+    "Deep Archive Packet": "Epic",
+    "Wire Scrap": "Common",
+    "Circuit Scrap": "Common",
+    "Logic Board": "Uncommon",
+    "Quantum Relay": "Rare",
+    "Null Module Part": "Epic",
+    "Spore Sample": "Common",
+    "Mutagen Sample": "Common",
+    "Mutated Tissue": "Uncommon",
+    "Vector DNA": "Rare",
+    "Ash Genome Strand": "Epic",
+    "Broken Token": "Common",
+    "Access Fragment": "Common",
+    "Security Keybit": "Uncommon",
+    "Root Cipher": "Rare",
+    "Admin Ghost Key": "Epic",
+  };
+  function trainingBaseName(name=''){
+    return String(name||'').replace(/^F-\d{3}\s+/, '').trim();
+  }
+  function trainingObjectAssetForLabel(label=''){
+    return TRAINING_OBJECT_ASSETS[trainingBaseName(label)] || null;
+  }
+  function trainingItemAssetForName(name=''){
+    return TRAINING_ITEM_ASSETS[trainingBaseName(name)] || null;
+  }
+  function trainingSkillForItemName(name=''){
+    return TRAINING_ITEM_SKILLS[trainingBaseName(name)] || null;
+  }
+  function trainingRarityForItemName(name=''){
+    return TRAINING_ITEM_RARITY[trainingBaseName(name)] || 'Common';
+  }
+  function trainingAssetPaths(){
+    return [...Object.values(TRAINING_OBJECT_ASSETS), ...Object.values(TRAINING_ITEM_ASSETS)];
+  }
+
   function stageSkillReqStart(key=currentStageKey()){
     return Math.max(1, (stageNumberFromKey(key)-1)*5 + 1);
   }
@@ -1131,8 +1259,12 @@
     const stage=stageNumberFromKey(stageKey);
     return {
       ...base,
+      baseLabel: base.label,
+      baseItem: base.item,
       label:stageTrainingLabel(base, stageKey),
       item:stageTrainingItemName(base, stageKey),
+      asset: trainingObjectAssetForLabel(base.label),
+      itemAsset: trainingItemAssetForName(base.item),
       skill,
       color:SKILL_COLOR[skill] || '#ffffff',
       tier,
@@ -4170,6 +4302,7 @@
     const paths = [
       ...Object.values(OPERATOR_DEFS).flatMap(op=>operatorAssetPaths(op)),
       ...legacyOperatorAssetPaths(),
+      ...trainingAssetPaths(),
       ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
       ...mapArt.blocked,
@@ -4187,7 +4320,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 178;
+  const SAVE_SCHEMA_VERSION = 179;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -6755,23 +6888,39 @@
 
     ctx.shadowColor=highlight;
     ctx.shadowBlur=near?18:10;
-    ctx.fillStyle=fill;
-    ctx.globalAlpha=.96;
-    ctx.beginPath();
-    ctx.roundRect ? ctx.roundRect(x+9,y+8,24,24,6) : ctx.rect(x+9,y+8,24,24);
-    ctx.fill();
-    ctx.globalAlpha=1;
+    const asset=trainingObjectAssetForLabel(node.baseLabel || node.label);
+    const im=asset && images[asset];
 
-    ctx.shadowBlur=0;
-    ctx.strokeStyle=highlight;
-    ctx.lineWidth=near?3:2;
-    ctx.strokeRect(x+8.5,y+7.5,25,25);
+    if(im && im.complete && im.naturalWidth){
+      const oldSmooth=ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled=true;
+      ctx.globalAlpha=.98;
+      ctx.drawImage(im, x+4, y+1, TILE-8, TILE-3);
+      ctx.globalAlpha=1;
+      ctx.imageSmoothingEnabled=oldSmooth;
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=highlight;
+      ctx.lineWidth=near?3:2;
+      ctx.strokeRect(x+5.5,y+3.5,TILE-11,TILE-7);
+    } else {
+      ctx.fillStyle=fill;
+      ctx.globalAlpha=.96;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x+9,y+8,24,24,6) : ctx.rect(x+9,y+8,24,24);
+      ctx.fill();
+      ctx.globalAlpha=1;
 
-    ctx.fillStyle='#061018';
-    ctx.font='bold 18px monospace';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText(node.glyph, x+TILE/2, y+20);
+      ctx.shadowBlur=0;
+      ctx.strokeStyle=highlight;
+      ctx.lineWidth=near?3:2;
+      ctx.strokeRect(x+8.5,y+7.5,25,25);
+
+      ctx.fillStyle='#061018';
+      ctx.font='bold 18px monospace';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(node.glyph, x+TILE/2, y+20);
+    }
 
     // Small status dot on every object so lock state is readable even zoomed out.
     ctx.fillStyle=highlight;
@@ -7095,7 +7244,35 @@
 
   function findItemRecord(name){
     const found = coreItemRegistry.find(i=>i.name===name) || importedItemRegistry.find(i=>i.name===name);
-    if(found) return normalizeItem(found);
+    const skillAsset = trainingItemAssetForName(name);
+    const skill = trainingSkillForItemName(name);
+    const baseName = trainingBaseName(name);
+    if(found){
+      const normalized = normalizeItem(found);
+      if(skillAsset){
+        normalized.asset = skillAsset;
+        normalized.source = skillAsset;
+        normalized.status = 'training-item-art';
+      }
+      return normalized;
+    }
+    if(skillAsset){
+      const skillName = skillList[skill]?.name || 'Skill Resource';
+      return normalizeItem({
+        id:`SKILL-${baseName.toUpperCase().replace(/[^A-Z0-9]+/g,'-')}`,
+        name,
+        type:'Material',
+        category:skillName,
+        slot:'Stack',
+        rarity:trainingRarityForItemName(name),
+        stackSize:999,
+        sellPrice:Math.max(1, (trainingRarityForItemName(name)==='Epic'?22:trainingRarityForItemName(name)==='Rare'?14:trainingRarityForItemName(name)==='Uncommon'?6:1)),
+        asset:skillAsset,
+        source:skillAsset,
+        status:'training-item-art',
+        desc:`Recovered ${skillName} resource. Base item: ${baseName}.`
+      });
+    }
     return normalizeItem({name, asset:'assets/items/scrap_metal.png', rarity:'Common', type:'Recovered Asset', description:'Recovered item registered by AVOS.'});
   }
   function normalizeItem(item){
@@ -7128,7 +7305,7 @@
   function rarityClass(rarity){ return `rarity-${String(rarity||'common').toLowerCase().replace(/\s+/g,'-')}`; }
   function itemIconHtml(item, qty=''){
     const count = qty ? `<span class="item-qty">x${qty}</span>` : '';
-    return `<div class="item-icon-shell ${rarityClass(item.rarity)}"><img src="${item.asset}" alt="${item.name}">${count}</div>`;
+    return `<div class="item-icon-shell ${rarityClass(item.rarity)}"><img src="${item.asset}" alt="${item.name}" onerror="this.onerror=null;this.src='assets/items/scrap_metal.png'">${count}</div>`;
   }
   function bankInventoryHtml(){
     const entries=Object.entries(state.inventory || {}).sort((a,b)=>{
