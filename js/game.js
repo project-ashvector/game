@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.77';
-  const BUILD_TITLE = 'RIVET CHARACTER UNLOCK PASS';
+  const BUILD_VERSION = '0.9.78';
+  const BUILD_TITLE = 'MOXIE CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3360,6 +3360,72 @@
         }
       }
     }
+,
+
+    moxie: {
+      id: 'moxie',
+      code: 'AV-004',
+      displayName: 'Moxie Grin',
+      codename: 'JUNK MEDIC',
+      title: 'Junkyard Medic',
+      meta: 'Operator Unit 004 • Junkyard Medic • Locked',
+      quote: '“Good news: you survived. Bad news: I learned medicine from a vending machine.”',
+      className: 'Junkyard Medic',
+      affinity: 'Bio-Scrap / Recovery',
+      rarity: 'Unlockable / Medic Prototype',
+      clearance: 'Level 15',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Moxie',
+      shardName: 'Operator Shard: Moxie',
+      shardCost: 55,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/moxie/portrait.png',
+      battle: 'assets/operators/moxie/battle.png',
+      avatar: 'assets/operators/moxie/avatar.png',
+      icon: 'assets/operators/moxie/icon.png',
+      menu: 'assets/operators/moxie/menu.png',
+      profile: 'assets/operators/moxie/profile.png',
+      operatorCard: 'assets/operators/moxie/operator_card.png',
+      partyIcon: 'assets/operators/moxie/party_icon.png',
+      battleIcon: 'assets/operators/moxie/battle_icon.png',
+      spriteSheet: 'assets/operators/moxie/sprite_sheet.png',
+      mapSprite: 'assets/operators/moxie/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/moxie/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/moxie/weapon.png',
+      rotations: {
+        down: 'assets/operators/moxie/sprites/rotations/south.png',
+        downRight: 'assets/operators/moxie/sprites/rotations/south-east.png',
+        right: 'assets/operators/moxie/sprites/rotations/east.png',
+        upRight: 'assets/operators/moxie/sprites/rotations/north-east.png',
+        up: 'assets/operators/moxie/sprites/rotations/north.png',
+        upLeft: 'assets/operators/moxie/sprites/rotations/north-west.png',
+        left: 'assets/operators/moxie/sprites/rotations/west.png',
+        downLeft: 'assets/operators/moxie/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/moxie/sprites/animations/walking/south/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/south/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/south/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/moxie/sprites/animations/walking/south-east/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/south-east/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/south-east/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/moxie/sprites/animations/walking/east/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/east/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/east/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/moxie/sprites/animations/walking/north-east/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/north-east/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/north-east/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/moxie/sprites/animations/walking/north/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/north/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/north/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/moxie/sprites/animations/walking/north-west/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/north-west/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/north-west/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/moxie/sprites/animations/walking/west/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/west/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/west/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/moxie/sprites/animations/walking/south-west/frame_000.png', 'assets/operators/moxie/sprites/animations/walking/south-west/frame_001.png', 'assets/operators/moxie/sprites/animations/walking/south-west/frame_002.png', 'assets/operators/moxie/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/moxie/sprites/animations/idle/south/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/south/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/south/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/moxie/sprites/animations/idle/south-east/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/south-east/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/south-east/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/moxie/sprites/animations/idle/east/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/east/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/east/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/moxie/sprites/animations/idle/north-east/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/north-east/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/north-east/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/moxie/sprites/animations/idle/north/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/north/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/north/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/moxie/sprites/animations/idle/north-west/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/north-west/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/north-west/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/moxie/sprites/animations/idle/west/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/west/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/west/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/moxie/sprites/animations/idle/south-west/frame_000.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_001.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_002.png', 'assets/operators/moxie/sprites/animations/idle/south-west/frame_003.png']
+        }
+      }
+    }
 
   };
 
@@ -3568,7 +3634,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 167;
+  const SAVE_SCHEMA_VERSION = 168;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
