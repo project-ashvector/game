@@ -2556,11 +2556,45 @@ body.game-active .layout{gap:12px;padding:12px;background:radial-gradient(circle
 @media(max-width:980px){body.game-active .layout{padding:8px;gap:8px;}.panel{border-left:0;border-top:1px solid rgba(112,215,255,.14);grid-template-columns:1fr;}.top-actions button{font-size:11px;min-height:32px;padding:7px 9px;}.vector-lockdown-hud{top:auto;right:10px;bottom:92px;width:calc(100vw - 20px);}}@media(max-width:560px){.top-actions{display:grid;grid-template-columns:repeat(3,1fr);width:100%;}.top-actions button{font-size:10px;padding:6px;}.hero-card{grid-template-columns:52px 1fr;}.hero-card img{width:52px;height:52px;}.quick-bag-grid{grid-template-columns:repeat(3,1fr);}.panel>div{padding:8px;}}
 
 
-/* v184: clearer Vector Lockdown survival HUD */
-.vector-lockdown-active canvas#game{filter:contrast(1.14) saturate(.95) brightness(.72) drop-shadow(0 0 20px rgba(255,48,72,.22));}
-.vector-lockdown-active .game-card{box-shadow:0 0 0 1px rgba(255,48,72,.38),0 0 36px rgba(255,48,72,.18),inset 0 0 35px rgba(255,48,72,.10)!important;}
-.lockdown-card{outline:1px solid rgba(255,255,255,.08);}
-.lockdown-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 10px;}
-.lockdown-stats span{border:1px solid rgba(255,48,72,.28);border-radius:10px;background:rgba(255,48,72,.10);padding:6px 8px;font:800 11px/1.1 monospace;color:#fff;}
-.lockdown-upgrades span:first-child{border-color:rgba(255,48,72,.55);background:rgba(255,48,72,.13);}
-@media(max-width:560px){.lockdown-stats{grid-template-columns:repeat(3,minmax(0,1fr));}.lockdown-stats span{font-size:10px;padding:5px 6px;}}
+/* v191: phone scaling + lockdown visibility rescue */
+@media (max-width:900px), (pointer:coarse){
+  body.game-active canvas#game{
+    object-fit:contain!important;
+    image-rendering:auto!important;
+    background:#000!important;
+  }
+  body.vector-lockdown-active canvas#game,
+  body.vector-lockdown-warning canvas#game{
+    filter:brightness(1.08) saturate(1.05) contrast(1.06)!important;
+  }
+  body.vector-lockdown-active .mobile-pad,
+  body.vector-lockdown-warning .mobile-pad{
+    transform:scale(.86)!important;
+    transform-origin:bottom left!important;
+    opacity:.70!important;
+  }
+  body.vector-lockdown-active .mobile-action-pad,
+  body.vector-lockdown-warning .mobile-action-pad{
+    transform:scale(.84)!important;
+    transform-origin:bottom right!important;
+    opacity:.62!important;
+  }
+  body.vector-lockdown-active .fs-persistent-stats,
+  body.vector-lockdown-warning .fs-persistent-stats,
+  body.vector-lockdown-active .fullscreen-quickbar,
+  body.vector-lockdown-warning .fullscreen-quickbar{display:none!important;}
+  body.vector-lockdown-active .toast,
+  body.vector-lockdown-warning .toast{bottom:calc(env(safe-area-inset-bottom) + 86px)!important;font-size:10px!important;padding:8px 10px!important;}
+}
+@media (max-width:430px) and (orientation:portrait){
+  body.vector-lockdown-active .vector-lockdown-hud,
+  body.vector-lockdown-warning .vector-lockdown-hud{top:max(34px, calc(env(safe-area-inset-top, 0px) + 28px))!important;}
+  body.vector-lockdown-active .mobile-pad,
+  body.vector-lockdown-warning .mobile-pad{transform:scale(.78)!important;}
+  body.vector-lockdown-active .mobile-action-pad,
+  body.vector-lockdown-warning .mobile-action-pad{transform:scale(.76)!important;}
+}
+@media (max-width:720px) and (orientation:landscape){
+  body.vector-lockdown-active .vector-lockdown-hud .lockdown-card,
+  body.vector-lockdown-warning .vector-lockdown-hud .lockdown-card{max-height:28svh!important;}
+}

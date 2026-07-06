@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Project: ASH VECTOR - v1.0.00 Developer Build</title>
+  <title>Project: ASH VECTOR - v1.0.01 Developer Build</title>
   <link rel="icon" type="image/png" href="assets/logos/favicon.png" />
-  <link rel="stylesheet" href="css/style.css?v=190" />
+  <link rel="stylesheet" href="css/style.css?v=191" />
 
   <style>
     #bootScreen.intro-video-playing #introVideoGate,
@@ -306,11 +306,11 @@
         justify-content:center;
       }
       .vector-lockdown-hud .lockdown-card{
-        width:min(430px, calc(100vw - 16px));
-        max-height:min(38svh, 230px);
+        width:min(360px, calc(100vw - 14px));
+        max-height:min(30svh, 176px);
         overflow:auto;
-        padding:9px 10px;
-        border-radius:13px;
+        padding:7px 8px;
+        border-radius:12px;
         -webkit-overflow-scrolling:touch;
       }
       .vector-lockdown-hud .record-kicker{font-size:clamp(9px,2.5vw,11px)!important;letter-spacing:.12em!important;margin-bottom:2px!important;}
@@ -324,9 +324,9 @@
         font-size:clamp(10px,2.8vw,12px)!important;
         line-height:1.15!important;
       }
-      .lockdown-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:5px;}
-      .lockdown-stats span,.lockdown-upgrades span{font-size:clamp(8px,2.25vw,10px)!important;padding:4px 5px!important;border-radius:7px;}
-      .lockdown-upgrades{gap:4px;margin-top:5px;max-height:42px;overflow:hidden;}
+      .lockdown-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin-top:4px;}
+      .lockdown-stats span,.lockdown-upgrades span{font-size:clamp(7px,2vw,9px)!important;padding:3px 4px!important;border-radius:6px;}
+      .lockdown-upgrades{gap:3px;margin-top:4px;max-height:28px;overflow:hidden;}
       body.vector-lockdown-active .tutorial-tip,
       body.vector-lockdown-warning .tutorial-tip{display:none!important;}
     }
@@ -348,7 +348,7 @@
     <video id="introVideo" class="intro-video" preload="auto" playsinline webkit-playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;z-index:1;" src="assets/video/intro.mp4?v=183"></video>
     <div id="introVideoShade" style="position:absolute;inset:0;z-index:2;background:radial-gradient(circle at 50% 40%, rgba(0,217,255,.10), rgba(0,0,0,.55) 58%, rgba(0,0,0,.88));pointer-events:none;"></div>
     <div id="introVideoGate" class="boot-terminal avos-crt" style="position:relative;z-index:3;max-width:760px;margin:auto;text-align:center;background:rgba(0,6,12,.78);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 32px rgba(0,217,255,.18);padding:28px;border-radius:18px;">
-      <div class="boot-header"><span>ASH VECTOR INTRO SEQUENCE</span><span id="bootBuildLabel">v1.0.00 // MOBILE LOCKDOWN SCALING PASS</span></div>
+      <div class="boot-header"><span>ASH VECTOR INTRO SEQUENCE</span><span id="bootBuildLabel">v1.0.01 // MOBILE LOCKDOWN FIX PASS</span></div>
       <div class="boot-lines" id="bootLines">&gt; Intro file detected: assets/video/intro.mp4
 &gt; Press Enter or tap the icon to open the fullscreen intro.
 &gt; Main menu opens after the full video completes.</div>
@@ -386,7 +386,7 @@
       </div>
       <div class="quick-start-hint">Press <b>Enter</b> or click <b>New Game</b> to start.</div>
       <div id="menuInfo" class="menu-info">Select a database protocol.</div><div id="saveStatus" class="menu-info">Save status checking...</div>
-      <div class="ui-kit-note"><b>AVOS UI KIT v1.0.00</b> // mobile lockdown scaling pass online</div>
+      <div class="ui-kit-note"><b>AVOS UI KIT v1.0.01</b> // mobile lockdown fix pass online</div>
     </div>
   </div>
 
