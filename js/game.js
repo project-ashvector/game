@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.91';
-  const BUILD_TITLE = 'LOCKED BOSS GATE ROUTE FIX PASS';
+  const BUILD_VERSION = '0.9.92';
+  const BUILD_TITLE = 'LEVEL 1 BOSS WING HARD FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -30,7 +30,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const MAP_VERSION = 'sector_stage_v12_v148_version_sync_cleanup';
+  const MAP_VERSION = 'sector_stage_v12_v182_boss_gate_hard_reset';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
     pause: 'assets/music/pause.mp3',
@@ -4321,7 +4321,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 181;
+  const SAVE_SCHEMA_VERSION = 182;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -5222,38 +5222,117 @@
     if(!path) return 0;
     return routeCarvePath(path,target);
   }
+  function routeBossGateForTarget(target){
+    const doors=[];
+    for(let y=2;y<mapHeight()-2;y++){
+      for(let x=2;x<rowLength(y)-2;x++){
+        if(tileAt(x,y)==='D'){
+          const dist=Math.abs(x-target.x)+Math.abs(y-target.y);
+          doors.push({x,y,dist});
+        }
+      }
+    }
+    doors.sort((a,b)=>a.dist-b.dist);
+    return doors[0] || null;
+  }
   function routeRepairBossTarget(target){
-    const bossUnlocked=!!state.flags?.bossUnlocked;
+    const bossUnlocked=!!(state.flags?.bossUnlocked || state.flags?.bossDefeated || state.flags?.chapterComplete);
+    // F-001 has a hand-authored hard fix above. Do not let generic wall-carving
+    // create another bypass around its locked boss gate.
+    if(currentStageKey()==='f001') return 0;
     let carved=0;
 
     if(bossUnlocked){
-      // After requirements are met, every level should be openly playable through to boss/exit.
-      let path=routePathTo(target,{doors:true,walls:true});
+      const path=routePathTo(target,{doors:true,walls:true});
       if(path) carved += routeCarvePath(path,target);
       return carved;
     }
 
-    // Before requirements: carve a valid corridor but lock it with a real D gate.
-    let path=routePathTo(target,{doors:true,walls:true});
-    if(!path) return 0;
-    carved += routeCarvePath(path,target);
-    const placed=routePlaceBossGate(path,target);
-    if(placed) carved++;
+    // Locked state: open the approach to a real D gate, but do not open the gate.
+    let gate=routeBossGateForTarget(target);
 
-    // Audit the final state: gate must be reachable, boss must be blocked until unlock.
-    const door=routeExistingReachableDoorNear(target);
-    if(!door){
-      // Fallback: place the gate closer to the middle if the first choice was not reachable.
-      path=routePathTo(target,{doors:true,walls:true});
-      if(path) routePlaceBossGate(path,target);
+    if(!gate){
+      const path=routePathTo(target,{doors:true,walls:true});
+      if(!path) return 0;
+      carved += routeCarvePath(path,target);
+      routePlaceBossGate(path,target);
+      gate=routeBossGateForTarget(target);
+      if(gate) carved++;
+    }
+
+    if(gate){
+      const pathToGate=routePathTo(gate,{doors:true,walls:true});
+      if(pathToGate) carved += routeCarvePath(pathToGate,gate);
+
+      // Make the boss side usable after the gate opens. Keep the gate itself as D.
+      const pathToBoss=routePathTo(target,{doors:true,walls:true});
+      if(pathToBoss) carved += routeCarvePath(pathToBoss,target);
+      setTile(gate.x,gate.y,'D');
+
+      // If a bypass exists without touching a door, put the gate directly on that bypass.
+      const bypass=routePathTo(target,{doors:false,walls:false});
+      if(bypass && bypass.length>3){
+        routePlaceBossGate(bypass,target);
+        carved++;
+      }
     }
     return carved;
   }
+
+  function forceOpenTile(x,y){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
+    const c=tileAt(x,y);
+    if(['S','E','B','X','C','H','L'].includes(c)) return 0;
+    if(c!=='.'){
+      setTile(x,y,'.');
+      return 1;
+    }
+    return 0;
+  }
+  function forceGateTile(x,y){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
+    const c=tileAt(x,y);
+    if(['S','E','B','X','C','H','L'].includes(c)) return 0;
+    if(state.flags?.bossUnlocked || state.flags?.bossDefeated || state.flags?.chapterComplete){
+      return forceOpenTile(x,y);
+    }
+    if(c!=='D'){
+      setTile(x,y,'D');
+      return 1;
+    }
+    return 0;
+  }
+  function hardFixF001BossWing(){
+    if(currentStageKey()!=='f001' || !state?.map) return 0;
+    let changed=0;
+    // Expanded F-001 hard fix: open the approach to the last/boss wing,
+    // then lock it with one real gate until the anomaly requirement is met.
+    for(let x=49;x<=54;x++) changed += forceOpenTile(x,25);
+    for(let y=26;y<=30;y++) changed += forceOpenTile(54,y);
+    changed += forceGateTile(54,31);
+    for(let x=55;x<=67;x++) changed += forceOpenTile(x,31);
+    for(let y=32;y<=36;y++){
+      for(let x=55;x<=67;x++){
+        changed += forceOpenTile(x,y);
+      }
+    }
+    // Remove the old multi-door trap below the main gate.
+    changed += forceOpenTile(54,32);
+    changed += forceOpenTile(54,33);
+    return changed;
+  }
+  function hardFixKnownBossRoutes(){
+    let changed=0;
+    changed += hardFixF001BossWing();
+    return changed;
+  }
+
   function repairMissionRoutesForCurrentStage(forceLog=false){
     if(!state?.map) return false;
     normalizeLiveMap();
-    const targets=missionRouteTargets();
     let carved=0;
+    carved += hardFixKnownBossRoutes();
+    const targets=missionRouteTargets();
     const normalTargets=targets.filter(t=>t.c==='S' || t.c==='E');
     const bossTargets=targets.filter(t=>t.c==='B');
     const exitTargets=targets.filter(t=>t.c==='X');
@@ -5411,7 +5490,20 @@
     renderAll();
     queueAutosave();
   }
-  function handleDoor(x,y){ if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=requiredAnomaliesForStage()){setTile(x,y,'.'); state.flags.bossUnlocked=true; log('Boss route unlocked. Door security embarrassed itself.'); renderAll();} else toast('Boss gate locked. Clear the required anomalies or find access.'); }
+  function handleDoor(x,y){
+    if(state.flags.bossUnlocked || state.flags.key || state.flags.anomaliesCleared>=requiredAnomaliesForStage()){
+      setTile(x,y,'.');
+      state.flags.bossUnlocked=true;
+      // Open any connected boss-gate stack after the requirements are met.
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[0,2],[0,-2],[1,1],[-1,1],[1,-1],[-1,-1]]){
+        const nx=x+dx, ny=y+dy;
+        if(tileAt(nx,ny)==='D') setTile(nx,ny,'.');
+      }
+      repairMissionRoutesForCurrentStage();
+      log('Boss route unlocked. Door security embarrassed itself.');
+      renderAll();
+    } else toast('Boss gate locked. Clear the required anomalies or find access.');
+  }
   function handleTile(c,x,y){
     ensureStoryFlags();
     if(c==='C'){openStageCache(x,y);}
