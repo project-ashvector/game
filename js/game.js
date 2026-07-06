@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.70';
-  const BUILD_TITLE = 'CHARACTER FRAMEWORK + FULL VYRA REPLACEMENT PASS';
+  const BUILD_VERSION = '0.9.71';
+  const BUILD_TITLE = 'VYRA LEGACY MIRROR PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3227,6 +3227,10 @@
   function operatorAssetPaths(op=currentOperator()){
     return [op.portrait, op.battle, op.avatar, op.icon, op.menu, op.profile, op.operatorCard, op.partyIcon, op.battleIcon, op.spriteSheet, op.mapSprite, op.mapSpriteLarge, op.weapon, ...Object.values(op.rotations||{})].filter(Boolean);
   }
+  function legacyOperatorAssetPaths(){
+    // v161: mirror list keeps old `assets/operators/vyra/` references alive during GitHub cache/update transitions.
+    return operatorAssetPaths(OPERATOR_DEFS.av001).map(p => p.replace('assets/operators/av001/', 'assets/operators/vyra/'));
+  }
   function currentOperatorMapSpriteForFacing(facing='down'){
     const op = currentOperator();
     return (op.rotations && op.rotations[facing]) || op.mapSprite || 'assets/operators/av001/sprites/map_sprite.png';
@@ -3268,6 +3272,7 @@
   function loadImages(){
     const paths = [
       ...operatorAssetPaths(),
+      ...legacyOperatorAssetPaths(),
       ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
       ...mapArt.blocked,
