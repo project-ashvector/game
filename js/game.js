@@ -8,7 +8,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.04';
+  const BUILD_VERSION = '1.0.06';
   const BUILD_TITLE = 'FREE ROAM LOCKDOWN PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -1530,7 +1530,7 @@
     ],
     chest: 'assets/imported/props/loot/treasure_chest.png',
     med: 'assets/imported/items/medicine/medicine_1.png',
-    lore: 'assets/imported/props/signage/blue_banner.png',
+    lore: 'assets/items/memory_core.png',
     terminal: 'assets/imported/props/buildings/magic_stone_tower.png',
     door: 'assets/imported/environment/fences/wooden_fence_horizontal.png',
     exit: 'assets/tilesets/custom/next_level_exit_portal.png',
@@ -1565,7 +1565,7 @@
       ],
       chest: 'assets/tilesets/forbidden/locked_chest_01.png',
       med: 'assets/tilesets/forbidden/life_01.png',
-      lore: 'assets/tilesets/forbidden/signpost_02.png',
+      lore: 'assets/items/memory_core.png',
       terminal: 'assets/tilesets/forbidden/lantern_01.png',
       door: 'assets/tilesets/forbidden/stone_fence_01.png',
       exit: 'assets/tilesets/custom/next_level_exit_portal.png',
@@ -1652,21 +1652,21 @@
     f004: {
       ground: ['assets/tilesets/cursed/ground_01.png','assets/tilesets/cursed/ground_02.png','assets/tilesets/cursed/ground_03.png','assets/tilesets/cursed/ground_04.png'],
       blocked: ['assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/stone_fence_01.png','assets/tilesets/undead/rock_04.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/cursed/ruins_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/cursed/ruins_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
       floorTint:'rgba(74,82,92,.18)', pathTint:'rgba(92,170,255,.13)', wallTint:'rgba(10,13,17,.97)', wallEdge:'rgba(92,170,255,.28)',
       props:[{x:13,y:3,img:'assets/tilesets/cursed/ruins_01.png',w:58,h:50},{x:28,y:3,img:'assets/tilesets/cursed/rock_eyes_01.png',w:54,h:48},{x:6,y:11,img:'assets/tilesets/forbidden/rock_03.png',w:38,h:34},{x:18,y:12,img:'assets/tilesets/undead/bones_03.png',w:64,h:42},{x:31,y:14,img:'assets/tilesets/cursed/spike_plant_01.png',w:54,h:48},{x:11,y:20,img:'assets/tilesets/undead/dead_tree_02.png',w:54,h:64},{x:24,y:21,img:'assets/tilesets/cursed/tentacle_plant_01.png',w:52,h:48}]
     },
     f005: {
       ground: ['assets/tilesets/undead/ground_01.png','assets/tilesets/undead/ground_02.png','assets/tilesets/undead/ground_03.png','assets/tilesets/undead/ground_04.png'],
       blocked: ['assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/jaws_plant_01.png','assets/tilesets/undead/rock_04.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/undead/ruin_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/undead/ruin_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
       floorTint:'rgba(24,38,62,.20)', pathTint:'rgba(180,96,255,.14)', wallTint:'rgba(8,8,22,.97)', wallEdge:'rgba(190,96,255,.30)',
       props:[{x:12,y:4,img:'assets/tilesets/undead/crystal_01.png',w:44,h:44},{x:29,y:5,img:'assets/tilesets/undead/lich_01.png',w:68,h:78},{x:5,y:11,img:'assets/tilesets/cursed/meat_flower_01.png',w:48,h:48},{x:22,y:11,img:'assets/tilesets/undead/crystal_01.png',w:48,h:48},{x:35,y:13,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},{x:9,y:20,img:'assets/tilesets/undead/bones_02.png',w:48,h:34},{x:25,y:22,img:'assets/tilesets/undead/skull_pile_01.png',w:60,h:54}]
     },
     f006: {
       ground: ['assets/tilesets/forbidden/ground_01.png','assets/tilesets/forbidden/ground_02.png','assets/tilesets/forbidden/ground_03.png','assets/tilesets/forbidden/ground_04.png'],
       blocked: ['assets/tilesets/undead/ruin_01.png','assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/crypt_01.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/tilesets/forbidden/signpost_02.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
       floorTint:'rgba(12,48,64,.22)', pathTint:'rgba(0,255,200,.14)', wallTint:'rgba(3,10,18,.98)', wallEdge:'rgba(0,255,200,.34)',
       props:[{x:15,y:3,img:'assets/tilesets/undead/ruin_01.png',w:70,h:68},{x:31,y:4,img:'assets/tilesets/undead/crystal_01.png',w:50,h:50},{x:6,y:12,img:'assets/tilesets/undead/dead_arm_01.png',w:58,h:52},{x:24,y:11,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},{x:35,y:14,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},{x:9,y:22,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},{x:24,y:21,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58}]
     },
@@ -3154,7 +3154,7 @@
     {id:'IT-002', name:'Scrap Metal', type:'Material', category:'Crafting', slot:'Stack', rarity:'Common', stackSize:999, sellPrice:2, asset:'assets/items/scrap_metal.png', source:'assets/source/items/scrap_metal.png', status:'production-icon', desc:'Recovered industrial scrap used for upgrades.'},
     {id:'IT-003', name:'Corrupted Catalyst', type:'Material', category:'Catalyst', slot:'Stack', rarity:'Epic', stackSize:99, sellPrice:40, asset:'assets/items/corrupted_catalyst.png', source:'assets/source/items/corrupted_catalyst.png', status:'production-icon', desc:'Unstable upgrade material pulled from corrupted systems.'},
     {id:'IT-004', name:'Keycard LV1', type:'Key Item', category:'Access', slot:'Story', rarity:'Uncommon', stackSize:1, sellPrice:0, asset:'assets/items/keycard_lv1.png', source:'assets/source/items/keycard_lv1.png', status:'production-icon', desc:'Level-one access credential for sealed maintenance zones.'},
-    {id:'IT-005', name:'Archive Log 001', type:'Archive', category:'Lore', slot:'Database', rarity:'Rare', stackSize:1, sellPrice:0, asset:'assets/items/archive_log_001.png', source:'assets/source/items/archive_log_001.png', status:'production-icon', desc:'Recovered classified AVOS archive fragment.'},
+    {id:'IT-005', name:'Archive Log 001', type:'Archive', category:'Lore', slot:'Database', rarity:'Rare', stackSize:1, sellPrice:0, asset:'assets/items/memory_core.png', source:'assets/items/memory_core.png', status:'production-icon', desc:'Recovered classified AVOS archive fragment.'},
     {id:'IT-006', name:'Operator Shard: Vyra', type:'Shard', category:'Operator', slot:'Recruitment', rarity:'Legendary', stackSize:999, sellPrice:75, asset:'assets/items/operator_shard_vyra.png', source:'assets/source/items/operator_shard_vyra.png', status:'production-icon', desc:'A synchronization shard keyed to Operator AV-001.'},
     {id:'IT-007', name:'Rust Core', type:'Material', category:'Anomaly Core', slot:'Stack', rarity:'Rare', stackSize:99, sellPrice:25, asset:'assets/items/rust_core.png', source:'assets/source/items/rust_core.png', status:'production-icon', desc:'Dense anomaly core used in future crafting and operator growth.'},
     {id:'EQ-001', name:'Vector Training Blade', type:'Weapon', category:'Weapons', slot:'Weapon', rarity:'Common', stackSize:1, sellPrice:12, asset:'assets/items/imported/weapons/weapons/uncommon/it-1132_emberfang_dagger.png', status:'gameplay-gear', levelReq:1, stats:{atk:3,str:1}, desc:'Starter blade tuned for Vyra. Good enough to make graveyard monsters sign medical waivers.'},
@@ -4354,7 +4354,23 @@
     const parsed = parseStageMap('f001');
     return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
+  function ensureImageCached(path){
+    if(!path) return null;
+    if(images[path]) return images[path];
+    const im = new Image();
+    im.onload = () => { try{ renderAll(); }catch(err){} };
+    im.onerror = () => console.warn('Missing image asset:', path);
+    im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
+    images[path] = im;
+    return im;
+  }
   function loadImages(){
+    const projectilePaths = [
+      'assets/projectiles/ash_bolt.png','assets/projectiles/rust_spike.png','assets/projectiles/vector_pulse.png','assets/projectiles/bone_dart.png',
+      'assets/projectiles/toxic_splinter.png','assets/projectiles/scrap_shot.png','assets/projectiles/ember_round.png','assets/projectiles/static_needle.png',
+      'assets/projectiles/corrupted_shard.png','assets/projectiles/plasma_cube.png','assets/projectiles/blood_spark.png','assets/projectiles/ash_disc.png',
+      'assets/projectiles/echo_pellet.png','assets/projectiles/grave_flame.png'
+    ];
     const paths = [
       ...Object.values(OPERATOR_DEFS).flatMap(op=>operatorAssetPaths(op)),
       ...legacyOperatorAssetPaths(),
@@ -4366,15 +4382,11 @@
       ...mapArt.props.map(p => p.img),
       ...stageVisualAssetPaths(),
       ...importedAnomalyRoster.slice(0,80).flatMap(c => [c.battle, iconPathFor(c)]),
-      ...importedBossRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)])
+      ...importedBossRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)]),
+      ...projectilePaths,
+      'assets/items/memory_core.png'
     ];
-    [...new Set(paths)].filter(Boolean).forEach(p=>{
-      const im = new Image();
-      im.onload = () => renderAll();
-      im.onerror = () => console.warn('Missing creature asset:', p);
-      im.src = p;
-      images[p] = im;
-    });
+    [...new Set(paths)].filter(Boolean).forEach(ensureImageCached);
   }
   const SAVE_SCHEMA_VERSION = 183;
   const SAVE_KEY = 'ashVectorSave';
@@ -5588,20 +5600,20 @@
     return bonus;
   }
   const LOCKDOWN_PROJECTILES = [
-    {path:'assets/projectiles/projectile_ash_bolt.png', style:'gold'},
-    {path:'assets/projectiles/projectile_rust_spike.png', style:'red'},
-    {path:'assets/projectiles/projectile_vector_pulse.png', style:'cyan'},
-    {path:'assets/projectiles/projectile_bone_dart.png', style:'gold'},
-    {path:'assets/projectiles/projectile_toxic_splinter.png', style:'green'},
-    {path:'assets/projectiles/projectile_scrap_shot.png', style:'red'},
-    {path:'assets/projectiles/projectile_ember_round.png', style:'gold'},
-    {path:'assets/projectiles/projectile_static_needle.png', style:'cyan'},
-    {path:'assets/projectiles/projectile_corrupted_shard.png', style:'violet'},
-    {path:'assets/projectiles/projectile_plasma_cube.png', style:'cyan'},
-    {path:'assets/projectiles/projectile_blood_spark.png', style:'red'},
-    {path:'assets/projectiles/projectile_ash_disc.png', style:'gold'},
-    {path:'assets/projectiles/projectile_echo_pellet.png', style:'cyan'},
-    {path:'assets/projectiles/projectile_grave_flame.png', style:'green'}
+    {path:'assets/projectiles/ash_bolt.png', style:'gold'},
+    {path:'assets/projectiles/rust_spike.png', style:'red'},
+    {path:'assets/projectiles/vector_pulse.png', style:'cyan'},
+    {path:'assets/projectiles/bone_dart.png', style:'gold'},
+    {path:'assets/projectiles/toxic_splinter.png', style:'green'},
+    {path:'assets/projectiles/scrap_shot.png', style:'red'},
+    {path:'assets/projectiles/ember_round.png', style:'gold'},
+    {path:'assets/projectiles/static_needle.png', style:'cyan'},
+    {path:'assets/projectiles/corrupted_shard.png', style:'violet'},
+    {path:'assets/projectiles/plasma_cube.png', style:'cyan'},
+    {path:'assets/projectiles/blood_spark.png', style:'red'},
+    {path:'assets/projectiles/ash_disc.png', style:'gold'},
+    {path:'assets/projectiles/echo_pellet.png', style:'cyan'},
+    {path:'assets/projectiles/grave_flame.png', style:'green'}
   ];
   function lockdownProjectileAsset(i=0){ return LOCKDOWN_PROJECTILES[Math.abs(Number(i)||0)%LOCKDOWN_PROJECTILES.length] || LOCKDOWN_PROJECTILES[0]; }
   function updateVectorLockdownWarningHud(){
@@ -5640,7 +5652,7 @@
       projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), pierce:0,
       nextUpgradeAt:now+5000, nextSpawnAt:now+650, nextShotAt:now+320, spawnDelay:900,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
-      debuffResist:opBonus.debuffResist||0, upgradeHistory:[], threatLevel:1
+      debuffResist:opBonus.debuffResist||0, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}
     };
     for(let i=0;i<10;i++) spawnLockdownEnemy(state.rogueEvent);
     log('VECTOR LOCKDOWN STARTED: free-roam survival active. Normal map interactions are paused.');
@@ -5704,37 +5716,79 @@
     }
   }
 
+  function ensureLockdownPlayerState(e){
+    if(!e || !state?.player) return;
+    const px = Number(state.player.x), py = Number(state.player.y);
+    const valid = Number.isFinite(px) && Number.isFinite(py) && pointInLockdownArena(Math.floor(px), Math.floor(py));
+    if(valid){
+      e.playerAnchor = {x:px, y:py};
+    }else if(e.playerAnchor){
+      state.player.x = e.playerAnchor.x;
+      state.player.y = e.playerAnchor.y;
+    }else{
+      const safe = findSafeSpawn();
+      state.player.x = safe.x;
+      state.player.y = safe.y;
+      e.playerAnchor = {x:safe.x, y:safe.y};
+    }
+    clampPlayerToMap();
+    const hpCap = Math.max(1, e.playerMaxHp || combatStatBlock().maxHp || state.player.maxHp || 60);
+    state.player.hp = Math.max(0, Math.min(hpCap, Number(state.player.hp) || hpCap));
+  }
+  function abortVectorLockdown(reason='runtime guard'){
+    if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
+    window._avLockdownTimer = null;
+    if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer);
+    window._avLockdownWarningTimer = null;
+    document.body.classList.remove('vector-lockdown-active');
+    document.body.classList.remove('vector-lockdown-warning');
+    const why = String(reason || 'runtime guard');
+    state.rogueWarning = {active:false, cancelledAt:Date.now()};
+    state.rogueEvent = {active:false, abortedAt:Date.now(), reason:why};
+    ensureRogueHud().classList.add('hidden');
+    console.error('[AV] Vector Lockdown aborted:', why);
+    log(`VECTOR LOCKDOWN ABORTED: ${why}`);
+    toast('Vector Lockdown auto-cancelled to protect the run.');
+    renderAll();
+  }
+
   function tickVectorLockdown(){
-    const e=state.rogueEvent;
-    if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; }
-    const now=Date.now(); const dt=Math.min(180, now-(e.lastFrameAt||now)); e.lastFrameAt=now;
-    const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000)));
-    e.threatLevel=1+Math.floor(pressure*8)+Math.floor((e.kills||0)/6);
-    e.allowedHostiles=Math.min(e.maxHostiles||100, 18 + Math.floor(pressure*62) + Math.floor((e.kills||0)/4));
-    if(now>=e.nextUpgradeAt){
-      const mod=chooseLockdownModifier(e); mod.apply(e); e.upgradeHistory ||= [];
-      e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,at:now});
-      e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':'✓ ')+h.name);
-      e.nextUpgradeAt += 5000; showLockdownRoll(mod);
-      toast(`${mod.type==='debuff'?'Lockdown debuff':'Projectile buff'}: ${mod.name}`);
-      log(`Lockdown ${mod.type==='debuff'?'Debuff':'Buff'}: ${mod.name} — ${mod.desc}.`);
+    try{
+      const e=state.rogueEvent;
+      if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; }
+      ensureLockdownPlayerState(e);
+      const now=Date.now(); const dt=Math.min(180, now-(e.lastFrameAt||now)); e.lastFrameAt=now;
+      const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000)));
+      e.threatLevel=1+Math.floor(pressure*8)+Math.floor((e.kills||0)/6);
+      e.allowedHostiles=Math.min(e.maxHostiles||100, 18 + Math.floor(pressure*62) + Math.floor((e.kills||0)/4));
+      if(now>=e.nextUpgradeAt){
+        const mod=chooseLockdownModifier(e); mod.apply(e); e.upgradeHistory ||= [];
+        e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,at:now});
+        e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':'✓ ')+h.name);
+        e.nextUpgradeAt += 5000; showLockdownRoll(mod);
+        toast(`${mod.type==='debuff'?'Lockdown debuff':'Projectile buff'}: ${mod.name}`);
+        log(`Lockdown ${mod.type==='debuff'?'Debuff':'Buff'}: ${mod.name} — ${mod.desc}.`);
+      }
+      if(now>=e.nextSpawnAt){
+        spawnLockdownEnemy(e);
+        if(pressure>.20 && (e.enemies||[]).length < Math.min(e.allowedHostiles||100,24+Math.floor(pressure*44)) && Math.random()<.62) spawnLockdownEnemy(e);
+        if(pressure>.58 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.45) spawnLockdownEnemy(e);
+        if(pressure>.82 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.36) spawnLockdownEnemy(e);
+        e.spawnDelay=Math.max(290, Math.floor(920-pressure*520-(e.threatLevel||1)*24));
+        e.nextSpawnAt=now+e.spawnDelay;
+      }
+      if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(185,e.fireRate); }
+      updateLockdownActors(e,dt);
+      const left=Math.ceil((e.duration-(now-e.startedAt))/1000);
+      if(left<=0){ completeVectorLockdown(); return; }
+      updateVectorLockdownHud(); renderUI(); render();
+    }catch(err){
+      abortVectorLockdown(err?.message || err);
     }
-    if(now>=e.nextSpawnAt){
-      spawnLockdownEnemy(e);
-      if(pressure>.20 && (e.enemies||[]).length < Math.min(e.allowedHostiles||100,24+Math.floor(pressure*44)) && Math.random()<.62) spawnLockdownEnemy(e);
-      if(pressure>.58 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.45) spawnLockdownEnemy(e);
-      if(pressure>.82 && (e.enemies||[]).length < (e.allowedHostiles||100) && Math.random()<.36) spawnLockdownEnemy(e);
-      e.spawnDelay=Math.max(290, Math.floor(920-pressure*520-(e.threatLevel||1)*24));
-      e.nextSpawnAt=now+e.spawnDelay;
-    }
-    if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(185,e.fireRate); }
-    updateLockdownActors(e,dt);
-    const left=Math.ceil((e.duration-(now-e.startedAt))/1000);
-    if(left<=0){ completeVectorLockdown(); return; }
-    updateVectorLockdownHud(); renderUI(); render();
   }
   function lockdownSegmentDistance(px,py,x1,y1,x2,y2){ const vx=x2-x1, vy=y2-y1; const len=vx*vx+vy*vy; if(len<=0.0001) return Math.hypot(px-x1,py-y1); const t=Math.max(0,Math.min(1,((px-x1)*vx+(py-y1)*vy)/len)); return Math.hypot(px-(x1+vx*t), py-(y1+vy*t)); }
   function updateLockdownActors(e,dt){
+    ensureLockdownPlayerState(e);
     const px=state.player.x+.5, py=state.player.y+.5; const now=Date.now();
     // Chase plus light separation so monsters do not turn into one giant blob.
     for(const m of e.enemies){
@@ -7432,10 +7486,10 @@
     drawTrainingNodes();
     drawNpcs();
     drawLockdownActors();
+    drawLockdownProjectiles();
     // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
     drawPlayerLockdownHealthBar();
-    drawLockdownProjectiles();
     drawObjectiveBeacon();
     ctx.restore();
     drawMapAtmosphere();
@@ -7679,7 +7733,8 @@
 
   function drawPlayerSprite(x,y){
     const spritePath = currentOperatorMapSpriteForFacing(state?.player?.facing || 'down');
-    const im = images[spritePath];
+    const im = ensureImageCached(spritePath) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite);
+    const lockdownActive = !!state.rogueEvent?.active;
     // v130: same map footprint as NPCs and monsters.
     const drawW = MAP_ENTITY_W;
     const drawH = MAP_ENTITY_H;
@@ -7690,17 +7745,27 @@
     ctx.beginPath();
     ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
     ctx.fill();
-    // Remove the blue glow from the player sprite; keep only the sprite itself and neutral shadow.
-    ctx.shadowColor='rgba(0,0,0,.35)';
-    ctx.shadowBlur=2;
+    ctx.shadowColor=lockdownActive ? 'rgba(112,215,255,.72)' : 'rgba(0,0,0,.35)';
+    ctx.shadowBlur=lockdownActive ? 9 : 2;
     if(im && im.complete && im.naturalWidth){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(im, dx, dy, drawW, drawH);
       ctx.imageSmoothingEnabled = oldSmooth;
+      if(lockdownActive){
+        ctx.strokeStyle='rgba(200,245,255,.88)';
+        ctx.lineWidth=2;
+        ctx.strokeRect(dx+6, dy+6, drawW-12, drawH-12);
+      }
     } else {
       // fallback only if asset fails to load
-      ctx.fillStyle='#111820';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='rgba(255,255,255,.72)';ctx.fillRect(x+12,y+16,18,5);ctx.strokeStyle='rgba(255,255,255,.18)';ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
+      ctx.fillStyle=lockdownActive ? '#20374b' : '#111820';
+      ctx.fillRect(x+8,y+6,26,30);
+      ctx.fillStyle='rgba(255,255,255,.82)';
+      ctx.fillRect(x+12,y+16,18,5);
+      ctx.strokeStyle=lockdownActive ? 'rgba(112,215,255,.88)' : 'rgba(255,255,255,.18)';
+      ctx.lineWidth=2;
+      ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
     }
     ctx.shadowBlur=0;
     ctx.restore();
