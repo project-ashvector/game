@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.76';
-  const BUILD_TITLE = 'VEXA CHARACTER UNLOCK PASS';
+  const BUILD_VERSION = '0.9.77';
+  const BUILD_TITLE = 'RIVET CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3294,7 +3294,73 @@
           left: ['assets/operators/vexa/sprites/animations/idle/west/frame_000.png','assets/operators/vexa/sprites/animations/idle/west/frame_001.png','assets/operators/vexa/sprites/animations/idle/west/frame_002.png','assets/operators/vexa/sprites/animations/idle/west/frame_003.png'],
           downLeft: ['assets/operators/vexa/sprites/animations/idle/south-west/frame_000.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_001.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_002.png','assets/operators/vexa/sprites/animations/idle/south-west/frame_003.png']
         } }
+    },
+
+    rivet: {
+      id: 'rivet',
+      code: 'AV-003',
+      displayName: 'Rivet Vale',
+      codename: 'SCRAP VOLT',
+      title: 'Scavenger Engineer',
+      meta: 'Operator Unit 003 • Scavenger Engineer • Locked',
+      quote: '“I did not cause the explosion. I merely gave it tools and confidence.”',
+      className: 'Scavenger Engineer',
+      affinity: 'Scrap / Voltage',
+      rarity: 'Unlockable / Engineer Prototype',
+      clearance: 'Level 12',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Rivet',
+      shardName: 'Operator Shard: Rivet',
+      shardCost: 45,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/rivet/portrait.png',
+      battle: 'assets/operators/rivet/battle.png',
+      avatar: 'assets/operators/rivet/avatar.png',
+      icon: 'assets/operators/rivet/icon.png',
+      menu: 'assets/operators/rivet/menu.png',
+      profile: 'assets/operators/rivet/profile.png',
+      operatorCard: 'assets/operators/rivet/operator_card.png',
+      partyIcon: 'assets/operators/rivet/party_icon.png',
+      battleIcon: 'assets/operators/rivet/battle_icon.png',
+      spriteSheet: 'assets/operators/rivet/sprite_sheet.png',
+      mapSprite: 'assets/operators/rivet/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/rivet/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/rivet/weapon.png',
+      rotations: {
+        down: 'assets/operators/rivet/sprites/rotations/south.png',
+        downRight: 'assets/operators/rivet/sprites/rotations/south-east.png',
+        right: 'assets/operators/rivet/sprites/rotations/east.png',
+        upRight: 'assets/operators/rivet/sprites/rotations/north-east.png',
+        up: 'assets/operators/rivet/sprites/rotations/north.png',
+        upLeft: 'assets/operators/rivet/sprites/rotations/north-west.png',
+        left: 'assets/operators/rivet/sprites/rotations/west.png',
+        downLeft: 'assets/operators/rivet/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/rivet/sprites/animations/walking/south/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/south/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/south/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/rivet/sprites/animations/walking/south-east/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/south-east/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/south-east/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/rivet/sprites/animations/walking/east/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/east/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/east/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/rivet/sprites/animations/walking/north-east/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/north-east/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/north-east/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/rivet/sprites/animations/walking/north/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/north/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/north/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/rivet/sprites/animations/walking/north-west/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/north-west/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/north-west/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/rivet/sprites/animations/walking/west/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/west/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/west/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/rivet/sprites/animations/walking/south-west/frame_000.png', 'assets/operators/rivet/sprites/animations/walking/south-west/frame_001.png', 'assets/operators/rivet/sprites/animations/walking/south-west/frame_002.png', 'assets/operators/rivet/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/rivet/sprites/animations/idle/south/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/south/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/south/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/rivet/sprites/animations/idle/south-east/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/south-east/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/south-east/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/rivet/sprites/animations/idle/east/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/east/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/east/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/rivet/sprites/animations/idle/north-east/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/north-east/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/north-east/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/rivet/sprites/animations/idle/north/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/north/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/north/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/rivet/sprites/animations/idle/north-west/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/north-west/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/north-west/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/rivet/sprites/animations/idle/west/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/west/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/west/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/rivet/sprites/animations/idle/south-west/frame_000.png', 'assets/operators/rivet/sprites/animations/idle/south-west/frame_001.png', 'assets/operators/rivet/sprites/animations/idle/south-west/frame_002.png', 'assets/operators/rivet/sprites/animations/idle/south-west/frame_003.png']
+        }
+      }
     }
+
   };
 
   const CHARACTER_SHARD_BASE_CHANCE = 0.04;
@@ -3502,7 +3568,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 166;
+  const SAVE_SCHEMA_VERSION = 167;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
