@@ -8,7 +8,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.06';
+  const BUILD_VERSION = '1.0.07';
   const BUILD_TITLE = 'FREE ROAM LOCKDOWN PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -5522,28 +5522,43 @@
   // v184: Vector Lockdown now behaves like a short roguelike survival room.
   function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(!hud){ hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; document.body.appendChild(hud); } if(!$('lockdownTimer')){ hud.innerHTML='<div class="lockdown-card avos-crt"><div id="lockdownKicker" class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Free-roam surge. Auto-fire online.</p><div id="lockdownHpWrap" style="margin:8px 0 10px"><div style="display:flex;justify-content:space-between;font:700 11px monospace;letter-spacing:.06em"><span>OPERATOR HP</span><span id="lockdownHpText">--/--</span></div><div style="height:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);border-radius:999px;overflow:hidden"><span id="lockdownHpBar" style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#37f7a5,#ffe36e,#ff3048);transition:width .18s linear"></span></div></div><div id="lockdownRoll" style="display:none;margin:8px 0;padding:8px 10px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.58);font:800 12px monospace;letter-spacing:.08em;text-transform:uppercase"></div><div id="lockdownStats" class="lockdown-stats"></div><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; } return hud; }
   const ROGUE_UPGRADES = [
-    {type:'buff', name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount = Math.min(12,(e.projectileCount||1)+1)},
-    {type:'buff', name:'Ash Rifling', desc:'+25% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.25)},
-    {type:'buff', name:'Rust Accelerator', desc:'+18% fire rate', apply:e=>e.fireRate = Math.max(220, Math.floor(e.fireRate*.82))},
-    {type:'buff', name:'Vector Velocity', desc:'+20% projectile speed', apply:e=>e.projectileSpeed += 1.8},
-    {type:'buff', name:'Piercing Static', desc:'+1 enemy pierce', apply:e=>e.pierce = Math.min(4,(e.pierce||0)+1)},
-    {type:'buff', name:'Twin Feed', desc:'+2 projectiles per volley', apply:e=>e.projectileCount = Math.min(12,(e.projectileCount||1)+2)},
-    {type:'buff', name:'Core-Tipped Rounds', desc:'+35% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.35)},
-    {type:'buff', name:'Scatter Vector', desc:'+3 projectiles, slight damage tradeoff', apply:e=>{e.projectileCount = Math.min(12,(e.projectileCount||1)+3); e.projectileDamage = Math.max(6, Math.floor(e.projectileDamage*.90));}},
-    {type:'buff', name:'Overcharged Barrel', desc:'+20% projectile damage and speed', apply:e=>{e.projectileDamage=Math.ceil(e.projectileDamage*1.20); e.projectileSpeed+=1.4;}},
-    {type:'buff', name:'Rapid Vector Feed', desc:'+12% fire rate and +1 projectile', apply:e=>{e.fireRate=Math.max(220,Math.floor(e.fireRate*.88)); e.projectileCount=Math.min(12,(e.projectileCount||1)+1);}},
-    {type:'debuff', name:'Jammed Barrel', desc:'-18% fire rate', apply:e=>e.fireRate=Math.min(1050,Math.floor((e.fireRate||620)*1.18))},
-    {type:'debuff', name:'Cracked Rounds', desc:'-15% projectile damage', apply:e=>e.projectileDamage=Math.max(5,Math.floor((e.projectileDamage||10)*.85))},
-    {type:'debuff', name:'Magnetic Drag', desc:'-15% projectile speed', apply:e=>e.projectileSpeed=Math.max(3.8,(e.projectileSpeed||7.2)*.85)},
-    {type:'debuff', name:'Vector Recoil', desc:'-1 projectile per volley', apply:e=>e.projectileCount=Math.max(1,(e.projectileCount||1)-1)},
-    {type:'debuff', name:'Brittle Static', desc:'-1 pierce stack', apply:e=>e.pierce=Math.max(0,(e.pierce||0)-1)},
-    {type:'debuff', name:'Hostile Surge', desc:'monsters spawn sooner', apply:e=>{e.spawnDelay=Math.max(1000,Math.floor((e.spawnDelay||2600)*.72)); e.nextSpawnAt=Math.min(e.nextSpawnAt||Date.now()+1200, Date.now()+900);}}
+    {type:'buff', stackKey:'shots', name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount = Math.min(24,(e.projectileCount||1)+1)},
+    {type:'buff', stackKey:'damage', name:'Ash Rifling', desc:'+18% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.18)},
+    {type:'buff', stackKey:'rate', name:'Rust Accelerator', desc:'+12% fire rate', apply:e=>e.fireRate = Math.max(150, Math.floor(e.fireRate*.88))},
+    {type:'buff', stackKey:'velocity', name:'Vector Velocity', desc:'+12% projectile speed', apply:e=>e.projectileSpeed += 1.05},
+    {type:'buff', stackKey:'pierce', name:'Piercing Static', desc:'+1 enemy pierce', apply:e=>e.pierce = Math.min(10,(e.pierce||0)+1)},
+    {type:'buff', stackKey:'shots', name:'Twin Feed', desc:'+2 projectiles per volley', apply:e=>e.projectileCount = Math.min(24,(e.projectileCount||1)+2)},
+    {type:'buff', stackKey:'damage', name:'Core-Tipped Rounds', desc:'+24% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.24)},
+    {type:'buff', stackKey:'shots', name:'Scatter Vector', desc:'+3 projectiles, slight damage tradeoff', apply:e=>{e.projectileCount = Math.min(24,(e.projectileCount||1)+3); e.projectileDamage = Math.max(6, Math.floor(e.projectileDamage*.94));}},
+    {type:'buff', stackKey:'damage', name:'Overcharged Barrel', desc:'+14% damage and speed', apply:e=>{e.projectileDamage=Math.ceil(e.projectileDamage*1.14); e.projectileSpeed+=.9;}},
+    {type:'buff', stackKey:'rate', name:'Rapid Vector Feed', desc:'+10% fire rate and +1 projectile', apply:e=>{e.fireRate=Math.max(150,Math.floor(e.fireRate*.90)); e.projectileCount=Math.min(24,(e.projectileCount||1)+1);}},
+
+    {type:'ability', stackKey:'healOnKill', name:'Blood Circuit', desc:'+3% max HP healed per kill', apply:e=>{e.abilities.healOnKill=(e.abilities.healOnKill||0)+0.03;}},
+    {type:'ability', stackKey:'critChance', name:'Static Crit Loop', desc:'+5% projectile crit chance', apply:e=>{e.abilities.critChance=(e.abilities.critChance||0)+0.05;}},
+    {type:'ability', stackKey:'chainLightning', name:'Chain Static', desc:'+12% chance shots chain to another enemy', apply:e=>{e.abilities.chainLightning=(e.abilities.chainLightning||0)+0.12;}},
+    {type:'ability', stackKey:'thorns', name:'Reactive Armor', desc:'Return 10% contact damage to attackers', apply:e=>{e.abilities.thorns=(e.abilities.thorns||0)+0.10;}},
+    {type:'ability', stackKey:'slowAura', name:'Gravity Leak', desc:'Nearby monsters slow by 5%', apply:e=>{e.abilities.slowAura=(e.abilities.slowAura||0)+0.05;}},
+    {type:'ability', stackKey:'orbital', name:'Orbiting Scrap', desc:'+1 orbiting scrap hit every few seconds', apply:e=>{e.abilities.orbital=(e.abilities.orbital||0)+1;}},
+    {type:'ability', stackKey:'lootBoost', name:'Cache Magnet', desc:'+8% event reward and XP bonus', apply:e=>{e.abilities.lootBoost=(e.abilities.lootBoost||0)+0.08;}},
+
+    {type:'debuff', stackKey:'jam', name:'Jammed Barrel', desc:'-14% fire rate', apply:e=>e.fireRate=Math.min(1150,Math.floor((e.fireRate||620)*1.14))},
+    {type:'debuff', stackKey:'cracked', name:'Cracked Rounds', desc:'-12% projectile damage', apply:e=>e.projectileDamage=Math.max(5,Math.floor((e.projectileDamage||10)*.88))},
+    {type:'debuff', stackKey:'drag', name:'Magnetic Drag', desc:'-12% projectile speed', apply:e=>e.projectileSpeed=Math.max(3.8,(e.projectileSpeed||7.2)*.88)},
+    {type:'debuff', stackKey:'recoil', name:'Vector Recoil', desc:'-1 projectile per volley', apply:e=>e.projectileCount=Math.max(1,(e.projectileCount||1)-1)},
+    {type:'debuff', stackKey:'brittle', name:'Brittle Static', desc:'-1 pierce stack', apply:e=>e.pierce=Math.max(0,(e.pierce||0)-1)},
+    {type:'debuff', stackKey:'surge', name:'Hostile Surge', desc:'monsters spawn sooner', apply:e=>{e.spawnDelay=Math.max(850,Math.floor((e.spawnDelay||2600)*.78)); e.nextSpawnAt=Math.min(e.nextSpawnAt||Date.now()+1200, Date.now()+900);}}
   ];
   function chooseLockdownModifier(e){
+    e.abilities ||= {};
+    e.abilityStacks ||= {};
     const elapsed=(Date.now()-(e.startedAt||Date.now()))/(e.duration||60000);
-    const debuffChance=Math.max(.08, Math.min(.55,.22+elapsed*.33-(e.debuffResist||0)));
-    const wantDebuff=Math.random()<debuffChance;
-    const pool=ROGUE_UPGRADES.filter(u=>u.type===(wantDebuff?'debuff':'buff') && !(e.upgradeHistory||[]).some(h=>h.name===u.name));
+    const debuffChance=Math.max(.06, Math.min(.48,.18+elapsed*.28-(e.debuffResist||0)));
+    const abilityChance=Math.max(.22, Math.min(.42,.28+elapsed*.10));
+    let wanted='buff';
+    const r=Math.random();
+    if(r<debuffChance) wanted='debuff';
+    else if(r<debuffChance+abilityChance) wanted='ability';
+    const pool=ROGUE_UPGRADES.filter(u=>u.type===wanted);
     return pool[Math.floor(Math.random()*pool.length)] || ROGUE_UPGRADES[Math.floor(Math.random()*ROGUE_UPGRADES.length)];
   }
   function showLockdownRoll(mod){
@@ -5652,7 +5667,7 @@
       projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), pierce:0,
       nextUpgradeAt:now+5000, nextSpawnAt:now+650, nextShotAt:now+320, spawnDelay:900,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
-      debuffResist:opBonus.debuffResist||0, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}
+      debuffResist:opBonus.debuffResist||0, abilities:{}, abilityStacks:{}, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}, nextOrbitalAt:now+2400
     };
     for(let i=0;i<10;i++) spawnLockdownEnemy(state.rogueEvent);
     log('VECTOR LOCKDOWN STARTED: free-roam survival active. Normal map interactions are paused.');
@@ -5712,7 +5727,11 @@
       const heavy=asset.path.includes('ember')||asset.path.includes('disc')||asset.path.includes('grave');
       const pulse=asset.path.includes('pulse')||asset.path.includes('cube');
       const pierceBoost=asset.path.includes('spike')||asset.path.includes('disc') ? 1 : 0;
-      e.projectiles.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1600,damage:Math.ceil((e.projectileDamage||12)*(heavy?1.16:1)),pierce:(e.pierce||0)+pierceBoost,impactRadius:pulse?1.02:.74,style:asset.style,assetPath:asset.path,assetIndex:i,kind:i%4,size:pulse?34:(heavy?32:28),trail:[{x:sx,y:sy}],dot:asset.path.includes('flame')||asset.path.includes('toxic')?3:0,burst:asset.path.includes('scrap')||asset.path.includes('cube')});
+      {
+        const critChance=Math.min(.65,e.abilities?.critChance||0);
+        const crit=Math.random()<critChance;
+        e.projectiles.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1600,damage:Math.ceil((e.projectileDamage||12)*(heavy?1.16:1)*(crit?1.75:1)),crit,pierce:(e.pierce||0)+pierceBoost,impactRadius:pulse?1.02:.74,style:crit?'violet':asset.style,assetPath:asset.path,assetIndex:i,kind:i%4,size:pulse?34:(heavy?32:28),trail:[{x:sx,y:sy}],dot:asset.path.includes('flame')||asset.path.includes('toxic')?3:0,burst:asset.path.includes('scrap')||asset.path.includes('cube')});
+      }
     }
   }
 
@@ -5762,12 +5781,18 @@
       e.threatLevel=1+Math.floor(pressure*8)+Math.floor((e.kills||0)/6);
       e.allowedHostiles=Math.min(e.maxHostiles||100, 18 + Math.floor(pressure*62) + Math.floor((e.kills||0)/4));
       if(now>=e.nextUpgradeAt){
-        const mod=chooseLockdownModifier(e); mod.apply(e); e.upgradeHistory ||= [];
-        e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,at:now});
-        e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':'✓ ')+h.name);
-        e.nextUpgradeAt += 5000; showLockdownRoll(mod);
-        toast(`${mod.type==='debuff'?'Lockdown debuff':'Projectile buff'}: ${mod.name}`);
-        log(`Lockdown ${mod.type==='debuff'?'Debuff':'Buff'}: ${mod.name} — ${mod.desc}.`);
+        const mod=chooseLockdownModifier(e);
+        e.abilities ||= {}; e.abilityStacks ||= {};
+        const stackKey = mod.stackKey || mod.name;
+        mod.apply(e);
+        e.upgradeHistory ||= [];
+        e.abilityStacks[stackKey] = (e.abilityStacks[stackKey] || 0) + 1;
+        e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,stack:e.abilityStacks[stackKey],stackKey,at:now});
+        e.upgrades=e.upgradeHistory.map(h=>(h.type==='debuff'?'⚠ ':(h.type==='ability'?'◆ ':'✓ '))+h.name+(h.stack>1?` x${h.stack}`:''));
+        e.nextUpgradeAt += 5000; showLockdownRoll({...mod, desc:mod.desc+(e.abilityStacks[stackKey]>1?` // Stack ${e.abilityStacks[stackKey]}`:'')});
+        const label = mod.type==='debuff' ? 'Lockdown debuff' : (mod.type==='ability' ? 'Stacking ability' : 'Projectile buff');
+        toast(`${label}: ${mod.name}${e.abilityStacks[stackKey]>1?' x'+e.abilityStacks[stackKey]:''}`);
+        log(`Lockdown ${mod.type}: ${mod.name} — ${mod.desc}. Stack ${e.abilityStacks[stackKey]}.`);
       }
       if(now>=e.nextSpawnAt){
         spawnLockdownEnemy(e);
@@ -5799,18 +5824,30 @@
         if(od>0.001 && od<.62){ sepX += (odx/od)*(.62-od)*.006; sepY += (ody/od)*(.62-od)*.006; }
       }
       const dx=px-m.x, dy=py-m.y, d=Math.max(.05, Math.hypot(dx,dy));
-      m.x += (dx/d)*m.speed*dt + sepX*dt;
-      m.y += (dy/d)*m.speed*dt + sepY*dt;
+      const auraSlow = Math.min(.55, (e.abilities?.slowAura||0) * (d<4.25 ? 1 : 0));
+      const speedMult = Math.max(.35, 1-auraSlow);
+      m.x += (dx/d)*m.speed*speedMult*dt + sepX*dt;
+      m.y += (dy/d)*m.speed*speedMult*dt + sepY*dt;
       m.x=Math.max(.25,Math.min(mapWidth()-.25,m.x)); m.y=Math.max(.25,Math.min(mapHeight()-.25,m.y));
       if(d<.58 && now>(m.touchAt||0)){
         const hit=Math.max(3, Math.floor((4+Math.random()*5+Math.min(11,(e.threatLevel||1)*1.05))*(e.contactDamageMult||1)));
         state.player.hp=Math.max(0,(state.player.hp||0)-hit); e.damageTaken=(e.damageTaken||0)+hit; m.touchAt=now+980;
+        const thornPct=Math.min(.75,e.abilities?.thorns||0); if(thornPct>0){ const thorn=Math.max(1,Math.floor(hit*thornPct)); m.hp-=thorn; m.hitFlashAt=now; addLockdownFloat(e,m.x,m.y,`THORN ${thorn}`,'hit'); }
         showXpFloat(`-${hit} HP`,'locked'); addLockdownFloat(e,px,py,`-${hit} HP`,'hurt');
         if(state.player.hp<=0){ failVectorLockdown(m); return; }
       }
       if(m.dotUntil && now<m.dotUntil && now>(m.nextDotAt||0)){
         const dotHit=Math.max(1,Math.floor(m.dotDamage||2)); m.hp-=dotHit; m.hitFlashAt=now; m.nextDotAt=now+520; addLockdownFloat(e,m.x,m.y,`${dotHit}`, 'dot');
       }
+    }
+    if((e.abilities?.orbital||0)>0 && now>(e.nextOrbitalAt||0)){
+      const pulses=Math.min(8,Math.floor(e.abilities.orbital||0));
+      const near=[...e.enemies].filter(m=>m.hp>0 && Math.hypot(m.x-px,m.y-py)<3.6).sort((a,b)=>Math.hypot(a.x-px,a.y-py)-Math.hypot(b.x-px,b.y-py)).slice(0,pulses);
+      for(const m of near){
+        const hit=Math.max(4,Math.floor((e.projectileDamage||12)*0.55));
+        m.hp-=hit; m.hitFlashAt=now; addLockdownFloat(e,m.x,m.y,`ORB ${hit}`,'hit');
+      }
+      e.nextOrbitalAt=now+Math.max(650,2200-pulses*120);
     }
     const liveProjectiles=[];
     for(const p of e.projectiles){
@@ -5820,13 +5857,29 @@
       for(const m of e.enemies){
         if(m.hp<=0) continue;
         if(lockdownSegmentDistance(m.x,m.y,oldX,oldY,p.x,p.y)<(p.impactRadius||.82)){
-          m.hp-=p.damage; m.hitFlashAt=now; addLockdownFloat(e,m.x,m.y,`${p.damage}`, 'hit');
+          m.hp-=p.damage; m.hitFlashAt=now; addLockdownFloat(e,m.x,m.y,`${p.crit?'CRIT ':''}${p.damage}`, 'hit');
+          if((e.abilities?.chainLightning||0)>0 && Math.random()<Math.min(.75,e.abilities.chainLightning)){
+            const chain=[...e.enemies].filter(o=>o!==m && o.hp>0 && Math.hypot(o.x-m.x,o.y-m.y)<2.75).sort((a,b)=>Math.hypot(a.x-m.x,a.y-m.y)-Math.hypot(b.x-m.x,b.y-m.y))[0];
+            if(chain){ const zap=Math.max(2,Math.floor(p.damage*.45)); chain.hp-=zap; chain.hitFlashAt=now; addLockdownFloat(e,chain.x,chain.y,`ZAP ${zap}`,'hit'); }
+          }
           if(p.dot){ m.dotUntil=now+1800; m.dotDamage=Math.max(m.dotDamage||0,p.dot); m.nextDotAt=now+440; }
           if(p.burst && Math.random()<.65){
             for(const o of e.enemies){ if(o!==m && o.hp>0 && Math.hypot(o.x-m.x,o.y-m.y)<1.1){ const splash=Math.max(2,Math.floor(p.damage*.35)); o.hp-=splash; o.hitFlashAt=now; addLockdownFloat(e,o.x,o.y,`${splash}`, 'hit'); } }
           }
           if(p.pierce>0){ p.pierce--; } else { keep=false; }
-          if(m.hp<=0){ e.kills++; e.rewards += Math.random()<.18 ? 1 : 0; addLockdownFloat(e,m.x,m.y,'KILL','kill'); showXpFloat('KILL','good'); }
+          if(m.hp<=0 && !m.countedKill){
+            m.countedKill=true; e.kills++; e.rewards += Math.random()<.18 ? 1 : 0;
+            const healPct=Math.min(.45,e.abilities?.healOnKill||0);
+            if(healPct>0){
+              const max=Math.max(1,e.playerMaxHp||combatStatBlock().maxHp||state.player.maxHp||60);
+              const heal=Math.max(1,Math.floor(max*healPct));
+              const before=state.player.hp||0;
+              state.player.hp=Math.min(max,before+heal);
+              e.healed=(e.healed||0)+(state.player.hp-before);
+              addLockdownFloat(e,state.player.x+.5,state.player.y+.5,`+${state.player.hp-before} HP`,'heal');
+            }
+            addLockdownFloat(e,m.x,m.y,'KILL','kill'); showXpFloat('KILL','good');
+          }
           if(!keep) break;
         }
       }
@@ -5854,36 +5907,70 @@
     const bar=$('lockdownHpBar'); if(bar) bar.style.width=`${pct}%`;
   }
 
+  function lockdownAbilitySummary(e){
+    if(!e?.abilities) return '';
+    const a=e.abilities;
+    const rows=[];
+    if(a.healOnKill) rows.push(`Blood Circuit ${Math.round(a.healOnKill*100)}%`);
+    if(a.critChance) rows.push(`Crit ${Math.round(a.critChance*100)}%`);
+    if(a.chainLightning) rows.push(`Chain ${Math.round(a.chainLightning*100)}%`);
+    if(a.thorns) rows.push(`Thorns ${Math.round(a.thorns*100)}%`);
+    if(a.slowAura) rows.push(`Slow ${Math.round(a.slowAura*100)}%`);
+    if(a.orbital) rows.push(`Orbit x${Math.floor(a.orbital)}`);
+    if(a.lootBoost) rows.push(`Rewards +${Math.round(a.lootBoost*100)}%`);
+    return rows.slice(-8).map(r=>`<span style="border-color:rgba(112,215,255,.52);color:#bff6ff">◆ ${safeHtml(r)}</span>`).join('');
+  }
+
   function updateVectorLockdownHud(){
     const e=state.rogueEvent; const hud=ensureRogueHud(); if(!e?.active){ hud.classList.add('hidden'); return; }
     updateLockdownHpHud(); const compact=lockdownMobileCompact();
     if($('lockdownKicker')) $('lockdownKicker').textContent=compact?(e.tier?.name||'LOCKDOWN'):`VECTOR LOCKDOWN // ${e.tier?.name||'SURGE'}`;
     const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000));
-    $('lockdownTimer').textContent=`${left}s`;
-    $('lockdownText').textContent=compact?`${e.operatorBonus?.label||'Auto-fire'} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // ${e.operatorBonus?.label||'Auto-fire online'}. Normal interactions paused. Cap ${e.maxHostiles||100}.`;
+    if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
+    if($('lockdownText')) $('lockdownText').textContent=compact?`${e.operatorBonus?.label||'Auto-fire'} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // ${e.operatorBonus?.label||'Auto-fire online'}. Normal interactions paused. Cap ${e.maxHostiles||100}.`;
     if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span><span>${Math.round(1000/e.fireRate*10)/10}/s</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Threat ${e.threatLevel||1}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
     const hist=(e.upgradeHistory||[]).slice(compact?-4:-9);
-    $('lockdownUpgrades').innerHTML=hist.length ? hist.map(h=>`<span style="border-color:${h.type==='debuff'?'rgba(255,48,72,.75)':'rgba(55,247,165,.6)'};color:${h.type==='debuff'?'#ff8b99':'#baffea'}">${h.type==='debuff'?'⚠':'✓'} ${safeHtml(h.name)}</span>`).join('') : '<span>First buff/debuff roll incoming...</span>';
+    const histHtml=hist.length ? hist.map(h=>`<span style="border-color:${h.type==='debuff'?'rgba(255,48,72,.75)':(h.type==='ability'?'rgba(112,215,255,.62)':'rgba(55,247,165,.6)')};color:${h.type==='debuff'?'#ff8b99':(h.type==='ability'?'#bff6ff':'#baffea')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?' x'+h.stack:''}</span>`).join('') : '<span>First buff/debuff roll incoming...</span>';
+    const abilityHtml=lockdownAbilitySummary(e);
+    if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=histHtml + abilityHtml;
   }
   function failVectorLockdown(killer=null){ const e=state.rogueEvent||{}; if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; document.body.classList.remove('vector-lockdown-active'); state.deaths=(state.deaths||0)+1; state.player.hp=0; const killerName=killer?.name || 'lockdown swarm'; const hud=ensureRogueHud(); hud.classList.remove('hidden'); hud.innerHTML=`<div class="lockdown-card avos-crt"><div class="record-kicker">VECTOR LOCKDOWN FAILED</div><h2>OPERATOR DOWN</h2><p>${safeHtml(killerName)} overwhelmed the operator. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>HP 0/${Math.max(1,e.playerMaxHp||combatStatBlock().maxHp||60)}</span><span>Deaths ${state.deaths}</span><span>No event rewards</span></div><button id="lockdownRetryBtn">Emergency Reboot</button></div>`; log(`VECTOR LOCKDOWN FAILED: operator downed by ${killerName}.`); toast('Vector Lockdown failed. Operator down.'); state.rogueEvent={active:false,failedAt:Date.now(),kills:e.kills||0}; pulseObjective('Operator down — emergency reboot required.'); const reboot=()=>{ const restored=restoreCheckpoint(); if(!restored) loadStage(currentStageKey(),{force:true}); const caps=combatStatBlock(); state.player.hp=caps.maxHp; state.player.ep=caps.maxEp||state.player.maxEp; ensureRogueHud().classList.add('hidden'); renderAll(); queueAutosave(); }; setTimeout(()=>{ const btn=$('lockdownRetryBtn'); if(btn) btn.onclick=reboot; },0); renderAll(); }
   function completeVectorLockdown(){
     const e=state.rogueEvent||{};
-    if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=null;
+    if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
+    window._avLockdownTimer=null;
     document.body.classList.remove('vector-lockdown-active');
-    const rewardRolls=2+Math.min(10,(e.rewards||0)+Math.floor((e.kills||0)/7)+(e.tier?.reward||1));
-    const rewards=['Scrap','Rust Core','Vector Cell','Med Patch','Operator Shard: Vexa','Burnt Alloy','Corrupted Catalyst','Projectile Coil','Ash Ammo Cache','Vector Shard Cache'];
-    const won=[]; for(let i=0;i<rewardRolls;i++){ const item=rewards[Math.floor(Math.random()*rewards.length)]; won.push(item); addItem(item,1); recordDrop(item,'Vector Lockdown','Event'); }
-    const opXp=38+(e.upgradeHistory?.length||0)*5+Math.min(55,e.kills||0)+(e.tier?.reward||1)*8;
-    state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+Math.max(12,Math.floor((e.kills||0)/2)));
-    gainOperatorXp(opXp); advanceProtocolChallenge('victories',1);
+    const lootBoost=Math.max(0,e.abilities?.lootBoost||0);
+    const rewards=['Scrap Metal','Rust Core','Vector Cell','Med Patch','Operator Shard: Vexa','Burnt Alloy','Corrupted Catalyst','Projectile Coil','Ash Ammo Cache','Vector Shard Cache'];
+    const baseRolls=2+(e.tier?.reward||1)+Math.floor((e.kills||0)/10)+(e.rewards||0);
+    const rewardRolls=Math.max(2,Math.ceil(baseRolls*(1+lootBoost)));
+    const won=[];
+    for(let i=0;i<rewardRolls;i++){
+      const item=rewards[Math.floor(Math.random()*rewards.length)];
+      won.push(item); addItem(item,1); recordDrop(item,'Vector Lockdown','Event');
+    }
+    const opBase=55+(e.kills||0)*7+(e.threatLevel||1)*12;
+    const opXp=Math.max(20,Math.ceil(opBase*(1+lootBoost)));
+    const playerXp=Math.max(12,Math.ceil((28+(e.kills||0)*4)*(1+lootBoost)));
+    const healBonus=Math.max(12,Math.floor((e.kills||0)/2));
+    state.player.hp=Math.min(combatStatBlock().maxHp,(state.player.hp||0)+healBonus);
+    gainOperatorXp(opXp);
+    gainXp(playerXp);
+    advanceProtocolChallenge('victories',1);
     const rewardCounts=won.reduce((a,n)=>{a[n]=(a[n]||0)+1; return a;},{});
     const lootHtml=Object.entries(rewardCounts).map(([name,qty])=>`<span>${safeHtml(name)} x${qty}</span>`).join('');
-    const hud=ensureRogueHud(); hud.classList.remove('hidden');
-    hud.innerHTML=`<div class="lockdown-card avos-crt lockdown-reward-card"><div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARDS</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP. Operator XP +${opXp}.</p><div class="lockdown-stats"><span>Threat ${e.threatLevel||1}</span><span>Kills ${e.kills||0}</span><span>Rolls ${(e.upgradeHistory||[]).length}</span><span>Rewards ${won.length}</span></div><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml}</div><button id="lockdownContinueBtn">Continue</button></div>`;
-    log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} hostiles deleted. Rewards — ${won.join(', ')}.`);
-    toast('Vector Lockdown cleared. Rewards recovered.');
-    state.rogueEvent={active:false,lastRewards:won,clearedAt:Date.now(),kills:e.kills||0};
-    pulseObjective(`Lockdown cleared: ${won.join(', ')}`);
+    const abilityRows=Object.entries(e.abilityStacks||{}).filter(([k,v])=>v>0).map(([k,v])=>{
+      const last=(e.upgradeHistory||[]).filter(h=>h.stackKey===k).slice(-1)[0];
+      return `<span>${safeHtml(last?.name || k)} x${v}</span>`;
+    }).join('');
+    const healText=e.healed?`<span>Blood Circuit healed ${Math.round(e.healed)} HP</span>`:'';
+    const hud=ensureRogueHud();
+    hud.classList.remove('hidden');
+    hud.innerHTML=`<div class="lockdown-card avos-crt lockdown-reward-card"><div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: ${e.kills||0}. Damage taken: ${e.damageTaken||0} HP.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Threat ${e.threatLevel||1}</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Stacked Abilities This Run</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div><button id="lockdownContinueBtn">Continue</button></div>`;
+    log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} kills, +${opXp} operator XP, +${playerXp} player XP, rewards — ${won.join(', ')}.`);
+    toast(`Vector Lockdown cleared: +${opXp} Operator XP, +${playerXp} XP.`);
+    state.rogueEvent={active:false,lastRewards:won,lastRewardSummary:{opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:e.abilityStacks||{}},clearedAt:Date.now(),kills:e.kills||0};
+    pulseObjective(`Lockdown cleared: +${opXp} operator XP // +${playerXp} XP`);
     setTimeout(()=>{ const btn=$('lockdownContinueBtn'); if(btn) btn.onclick=()=>{ ensureRogueHud().classList.add('hidden'); renderAll(); }; },0);
     renderAll(); queueAutosave();
   }
@@ -7628,7 +7715,7 @@
       const age=Date.now()-(f.born||Date.now()); const t=Math.max(0,Math.min(1,age/(f.life||720)));
       const x=f.x*TILE, y=(f.y*TILE) - 16 - t*24;
       ctx.globalAlpha=1-t; ctx.textAlign='center'; ctx.font=f.type==='kill'?'900 14px monospace':'900 11px monospace';
-      ctx.fillStyle=f.type==='kill'?'#7fffd4':(f.type==='hurt'?'#ff6b7c':(f.type==='dot'?'#9dff70':'#fff2a8'));
+      ctx.fillStyle=f.type==='kill'?'#7fffd4':(f.type==='heal'?'#5dff7a':(f.type==='hurt'?'#ff6b7c':(f.type==='dot'?'#9dff70':'#fff2a8')));
       ctx.strokeStyle='rgba(0,0,0,.86)'; ctx.lineWidth=3; ctx.strokeText(f.text,x,y); ctx.fillText(f.text,x,y); ctx.globalAlpha=1;
     }
     ctx.restore();
