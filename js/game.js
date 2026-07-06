@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.82';
-  const BUILD_TITLE = 'BRAKK CHARACTER UNLOCK PASS';
+  const BUILD_VERSION = '0.9.83';
+  const BUILD_TITLE = 'SABLE CHARACTER UNLOCK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3542,7 +3542,73 @@
     }
 
 
-  };
+  ,
+
+    sable: {
+      id: 'sable',
+      code: 'AV-006',
+      displayName: 'Sable Static',
+      codename: 'ROGUE SIGNAL',
+      title: 'Rogue Signal',
+      meta: 'Operator Unit 006 • Rogue Signal • Locked',
+      quote: '“I am not hacking the apocalypse. I am just correcting its terrible password hygiene.”',
+      className: 'Rogue Signal',
+      affinity: 'Static / Signal',
+      rarity: 'Unlockable / Signal Prototype',
+      clearance: 'Level 20',
+      fileStatus: 'Locked',
+      unlockShard: 'Operator Shard: Sable',
+      shardName: 'Operator Shard: Sable',
+      shardCost: 75,
+      dropWeight: 1,
+      unlockedByDefault: false,
+      portrait: 'assets/operators/sable/portrait.png',
+      battle: 'assets/operators/sable/battle.png',
+      avatar: 'assets/operators/sable/avatar.png',
+      icon: 'assets/operators/sable/icon.png',
+      menu: 'assets/operators/sable/menu.png',
+      profile: 'assets/operators/sable/profile.png',
+      operatorCard: 'assets/operators/sable/operator_card.png',
+      partyIcon: 'assets/operators/sable/party_icon.png',
+      battleIcon: 'assets/operators/sable/battle_icon.png',
+      spriteSheet: 'assets/operators/sable/sprite_sheet.png',
+      mapSprite: 'assets/operators/sable/sprites/map_sprite.png',
+      mapSpriteLarge: 'assets/operators/sable/sprites/map_sprite_large.png',
+      weapon: 'assets/operators/sable/weapon.png',
+      rotations: {
+        down: 'assets/operators/sable/sprites/rotations/south.png',
+        downRight: 'assets/operators/sable/sprites/rotations/south-east.png',
+        right: 'assets/operators/sable/sprites/rotations/east.png',
+        upRight: 'assets/operators/sable/sprites/rotations/north-east.png',
+        up: 'assets/operators/sable/sprites/rotations/north.png',
+        upLeft: 'assets/operators/sable/sprites/rotations/north-west.png',
+        left: 'assets/operators/sable/sprites/rotations/west.png',
+        downLeft: 'assets/operators/sable/sprites/rotations/south-west.png'
+      },
+      animations: {
+        walking: {
+          down: ['assets/operators/sable/sprites/animations/walking/south/frame_000.png','assets/operators/sable/sprites/animations/walking/south/frame_001.png','assets/operators/sable/sprites/animations/walking/south/frame_002.png','assets/operators/sable/sprites/animations/walking/south/frame_003.png'],
+          downRight: ['assets/operators/sable/sprites/animations/walking/south-east/frame_000.png','assets/operators/sable/sprites/animations/walking/south-east/frame_001.png','assets/operators/sable/sprites/animations/walking/south-east/frame_002.png','assets/operators/sable/sprites/animations/walking/south-east/frame_003.png'],
+          right: ['assets/operators/sable/sprites/animations/walking/east/frame_000.png','assets/operators/sable/sprites/animations/walking/east/frame_001.png','assets/operators/sable/sprites/animations/walking/east/frame_002.png','assets/operators/sable/sprites/animations/walking/east/frame_003.png'],
+          upRight: ['assets/operators/sable/sprites/animations/walking/north-east/frame_000.png','assets/operators/sable/sprites/animations/walking/north-east/frame_001.png','assets/operators/sable/sprites/animations/walking/north-east/frame_002.png','assets/operators/sable/sprites/animations/walking/north-east/frame_003.png'],
+          up: ['assets/operators/sable/sprites/animations/walking/north/frame_000.png','assets/operators/sable/sprites/animations/walking/north/frame_001.png','assets/operators/sable/sprites/animations/walking/north/frame_002.png','assets/operators/sable/sprites/animations/walking/north/frame_003.png'],
+          upLeft: ['assets/operators/sable/sprites/animations/walking/north-west/frame_000.png','assets/operators/sable/sprites/animations/walking/north-west/frame_001.png','assets/operators/sable/sprites/animations/walking/north-west/frame_002.png','assets/operators/sable/sprites/animations/walking/north-west/frame_003.png'],
+          left: ['assets/operators/sable/sprites/animations/walking/west/frame_000.png','assets/operators/sable/sprites/animations/walking/west/frame_001.png','assets/operators/sable/sprites/animations/walking/west/frame_002.png','assets/operators/sable/sprites/animations/walking/west/frame_003.png'],
+          downLeft: ['assets/operators/sable/sprites/animations/walking/south-west/frame_000.png','assets/operators/sable/sprites/animations/walking/south-west/frame_001.png','assets/operators/sable/sprites/animations/walking/south-west/frame_002.png','assets/operators/sable/sprites/animations/walking/south-west/frame_003.png']
+        },
+        idle: {
+          down: ['assets/operators/sable/sprites/animations/idle/south/frame_000.png','assets/operators/sable/sprites/animations/idle/south/frame_001.png','assets/operators/sable/sprites/animations/idle/south/frame_002.png','assets/operators/sable/sprites/animations/idle/south/frame_003.png'],
+          downRight: ['assets/operators/sable/sprites/animations/idle/south-east/frame_000.png','assets/operators/sable/sprites/animations/idle/south-east/frame_001.png','assets/operators/sable/sprites/animations/idle/south-east/frame_002.png','assets/operators/sable/sprites/animations/idle/south-east/frame_003.png'],
+          right: ['assets/operators/sable/sprites/animations/idle/east/frame_000.png','assets/operators/sable/sprites/animations/idle/east/frame_001.png','assets/operators/sable/sprites/animations/idle/east/frame_002.png','assets/operators/sable/sprites/animations/idle/east/frame_003.png'],
+          upRight: ['assets/operators/sable/sprites/animations/idle/north-east/frame_000.png','assets/operators/sable/sprites/animations/idle/north-east/frame_001.png','assets/operators/sable/sprites/animations/idle/north-east/frame_002.png','assets/operators/sable/sprites/animations/idle/north-east/frame_003.png'],
+          up: ['assets/operators/sable/sprites/animations/idle/north/frame_000.png','assets/operators/sable/sprites/animations/idle/north/frame_001.png','assets/operators/sable/sprites/animations/idle/north/frame_002.png','assets/operators/sable/sprites/animations/idle/north/frame_003.png'],
+          upLeft: ['assets/operators/sable/sprites/animations/idle/north-west/frame_000.png','assets/operators/sable/sprites/animations/idle/north-west/frame_001.png','assets/operators/sable/sprites/animations/idle/north-west/frame_002.png','assets/operators/sable/sprites/animations/idle/north-west/frame_003.png'],
+          left: ['assets/operators/sable/sprites/animations/idle/west/frame_000.png','assets/operators/sable/sprites/animations/idle/west/frame_001.png','assets/operators/sable/sprites/animations/idle/west/frame_002.png','assets/operators/sable/sprites/animations/idle/west/frame_003.png'],
+          downLeft: ['assets/operators/sable/sprites/animations/idle/south-west/frame_000.png','assets/operators/sable/sprites/animations/idle/south-west/frame_001.png','assets/operators/sable/sprites/animations/idle/south-west/frame_002.png','assets/operators/sable/sprites/animations/idle/south-west/frame_003.png']
+        }
+      }
+    }
+};
 
   const CHARACTER_SHARD_BASE_CHANCE = 0.04;
   const CHARACTER_SHARD_BOSS_CHANCE = 0.07;
@@ -3791,7 +3857,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 172;
+  const SAVE_SCHEMA_VERSION = 173;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
