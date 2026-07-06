@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.80';
-  const BUILD_TITLE = 'PLAYTEST CHARACTER UNLOCK HARD FIX PASS';
+  const BUILD_VERSION = '0.9.81';
+  const BUILD_TITLE = 'CHARACTER MENU PLAY AS SWITCH PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3539,7 +3539,8 @@
     const progress=operatorUnlockProgress(op.id);
     const active=currentOperatorId()===op.id;
     const locked=!progress.unlocked;
-    return `<button class="character-card-btn ${active?'active':''} ${locked?'locked':'unlocked'}" onclick="window.AV.showCharacterFile('${op.id}')"><img src="${op.icon || op.portrait}" alt="${safeHtml(op.displayName)}"><b>${safeHtml(op.displayName)}</b><span>${locked?`LOCKED // ${progress.owned}/${progress.cost} shards`:(active?'ACTIVE':'UNLOCKED')}</span></button>`;
+    const status = locked ? `LOCKED // ${progress.owned}/${progress.cost} shards` : (active ? 'ACTIVE PLAYABLE' : 'UNLOCKED // CLICK TO PLAY');
+    return `<button class="character-card-btn ${active?'active':''} ${locked?'locked':'unlocked'}" data-character-card="${safeHtml(op.id)}" onclick="window.AV&&window.AV.characterCardClick&&window.AV.characterCardClick('${op.id}')"><img src="${op.icon || op.portrait}" alt="${safeHtml(op.displayName)}"><b>${safeHtml(op.displayName)}</b><span>${status}</span><em>${locked?'VIEW FILE':'PLAY AS'}</em></button>`;
   }
   function renderCharacterMenuDb(selectedId=currentOperatorId()){
     ensureCharacterState();
@@ -3550,9 +3551,21 @@
     list.innerHTML=Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
     const progress=operatorUnlockProgress(op.id);
     const locked=!progress.unlocked;
-    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="record-grid"><div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Unlockable')}</span></div><div><b>Status</b><span>${locked?'Locked':'Unlocked'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><div class="story-actions"><button onclick="window.AV.unlockOperator('${op.id}')" ${(!locked || progress.owned<progress.cost)?'disabled':''}>Unlock ${safeHtml(op.displayName)}</button><button onclick="window.AV.selectOperator('${op.id}')" ${locked?'disabled':''}>${currentOperatorId()===op.id?'Active':'Select Character'}</button></div><p class="menu-info">Character shards are rare drops from any battle. Bosses have a slightly higher chance, but not by much.</p></div>`;
+    const active=currentOperatorId()===op.id;
+    const unlockDisabled = (!locked || progress.owned<progress.cost) ? 'disabled' : '';
+    const playDisabled = locked ? 'disabled' : '';
+    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="record-grid"><div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Unlockable')}</span></div><div><b>Status</b><span>${locked?'Locked':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'Unlock with shards first, or use Playtest → Unlock All Characters.':'Press Play As to switch the overworld sprite, battle sprite, portrait, and active operator save file.'}</p></div>`;
+    const activeCard=list.querySelector(`[data-character-card="${CSS && CSS.escape ? CSS.escape(currentOperatorId()) : currentOperatorId()}"]`);
+    if(activeCard) activeCard.classList.add('active');
   }
   function showCharacterFile(id){ renderCharacterMenuDb(id); }
+  function characterCardClick(id){
+    if(operatorUnlocked(id)) return playAsOperator(id);
+    renderCharacterMenuDb(id);
+    const progress=operatorUnlockProgress(id);
+    toast(`${OPERATOR_DEFS[id]?.displayName || 'Character'} locked: ${progress.owned}/${progress.cost} shards.`);
+    return false;
+  }
 
   function currentOperatorId(){
     const id = state?.activeOperator || ACTIVE_OPERATOR_ID;
@@ -3623,18 +3636,47 @@
     if(line?.portrait && NPC_DEFS?.[line.portrait]?.asset) return NPC_DEFS[line.portrait].asset;
     return currentOperator().portrait;
   }
-  function setActiveOperator(id, {silent=false}={}){
-    if(!OPERATOR_DEFS[id]) return false;
-    if(!operatorUnlocked(id)){ toast(`${OPERATOR_DEFS[id].displayName} is locked.`); renderCharacterMenuDb(id); return false; }
+  function setActiveOperator(id, {silent=false, closeToGame=false}={}){
+    ensureCharacterState();
+    const op = OPERATOR_DEFS[id];
+    if(!op){ toast('Character file missing.'); return false; }
+    if(!operatorUnlocked(id)){
+      if(state.qaUnlockAllCharacters){
+        state.unlockedOperators[id]=true;
+      }else{
+        toast(`${op.displayName} is locked.`);
+        renderCharacterMenuDb(id);
+        return false;
+      }
+    }
     state.activeOperator = id;
+    if(state.player) state.player.lastMoveAt = 0;
     applyOperatorVisuals();
     loadImages();
-    renderAll();
+    save(true);
+    render();
+    renderMini();
+    renderUI();
     renderCharacterMenuDb(id);
-    if(!silent) save(true);
-    toast(`${OPERATOR_DEFS[id].displayName} selected.`);
+    renderOperatorDb();
+    if(closeToGame && gameStarted){
+      document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
+      uiState.mode='game';
+      document.body.classList.remove('menu-protocol-open');
+      document.body.classList.add('game-active','fullscreen-mode');
+      $('app')?.classList.remove('hidden');
+      try{ canvas.focus({preventScroll:true}); }catch(err){}
+    }
+    if(!silent) toast(`Now playing as ${op.displayName}.`);
     return true;
   }
+  function playAsOperator(id){
+    return setActiveOperator(id, {silent:false, closeToGame:true});
+  }
+  function selectOperator(id){
+    return playAsOperator(id);
+  }
+
   function applyOperatorVisuals(){
     const op = currentOperator();
     const heroPortrait = $('heroPortrait');
@@ -3683,7 +3725,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 170;
+  const SAVE_SCHEMA_VERSION = 171;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -7236,9 +7278,17 @@
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
+    document.addEventListener('click', e=>{
+      const selectBtn=e.target.closest && e.target.closest('[data-character-select]');
+      const cardBtn=e.target.closest && e.target.closest('[data-character-card]');
+      const unlockBtn=e.target.closest && e.target.closest('[data-character-unlock]');
+      if(selectBtn){ e.preventDefault(); e.stopPropagation(); playAsOperator(selectBtn.dataset.characterSelect); return; }
+      if(unlockBtn){ e.preventDefault(); e.stopPropagation(); unlockOperator(unlockBtn.dataset.characterUnlock); return; }
+      if(cardBtn && cardBtn.closest('#characterOverlay')){ e.preventDefault(); e.stopPropagation(); characterCardClick(cardBtn.dataset.characterCard); return; }
+    }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
