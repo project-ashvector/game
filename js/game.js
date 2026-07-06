@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.67';
-  const BUILD_TITLE = 'LEVEL 1 STORY HARD FIX PASS';
+  const BUILD_VERSION = '0.9.68';
+  const BUILD_TITLE = 'STORY DIALOG OVERRIDE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3838,7 +3838,7 @@
   function startOpeningStorySequence(){
     ensureStageStoryScenes();
     ensureStoryFlags();
-    // New Game must always show Level 1 intro, even if an old save/read flag exists.
+    // v158: use a fully self-contained dialog path for Level 1.
     state.flags.storySeen.intro=false;
     delete state.flags.storySeen.intro;
     const afterIntro=()=>{
@@ -3849,30 +3849,14 @@
       pulseObjective(currentObjectiveText());
       showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.');
     };
-    const open=()=>{
-      try{
-        ensureStageStoryScenes();
-        showStory('intro', afterIntro);
-        const overlay=$('storyOverlay');
-        if(overlay){
-          mountStoryOverlay(overlay);
-          applyStoryOverlaySafety(overlay);
-          const line=$('storyLine');
-          if(!line || !line.textContent){
-            console.warn('[AV Story] opening story mounted but no line text found; forcing first line.');
-          }
-        } else {
-          console.warn('[AV Story] story overlay did not create.');
-        }
-      }catch(err){
-        console.error('Opening story failed:', err);
-        toast('Opening story failed to render. Check console.');
-      }
-    };
-    // Open immediately, then run two safety retries if the browser/fullscreen hides it.
-    setTimeout(open, 80);
-    setTimeout(()=>{ const overlay=$('storyOverlay'); if(!storyActive || !overlay || overlay.classList.contains('hidden') || overlay.style.display==='none') open(); }, 420);
-    setTimeout(()=>{ const overlay=$('storyOverlay'); if(storyActive && overlay) applyStoryOverlaySafety(overlay); }, 900);
+    try{
+      forceStoryDialogHard('intro', afterIntro);
+    }catch(err){
+      console.error('Hard opening story failed:', err);
+      toast('Story dialog failed. Opening fallback text.');
+      alert('PROJECT: ASH VECTOR\n\nVyra wakes in the Forbidden Graveyard. AVOS explains that the ASH Vector network broke reality while trying to patch the apocalypse. Sync the terminal, clear anomalies, defeat the boss, recover the Grave Core, and extract.');
+      afterIntro();
+    }
   }
 
   function startGame(fresh=false){syncBuildLabels(); setBattleMobileMode(false); if(fresh) state=newGameState(); ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression(); if(fresh && !state.checkpoint) setCheckpoint('Fracture Entry'); hideAll(); uiState.mode='game'; uiState.returnStack.length=0; document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key; ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame(); $('app').classList.remove('hidden'); if(!fresh) requestNativeFullscreen(); canvas.focus({preventScroll:true}); renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); save(true); if(fresh) startOpeningStorySequence(); else setTimeout(()=>pulseObjective(currentObjectiveText()), 240);}
@@ -4592,6 +4576,78 @@
     }
     document.body.classList.add('story-open');
   }
+  function forceStoryDialogHard(key='intro', after=null){
+    ensureStageStoryScenes();
+    ensureStoryFlags();
+    const scene = STORY_SCENES[key] || STORY_SCENES.intro || {
+      kicker:'NEW GAME PROLOGUE // THE ASH EVENT',
+      title:'PROJECT: ASH VECTOR',
+      tag:'Reality fractured. Vyra wakes up and AVOS is already being a problem.',
+      speaker:'AVOS',
+      lines:[
+        {speaker:'AVOS', portrait:'vyra', text:'Boot sequence complete. Good news: you are alive. Bad news: reality is not handling that information well.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Why am I in a graveyard with blades and a sky that looks microwaved?'},
+        {speaker:'AVOS', portrait:'vyra', text:'The ASH Vector network tried to patch the apocalypse live. It went about as well as using a brick as a parachute.'},
+        {speaker:'VYRA', portrait:'vyra', text:'So I clean up your broken update?'},
+        {speaker:'AVOS', portrait:'vyra', text:'Yes. Sync the terminal, clear anomalies, breach the boss gate, recover the Grave Core, and try not to become premium cemetery content.'}
+      ]
+    };
+    const lines=(scene.lines||[]).map(raw=>{
+      if(raw && typeof raw === 'object') return raw;
+      return {speaker:scene.speaker||'AVOS', portrait:'vyra', text:String(raw||'')};
+    });
+    let i=0;
+    let overlay=$('storyOverlay');
+    if(overlay) overlay.remove();
+    overlay=document.createElement('div');
+    overlay.id='storyOverlay';
+    overlay.className='story-hard-open';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.innerHTML=`<div class="story-hard-card avos-crt">
+      <div class="story-hard-kicker" id="storyKicker"></div>
+      <div class="story-hard-title" id="storySceneTitle"></div>
+      <div class="story-hard-tag" id="storySceneTag"></div>
+      <div class="story-hard-body">
+        <img id="storyPortrait" src="assets/operators/av001/portrait.png" alt="Vyra portrait">
+        <div><div class="story-hard-speaker" id="storySpeaker"></div><p class="story-hard-line" id="storyLine"></p></div>
+      </div>
+      <div class="story-hard-actions"><button id="storyNext">Continue</button><button id="storySkip">Skip</button></div>
+      <div class="story-controller-tip" id="storyControllerTip">Enter / Space: continue. Escape: skip.</div>
+    </div>`;
+    document.body.appendChild(overlay);
+    storyActive=true;
+    pendingStoryAfter=after||null;
+    document.body.classList.add('story-open');
+    const portrait=line=>line.portrait==='fermilat' ? NPC_DEFS.fermilat.asset : 'assets/operators/av001/portrait.png';
+    const draw=()=>{
+      const line=lines[i] || {speaker:scene.speaker||'AVOS', text:'Story data recovered.'};
+      $('storyKicker').textContent=scene.kicker || 'ASH VECTOR STORY';
+      $('storySceneTitle').textContent=scene.title || 'PROJECT: ASH VECTOR';
+      $('storySceneTag').textContent=scene.tag || '';
+      $('storySpeaker').textContent=line.speaker || scene.speaker || 'AVOS';
+      $('storyLine').textContent=line.text || '';
+      $('storyPortrait').src=portrait(line);
+      $('storyNext').textContent = i >= lines.length-1 ? 'Start Level 1' : 'Continue';
+      overlay.style.display='flex';
+      overlay.style.visibility='visible';
+      overlay.style.opacity='1';
+      overlay.style.zIndex='2147483000';
+    };
+    overlay._advance=()=>{
+      i++;
+      if(i>=lines.length) finishStory();
+      else draw();
+    };
+    $('storyNext').onclick=(e)=>{ e.preventDefault(); overlay._advance(); };
+    $('storySkip').onclick=(e)=>{ e.preventDefault(); finishStory(); };
+    draw();
+    requestAnimationFrame(draw);
+    setTimeout(draw,120);
+    setTimeout(draw,480);
+    return overlay;
+  }
+
   document.addEventListener('fullscreenchange',()=>{
     if(storyActive){
       const overlay=$('storyOverlay');
@@ -6577,11 +6633,11 @@
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>startGame(true),
-    story:()=>{ state.flags.storySeen.intro=false; showStory('intro'); },
+    story:()=>{ state.flags.storySeen.intro=false; forceStoryDialogHard('intro'); },
     continue:()=>continueSavedGame(),
     open:(id)=>openOverlay(id),
     fullscreen:()=>toggleFullscreenMode()
