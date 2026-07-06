@@ -9,7 +9,7 @@
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
   const BUILD_VERSION = '0.9.94';
-  const BUILD_TITLE = 'LOCKDOWN SURVIVAL PROJECTILE PASS';
+  const BUILD_TITLE = 'LOCKDOWN MONSTER SURVIVAL TUNING';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5509,27 +5509,39 @@
   // v184: Vector Lockdown now behaves like a short roguelike survival room.
   function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(hud) return hud; hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; hud.innerHTML='<div class="lockdown-card avos-crt"><div class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Room sealed. Auto-fire online.</p><div id="lockdownStats" class="lockdown-stats"></div><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; document.body.appendChild(hud); return hud; }
   const ROGUE_UPGRADES = [
-    {name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount += 1},
+    {name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount = Math.min(12,(e.projectileCount||1)+1)},
     {name:'Ash Rifling', desc:'+25% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.25)},
-    {name:'Rust Accelerator', desc:'+18% fire rate', apply:e=>e.fireRate = Math.max(210, Math.floor(e.fireRate*.82))},
-    {name:'Vector Velocity', desc:'+20% projectile speed', apply:e=>e.projectileSpeed += 2.1},
-    {name:'Piercing Static', desc:'+1 enemy pierce', apply:e=>e.pierce += 1},
-    {name:'Twin Feed', desc:'+2 projectiles but slower firing', apply:e=>{e.projectileCount += 2; e.fireRate = Math.min(1250, Math.floor(e.fireRate*1.10));}},
+    {name:'Rust Accelerator', desc:'+18% fire rate', apply:e=>e.fireRate = Math.max(230, Math.floor(e.fireRate*.82))},
+    {name:'Vector Velocity', desc:'+20% projectile speed', apply:e=>e.projectileSpeed += 1.8},
+    {name:'Piercing Static', desc:'+1 enemy pierce', apply:e=>e.pierce = Math.min(4,(e.pierce||0)+1)},
+    {name:'Twin Feed', desc:'+2 projectiles per volley', apply:e=>e.projectileCount = Math.min(12,(e.projectileCount||1)+2)},
     {name:'Core-Tipped Rounds', desc:'+35% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.35)},
-    {name:'Scatter Vector', desc:'+3 projectiles, lower damage', apply:e=>{e.projectileCount += 3; e.projectileDamage = Math.max(4, Math.floor(e.projectileDamage*.82));}},
-    {name:'Scrap Magnet', desc:'+reward roll after survival', apply:e=>e.rewards += 1},
-    {name:'Emergency Plate', desc:'+16 HP and less contact damage', apply:e=>{e.damageTaken += .10; state.player.hp=Math.min(combatStatBlock().maxHp, state.player.hp+16);}}
+    {name:'Scatter Vector', desc:'+3 projectiles, slight damage tradeoff', apply:e=>{e.projectileCount = Math.min(12,(e.projectileCount||1)+3); e.projectileDamage = Math.max(6, Math.floor(e.projectileDamage*.90));}},
+    {name:'Overcharged Barrel', desc:'+20% projectile damage and speed', apply:e=>{e.projectileDamage=Math.ceil(e.projectileDamage*1.20); e.projectileSpeed+=1.4;}},
+    {name:'Rapid Vector Feed', desc:'+12% fire rate and +1 projectile', apply:e=>{e.fireRate=Math.max(230,Math.floor(e.fireRate*.88)); e.projectileCount=Math.min(12,(e.projectileCount||1)+1);}}
   ];
   function maybeTriggerVectorLockdown(){ if(!gameStarted || battle || storyActive || state.rogueEvent?.active) return; if((state.player?.level||1)<2 && (state.flags?.anomaliesCleared||0)<1) return; const now=Date.now(); if(now-(state.rogueLastAt||0)<135000) return; if(Math.random()>0.045) return; startVectorLockdown(); }
   function lockdownArenaBounds(cx=state.player.x, cy=state.player.y){ const r=4; return {minX:Math.max(1,cx-r), maxX:Math.min(mapWidth()-2,cx+r), minY:Math.max(1,cy-r), maxY:Math.min(mapHeight()-2,cy+r)}; }
   function pointInLockdownArena(x,y){ const e=state.rogueEvent; if(!e?.active || !e.arena) return true; return x>=e.arena.minX && x<=e.arena.maxX && y>=e.arena.minY && y<=e.arena.maxY; }
-  function startVectorLockdown(){ const gear=equipmentBonuses(); const baseAtk=Math.max(6, combatStatBlock().atk||state.player.atk||10); const event={active:true,startedAt:Date.now(),lastFrameAt:Date.now(),duration:60000,nextUpgradeAt:Date.now()+5000,nextSpawnAt:Date.now()+900,nextShotAt:Date.now()+250,upgrades:[],enemies:[],projectiles:[],kills:0,damageTaken:0,rewards:1,projectileCount:1,projectileDamage:Math.max(5,Math.floor(baseAtk*.72)+Math.floor((gear.atk||0)*.6)),projectileSpeed:9.5,fireRate:760,pierce:0,spawnDelay:1450,arenaCenter:{x:state.player.x,y:state.player.y},arena:lockdownArenaBounds(state.player.x,state.player.y),starterWeapon:gear.atk?`equipped weapon power +${gear.atk}`:'starter weapon'}; state.rogueEvent=event; state.rogueLastAt=Date.now(); document.body.classList.add('vector-lockdown-active'); log('VECTOR LOCKDOWN: exits sealed. Auto-projectile system armed for 60 seconds.'); pulseObjective('VECTOR LOCKDOWN: room sealed — survive the flood.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownHud(); if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=setInterval(tickVectorLockdown,160); renderAll(); }
-  function spawnLockdownEnemy(e){ const a=e.arena; const side=Math.floor(Math.random()*4); let tx=a.minX, ty=a.minY; if(side===0){ tx=a.minX; ty=a.minY+Math.floor(Math.random()*(a.maxY-a.minY+1)); } if(side===1){ tx=a.maxX; ty=a.minY+Math.floor(Math.random()*(a.maxY-a.minY+1)); } if(side===2){ tx=a.minX+Math.floor(Math.random()*(a.maxX-a.minX+1)); ty=a.minY; } if(side===3){ tx=a.minX+Math.floor(Math.random()*(a.maxX-a.minX+1)); ty=a.maxY; } const t=(Date.now()-e.startedAt)/1000; const hp=Math.floor(14 + t*.65 + Math.random()*8); e.enemies.push({x:tx+.5,y:ty+.5,hp,maxHp:hp,speed:.010+Math.min(.018,t*.00025),touchAt:0,phase:Math.random()*6.28}); }
+  function lockdownMonsterPool(){
+    const stage=currentStageKey();
+    const slotMap=ENCOUNTER_SLOTS[stage] || ENCOUNTER_SLOTS.f001 || {};
+    const records=Object.values(slotMap).filter(s=>s && s.type==='anomaly').map(s=>importedAnomalyRoster[s.index]).filter(Boolean);
+    if(records.length) return records;
+    return importedAnomalyRoster.slice(0, Math.min(12, importedAnomalyRoster.length));
+  }
+  function randomLockdownMonsterDef(){
+    const pool=lockdownMonsterPool();
+    const rec=pool[Math.floor(Math.random()*pool.length)] || importedAnomalyRoster[0] || {};
+    return {name:rec.name || 'Anomaly', img:rec.battle, icon:iconPathFor(rec), baseHp:Number(rec.hp||30), atk:Number(rec.atk||7)};
+  }
+  function startVectorLockdown(){ const gear=equipmentBonuses(); const baseAtk=Math.max(6, combatStatBlock().atk||state.player.atk||10); const event={active:true,startedAt:Date.now(),lastFrameAt:Date.now(),duration:60000,nextUpgradeAt:Date.now()+5000,nextSpawnAt:Date.now()+1800,nextShotAt:Date.now()+220,upgrades:[],enemies:[],projectiles:[],kills:0,damageTaken:0,rewards:1,projectileCount:1,projectileDamage:Math.max(9,Math.floor(baseAtk*.95)+Math.floor((gear.atk||0)*.75)),projectileSpeed:10.5,fireRate:720,pierce:0,spawnDelay:2600,maxHostiles:15,projectileStyle:0,arenaCenter:{x:state.player.x,y:state.player.y},arena:lockdownArenaBounds(state.player.x,state.player.y),starterWeapon:gear.atk?`equipped weapon power +${gear.atk}`:'starter weapon'}; state.rogueEvent=event; state.rogueLastAt=Date.now(); document.body.classList.add('vector-lockdown-active'); log('VECTOR LOCKDOWN: exits sealed. Auto-projectile system armed for 60 seconds. Real anomaly signatures are entering slowly.'); pulseObjective('VECTOR LOCKDOWN: room sealed — delete the monsters before they crowd you.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownHud(); if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=setInterval(tickVectorLockdown,160); renderAll(); }
+  function spawnLockdownEnemy(e){ if((e.enemies||[]).length >= (e.maxHostiles||15)) return; const a=e.arena; const side=Math.floor(Math.random()*4); let tx=a.minX, ty=a.minY; if(side===0){ tx=a.minX; ty=a.minY+Math.floor(Math.random()*(a.maxY-a.minY+1)); } if(side===1){ tx=a.maxX; ty=a.minY+Math.floor(Math.random()*(a.maxY-a.minY+1)); } if(side===2){ tx=a.minX+Math.floor(Math.random()*(a.maxX-a.minX+1)); ty=a.minY; } if(side===3){ tx=a.minX+Math.floor(Math.random()*(a.maxX-a.minX+1)); ty=a.maxY; } const monster=randomLockdownMonsterDef(); const t=(Date.now()-e.startedAt)/1000; const hp=Math.floor(10 + Math.min(18,t*.22) + Math.random()*5); const speed=.0028 + Math.min(.0055,t*.000055) + Math.random()*.0012; e.enemies.push({x:tx+.5,y:ty+.5,hp,maxHp:hp,speed,touchAt:0,phase:Math.random()*6.28,name:monster.name,img:monster.img,icon:monster.icon,atk:monster.atk}); }
   function nearestLockdownEnemy(e){ let best=null, bestD=Infinity; const px=state.player.x+.5, py=state.player.y+.5; for(const m of e.enemies){ const d=Math.hypot(m.x-px,m.y-py); if(d<bestD){ best=m; bestD=d; } } return best; }
-  function fireLockdownVolley(e){ const target=nearestLockdownEnemy(e); if(!target) return; const px=state.player.x+.5, py=state.player.y+.5; const base=Math.atan2(target.y-py,target.x-px); const count=Math.max(1,e.projectileCount|0); const spread=Math.min(.95, .11*(count-1)); for(let i=0;i<count;i++){ const offset=count===1?0:(-spread/2)+(spread*(i/(count-1))); const angle=base+offset; e.projectiles.push({x:px,y:py,vx:Math.cos(angle)*e.projectileSpeed*.018,vy:Math.sin(angle)*e.projectileSpeed*.018,damage:e.projectileDamage,life:1200,pierce:e.pierce,spawnedAt:Date.now()}); } }
-  function tickVectorLockdown(){ const e=state.rogueEvent; if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; } const now=Date.now(); const dt=Math.min(240, now-(e.lastFrameAt||now)); e.lastFrameAt=now; if(now>=e.nextUpgradeAt){ const pool=ROGUE_UPGRADES.filter(u=>!e.upgrades.includes(u.name)); const up=pool[Math.floor(Math.random()*pool.length)] || ROGUE_UPGRADES[Math.floor(Math.random()*ROGUE_UPGRADES.length)]; up.apply(e); e.upgrades.push(up.name); e.nextUpgradeAt += 5000; toast(`Projectile upgrade: ${up.name}`); log(`Lockdown Upgrade: ${up.name} — ${up.desc}.`); } const pressure=(now-e.startedAt)/60000; if(now>=e.nextSpawnAt){ spawnLockdownEnemy(e); e.spawnDelay=Math.max(420, Math.floor(1450-pressure*820)); e.nextSpawnAt=now+e.spawnDelay; } if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(200,e.fireRate); } updateLockdownActors(e,dt); const left=Math.ceil((e.duration-(now-e.startedAt))/1000); if(left<=0){ completeVectorLockdown(); return; } updateVectorLockdownHud(); renderUI(); render(); }
-  function updateLockdownActors(e,dt){ const px=state.player.x+.5, py=state.player.y+.5; for(const m of e.enemies){ const dx=px-m.x, dy=py-m.y, d=Math.max(.05, Math.hypot(dx,dy)); m.x += (dx/d)*m.speed*dt; m.y += (dy/d)*m.speed*dt; if(d<.52 && Date.now()>(m.touchAt||0)){ const hit=Math.max(1, Math.floor((4+Math.random()*5)*Math.max(.35,1-(e.damageTaken||0)))); state.player.hp=Math.max(1,state.player.hp-hit); m.touchAt=Date.now()+900; showXpFloat(`-${hit} HP`,'locked'); } } const liveProjectiles=[]; for(const p of e.projectiles){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; let keep=p.life>0 && pointInLockdownArena(Math.floor(p.x),Math.floor(p.y)); for(const m of e.enemies){ if(m.hp<=0) continue; if(Math.hypot(m.x-p.x,m.y-p.y)<.38){ m.hp-=p.damage; showXpFloat(`${p.damage}`,'xp'); if(p.pierce>0){ p.pierce--; } else { keep=false; } if(m.hp<=0){ e.kills++; if(Math.random()<.08) e.rewards++; } if(!keep) break; } } if(keep) liveProjectiles.push(p); } e.projectiles=liveProjectiles.slice(-140); e.enemies=e.enemies.filter(m=>m.hp>0).slice(-45); }
-  function updateVectorLockdownHud(){ const e=state.rogueEvent; const hud=ensureRogueHud(); if(!e?.active){ hud.classList.add('hidden'); return; } const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000)); $('lockdownTimer').textContent=`${left}s`; $('lockdownText').textContent=`EXITS SEALED // Auto-fire using ${e.starterWeapon}. Monsters are flooding in.`; if($('lockdownStats')) $('lockdownStats').innerHTML=`<span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}</span>`; $('lockdownUpgrades').innerHTML=(e.upgrades||[]).slice(-8).map(u=>`<span>${safeHtml(u)}</span>`).join('') || '<span>First projectile upgrade incoming...</span>'; }
+  function fireLockdownVolley(e){ const target=nearestLockdownEnemy(e); if(!target) return; const px=state.player.x+.5, py=state.player.y+.5; const base=Math.atan2(target.y-py,target.x-px); const count=Math.max(1,Math.min(12,e.projectileCount|0)); const spread=Math.min(1.15, .13*(count-1)); const styles=['cyan','red','green','gold','violet']; for(let i=0;i<count;i++){ const offset=count===1?0:(-spread/2)+(spread*(i/(count-1))); const angle=base+offset; const style=styles[(i+(e.projectileStyle||0))%styles.length]; e.projectiles.push({x:px,y:py,vx:Math.cos(angle)*e.projectileSpeed*.018,vy:Math.sin(angle)*e.projectileSpeed*.018,damage:e.projectileDamage,life:1250,pierce:e.pierce,style,spawnedAt:Date.now()}); } e.projectileStyle=((e.projectileStyle||0)+1)%styles.length; }
+  function tickVectorLockdown(){ const e=state.rogueEvent; if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; } const now=Date.now(); const dt=Math.min(240, now-(e.lastFrameAt||now)); e.lastFrameAt=now; if(now>=e.nextUpgradeAt){ const pool=ROGUE_UPGRADES.filter(u=>!e.upgrades.includes(u.name)); const up=pool[Math.floor(Math.random()*pool.length)] || ROGUE_UPGRADES[Math.floor(Math.random()*ROGUE_UPGRADES.length)]; up.apply(e); e.upgrades.push(up.name); e.nextUpgradeAt += 5000; toast(`Projectile upgrade: ${up.name}`); log(`Lockdown Upgrade: ${up.name} — ${up.desc}.`); } const pressure=(now-e.startedAt)/60000; if(now>=e.nextSpawnAt){ spawnLockdownEnemy(e); e.spawnDelay=Math.max(1800, Math.floor(2600-pressure*650)); e.nextSpawnAt=now+e.spawnDelay; } if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(200,e.fireRate); } updateLockdownActors(e,dt); const left=Math.ceil((e.duration-(now-e.startedAt))/1000); if(left<=0){ completeVectorLockdown(); return; } updateVectorLockdownHud(); renderUI(); render(); }
+  function updateLockdownActors(e,dt){ const px=state.player.x+.5, py=state.player.y+.5; for(const m of e.enemies){ const dx=px-m.x, dy=py-m.y, d=Math.max(.05, Math.hypot(dx,dy)); m.x += (dx/d)*m.speed*dt; m.y += (dy/d)*m.speed*dt; if(e.arena){ m.x=Math.max(e.arena.minX+.25, Math.min(e.arena.maxX+.75, m.x)); m.y=Math.max(e.arena.minY+.25, Math.min(e.arena.maxY+.75, m.y)); } if(d<.48 && Date.now()>(m.touchAt||0)){ const hit=Math.max(1, Math.floor(2+Math.random()*3)); state.player.hp=Math.max(1,state.player.hp-hit); e.damageTaken=(e.damageTaken||0)+hit; m.touchAt=Date.now()+1150; showXpFloat(`-${hit} HP`,'locked'); } } const liveProjectiles=[]; for(const p of e.projectiles){ p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; let keep=p.life>0 && pointInLockdownArena(Math.floor(p.x),Math.floor(p.y)); for(const m of e.enemies){ if(m.hp<=0) continue; if(Math.hypot(m.x-p.x,m.y-p.y)<.48){ m.hp-=p.damage; showXpFloat(`${p.damage}`,'xp'); if(p.pierce>0){ p.pierce--; } else { keep=false; } if(m.hp<=0){ e.kills++; if(Math.random()<.12) e.rewards++; showXpFloat('KILL','good'); } if(!keep) break; } } if(keep) liveProjectiles.push(p); } e.projectiles=liveProjectiles.slice(-110); e.enemies=e.enemies.filter(m=>m.hp>0).slice(0,e.maxHostiles||15); }
+  function updateVectorLockdownHud(){ const e=state.rogueEvent; const hud=ensureRogueHud(); if(!e?.active){ hud.classList.add('hidden'); return; } const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000)); $('lockdownTimer').textContent=`${left}s`; $('lockdownText').textContent=`EXITS SEALED // Auto-fire using ${e.starterWeapon}. Max ${e.maxHostiles||15} real monsters at once.`; if($('lockdownStats')) $('lockdownStats').innerHTML=`<span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}</span>`; $('lockdownUpgrades').innerHTML=(e.upgrades||[]).slice(-8).map(u=>`<span>${safeHtml(u)}</span>`).join('') || '<span>First projectile upgrade incoming...</span>'; }
   function completeVectorLockdown(){ const e=state.rogueEvent||{}; if(window._avLockdownTimer) clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; document.body.classList.remove('vector-lockdown-active'); ensureRogueHud().classList.add('hidden'); const rewardRolls=2+Math.min(8,(e.rewards||0)+Math.floor((e.kills||0)/8)); const rewards=['Scrap','Rust Core','Vector Cell','Med Patch','Operator Shard: Vexa','Burnt Alloy','Corrupted Catalyst','Projectile Coil','Ash Ammo Cache']; const won=[]; for(let i=0;i<rewardRolls;i++){ const item=rewards[Math.floor(Math.random()*rewards.length)]; won.push(item); addItem(item,1); recordDrop(item,'Vector Lockdown','Event'); } state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+Math.max(10,Math.floor((e.kills||0)/2))); gainOperatorXp(32+(e.upgrades?.length||0)*4+Math.min(40,e.kills||0)); advanceProtocolChallenge('victories',1); log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} hostiles deleted. Rewards — ${won.join(', ')}.`); toast('Vector Lockdown cleared. Rewards recovered.'); state.rogueEvent={active:false,lastRewards:won,clearedAt:Date.now(),kills:e.kills||0}; pulseObjective(`Lockdown cleared: ${won.join(', ')}`); renderAll(); queueAutosave(); }
 
   function tryMove(dx,dy, source='keyboard'){
@@ -7183,32 +7195,55 @@
     ctx.save();
     for(const m of e.enemies||[]){
       const x=m.x*TILE, y=m.y*TILE;
-      const bob=Math.sin(Date.now()*.008+m.phase)*2;
-      ctx.fillStyle='rgba(0,0,0,.36)';
-      ctx.beginPath(); ctx.ellipse(x,y+14,15,5,0,0,Math.PI*2); ctx.fill();
+      const bob=Math.sin(Date.now()*.006+m.phase)*1.5;
       const hpPct=Math.max(0,m.hp/Math.max(1,m.maxHp));
-      const grd=ctx.createRadialGradient(x,y+bob,4,x,y+bob,18);
-      grd.addColorStop(0,'rgba(255,130,92,.96)');
-      grd.addColorStop(1,'rgba(255,48,72,.28)');
-      ctx.fillStyle=grd;
-      ctx.beginPath(); ctx.arc(x,y+bob,14,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.24)'; ctx.stroke();
-      ctx.fillStyle='rgba(0,0,0,.62)'; ctx.fillRect(x-15,y-24,30,4);
-      ctx.fillStyle='rgba(255,48,72,.86)'; ctx.fillRect(x-15,y-24,30*hpPct,4);
+      ctx.fillStyle='rgba(0,0,0,.40)';
+      ctx.beginPath(); ctx.ellipse(x,y+15,16,5,0,0,Math.PI*2); ctx.fill();
+      const im=images[m.icon] || images[m.img];
+      if(im && im.complete && im.naturalWidth){
+        const drawW=34, drawH=34;
+        ctx.shadowColor='rgba(255,48,72,.55)';
+        ctx.shadowBlur=7;
+        const oldSmooth=ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled=true;
+        ctx.drawImage(im, x-drawW/2, y-drawH/2+bob, drawW, drawH);
+        ctx.imageSmoothingEnabled=oldSmooth;
+        ctx.shadowBlur=0;
+      } else {
+        const grd=ctx.createRadialGradient(x,y+bob,4,x,y+bob,17);
+        grd.addColorStop(0,'rgba(255,130,92,.96)');
+        grd.addColorStop(1,'rgba(255,48,72,.32)');
+        ctx.fillStyle=grd;
+        ctx.beginPath(); ctx.arc(x,y+bob,13,0,Math.PI*2); ctx.fill();
+        ctx.strokeStyle='rgba(255,255,255,.24)'; ctx.stroke();
+      }
+      ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(x-16,y-25,32,5);
+      ctx.fillStyle='rgba(255,48,72,.92)'; ctx.fillRect(x-16,y-25,32*hpPct,5);
+      ctx.strokeStyle='rgba(255,255,255,.22)'; ctx.strokeRect(x-16.5,y-25.5,33,6);
     }
     ctx.restore();
   }
   function drawLockdownProjectiles(){
     const e=state.rogueEvent;
     if(!e?.active) return;
+    const palette={cyan:['rgba(190,250,255,.98)','rgba(112,215,255,.95)'],red:['rgba(255,210,210,.98)','rgba(255,48,72,.95)'],green:['rgba(205,255,196,.98)','rgba(93,255,122,.95)'],gold:['rgba(255,238,166,.98)','rgba(255,199,64,.95)'],violet:['rgba(232,205,255,.98)','rgba(190,96,255,.95)']};
     ctx.save();
-    ctx.shadowColor='rgba(112,215,255,.95)';
-    ctx.shadowBlur=12;
     for(const p of e.projectiles||[]){
       const x=p.x*TILE, y=p.y*TILE;
-      ctx.fillStyle='rgba(190,250,255,.95)';
-      ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,.55)'; ctx.stroke();
+      const colors=palette[p.style] || palette.cyan;
+      const angle=Math.atan2(p.vy,p.vx);
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(angle);
+      ctx.shadowColor=colors[1];
+      ctx.shadowBlur=12;
+      ctx.fillStyle=colors[0];
+      ctx.beginPath();
+      ctx.moveTo(9,0); ctx.lineTo(-5,-4); ctx.lineTo(-2,0); ctx.lineTo(-5,4); ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,.55)';
+      ctx.stroke();
+      ctx.restore();
     }
     ctx.restore();
   }
