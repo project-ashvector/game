@@ -8,7 +8,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.08';
+  const BUILD_VERSION = '1.0.09';
   const BUILD_TITLE = 'FREE ROAM LOCKDOWN PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -4384,7 +4384,10 @@
       ...importedAnomalyRoster.slice(0,80).flatMap(c => [c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)]),
       ...projectilePaths,
-      'assets/items/memory_core.png'
+      'assets/items/memory_core.png',
+      'assets/buffs/split_chamber.png','assets/buffs/core_tipped_rounds.png','assets/buffs/rapid_vector_feed.png','assets/buffs/vector_velocity.png','assets/buffs/piercing_static.png',
+      'assets/buffs/blood_circuit.png','assets/buffs/static_crit_loop.png','assets/buffs/chain_static.png','assets/buffs/gravity_leak.png','assets/buffs/orbiting_scrap.png','assets/buffs/cache_magnet.png',
+      'assets/buffs/ash_rifling.png','assets/buffs/rust_accelerator.png','assets/buffs/overcharged_barrel.png','assets/buffs/scatter_vector.png','assets/buffs/twin_feed.png'
     ];
     [...new Set(paths)].filter(Boolean).forEach(ensureImageCached);
   }
@@ -5549,18 +5552,18 @@
     {type:'debuff', stackKey:'surge', name:'Hostile Surge', desc:'monsters spawn sooner', apply:e=>{e.spawnDelay=Math.max(850,Math.floor((e.spawnDelay||2600)*.78)); e.nextSpawnAt=Math.min(e.nextSpawnAt||Date.now()+1200, Date.now()+900);}}
   ];
   const LOCKDOWN_ICON_DEFS = {
-    shots:{abbr:'SH', color:'#7cf0ff', label:'Projectile Count'},
-    damage:{abbr:'DMG', color:'#ffd36e', label:'Projectile Damage'},
-    rate:{abbr:'FIR', color:'#ff9b6a', label:'Fire Rate'},
-    velocity:{abbr:'VEL', color:'#8af7bb', label:'Projectile Speed'},
-    pierce:{abbr:'PRC', color:'#d3a8ff', label:'Pierce'},
-    healOnKill:{abbr:'HL', color:'#6dff8d', label:'Blood Circuit'},
-    critChance:{abbr:'CRT', color:'#ff7adf', label:'Static Crit Loop'},
-    chainLightning:{abbr:'CHN', color:'#91d7ff', label:'Chain Static'},
+    shots:{abbr:'SH', color:'#7cf0ff', label:'Projectile Count', icon:'assets/buffs/split_chamber.png'},
+    damage:{abbr:'DMG', color:'#ffd36e', label:'Projectile Damage', icon:'assets/buffs/core_tipped_rounds.png'},
+    rate:{abbr:'FIR', color:'#ff9b6a', label:'Fire Rate', icon:'assets/buffs/rapid_vector_feed.png'},
+    velocity:{abbr:'VEL', color:'#8af7bb', label:'Projectile Speed', icon:'assets/buffs/vector_velocity.png'},
+    pierce:{abbr:'PRC', color:'#d3a8ff', label:'Pierce', icon:'assets/buffs/piercing_static.png'},
+    healOnKill:{abbr:'HL', color:'#6dff8d', label:'Blood Circuit', icon:'assets/buffs/blood_circuit.png'},
+    critChance:{abbr:'CRT', color:'#ff7adf', label:'Static Crit Loop', icon:'assets/buffs/static_crit_loop.png'},
+    chainLightning:{abbr:'CHN', color:'#91d7ff', label:'Chain Static', icon:'assets/buffs/chain_static.png'},
     thorns:{abbr:'THN', color:'#ff8a8a', label:'Reactive Armor'},
-    slowAura:{abbr:'SLW', color:'#82f2ff', label:'Gravity Leak'},
-    orbital:{abbr:'ORB', color:'#ffd06d', label:'Orbiting Scrap'},
-    lootBoost:{abbr:'LUT', color:'#fff07c', label:'Cache Magnet'}
+    slowAura:{abbr:'SLW', color:'#82f2ff', label:'Gravity Leak', icon:'assets/buffs/gravity_leak.png'},
+    orbital:{abbr:'ORB', color:'#ffd06d', label:'Orbiting Scrap', icon:'assets/buffs/orbiting_scrap.png'},
+    lootBoost:{abbr:'LUT', color:'#fff07c', label:'Cache Magnet', icon:'assets/buffs/cache_magnet.png'}
   };
   function chooseLockdownModifier(e){
     e.abilities ||= {};
@@ -5951,7 +5954,9 @@
     host.innerHTML=keys.slice(0,slice).map(key=>{
       const meta=LOCKDOWN_ICON_DEFS[key]||{abbr:key.slice(0,3).toUpperCase(),color:'#bff6ff',label:key};
       const val=formatLockdownIconValue(key,e);
-      return `<div class="lockdown-icon-chip" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}"><b>${safeHtml(meta.abbr)}</b><small>${safeHtml(val)}</small></div>`;
+      const iconHtml=meta.icon ? `<img src="${safeHtml(meta.icon)}?v=${BUILD_VERSION}" alt="${safeHtml(meta.label)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">` : '';
+      const textFallback=`<b style="${meta.icon?'display:none':''}">${safeHtml(meta.abbr)}</b>`;
+      return `<div class="lockdown-icon-chip" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}">${iconHtml}${textFallback}<small>${safeHtml(val)}</small></div>`;
     }).join('');
   }
 

@@ -2697,3 +2697,7 @@ body.vector-lockdown-warning:after{
   .lockdown-icon-chip b{font-size:8.5px;}
   .lockdown-icon-chip small{font-size:7.5px;margin-top:2px;}
 }
+
+
+.lockdown-icon-chip img{width:18px;height:18px;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 0 6px rgba(255,255,255,.18));}
+@media(max-width:720px), (pointer:coarse){ .lockdown-icon-chip img{width:14px;height:14px;} }
