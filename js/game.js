@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '0.9.89';
-  const BUILD_TITLE = 'TRAINING OBJECT ART PASS';
+  const BUILD_VERSION = '0.9.90';
+  const BUILD_TITLE = 'BOSS ROUTE REACHABILITY FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2925,6 +2925,7 @@
     state.map=parsed.map;
     invalidateCollisionRegion();
     normalizeLiveMap(true);
+    repairMissionRoutesForCurrentStage();
     clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
@@ -4320,7 +4321,7 @@
       images[p] = im;
     });
   }
-  const SAVE_SCHEMA_VERSION = 179;
+  const SAVE_SCHEMA_VERSION = 180;
   const SAVE_KEY = 'ashVectorSave';
   const SAVE_BACKUP_KEY = 'ashVectorSave_backup';
   const SAVE_AUTOSLOT_KEY = 'ashVectorSave_autoslot';
@@ -4390,6 +4391,7 @@
     }
     invalidateCollisionRegion();
     normalizeLiveMap(true);
+    repairMissionRoutesForCurrentStage();
     clampPlayerToMap();
     ensureSaveShape();
     state.mapVersion=MAP_VERSION;
@@ -4971,7 +4973,7 @@
   function startGame(fresh=false){
     syncBuildLabels(); setBattleMobileMode(false);
     if(fresh) return newGameRootStart();
-    ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); clampPlayerToMap(); gameStarted=true; ensureProgression();
+    ensureSaveShape(); invalidateCollisionRegion(); normalizeLiveMap(true); repairMissionRoutesForCurrentStage(); clampPlayerToMap(); gameStarted=true; ensureProgression();
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
@@ -5083,6 +5085,129 @@
   }
   function setTile(x,y,v){
     return setRowChar(y,x,v);
+  }
+  function routeRepairTileKey(x,y){ return `${x},${y}`; }
+  function missionRouteTargets(){
+    const codes=new Set(['S','E','B','X']);
+    const targets=[];
+    if(!state?.map) return targets;
+    for(let y=2;y<mapHeight()-2;y++){
+      const row=rowAt(y);
+      const len=rowLength(y);
+      for(let x=2;x<len-2;x++){
+        const c=Array.isArray(row) ? row[x] : String(row||'')[x];
+        if(codes.has(c)) targets.push({x,y,c});
+      }
+    }
+    return targets;
+  }
+  function routeRepairPassableAt(x,y){
+    if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return false;
+    return isRegionPassableTile(tileAt(x,y));
+  }
+  function routeRepairReachableTo(target){
+    const start=fallbackRegionStart();
+    const key=routeRepairTileKey;
+    const seen=new Set();
+    const q=[];
+    if(routeRepairPassableAt(start.x,start.y)){
+      seen.add(key(start.x,start.y));
+      q.push(start);
+    }
+    while(q.length){
+      const cur=q.shift();
+      if(cur.x===target.x && cur.y===target.y) return true;
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
+        if(seen.has(k)) continue;
+        if(!routeRepairPassableAt(nx,ny)) continue;
+        seen.add(k);
+        q.push({x:nx,y:ny});
+      }
+    }
+    return false;
+  }
+  function routeRepairCarvePathTo(target){
+    const start=fallbackRegionStart();
+    const key=routeRepairTileKey;
+    const q=[start];
+    const seen=new Set([key(start.x,start.y)]);
+    const prev=new Map();
+    let found=null;
+
+    while(q.length){
+      const cur=q.shift();
+      if(cur.x===target.x && cur.y===target.y){ found=cur; break; }
+      const choices=[
+        [Math.sign(target.x-cur.x),0],
+        [0,Math.sign(target.y-cur.y)],
+        [1,0],[-1,0],[0,1],[0,-1]
+      ];
+      for(const [dx,dy] of choices){
+        if(!dx && !dy) continue;
+        const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
+        if(seen.has(k)) continue;
+        if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)) continue;
+        seen.add(k);
+        prev.set(k, cur);
+        q.push({x:nx,y:ny});
+      }
+    }
+
+    if(!found) return 0;
+    const path=[];
+    let cur=found;
+    while(cur && !(cur.x===start.x && cur.y===start.y)){
+      path.push(cur);
+      cur=prev.get(key(cur.x,cur.y));
+    }
+    path.reverse();
+
+    let carved=0;
+    path.forEach((p,i)=>{
+      const c=tileAt(p.x,p.y);
+      if(p.x===target.x && p.y===target.y) return;
+      // Keep functional event tiles and closed doors intact. Only open actual wall cells.
+      if(c==='#'){
+        setTile(p.x,p.y,'.');
+        carved++;
+      }
+    });
+
+    // Give the player at least one open step next to event targets so the sprite can enter them cleanly.
+    for(const [dx,dy] of [[-1,0],[1,0],[0,-1],[0,1]]){
+      const nx=target.x+dx, ny=target.y+dy;
+      if(!inMapBounds(nx,ny) || isOuterMapEdge(nx,ny)) continue;
+      if(tileAt(nx,ny)==='#'){
+        setTile(nx,ny,'.');
+        carved++;
+        break;
+      }
+    }
+
+    return carved;
+  }
+  function repairMissionRoutesForCurrentStage(forceLog=false){
+    if(!state?.map) return false;
+    normalizeLiveMap();
+    const targets=missionRouteTargets();
+    let carved=0;
+    targets.forEach(target=>{
+      if(!routeRepairReachableTo(target)){
+        carved += routeRepairCarvePathTo(target);
+      }
+    });
+    if(carved>0){
+      invalidateCollisionRegion();
+      normalizeLiveMap();
+      resetCollisionCacheOnly();
+      const bossCount=targets.filter(t=>t.c==='B').length;
+      log(`Route repair opened ${carved} blocked tile${carved===1?'':'s'} so ${stageDef().id} mission targets remain reachable${bossCount?' including boss route.':'.'}`);
+      if(forceLog) toast(`${stageDef().id} route repaired: boss path is reachable.`);
+      return true;
+    }
+    if(forceLog) log(`${stageDef().id} route audit passed: terminal, anomalies, boss, and exit are reachable.`);
+    return false;
   }
   function sanitizeLiveMapEdges(){ return normalizeLiveMap(true); }
   function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
@@ -5855,6 +5980,9 @@
     pendingStoryAfter=null;
     state=newGameState();
     ensureSaveShape();
+    invalidateCollisionRegion();
+    normalizeLiveMap(true);
+    repairMissionRoutesForCurrentStage();
     gameStarted=true;
     ensureProgression();
     setCheckpoint('Fracture Entry');
@@ -7927,7 +8055,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards);
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
