@@ -2984,3 +2984,13 @@ body.game-paused .mobile-pause-card::before{
 .onboarding-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .onboarding-mini-row{border-color:rgba(148,255,98,.2)!important;background:rgba(3,18,16,.34)}
 @media(max-width:760px){.onboarding-check-grid{grid-template-columns:1fr}.onboarding-check-row{min-height:auto}.onboarding-actions button{flex:1 1 160px}}
+
+
+/* V226 stage reward preview polish */
+.stage-reward-preview-board{border-color:rgba(255,216,108,.44);box-shadow:0 0 24px rgba(255,216,108,.08)}
+.stage-reward-preview-board h3{margin-bottom:6px}
+.reward-preview-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:12px;max-height:220px;overflow:auto;padding-right:4px}
+.reward-preview-item{display:flex;align-items:center;gap:8px;border:1px solid rgba(255,216,108,.18);background:rgba(255,216,108,.08);border-radius:12px;padding:9px 10px;min-height:40px}
+.reward-preview-item b{color:#ffe4a3;text-shadow:0 0 8px rgba(255,216,108,.4)}
+.reward-preview-item span{font-size:12px;color:#edf7ff;line-height:1.25}
+@media(max-width:760px){.reward-preview-list{grid-template-columns:1fr;max-height:170px}.reward-preview-item{padding:8px 9px}}

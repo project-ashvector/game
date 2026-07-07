@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '225';
-  const BUILD_TITLE = 'ONBOARDING CHECKLIST PASS';
+  const BUILD_VERSION = '226';
+  const BUILD_TITLE = 'STAGE REWARD PREVIEW PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2625,13 +2625,48 @@
     return `<section class="fracture-card contract-board"><div class="record-kicker">REPEATABLE CONTRACT // ${safeHtml(def.id)}</div><h3>${safeHtml(c.title)}</h3><p>${safeHtml(c.desc)}</p><div class="statrow">Progress ${c.progress}/${c.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Reward</b><span>${safeHtml(reward)}</span></div><div><b>Status</b><span>${c.complete?'Ready to claim':'Hunt respawning anomalies to progress'}</span></div></div><button onclick="window.AV.claimContract('${stageKey}')" ${c.complete?'':'disabled'}>${c.complete?'Claim Contract':'Incomplete'}</button><button onclick="window.AV.rerollContract('${stageKey}')">Reroll Contract</button></section>`;
   }
 
+  function stageClearRewardList(def=stageDef()){
+    const rewards=[
+      `${def.rewardCredits||50} Credits`,
+      `${def.clearXp||0} Sync XP`,
+      def.key==='f003'?'Rust Core x2':'Rust Core',
+      `Operator Shard: Vyra x${def.rewardShards||3}`,
+      def.key==='f003'?'Corrupted Catalyst x2':'Corrupted Catalyst'
+    ];
+    if(def.key==='f002') rewards.push('Keycard LV1','Outpost Access Chip','Burnt Alloy x3');
+    if(def.key==='f003') rewards.push('Vector Cell x2','Duskwither Wraith Core');
+    if(def.key==='f004') rewards.push('Vector Cell x3','Burnt Alloy x3','Transit Nexus Core');
+    if(def.key==='f005') rewards.push('Vector Cell x3','Prism Wound Core','Corrupted Catalyst x2');
+    if(def.key==='f006') rewards.push('Vector Cell x4','Vector Heart Core','Rust Core x3');
+    if(def.key==='f007') rewards.push('Vector Cell x4','Burnt Alloy x4','Cinderline Core');
+    if(def.key==='f008') rewards.push('Vector Cell x5','Flooded Archive Core','Corrupted Catalyst x3');
+    if(def.key==='f009') rewards.push('Vector Cell x5','Harvest Alloy Core','Rust Core x4');
+    if(def.key==='f010') rewards.push('Vector Cell x6','Parallax Lens Core','Corrupted Catalyst x4');
+    if(def.key==='f011') rewards.push('Vector Cell x6','Basilica Wyrm Core','Rust Core x5');
+    if(def.key==='f012') rewards.push('Vector Cell x8','Ash Crown Core','Corrupted Catalyst x5');
+    return rewards;
+  }
+  function stageRewardPreviewBoardHtml(){
+    const def=stageDef();
+    const order=Object.keys(STAGE_DEFS);
+    const nextKey=def.nextKey || order[order.indexOf(def.key)+1];
+    const next=nextKey ? stageDef(nextKey) : null;
+    const complete=!!state.stages?.[def.key]?.complete || !!state.flags?.chapterComplete;
+    const claimed=!!state.flags?.chapterRewardsClaimed;
+    const bossReady=!!state.flags?.bossUnlocked || (state.flags?.anomaliesCleared||0)>=requiredAnomaliesForStage(def.key);
+    const bossDone=!!state.flags?.bossDefeated;
+    const rewards=stageClearRewardList(def).map(r=>`<div class="reward-preview-item"><b>◆</b><span>${safeHtml(r)}</span></div>`).join('');
+    const nextLine=next ? `${next.id} // ${next.title} // Lv ${next.levelReq}` : 'More fractures coming soon';
+    return `<section class="fracture-card stage-reward-preview-board"><div class="record-kicker">STAGE REWARD PREVIEW // ${safeHtml(def.id)}</div><h3>Clear Cache Preview</h3><p>Shows what this level pays out when the boss is beaten and the exit portal is used.</p><div class="protocol-list compact-guide-list"><div><b>Boss Route</b><span>${bossReady?'Open or ready to open':'Clear anomalies to open'}</span></div><div><b>Boss Core</b><span>${bossDone?'Recovered':'Not recovered yet'}</span></div><div><b>Clear Reward</b><span>${claimed?'Already claimed on this stage':complete?'Stage cleared':'Waiting for exit portal clear'}</span></div><div><b>Next Route</b><span>${safeHtml(nextLine)}</span></div></div><div class="reward-preview-list">${rewards}</div></section>`;
+  }
+
   function renderMissionContractPanel(){
     ensureContracts();
     const grid = document.querySelector('#missionOverlay .fracture-grid');
     if(!grid) return;
     let panel = $('missionContractBoard');
     if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
-    panel.innerHTML = onboardingChecklistBoardHtml() + playerGuideBoardHtml() + npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
+    panel.innerHTML = onboardingChecklistBoardHtml() + playerGuideBoardHtml() + stageRewardPreviewBoardHtml() + npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
     renderProtocolChallengeBoard();
     renderRouteIntelBoard();
   }
@@ -7715,12 +7750,7 @@
     $('chapterClearKicker').textContent=`STAGE COMPLETE // ${def.id} STABILIZED`;
     $('chapterClearTitle').textContent=def.chapter.replace(/^Chapter \d+ \/\/\s*/, '').toUpperCase();
     $('chapterClearCopy').textContent=`${chapterClearStoryCopy(def)} ${next ? (nextReady ? next.id+' is available now.' : next.id+' requires Player Lv. '+next.levelReq+'. Train more if it is locked.') : 'More fractures are coming in a future build.'}`;
-    const rewards=[`${def.rewardCredits||50} Credits`, `${def.clearXp||0} Sync XP`, def.key==='f003'?'Rust Core x2':'Rust Core', `Operator Shard: Vyra x${def.rewardShards||3}`, def.key==='f003'?'Corrupted Catalyst x2':'Corrupted Catalyst'];
-    if(def.key==='f002') rewards.push('Keycard LV1','Outpost Access Chip','Burnt Alloy x3');
-    if(def.key==='f003') rewards.push('Vector Cell x2','Duskwither Wraith Core');
-    if(def.key==='f004') rewards.push('Vector Cell x3','Burnt Alloy x3','Transit Nexus Core');
-    if(def.key==='f005') rewards.push('Vector Cell x3','Prism Wound Core','Corrupted Catalyst x2');
-    if(def.key==='f006') rewards.push('Vector Cell x4','Vector Heart Core','Rust Core x3');
+    const rewards=stageClearRewardList(def);
     $('chapterRewardList').innerHTML=rewards.map(name=>`<div class="victory-loot-item"><span>${safeHtml(name)}</span></div>`).join('');
     const btn=$('chapterNextBtn'); if(btn){ btn.disabled=!next; btn.textContent=next ? (nextReady?`Start ${next.id}`:`${next.id} Locked: Lv. ${next.levelReq}`) : 'Next Fracture Coming Soon'; }
     panel.classList.remove('hidden');
@@ -9712,7 +9742,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
