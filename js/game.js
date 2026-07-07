@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '219';
-  const BUILD_TITLE = 'METALLIK NPC PASS';
+  const BUILD_VERSION = '220';
+  const BUILD_TITLE = 'NPC SPAWN SAFETY PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -849,30 +849,78 @@
     return `<section class="fracture-card side-quest-board"><div class="record-kicker">SIDE QUEST // FERMILAT FAVOR</div><h3>${safeHtml(def.title)}</h3><p>${safeHtml(q?.status==='claimed' ? def.done : def.ask)}</p><div class="statrow">Progress ${q?.progress||0}/${q?.target||def.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Status</b><span>${safeHtml(sideQuestStatusText(stage))}</span></div><div><b>Reward</b><span>${safeHtml(reward)}</span></div></div><button onclick="window.AV.claimFermilatQuest('${stage}')" ${q?.status==='complete'?'':'disabled'}>${q?.status==='complete'?'Claim Reward':'Talk / Hunt to Progress'}</button></section>`;
   }
 
+  // v220: NPC placement safety. Older hand-placed NPC coordinates can land in
+  // walls after map/tileset edits, and some were too close to the player spawn.
+  // Resolve every NPC to a walkable floor tile away from spawn at draw/talk time.
+  const NPC_MIN_SPAWN_DISTANCE = 15;
   const NPC_SAFE_FALLBACKS = {
     f001:{
-      fermilat:{x:28,y:20},
-      scavenger:{x:8,y:8},
-      medic:{x:12,y:15},
-      warden:{x:18,y:11},
-      metallik:{x:16,y:10}
+      fermilat:{x:42,y:26},
+      scavenger:{x:22,y:19},
+      medic:{x:25,y:23},
+      warden:{x:31,y:21},
+      metallik:{x:35,y:24}
     }
   };
-  function npcPlacementSafe(pos,key=currentStageKey()){
-    if(!pos) return false;
+  function npcChebDistance(a,b){ return Math.max(Math.abs((a?.x||0)-(b?.x||0)), Math.abs((a?.y||0)-(b?.y||0))); }
+  function npcRawSpawnForKey(key=currentStageKey()){
+    try{ return rawSpawnForStage(key); }catch(err){ return {x:1,y:1}; }
+  }
+  function npcTileSafeAt(x,y,key=currentStageKey()){
+    x=Math.floor(Number(x)); y=Math.floor(Number(y));
+    if(!Number.isFinite(x) || !Number.isFinite(y)) return false;
     try{
-      if(typeof stageManualBlockAt === 'function' && stageManualBlockAt(pos.x,pos.y,key)) return false;
-      if(typeof canStandAt === 'function' && state?.map) return canStandAt(pos.x,pos.y);
+      if(typeof stageManualBlockAt === 'function' && stageManualBlockAt(x,y,key)) return false;
+      if(key===currentStageKey() && state?.map && typeof canStandAt === 'function') return canStandAt(x,y);
+      const parsed=parseStageMap(key);
+      const c=parsed.map?.[y]?.[x];
+      return ['.','P','S','C','H','L','E','B','X','R'].includes(c);
+    }catch(err){ return false; }
+  }
+  function npcPlacementSafe(pos,key=currentStageKey(),used=null){
+    if(!pos) return false;
+    const x=Math.floor(Number(pos.x)), y=Math.floor(Number(pos.y));
+    if(!npcTileSafeAt(x,y,key)) return false;
+    if(used?.has(`${x},${y}`)) return false;
+    const spawn=npcRawSpawnForKey(key);
+    return npcChebDistance({x,y}, spawn) >= NPC_MIN_SPAWN_DISTANCE;
+  }
+  function findSafeNpcPlacement(preferred,key=currentStageKey(),used=null){
+    const spawn=npcRawSpawnForKey(key);
+    const base={x:Math.floor(Number(preferred?.x)||spawn.x), y:Math.floor(Number(preferred?.y)||spawn.y)};
+    const candidates=[];
+    const add=(x,y)=>{ candidates.push({x,y,score:Math.abs(x-base.x)+Math.abs(y-base.y) - Math.min(20,npcChebDistance({x,y},spawn))*0.25}); };
+    if(npcPlacementSafe(base,key,used)) return base;
+    for(let r=1;r<=28;r++){
+      for(let dx=-r;dx<=r;dx++){
+        add(base.x+dx, base.y-r); add(base.x+dx, base.y+r);
+      }
+      for(let dy=-r+1;dy<=r-1;dy++){
+        add(base.x-r, base.y+dy); add(base.x+r, base.y+dy);
+      }
+      const good=candidates.filter(p=>npcPlacementSafe(p,key,used));
+      if(good.length){ good.sort((a,b)=>a.score-b.score); return {x:good[0].x,y:good[0].y}; }
+    }
+    try{
+      const parsed=parseStageMap(key);
+      for(let y=2;y<(parsed.map?.length||0)-2;y++){
+        for(let x=2;x<(parsed.map[y]?.length||0)-2;x++) add(x,y);
+      }
     }catch(err){}
-    return Number.isFinite(pos.x) && Number.isFinite(pos.y);
+    const good=candidates.filter(p=>npcPlacementSafe(p,key,used));
+    if(good.length){ good.sort((a,b)=>a.score-b.score); return {x:good[0].x,y:good[0].y}; }
+    return base;
   }
   function stageNpcs(key=currentStageKey()){
+    const used=new Set();
     return Object.values(NPC_DEFS).map(n => {
       const original = n.stages[key];
       if(!original) return null;
       const fallback = NPC_SAFE_FALLBACKS[key]?.[n.id];
-      const pos = npcPlacementSafe(original,key) ? original : {...original, ...(fallback || {})};
-      return {...n, ...pos, stage:key};
+      const preferred = fallback ? {...original, ...fallback} : original;
+      const pos = npcPlacementSafe(preferred,key,used) ? preferred : findSafeNpcPlacement(preferred,key,used);
+      used.add(`${pos.x},${pos.y}`);
+      return {...n, ...original, x:pos.x, y:pos.y, stage:key};
     }).filter(Boolean);
   }
   function npcAt(x,y,key=currentStageKey()){
