@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '217';
-  const BUILD_TITLE = 'TRUE PAUSE FIX PASS';
+  const BUILD_VERSION = '218';
+  const BUILD_TITLE = 'PAUSE MUSIC FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -424,8 +424,10 @@
   }
 
   function activeMusicForState(){
-    // v152: music follows current stage, and radio mode owns playback while open.
+    // v218: pause menu owns music first. The v217 watchdog was overriding pause.mp3
+    // back to the current level track because uiState stayed as game while paused.
     if(radioMode) return radioTrack || 'pause';
+    try{ if(typeof isGameplayPaused === 'function' && isGameplayPaused()) return 'pause'; }catch(err){}
     if(battle) return battle.code === 'B' ? 'boss' : 'battle';
     if(uiState.mode === 'overlay') return 'pause';
     if(uiState.mode === 'game' && gameStarted && !$('app').classList.contains('hidden')) return musicKeyForStage();
@@ -8783,6 +8785,23 @@
     }
     Object.values(state.respawns||{}).forEach(r=>{ if(r?.readyAt) r.readyAt += delta; });
   }
+  function playPauseTheme(){
+    try{
+      AudioManager.unlock();
+      AudioManager.requested = 'pause';
+      AudioManager.force('pause');
+      const pauseTrack = AudioManager.tracks?.pause;
+      if(pauseTrack){
+        pauseTrack.loop = true;
+        pauseTrack.muted = false;
+        if(state?.settings && !state.settings.musicMuted) pauseTrack.volume = AudioManager.volume;
+        if(pauseTrack.paused){
+          const attempt = pauseTrack.play();
+          if(attempt?.catch) attempt.catch(()=>{});
+        }
+      }
+    }catch(err){}
+  }
   function setGameplayPaused(paused, source='pause menu'){
     const now=Date.now();
     if(paused){
@@ -8791,8 +8810,10 @@
         document.body.classList.add('game-paused');
         document.body.dataset.pauseSource = source;
         stopMobileMove();
-        try{ AudioManager.play('pause'); }catch(err){}
+        playPauseTheme();
         try{ toast('Game paused.'); }catch(err){}
+      } else {
+        playPauseTheme();
       }
       return;
     }
@@ -8802,7 +8823,7 @@
       gameplayPauseStartedAt = 0;
       document.body.classList.remove('game-paused');
       delete document.body.dataset.pauseSource;
-      try{ AudioManager.play(activeMusicForState()); }catch(err){}
+      try{ AudioManager.play(activeMusicForState(), true); }catch(err){}
       try{ renderAll(); }catch(err){}
     }
   }
