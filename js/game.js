@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '230';
-  const BUILD_TITLE = 'PORTAL GUIDE PASS';
+  const BUILD_VERSION = '231';
+  const BUILD_TITLE = 'SAVE SAFETY PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -468,7 +468,7 @@
     if(key === 'musicMuted') state.settings.musicMuted = !!value;
     if(key === 'sfxMuted') state.settings.sfxMuted = !!value;
     applyAudioSettings();
-    renderAudioMixer();
+    renderAudioMixer(); renderArchiveSafetyPanel();
     queueAutosave();
   }
 
@@ -4995,6 +4995,95 @@
       renderSaveHub();
     }catch(err){ toast(`Import failed: ${err.message || err}`); }
   }
+
+  // v231: save safety station. Gives testers a quick way to confirm saves, make an emergency backup,
+  // and avoid accidental archive wipes while iterating on GitHub Pages builds.
+  const SAVE_EMERGENCY_KEY = 'ashVectorSave_emergencyBackup';
+  function saveHealthSummary(){
+    const rows=[];
+    const checks=[['Active', SAVE_KEY], ['Autoslot', SAVE_AUTOSLOT_KEY], ['Last Backup', SAVE_BACKUP_KEY], ['Emergency', SAVE_EMERGENCY_KEY]];
+    checks.forEach(([label,key])=>{
+      let status='Missing';
+      let detail='No local copy found.';
+      try{
+        const raw=localStorage.getItem(key);
+        if(raw){
+          const parsed=safeJsonParse(raw);
+          if(parsed?.player){
+            const sum=saveSummaryFromData(parsed);
+            status='OK';
+            detail=`${sum.stage} // Lv ${sum.level} // ${sum.when}`;
+          }else{
+            status='Unreadable';
+            detail='Copy exists but could not be parsed.';
+          }
+        }
+      }catch(err){ status='Blocked'; detail='Browser storage could not be read.'; }
+      rows.push({label,status,detail});
+    });
+    return rows;
+  }
+  function backupEmergencySave(){
+    try{
+      save(true);
+      const raw=localStorage.getItem(SAVE_KEY) || JSON.stringify(saveSnapshotForStorage());
+      localStorage.setItem(SAVE_EMERGENCY_KEY, raw);
+      toast('Emergency backup saved.');
+      renderSaveHub();
+      renderArchiveSafetyPanel();
+      return true;
+    }catch(err){ toast('Emergency backup failed: '+String(err.message||err)); return false; }
+  }
+  function restoreEmergencySave(){
+    try{
+      const raw=localStorage.getItem(SAVE_EMERGENCY_KEY);
+      if(!raw){ toast('No emergency backup found.'); return false; }
+      if(!confirm('Restore emergency backup over the active save?')) return false;
+      localStorage.setItem(SAVE_KEY, raw);
+      localStorage.setItem(SAVE_AUTOSLOT_KEY, raw);
+      const ok=load(false);
+      renderArchiveSafetyPanel();
+      return ok;
+    }catch(err){ toast('Emergency restore failed: '+String(err.message||err)); return false; }
+  }
+  function verifySaveHealth(){
+    const rows=saveHealthSummary();
+    const ok=rows.filter(r=>r.status==='OK').length;
+    const bad=rows.filter(r=>r.status==='Unreadable' || r.status==='Blocked').length;
+    toast(bad ? `Save check: ${ok} good copy/copies, ${bad} problem copy/copies.` : `Save check passed: ${ok} readable copy/copies.`);
+    renderArchiveSafetyPanel();
+  }
+  function resetActiveArchiveSafely(){
+    const code=prompt('Type RESET to purge the active archive. Emergency backup and numbered slots are kept.');
+    if(code !== 'RESET'){ toast('Reset cancelled.'); return; }
+    try{
+      const raw=localStorage.getItem(SAVE_KEY);
+      if(raw) localStorage.setItem(SAVE_BACKUP_KEY, raw);
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(SAVE_AUTOSLOT_KEY);
+      state=newGameState();
+      renderAll();
+      renderSaveHub();
+      renderArchiveSafetyPanel();
+      syncContinueButton();
+      toast('Active archive purged. Backup/slots kept.');
+    }catch(err){ toast('Reset failed: '+String(err.message||err)); }
+  }
+  function renderArchiveSafetyPanel(){
+    const grid=document.querySelector('#configOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('archiveSafetyPanel');
+    if(!panel){
+      panel=document.createElement('section');
+      panel.id='archiveSafetyPanel';
+      panel.className='fracture-card archive-safety-panel';
+      const audio=$('audioMixerPanel');
+      if(audio && audio.parentElement === grid) audio.insertAdjacentElement('afterend', panel);
+      else grid.appendChild(panel);
+    }
+    const rows=saveHealthSummary().map(r=>`<div class="archive-health-row ${r.status==='OK'?'ok':(r.status==='Missing'?'missing':'bad')}"><b>${safeHtml(r.label)}</b><span>${safeHtml(r.status)}</span><small>${safeHtml(r.detail)}</small></div>`).join('');
+    panel.innerHTML=`<div class="record-kicker">ARCHIVE SAFETY // PATCH TESTING</div><h2>Save Safety Check</h2><p>Use this before risky tests, browser cache clears, or phone/controller playtests.</p><div class="archive-health-grid">${rows}</div><div class="save-hub-actions archive-safety-actions"><button onclick="window.AV.verifySaveHealth()">Verify Save Copies</button><button onclick="window.AV.backupEmergencySave()">Make Emergency Backup</button><button onclick="window.AV.restoreEmergencySave()">Restore Emergency Backup</button><button onclick="window.AV.exportSaveCode()">Export Code</button><button class="danger-btn" onclick="window.AV.resetActiveArchiveSafely()">Safe Reset Active Save</button></div><p class="fineprint">Safe Reset removes only the active/autosave copy. Numbered slots and the emergency backup stay available.</p>`;
+  }
   function renderAudioMixer(){
     const grid=document.querySelector('#configOverlay .fracture-grid');
     if(!grid) return;
@@ -8930,7 +9019,7 @@
       if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRoutePrepPanel(); renderRouteRecordsPanel(); }
       if(id==='playtestOverlay'){ renderUI(); renderQaLockdownBuffBoard(); }
       if(id==='progressionOverlay') renderProgressionDb();
-      if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
+      if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); renderArchiveSafetyPanel(); }
       if(id==='radioOverlay'){ radioMode=true; radioTrack=radioTrack||'pause'; renderRadioDb(); AudioManager.play(radioTrack, true); }
     }catch(err){
       console.error('Overlay render failed:', id, err);
@@ -9854,7 +9943,7 @@
     }, {passive:false});
     $('newGameBtn').onclick=(e)=>{e.preventDefault(); newGameRootStart();}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
-    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=()=>{localStorage.removeItem(SAVE_KEY); localStorage.removeItem(SAVE_AUTOSLOT_KEY); state=newGameState(); renderAll(); renderSaveHub(); toast('Archive purged.');};
+    $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=resetActiveArchiveSafely;
     if($('fullscreenBtn')) $('fullscreenBtn').onclick=toggleFullscreenMode; if($('menuFullscreenBtn')) $('menuFullscreenBtn').onclick=toggleFullscreenMode;
     $('operatorFilesBtn').onclick=()=>openOverlay('operatorOverlay'); $('anomalyIndexBtn').onclick=()=>openOverlay('anomalyOverlay'); $('fractureIndexBtn').onclick=()=>openOverlay('fractureOverlay'); $('inventoryDbBtn').onclick=()=>openOverlay('inventoryOverlay'); $('progressionBtn').onclick=()=>openOverlay('progressionOverlay'); $('progressionTopBtn').onclick=()=>openOverlay('progressionOverlay'); if($('characterMenuTopBtn')) $('characterMenuTopBtn').onclick=()=>openOverlay('characterOverlay'); $('missionMenuBtn').onclick=()=>openOverlay('missionOverlay'); $('missionBtn').onclick=()=>openOverlay('missionOverlay'); if($('bagBtn')) $('bagBtn').onclick=()=>openOverlay('inventoryOverlay'); $('configBtn').onclick=()=>openOverlay('configOverlay'); $('playtestBtn').onclick=()=>openOverlay('playtestOverlay');
     ['operatorFilesBtn','characterMenuBtn','anomalyIndexBtn','fractureIndexBtn','inventoryDbBtn','progressionBtn','missionMenuBtn','radioMenuBtn','storyArchiveMenuBtn','configBtn'].forEach(id=>{ const btn=$(id); if(btn) btn.addEventListener('click',(e)=>{ e.preventDefault(); e.stopPropagation(); const info=$('menuInfo'); if(info){ info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok'); } }); });
@@ -9872,7 +9961,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),

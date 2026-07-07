@@ -3043,3 +3043,19 @@ body.game-paused .mobile-pause-card::before{
 .portal-guide-row span{display:block;font-size:12px;line-height:1.28;color:rgba(230,243,250,.82);}
 .portal-guide-row strong{display:block;color:#fff;font-size:13px;margin-bottom:2px;}
 @media(max-width:760px){.portal-guide-grid{grid-template-columns:1fr 1fr;gap:7px}.portal-guide-row{grid-template-columns:34px 1fr;padding:8px;min-height:54px}.portal-guide-row>b{width:30px;height:30px;font-size:14px}.portal-guide-row span{font-size:11px}}
+
+
+/* v231: archive safety panel */
+.archive-safety-panel{border-color:rgba(150,255,223,.28)!important;background:linear-gradient(180deg,rgba(8,18,20,.78),rgba(3,6,10,.72))!important;}
+.archive-health-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.archive-health-row{border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;background:rgba(0,0,0,.26);display:grid;gap:4px;min-width:0;}
+.archive-health-row b{font:900 12px monospace;color:#fff;text-transform:uppercase;letter-spacing:.08em;}
+.archive-health-row span{font:900 13px monospace;color:#ffd36b;}
+.archive-health-row small{color:#aecad8;line-height:1.35;overflow-wrap:anywhere;}
+.archive-health-row.ok{border-color:rgba(150,255,223,.38);box-shadow:inset 0 0 18px rgba(150,255,223,.05);}
+.archive-health-row.ok span{color:#96ffdf;}
+.archive-health-row.bad{border-color:rgba(255,48,72,.46);}
+.archive-health-row.bad span{color:#ff6b7d;}
+.archive-safety-actions{align-items:stretch;}
+.archive-safety-actions .danger-btn{border-color:rgba(255,48,72,.55)!important;color:#ffd6dc!important;}
+@media(max-width:760px){.archive-health-grid{grid-template-columns:1fr}.archive-safety-actions button{width:100%;}}
