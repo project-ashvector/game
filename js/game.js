@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '224';
-  const BUILD_TITLE = 'PLAYER GUIDE PASS';
+  const BUILD_VERSION = '225';
+  const BUILD_TITLE = 'ONBOARDING CHECKLIST PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -886,6 +886,28 @@
       ['Phone', 'Rotate landscape // use bottom buttons // Pause opens all menus, Playtest, and settings']
     ];
     return `<section class="fracture-card player-guide-board"><div class="record-kicker">PLAYER GUIDE // ${safeHtml(stageId)}</div><h3>Route Flow</h3><p>Quick guide for testing and normal play. This is built into Mission Briefing so you can check it without leaving the level.</p><div class="guide-flow">${flow.map(([n,title,desc])=>`<div><b>${safeHtml(n)}</b><span><strong>${safeHtml(title)}</strong>${safeHtml(desc)}</span></div>`).join('')}</div><h3>Controls</h3><div class="protocol-list compact-guide-list">${controlRows.map(([k,v])=>`<div><b>${safeHtml(k)}</b><span>${safeHtml(v)}</span></div>`).join('')}</div><p class="fineprint">Random Vector Lockdown pauses portals and NPC actions while active. Finish or fail the event to restore normal route travel.</p></section>`;
+  }
+
+
+  function onboardingChecklistBoardHtml(stage=currentStageKey()){
+    ensureContracts(); ensureSideQuests(); ensureNpcState();
+    const required=requiredAnomaliesForStage(stage);
+    const cleared=Math.min(required, state.flags?.anomaliesCleared || 0);
+    const contract=activeContract(stage);
+    const q=fermilatQuest(stage);
+    const metalClaimed=!!state?.npcRewards?.[`metallik:${stage}`];
+    const rows=[
+      ['Terminal Synced', !!state.flags?.terminal, 'Touch the cyan terminal first so the map knows your route.'],
+      ['Anomaly Route', cleared>=required, `Clear ${cleared}/${required} anomalies to open the boss path.`],
+      ['Boss Route Open', !!state.flags?.bossUnlocked, 'When open, push to the boss zone or use the return portal to backtrack.'],
+      ['Boss Defeated', !!state.flags?.bossDefeated, 'Beat the level boss to unlock extraction.'],
+      ['MetalliK Cache', metalClaimed, metalClaimed?'Current level cache claimed.':'Talk to MetalliK once on this level for a scaling cache.'],
+      ['Fermilat Favor', q?.status==='claimed', q?.status==='complete'?'Return to Fermilat and claim.':q?.status==='active'?`${q.progress||0}/${q.target||0} favor progress.`:'Talk to Fermilat near the boss route.'],
+      ['Contract', !!contract.complete, contract.complete?'Claim the repeatable contract from this briefing.':`${contract.progress}/${contract.target} contract progress.`]
+    ];
+    const done=rows.filter(r=>r[1]).length;
+    const pct=Math.floor(100*done/Math.max(1,rows.length));
+    return `<section class="fracture-card onboarding-checklist-board"><div class="record-kicker">NEW PLAYER ROUTE // LIVE CHECKLIST</div><h3>What To Do Next</h3><p>This keeps the level readable while testing. It updates automatically with your current level, NPCs, boss route, and rewards.</p><div class="statrow">Checklist ${done}/${rows.length}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="onboarding-check-grid">${rows.map(([label,ok,hint])=>`<div class="onboarding-check-row ${ok?'done':'todo'}"><b>${ok?'✅':'⬜'} ${safeHtml(label)}</b><span>${safeHtml(hint)}</span></div>`).join('')}</div><div class="onboarding-actions"><button onclick="window.AV.showObjectivePing()">Ping Current Objective</button><button onclick="window.AV.resetTutorialTips()">Replay Tutorial Tips</button></div><p class="fineprint">Use this board when a level feels confusing. It does not change rewards or progression.</p></section>`;
   }
 
   function metallikSignalReward(stage=currentStageKey()){
@@ -2609,7 +2631,7 @@
     if(!grid) return;
     let panel = $('missionContractBoard');
     if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
-    panel.innerHTML = playerGuideBoardHtml() + npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
+    panel.innerHTML = onboardingChecklistBoardHtml() + playerGuideBoardHtml() + npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
     renderProtocolChallengeBoard();
     renderRouteIntelBoard();
   }
@@ -8667,6 +8689,14 @@
     if(cp.ok && cp.stage===stageDef().id && cp.x != null && cp.y != null){ mctx.fillStyle='#94ff62'; mctx.fillRect(cp.x*sx,cp.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); mctx.strokeStyle='#ffffff'; mctx.lineWidth=1; mctx.strokeRect(cp.x*sx-1,cp.y*sy-1,Math.ceil(sx*2)+2,Math.ceil(sy*2)+2); }
     mctx.fillStyle='#ff3048'; mctx.fillRect(state.player.x*sx,state.player.y*sy,Math.ceil(sx*2),Math.ceil(sy*2));
   }
+  function onboardingMiniStatusHtml(){
+    const required=requiredAnomaliesForStage();
+    const cleared=Math.min(required, state.flags?.anomaliesCleared || 0);
+    const metal=metallikStatusText(currentStageKey());
+    const q=sideQuestStatusText(currentStageKey());
+    return `<div class="mission-row onboarding-mini-row"><b>Quick Read:</b> Terminal ${state.flags?.terminal?'✅':'⬜'} // Anomalies ${cleared}/${required} // Boss ${state.flags?.bossDefeated?'Defeated':state.flags?.bossUnlocked?'Route Open':'Locked'} // MetalliK ${safeHtml(metal)} // Fermilat ${safeHtml(q)}</div>`;
+  }
+
   function renderUI(){
     ensureProgression(); ensureContracts(); ensureResearch(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
     applyOperatorVisuals();
@@ -8697,7 +8727,7 @@
     const target=objectiveTarget();
     const targetSummary=target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
     $('objectiveTracker').innerHTML=`<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine} &nbsp; 🎸 ${metallikLine} &nbsp; 🏆 ${protocolLine}`;
-    $('missionProgress').innerHTML=objectiveGuideHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div><div class="mission-row">🎸 MetalliK: ${metallikLine}</div><div class="mission-row">🏆 Protocol Challenges: ${safeHtml(protocolChallengeSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
+    $('missionProgress').innerHTML=objectiveGuideHtml() + onboardingMiniStatusHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div><div class="mission-row">🎸 MetalliK: ${metallikLine}</div><div class="mission-row">🏆 Protocol Challenges: ${safeHtml(protocolChallengeSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     renderStoryArchivePanel();
@@ -9682,7 +9712,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),

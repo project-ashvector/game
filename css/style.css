@@ -2971,3 +2971,16 @@ body.game-paused .mobile-pause-card::before{
   .player-guide-board .guide-flow{grid-template-columns:1fr;}
   .player-guide-board .guide-flow>div{padding:9px;}
 }
+
+
+/* V225 onboarding checklist polish */
+.onboarding-checklist-board{border-color:rgba(148,255,98,.42);box-shadow:0 0 22px rgba(148,255,98,.08)}
+.onboarding-check-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.onboarding-check-row{border:1px solid rgba(255,255,255,.12);background:rgba(3,8,13,.56);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:5px;min-height:76px}
+.onboarding-check-row b{color:#fff;font-size:13px;letter-spacing:.03em}
+.onboarding-check-row span{color:#b9d6e8;font-size:12px;line-height:1.35}
+.onboarding-check-row.done{border-color:rgba(148,255,98,.36);background:rgba(38,78,38,.18)}
+.onboarding-check-row.todo{border-color:rgba(0,217,255,.22)}
+.onboarding-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.onboarding-mini-row{border-color:rgba(148,255,98,.2)!important;background:rgba(3,18,16,.34)}
+@media(max-width:760px){.onboarding-check-grid{grid-template-columns:1fr}.onboarding-check-row{min-height:auto}.onboarding-actions button{flex:1 1 160px}}
