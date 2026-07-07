@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '218';
-  const BUILD_TITLE = 'PAUSE MUSIC FIX PASS';
+  const BUILD_VERSION = '219';
+  const BUILD_TITLE = 'METALLIK NPC PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -757,6 +757,17 @@
         f007:{x:38,y:10,scene:'npcWarden'}, f008:{x:34,y:12,scene:'npcWarden'}, f009:{x:40,y:11,scene:'npcWarden'},
         f010:{x:36,y:13,scene:'npcWarden'}, f011:{x:35,y:11,scene:'npcWarden'}, f012:{x:41,y:12,scene:'npcWarden'}
       }
+    },
+    metallik: {
+      id: 'metallik',
+      name: 'MetalliK',
+      asset: 'assets/npcs/metallik.png',
+      stages: {
+        f001:{x:16,y:10,scene:'npcMetallik'}, f002:{x:38,y:15,scene:'npcMetallik'}, f003:{x:36,y:15,scene:'npcMetallik'},
+        f004:{x:42,y:15,scene:'npcMetallik'}, f005:{x:39,y:16,scene:'npcMetallik'}, f006:{x:40,y:16,scene:'npcMetallik'},
+        f007:{x:41,y:15,scene:'npcMetallik'}, f008:{x:38,y:17,scene:'npcMetallik'}, f009:{x:42,y:16,scene:'npcMetallik'},
+        f010:{x:40,y:17,scene:'npcMetallik'}, f011:{x:39,y:16,scene:'npcMetallik'}, f012:{x:43,y:17,scene:'npcMetallik'}
+      }
     }
   };
 
@@ -843,7 +854,8 @@
       fermilat:{x:28,y:20},
       scavenger:{x:8,y:8},
       medic:{x:12,y:15},
-      warden:{x:18,y:11}
+      warden:{x:18,y:11},
+      metallik:{x:16,y:10}
     }
   };
   function npcPlacementSafe(pos,key=currentStageKey()){
@@ -920,6 +932,13 @@
       log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
       toast(`${rewards.label} recovered.`);
       save(true);
+      renderAll();
+      return;
+    }
+
+    if(npc.id === 'metallik'){
+      log('MetalliK contact logged. Role pending assignment.');
+      toast('MetalliK is standing by. Role coming soon.');
       renderAll();
       return;
     }
@@ -6836,6 +6855,10 @@
     npcWarden: {
       kicker:'FIELD CONTACT // WARDEN', speaker:'WARDEN',
       lines:['Ashline Warden: These routes are uglier than the reports said. That means the reports were honest.', 'I marked a few safer pockets and left a cache. If the boss breathes on you, try not to take it personally.']
+    },
+    npcMetallik: {
+      kicker:'FIELD CONTACT // METALLIK', speaker:'METALLIK',
+      lines:['MetalliK: Signal received. I am posted up until the job is defined.', 'AVOS: MetalliK has been added as a field NPC. Function package pending.']
     }};
   function safeHtml(v){return String(v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
   function stageStoryKey(base){
