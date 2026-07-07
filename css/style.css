@@ -3059,3 +3059,29 @@ body.game-paused .mobile-pause-card::before{
 .archive-safety-actions{align-items:stretch;}
 .archive-safety-actions .danger-btn{border-color:rgba(255,48,72,.55)!important;color:#ffd6dc!important;}
 @media(max-width:760px){.archive-health-grid{grid-template-columns:1fr}.archive-safety-actions button{width:100%;}}
+
+
+/* v232: clean controls help card for Configuration */
+.controls-help-card .control-status-panel{
+  border:1px solid rgba(112,215,255,.35);
+  background:rgba(0,217,255,.07);
+  border-radius:14px;
+  padding:10px 12px;
+  margin:10px 0 12px;
+  color:#eaffff;
+  box-shadow:inset 0 0 18px rgba(0,217,255,.05);
+}
+.control-status-line{font-size:12px;line-height:1.45;margin:2px 0;color:#d9fbff;}
+.controls-help-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0;}
+.control-map{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.045);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:5px;min-width:0;}
+.control-map b{color:#70d7ff;letter-spacing:.08em;text-transform:uppercase;font-size:12px;}
+.control-map span{font-size:11px;line-height:1.25;color:#cfe8ee;overflow-wrap:anywhere;}
+.controls-help-actions{margin-top:10px;}
+.controls-help-actions button{min-height:38px;}
+@media (max-width: 840px), (pointer: coarse){
+  .controls-help-grid{grid-template-columns:1fr;gap:8px;}
+  .control-map{padding:9px;}
+  .control-map span,.control-status-line{font-size:12px;}
+  .controls-help-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+}
+@media (max-width: 520px){.controls-help-actions{grid-template-columns:1fr;}}
