@@ -2765,3 +2765,14 @@ body.mobile-play .qa-lockdown-buff-board{grid-template-columns:repeat(2,minmax(0
   .mobile-action-pad button span{font-size:6.5px!important;}
   .lockdown-buff-dock{bottom:calc(env(safe-area-inset-bottom,0px) + 58px)!important;}
 }
+
+
+/* V205: reliable Vector Lockdown reward modal */
+.vector-lockdown-reward-modal{position:fixed;inset:0;z-index:120000;display:flex;align-items:center;justify-content:center;padding:18px;pointer-events:auto;}
+.vector-lockdown-reward-modal.hidden{display:none!important;}
+.lockdown-reward-backdrop{position:absolute;inset:0;background:radial-gradient(circle at 50% 35%,rgba(255,48,72,.22),rgba(0,0,0,.82) 62%,rgba(0,0,0,.92));backdrop-filter:blur(3px);}
+.lockdown-reward-modal-card{position:relative;z-index:1;width:min(620px,calc(100vw - 28px));max-height:min(82vh,720px);overflow:auto;border:1px solid rgba(112,215,255,.58);border-radius:18px;background:rgba(5,8,14,.96);box-shadow:0 0 40px rgba(112,215,255,.22),0 0 70px rgba(255,48,72,.16);padding:18px;}
+.lockdown-reward-modal-card h2{font:900 clamp(28px,5vw,44px) monospace;margin:4px 0 8px;color:#fff;text-shadow:0 0 18px rgba(112,215,255,.45);}
+.lockdown-reward-modal-card p{color:#e8faff;line-height:1.45;}
+.lockdown-reward-modal-card button{margin-top:14px;width:100%;min-height:46px;border-radius:12px;border:1px solid rgba(112,215,255,.55);background:rgba(12,22,36,.96);color:#fff;font:900 13px monospace;letter-spacing:.08em;cursor:pointer;}
+@media(max-width:720px), (pointer:coarse){.vector-lockdown-reward-modal{align-items:flex-start;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px 10px}.lockdown-reward-modal-card{max-height:calc(100svh - 22px);padding:12px;border-radius:14px}.lockdown-reward-modal-card h2{font-size:26px}.lockdown-reward-modal-card .lockdown-stats span,.lockdown-reward-modal-card .lockdown-upgrades span{font-size:10px!important}}
