@@ -781,7 +781,8 @@
     "stackSize": 1,
     "sellPrice": 5,
     "asset": "assets/items/imported/weapons/weapons/common/it-1061_plaguefang_claw.png",
-    "description": "Plaguefang Claw recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
+    "description": "Plaguefang Claw recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
+    "status": "dedicated-item-art"
   },
   {
     "id": "IT-1062",
@@ -1766,5 +1767,233 @@
     "sellPrice": 10,
     "asset": "assets/items/imported/weapons/weapons/uncommon/it-1143_voidwhisper_staff.png",
     "description": "Voidwhisper Staff recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID."
+  },
+  {
+    "id": "CUSTOM-151",
+    "name": "Burnt Alloy",
+    "category": "Item",
+    "asset": "assets/items/custom/burnt_alloy.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-152",
+    "name": "Outpost Access Chip",
+    "category": "Item",
+    "asset": "assets/items/custom/outpost_access_chip.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-153",
+    "name": "Zone Cache Voucher",
+    "category": "Item",
+    "asset": "assets/items/custom/zone_cache_voucher.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-154",
+    "name": "Catalyst Core",
+    "category": "Item",
+    "asset": "assets/items/custom/catalyst_core.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-155",
+    "name": "Toxic Monarch Relic",
+    "category": "Item",
+    "asset": "assets/items/custom/toxic_monarch_relic.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-156",
+    "name": "Ashveil Mother Core",
+    "category": "Item",
+    "asset": "assets/items/custom/ashveil_mother_core.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-157",
+    "name": "Duskwither Wraith Core",
+    "category": "Item",
+    "asset": "assets/items/custom/duskwither_wraith_core.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-158",
+    "name": "Rustcore Blade",
+    "category": "Item",
+    "asset": "assets/items/custom/rustcore_blade.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "CUSTOM-159",
+    "name": "Ash-Plated Blade",
+    "category": "Item",
+    "asset": "assets/items/custom/ash_plated_blade.png",
+    "status": "dedicated-item-art",
+    "description": "Dedicated ASH VECTOR item art."
+  },
+  {
+    "id": "EQ-010",
+    "name": "Transit Nexus Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 260,
+    "asset": "assets/items/custom/transit_nexus_core.png",
+    "description": "Boss-class rail power core recovered from Transit Ruins."
+  },
+  {
+    "id": "EQ-011",
+    "name": "Prism Wound Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 300,
+    "asset": "assets/items/custom/prism_wound_core.png",
+    "description": "Fractured glass-prism boss core from Glass Storm Lab."
+  },
+  {
+    "id": "EQ-012",
+    "name": "Vector Heart Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 360,
+    "asset": "assets/items/custom/vector_heart_core.png",
+    "description": "Mechanical heart reactor recovered from Vector Core Spire."
+  },
+  {
+    "id": "EQ-013",
+    "name": "Cinderline Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 420,
+    "asset": "assets/items/custom/cinderline_core.png",
+    "description": "Locomotive furnace core from Cinder Express Yard."
+  },
+  {
+    "id": "EQ-014",
+    "name": "Drowned Archive Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 500,
+    "asset": "assets/items/custom/drowned_archive_core.png",
+    "description": "Waterlogged data archive core from Flooded Data Vault."
+  },
+  {
+    "id": "EQ-015",
+    "name": "Harvest Alloy Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 580,
+    "asset": "assets/items/custom/harvest_alloy_core.png",
+    "description": "Rust orchard alloy reactor core from Stage 9."
+  },
+  {
+    "id": "EQ-016",
+    "name": "Parallax Lens Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 680,
+    "asset": "assets/items/custom/parallax_lens_core.png",
+    "description": "Observatory lens core from Blacksite Observatory."
+  },
+  {
+    "id": "EQ-017",
+    "name": "Basilica Wyrm Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Legendary",
+    "stackSize": 1,
+    "sellPrice": 780,
+    "asset": "assets/items/custom/basilica_wyrm_core.png",
+    "description": "Frozen wyrm heart reliquary from Cryo Basilica."
+  },
+  {
+    "id": "EQ-018",
+    "name": "Ash Crown Core",
+    "type": "Equipment",
+    "category": "Core",
+    "slot": "Core",
+    "rarity": "Singularity",
+    "stackSize": 1,
+    "sellPrice": 950,
+    "asset": "assets/items/custom/ash_crown_core.png",
+    "description": "Ash-crowned final-route reactor core from Stage 12."
+  },
+  {
+    "id": "IT-026",
+    "name": "Operator Shard: Vexa",
+    "type": "Shard",
+    "category": "Operator",
+    "slot": "Recruitment",
+    "rarity": "Legendary",
+    "stackSize": 999,
+    "sellPrice": 75,
+    "asset": "assets/items/custom/operator_shard_vexa.png",
+    "description": "A synchronization shard keyed to Operator Vexa."
+  },
+  {
+    "id": "IT-027",
+    "name": "Projectile Coil",
+    "type": "Material",
+    "category": "Lockdown",
+    "slot": "Stack",
+    "rarity": "Rare",
+    "stackSize": 999,
+    "sellPrice": 18,
+    "asset": "assets/items/custom/projectile_coil.png",
+    "description": "Compact railgun coil recovered from Vector Lockdown events."
+  },
+  {
+    "id": "IT-028",
+    "name": "Ash Ammo Cache",
+    "type": "Material",
+    "category": "Lockdown",
+    "slot": "Stack",
+    "rarity": "Uncommon",
+    "stackSize": 999,
+    "sellPrice": 12,
+    "asset": "assets/items/custom/ash_ammo_cache.png",
+    "description": "Ash-covered ammo cache recovered from Vector Lockdown events."
+  },
+  {
+    "id": "IT-029",
+    "name": "Vector Shard Cache",
+    "type": "Material",
+    "category": "Lockdown",
+    "slot": "Stack",
+    "rarity": "Epic",
+    "stackSize": 999,
+    "sellPrice": 35,
+    "asset": "assets/items/custom/vector_shard_cache.png",
+    "description": "Locked cache of glowing vector shards from Vector Lockdown events."
   }
 ]
