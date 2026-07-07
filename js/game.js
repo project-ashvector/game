@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '228';
-  const BUILD_TITLE = 'BOSS INTEL PASS';
+  const BUILD_VERSION = '229';
+  const BUILD_TITLE = 'ROUTE PREP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -888,6 +888,33 @@
     return `<section class="fracture-card player-guide-board"><div class="record-kicker">PLAYER GUIDE // ${safeHtml(stageId)}</div><h3>Route Flow</h3><p>Quick guide for testing and normal play. This is built into Mission Briefing so you can check it without leaving the level.</p><div class="guide-flow">${flow.map(([n,title,desc])=>`<div><b>${safeHtml(n)}</b><span><strong>${safeHtml(title)}</strong>${safeHtml(desc)}</span></div>`).join('')}</div><h3>Controls</h3><div class="protocol-list compact-guide-list">${controlRows.map(([k,v])=>`<div><b>${safeHtml(k)}</b><span>${safeHtml(v)}</span></div>`).join('')}</div><p class="fineprint">Random Vector Lockdown pauses portals and NPC actions while active. Finish or fail the event to restore normal route travel.</p></section>`;
   }
 
+
+  // v229: Route Prep gives players a clean before-boss readiness card.
+  function routePrepBoardHtml(stage=currentStageKey()){
+    const def=stageDef(stage)||stageDef();
+    const stats=combatStatBlock();
+    const hpPct=Math.floor(100*(state.player.hp||0)/Math.max(1,stats.maxHp||1));
+    const epPct=Math.floor(100*(state.player.ep||0)/Math.max(1,stats.maxEp||state.player.maxEp||1));
+    const med=Number(state.inventory?.['Med Patch']||0);
+    const cell=Number(state.inventory?.['Vector Cell']||0);
+    const required=requiredAnomaliesForStage(stage);
+    const cleared=Math.min(required,state.flags?.anomaliesCleared||0);
+    const bossReady=!!state.flags?.bossUnlocked;
+    const bossDone=!!state.flags?.bossDefeated;
+    const lockdown=!!state.vectorLockdown?.active || !!state.vectorLockdown?.warning;
+    const checks=[
+      ['HP Ready', hpPct>=55, `HP ${state.player.hp}/${stats.maxHp} (${hpPct}%)`],
+      ['EP Ready', epPct>=35, `EP ${state.player.ep}/${stats.maxEp||state.player.maxEp} (${epPct}%)`],
+      ['Med Patch', med>0, `${med} in bag`],
+      ['Vector Cell', cell>0, `${cell} in bag`],
+      ['Boss Route', bossReady || bossDone, bossDone?'Boss defeated':`${cleared}/${required} anomalies`],
+      ['Lockdown Clear', !lockdown, lockdown?'Random event active/warning':'Normal route actions open']
+    ];
+    const good=checks.filter(r=>r[1]).length;
+    const pct=Math.floor(100*good/Math.max(1,checks.length));
+    const warning=lockdown?'Finish Vector Lockdown first. Portals and NPC actions are locked during the event.':(!bossReady&&!bossDone?'Clear the anomaly requirement before pushing the boss route.':'Ready to push, heal, backtrack, or extract depending on objective.');
+    return `<section class="fracture-card route-prep-board"><div class="record-kicker">ROUTE PREP // ${safeHtml(def.id||stage)}</div><h3>Before You Push</h3><p>${safeHtml(warning)}</p><div class="statrow">Readiness ${good}/${checks.length}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="route-prep-grid">${checks.map(([name,ok,val])=>`<div class="route-prep-check ${ok?'ready':'warn'}"><b>${ok?'✅':'⚠️'} ${safeHtml(name)}</b><span>${safeHtml(val)}</span></div>`).join('')}</div><div class="route-prep-actions"><button onclick="window.AV.useMedPatch()" ${med>0?'':'disabled'}>Use Med Patch</button><button onclick="window.AV.useVectorCell()" ${cell>0?'':'disabled'}>Use Vector Cell</button><button onclick="window.AV.showObjectivePing()">Ping Objective</button><button onclick="window.AV.openOverlay('inventoryOverlay')">Open Inventory</button></div><p class="fineprint">This panel is only a guide. It does not change boss requirements, rewards, saves, or NPC logic.</p></section>`;
+  }
 
   function onboardingChecklistBoardHtml(stage=currentStageKey()){
     ensureContracts(); ensureSideQuests(); ensureNpcState();
@@ -8793,6 +8820,14 @@
     const current=stageDef();
     return `<div class="record-kicker">ROUTE RECORDS // FRACTURE ARCHIVE</div><h3>World Progress</h3><p>${complete}/${total} fractures cleared // ${bossTotal} boss cores recovered // Current: ${safeHtml(current.id)} ${safeHtml(current.title)}</p><div class="route-record-list">${rows}</div>`;
   }
+  function renderRoutePrepPanel(){
+    const grid=document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('routePrepBoard');
+    if(!panel){ panel=document.createElement('section'); panel.id='routePrepBoard'; panel.className='fracture-card route-prep-board'; grid.appendChild(panel); }
+    panel.outerHTML=routePrepBoardHtml();
+  }
+
   function renderRouteRecordsPanel(){
     const grid=document.querySelector('#missionOverlay .fracture-grid');
     if(!grid) return;
@@ -8835,6 +8870,7 @@
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
     renderStoryArchivePanel();
+    renderRoutePrepPanel();
     renderRouteRecordsPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Player Level: ${p.level} // QA Bypass: ${state.qaUnlockAllStages?'ON':'OFF'}</div><div class="statrow">Level Locks: ${Object.entries(STAGE_DEFS).map(([k,d])=>d.id+': '+(playerMeetsStageRequirement(k)?'open':'locked')).join(' // ')}</div><div class="statrow">Characters: ${Object.values(OPERATOR_DEFS).filter(op=>operatorUnlocked(op.id)).length}/${Object.values(OPERATOR_DEFS).length} unlocked // QA Unlock: ${state.qaUnlockAllCharacters?'ON':'OFF'}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Controller: ${ControllerManager.statusText()}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
@@ -8872,7 +8908,7 @@
       if(id==='operatorOverlay') renderOperatorDb();
       if(id==='characterOverlay') renderCharacterMenuDb();
       if(id==='fractureOverlay') renderFractureDb();
-      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRouteRecordsPanel(); }
+      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRoutePrepPanel(); renderRouteRecordsPanel(); }
       if(id==='playtestOverlay'){ renderUI(); renderQaLockdownBuffBoard(); }
       if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); }
@@ -9817,7 +9853,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
