@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '222';
-  const BUILD_TITLE = 'NPC QUEST BOARD PASS';
+  const BUILD_VERSION = '223';
+  const BUILD_TITLE = 'NPC REWARD POPUP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -831,6 +831,13 @@
     Object.entries(def.items||{}).forEach(([name,qty])=>addItem(name,qty));
     log(`Side quest reward claimed: ${def.title}. +${def.credits||0} credits.`);
     toast(`Quest reward claimed: ${def.title}`);
+    showFieldRewardModal({
+      kicker:'FERMILAT FAVOR COMPLETE',
+      title:def.title,
+      message:def.done || 'Fermilat coughs up the stash and tries to look normal about it.',
+      stats:[`Credits +${def.credits||0}`, `Player XP +${def.syncXp||0}`, `Anomaly Hunting XP +${def.skillXp||0}`],
+      items:def.items||{}
+    });
     save(true);
     return true;
   }
@@ -905,6 +912,13 @@
     Object.entries(reward.items||{}).forEach(([name,qty])=>{ if(qty>0) addItem(name,qty); });
     log(`${reward.title} tuned by MetalliK on ${stageDef(stage)?.title || stage}. +${reward.credits} credits, +${reward.xp} XP.`);
     toast(`${reward.title} claimed.`);
+    showFieldRewardModal({
+      kicker:'METALLIK RESONANCE CACHE',
+      title:reward.title,
+      message:`${stageDef(stage)?.id || stage} tuned. The route signal stabilizes for now.`,
+      stats:[`Credits +${reward.credits||0}`, `Player XP +${reward.xp||0}`, `Anomaly Hunting XP +${reward.skillXp||0}`],
+      items:reward.items||{}
+    });
     save(true);
     return true;
   }
@@ -1039,6 +1053,13 @@
       Object.entries(rewards.items||{}).forEach(([name,qty])=>addItem(name,qty));
       log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
       toast(`${rewards.label} recovered.`);
+      showFieldRewardModal({
+        kicker:'FERMILAT STASH',
+        title:rewards.label,
+        message:'One-time contact stash recovered from Fermilat.',
+        stats:[`Credits +${rewards.credits||0}`],
+        items:rewards.items||{}
+      });
       save(true);
       renderAll();
       return;
@@ -1068,6 +1089,13 @@
     if(reward.heal){ state.player.hp = combatStatBlock().maxHp; }
     log(`${reward.label} secured from ${npc.name}. +${reward.credits||0} credits.`);
     toast(`${npc.name} helped you.`);
+    showFieldRewardModal({
+      kicker:'FIELD CONTACT REWARD',
+      title:reward.label,
+      message:`${npc.name} helped you on ${stageDef(npc.stage)?.id || npc.stage}.`,
+      stats:[`Credits +${reward.credits||0}`, reward.heal ? 'HP restored' : 'Contact route updated'],
+      items:reward.items||{}
+    });
     save(true);
     renderAll();
   }
@@ -5884,6 +5912,47 @@
     ensureLockdownBuffDock().classList.add('hidden');
     renderAll();
   }
+
+  // v223: Generic field contact reward popup. NPC rewards were easy to miss in
+  // the activity log, especially on phone/controller. Every meaningful NPC claim
+  // now opens a clean center-screen summary that stays up until Continue.
+  function ensureFieldRewardModal(){
+    let modal=$('fieldContactRewardModal');
+    if(!modal){
+      modal=document.createElement('div');
+      modal.id='fieldContactRewardModal';
+      modal.className='field-contact-reward-modal hidden';
+      modal.setAttribute('role','dialog');
+      modal.setAttribute('aria-modal','true');
+      document.body.appendChild(modal);
+    }
+    return modal;
+  }
+  function clearFieldRewardModal(){
+    const modal=$('fieldContactRewardModal');
+    if(modal){ modal.classList.add('hidden'); modal.innerHTML=''; modal.style.display='none'; }
+  }
+  function rewardItemListHtml(items={}){
+    const rows=Object.entries(items||{}).filter(([_,qty])=>Number(qty)>0).map(([name,qty])=>`<span>${safeHtml(name)} x${Number(qty)}</span>`).join('');
+    return rows || '<span>No item drops</span>';
+  }
+  function showFieldRewardModal({kicker='FIELD CONTACT', title='Reward Claimed', message='', stats=[], items={}}={}){
+    const modal=ensureFieldRewardModal();
+    const statHtml=(stats||[]).filter(Boolean).map(v=>`<span>${safeHtml(v)}</span>`).join('') || '<span>Reward logged</span>';
+    modal.classList.remove('hidden');
+    modal.style.display='flex';
+    modal.style.position='fixed';
+    modal.style.inset='0';
+    modal.style.zIndex='2147482500';
+    modal.style.alignItems='center';
+    modal.style.justifyContent='center';
+    modal.style.pointerEvents='auto';
+    modal.innerHTML=`<div class="field-reward-backdrop"></div><div class="field-reward-card avos-crt"><div class="record-kicker">${safeHtml(kicker)}</div><h2>${safeHtml(title)}</h2><p>${safeHtml(message)}</p><div class="lockdown-stats field-reward-stats">${statHtml}</div><h3>Recovered</h3><div class="lockdown-upgrades field-reward-loot">${rewardItemListHtml(items)}</div><button id="fieldRewardContinueBtn" data-controller-select="0">Continue</button></div>`;
+    const btn=$('fieldRewardContinueBtn');
+    if(btn){ btn.onclick=()=>clearFieldRewardModal(); try{ btn.focus({preventScroll:true}); }catch(err){} }
+    try{ ControllerManager?.focusTopMenu?.(modal); }catch(err){}
+  }
+
   function showLockdownRewardModal(innerHtml){
     if(!innerHtml && state?.lockdownRewardPopup?.html) innerHtml=state.lockdownRewardPopup.html;
     if(!innerHtml) return;
@@ -9373,6 +9442,8 @@
       return activateControllerMenuElement(el);
     },
     backFromTopMenu(){
+      const fieldModal=$('fieldContactRewardModal');
+      if(fieldModal && !fieldModal.classList.contains('hidden')){ return false; }
       const modal=$('vectorLockdownRewardModal');
       if(modal && !modal.classList.contains('hidden')){ return false; }
       const pause=$('mobilePauseMenu');

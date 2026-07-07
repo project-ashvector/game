@@ -2945,3 +2945,15 @@ body.game-paused .mobile-pause-card::before{
   letter-spacing:.14em;
   font-size:.75rem;
 }
+
+
+/* v223: NPC reward popup polish */
+.field-contact-reward-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;z-index:2147482500;background:rgba(2,4,10,.64);backdrop-filter:blur(5px);}
+.field-contact-reward-modal.hidden{display:none!important;}
+.field-reward-backdrop{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(0,217,255,.16),rgba(0,0,0,.72));}
+.field-reward-card{position:relative;width:min(620px,96vw);max-height:min(86vh,720px);overflow:auto;padding:22px;border-radius:18px;border:1px solid rgba(0,217,255,.45);box-shadow:0 0 32px rgba(0,217,255,.2), inset 0 0 28px rgba(0,217,255,.05);background:linear-gradient(180deg,rgba(9,16,25,.98),rgba(2,5,12,.98));}
+.field-reward-card h2{margin:.25rem 0 .5rem;font-size:clamp(1.25rem,3vw,2rem);}
+.field-reward-stats{margin:12px 0;}
+.field-reward-loot{max-height:180px;overflow:auto;}
+.field-reward-card button{width:100%;margin-top:14px;min-height:46px;}
+@media(max-width:760px){.field-contact-reward-modal{padding:10px}.field-reward-card{width:98vw;max-height:88vh;padding:16px}.field-reward-loot{max-height:128px}.field-reward-card button{min-height:44px}}
