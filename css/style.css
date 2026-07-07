@@ -2776,3 +2776,12 @@ body.mobile-play .qa-lockdown-buff-board{grid-template-columns:repeat(2,minmax(0
 .lockdown-reward-modal-card p{color:#e8faff;line-height:1.45;}
 .lockdown-reward-modal-card button{margin-top:14px;width:100%;min-height:46px;border-radius:12px;border:1px solid rgba(112,215,255,.55);background:rgba(12,22,36,.96);color:#fff;font:900 13px monospace;letter-spacing:.08em;cursor:pointer;}
 @media(max-width:720px), (pointer:coarse){.vector-lockdown-reward-modal{align-items:flex-start;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px 10px}.lockdown-reward-modal-card{max-height:calc(100svh - 22px);padding:12px;border-radius:14px}.lockdown-reward-modal-card h2{font-size:26px}.lockdown-reward-modal-card .lockdown-stats span,.lockdown-reward-modal-card .lockdown-upgrades span{font-size:10px!important}}
+
+
+/* V206: forced center-screen reward popup guard */
+body.lockdown-reward-open .vector-lockdown-reward-modal{display:flex!important;visibility:visible!important;opacity:1!important;z-index:2147483000!important;}
+.vector-lockdown-reward-modal{background:rgba(0,0,0,.58)!important;}
+.lockdown-reward-backdrop{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(112,215,255,.12),rgba(0,0,0,.74));backdrop-filter:blur(3px);}
+.lockdown-reward-modal-card{pointer-events:auto!important;}
+.lockdown-reward-modal-card .lockdown-stats{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;}
+.lockdown-reward-modal-card .lockdown-stats span{border:1px solid rgba(112,215,255,.38);border-radius:999px;padding:6px 9px;background:rgba(0,0,0,.34);}
