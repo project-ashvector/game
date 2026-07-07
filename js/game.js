@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '214';
-  const BUILD_TITLE = 'RETURN PORTAL FIX PASS';
+  const BUILD_VERSION = '215';
+  const BUILD_TITLE = 'CONTROLLER INPUT FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5086,6 +5086,7 @@
   let collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
   let normalizedMapRef = null;
   let controllerStepLockAt = 0;
+  const CONTROLLER_WORLD_STEP_MS = 145;
 
   function resetCollisionCacheOnly(){
     collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
@@ -6305,7 +6306,7 @@
     if(source==='controller'){
       const now=performance.now();
       if(now < controllerStepLockAt) return;
-      controllerStepLockAt = now + 1050;
+      controllerStepLockAt = now + CONTROLLER_WORLD_STEP_MS;
     }
 
     clampPlayerToMap();
@@ -9032,9 +9033,9 @@
     lastMoveAt: 0,
     lastMoveDir: '',
     lastNavAt: 0,
-    deadzone: 0.34,
-    moveDelay: 260,
-    navDelay: 210,
+    deadzone: 0.22,
+    moveDelay: 135,
+    navDelay: 160,
     loopId: null,
     scanTimer: null,
 
@@ -9062,18 +9063,39 @@
     labels(){ const p=this.profile; if(/PlayStation/.test(p)) return {south:'Cross',east:'Circle',west:'Square',north:'Triangle',start:'Options',select:'Share'}; if(/Switch/.test(p)) return {south:'B',east:'A',west:'Y',north:'X',start:'+',select:'-'}; if(/Xbox/.test(p)) return {south:'A',east:'B',west:'X',north:'Y',start:'Menu',select:'View'}; return {south:'Button 1',east:'Button 2',west:'Button 3',north:'Button 4',start:'Start',select:'Select'}; },
     statusText(){ if(!('getGamepads' in navigator)) return 'Not supported by this browser'; const pad=this.currentPad(); if(!pad) return 'No controller detected'; const l=this.labels(); return `${this.profile} // ${l.south}: confirm/interact // ${l.east}: back/heal // ${l.start}: pause // ${l.select}: Playtest`; },
     currentPad(){ const pads=this.pads(); if(!pads.length){ if(this.connected) this.disconnect(true); return null; } const current=(this.activeIndex!=null)?pads.find(p=>p.index===this.activeIndex):null; const active=current || pads.find(p=>this.padHasInput(p)) || pads[0]; if(active) this.connect(active,true); return active||null; },
-    pressed(pad,index){ const b=pad?.buttons?.[index]; return !!b && (b.pressed || b.value>.35); },
+    pressed(pad,index){ const b=pad?.buttons?.[index]; return !!b && (b.pressed || b.value>.28); },
     justPressed(pad,index){ const now=this.pressed(pad,index); const key=`b${index}`; const was=!!this.lastButtons[key]; this.lastButtons[key]=now; return now&&!was; },
     axis(pad,index){ return Number(pad?.axes?.[index]||0); },
-    movement(pad){ let dx=0,dy=0; if(this.pressed(pad,14)) dx=-1; else if(this.pressed(pad,15)) dx=1; if(this.pressed(pad,12)) dy=-1; else if(this.pressed(pad,13)) dy=1; const ax=this.axis(pad,0), ay=this.axis(pad,1), rx=this.axis(pad,2), ry=this.axis(pad,3); const useX=Math.abs(ax)>=Math.abs(rx)?ax:rx; const useY=Math.abs(ay)>=Math.abs(ry)?ay:ry; if(!dx && Math.abs(useX)>this.deadzone) dx=useX>0?1:-1; if(!dy && Math.abs(useY)>this.deadzone) dy=useY>0?1:-1; if(dx&&dy){ if(Math.abs(useX)>=Math.abs(useY)) dy=0; else dx=0; } return {dx:Math.sign(dx||0),dy:Math.sign(dy||0),key:`${Math.sign(dx||0)},${Math.sign(dy||0)}`}; },
-    navMove(pad){ const mv=this.movement(pad); const now=performance.now(); if(!mv.dx&&!mv.dy){ this.lastMoveDir=''; return; } const fresh=this.lastMoveDir!==mv.key; const delay=now-this.lastMoveAt>=this.moveDelay; if(fresh||delay){ this.lastMoveDir=mv.key; this.lastMoveAt=now; tryMove(mv.dx,mv.dy,'controller'); } },
+    hatAxis(pad,index){ const v=this.axis(pad,index); return Math.abs(v)>0.55 ? Math.sign(v) : 0; },
+    movement(pad){
+      let dx=0,dy=0;
+      if(this.pressed(pad,14)) dx=-1; else if(this.pressed(pad,15)) dx=1;
+      if(this.pressed(pad,12)) dy=-1; else if(this.pressed(pad,13)) dy=1;
+      const ax=this.axis(pad,0), ay=this.axis(pad,1), rx=this.axis(pad,2), ry=this.axis(pad,3);
+      const hatX=this.hatAxis(pad,6), hatY=this.hatAxis(pad,7);
+      const useX=Math.abs(ax)>=Math.abs(rx)?ax:rx;
+      const useY=Math.abs(ay)>=Math.abs(ry)?ay:ry;
+      if(!dx && hatX) dx=hatX;
+      if(!dy && hatY) dy=hatY;
+      if(!dx && Math.abs(useX)>this.deadzone) dx=useX>0?1:-1;
+      if(!dy && Math.abs(useY)>this.deadzone) dy=useY>0?1:-1;
+      if(dx&&dy){ if(Math.abs(useX)>=Math.abs(useY)) dy=0; else dx=0; }
+      return {dx:Math.sign(dx||0),dy:Math.sign(dy||0),key:`${Math.sign(dx||0)},${Math.sign(dy||0)}`};
+    },
+    navMove(pad){
+      const mv=this.movement(pad); const now=performance.now();
+      if(!mv.dx&&!mv.dy){ this.lastMoveDir=''; return; }
+      const fresh=this.lastMoveDir!==mv.key;
+      const delay=now-this.lastMoveAt>=this.moveDelay;
+      if(fresh||delay){ this.lastMoveDir=mv.key; this.lastMoveAt=now; tryMove(mv.dx,mv.dy,'controller'); }
+    },
     menuButtons(root=document){ return Array.from(root.querySelectorAll('button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])')).filter(el=>el.offsetParent!==null); },
     moveFocus(delta=1){ const open=Array.from(document.querySelectorAll('.overlay:not(.hidden), #mainMenu:not(.hidden), #bootScreen:not(.hidden)')).pop() || document; const buttons=this.menuButtons(open); if(!buttons.length) return; let i=buttons.indexOf(document.activeElement); i=(i+delta+buttons.length)%buttons.length; try{buttons[i].focus({preventScroll:true});}catch(err){} },
     clickFocused(){ const el=document.activeElement; if(el && typeof el.click==='function' && el!==document.body){ el.click(); return true; } return false; },
     handle(pad){
       const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
-      if(select){ openOverlay('playtestOverlay'); return; }
       if(!$('bootScreen').classList.contains('hidden')){ if(south||start){ startIntroVideo(); return; } if(east||select){ forceIntroMenuRecovery(); return; } }
+      if(select && $('bootScreen').classList.contains('hidden')){ openOverlay('playtestOverlay'); return; }
       if(!$('mainMenu').classList.contains('hidden')){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ if(!this.clickFocused()){ if(hasSaveData()) continueSavedGame(); else newGameRootStart(); } return; } }
       const overlayOpen=Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
       if(overlayOpen){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ this.clickFocused(); return; } if(east){ closeOverlays(); return; } }
