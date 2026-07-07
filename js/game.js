@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '215';
-  const BUILD_TITLE = 'CONTROLLER INPUT FIX PASS';
+  const BUILD_VERSION = '216';
+  const BUILD_TITLE = 'CONTROLLER MENU UI PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5086,7 +5086,7 @@
   let collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
   let normalizedMapRef = null;
   let controllerStepLockAt = 0;
-  const CONTROLLER_WORLD_STEP_MS = 145;
+  const CONTROLLER_WORLD_STEP_MS = 82;
 
   function resetCollisionCacheOnly(){
     collisionRegionCache = {stage:null, map:null, set:null, start:null, width:0, height:0};
@@ -5770,7 +5770,11 @@
     modal.innerHTML=`<div class="lockdown-reward-backdrop" data-lockdown-reward-stay="1"></div><div class="lockdown-reward-modal-card avos-crt">${innerHtml}</div>`;
     const bind=()=>{
       const btn=$('lockdownRewardContinueBtn');
-      if(btn) btn.onclick=closeLockdownRewardModal;
+      if(btn){
+        btn.onclick=closeLockdownRewardModal;
+        btn.setAttribute('data-controller-primary','1');
+      }
+      try{ ControllerManager?.focusTopMenu?.(modal); }catch(err){}
     };
     bind();
     setTimeout(bind,0);
@@ -8514,6 +8518,7 @@
 
     const info=$('menuInfo');
     if(info){info.textContent='Protocol opened. Press Esc or Close to return.'; info.classList.add('ok');}
+    setTimeout(()=>{ try{ ControllerManager.focusTopMenu(target); }catch(err){} }, 0);
   }
 
   function closeOverlays(){
@@ -8843,6 +8848,8 @@
       });
     }
     panel.classList.remove('hidden');
+    panel.style.display='grid';
+    setTimeout(()=>{ try{ ControllerManager.focusTopMenu(panel); }catch(err){} },0);
   }
   function updatePhoneOrientationWarning(){
     let warn=$('phoneRotateWarning');
@@ -8983,36 +8990,59 @@
 
 
 
-  // v94: controller hover/confirm helpers for non-battle menus.
+  // v216: controller hover/confirm helpers for every visible menu, dialog, and modal.
   function isElementVisible(el){
     if(!el || el.disabled) return false;
     if(el.closest('.hidden')) return false;
     const style = window.getComputedStyle(el);
-    return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length > 0;
+    return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0' && el.getClientRects().length > 0;
+  }
+  function controllerModalRoots(){
+    const selectors = [
+      '#vectorLockdownRewardModal:not(.hidden)',
+      '#mobilePauseMenu:not(.hidden)',
+      '#storyOverlay:not(.hidden)',
+      '#preBattleOverlay:not(.hidden)',
+      '#battleOverlay:not(.hidden)',
+      '.overlay:not(.hidden)',
+      '#mainMenu:not(.hidden)',
+      '#bootScreen:not(.hidden)'
+    ];
+    const roots = selectors.flatMap(sel=>Array.from(document.querySelectorAll(sel))).filter(isElementVisible);
+    return roots.sort((a,b)=>{
+      const za=parseInt(window.getComputedStyle(a).zIndex,10)||0;
+      const zb=parseInt(window.getComputedStyle(b).zIndex,10)||0;
+      return za-zb;
+    });
   }
   function visibleOverlayRoot(){
-    return Array.from(document.querySelectorAll('.overlay')).find(o => !o.classList.contains('hidden') && o.id !== 'battleOverlay' && o.id !== 'preBattleOverlay') || null;
+    return controllerModalRoots().pop() || null;
   }
   function controllerMenuElements(root){
     if(!root) return [];
-    const selector = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), [data-controller-menu]';
-    return Array.from(root.querySelectorAll(selector)).filter(isElementVisible);
+    const selector = 'button:not([disabled]), select:not([disabled]), input:not([disabled]), textarea:not([disabled]), [role="button"]:not([disabled]), [data-controller-menu], [tabindex]:not([tabindex="-1"])';
+    const items = Array.from(root.querySelectorAll(selector)).filter(isElementVisible);
+    return items.filter((el,i,arr)=>arr.indexOf(el)===i);
   }
   function updateControllerMenuFocus(root, index=0){
     const items = controllerMenuElements(root);
-    document.querySelectorAll('.controller-menu-selected').forEach(el => el.classList.remove('controller-menu-selected'));
+    document.querySelectorAll('.controller-menu-selected,.controller-selected').forEach(el => el.classList.remove('controller-menu-selected','controller-selected'));
     if(!items.length) return {items, index:0};
     const safeIndex = Math.max(0, Math.min(items.length-1, index));
     const el = items[safeIndex];
     el.classList.add('controller-menu-selected');
-    try{ el.focus({preventScroll:true}); }catch(err){}
+    try{ el.focus({preventScroll:false}); el.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(err){}
     return {items, index:safeIndex};
   }
   function activateControllerMenuElement(el){
     if(!el) return false;
     const tag = (el.tagName || '').toLowerCase();
     if(tag === 'button' || el.getAttribute('role') === 'button'){ el.click(); return true; }
-    if(tag === 'select' || tag === 'input'){
+    if(tag === 'select'){
+      try{ el.focus({preventScroll:true}); el.dispatchEvent(new Event('change',{bubbles:true})); }catch(err){}
+      return true;
+    }
+    if(tag === 'input' || tag === 'textarea'){
       try{ el.focus({preventScroll:true}); }catch(err){}
       return true;
     }
@@ -9033,9 +9063,11 @@
     lastMoveAt: 0,
     lastMoveDir: '',
     lastNavAt: 0,
-    deadzone: 0.22,
-    moveDelay: 135,
-    navDelay: 160,
+    navIndex: 0,
+    navRoot: null,
+    deadzone: 0.14,
+    moveDelay: 72,
+    navDelay: 105,
     loopId: null,
     scanTimer: null,
 
@@ -9053,9 +9085,9 @@
       this.scanTimer=setInterval(()=>this.scan(),500);
       this.loop();
     },
-    resetInputState(){ this.lastButtons={}; this.lastMoveDir=''; this.lastMoveAt=0; this.lastNavAt=0; },
+    resetInputState(){ this.lastButtons={}; this.lastMoveDir=''; this.lastMoveAt=0; this.navIndex=0; this.navRoot=null; },
     pads(){ try{return Array.from(navigator.getGamepads?navigator.getGamepads():[]).filter(Boolean).filter(p=>p.connected!==false);}catch(err){return [];} },
-    padHasInput(p){ if(!p) return false; const axes=Array.from(p.axes||[]).some(v=>Math.abs(Number(v)||0)>.22); const buttons=Array.from(p.buttons||[]).some(b=>b && (b.pressed || b.value>.35)); return axes||buttons; },
+    padHasInput(p){ if(!p) return false; const axes=Array.from(p.axes||[]).some(v=>Math.abs(Number(v)||0)>.16); const buttons=Array.from(p.buttons||[]).some(b=>b && (b.pressed || b.value>.25)); return axes||buttons; },
     scan(){ const pads=this.pads(); if(!pads.length){ if(this.connected) this.disconnect(true); return; } const current=(this.activeIndex!=null)?pads.find(p=>p.index===this.activeIndex):null; const active=pads.find(p=>this.padHasInput(p)) || current || pads[0]; if(active) this.connect(active,true); },
     connect(pad, quiet=false){ if(!pad) return; const changed=this.activeIndex!==pad.index || this.id!==(pad.id||'Controller'); this.activeIndex=pad.index; this.connected=true; this.id=pad.id||'Controller'; this.profile=this.detectProfile(this.id); if(changed) this.resetInputState(); if(battle) renderBattle(); if(!quiet){ toast(`${this.profile} detected. Controller controls enabled.`); renderAll(); } },
     disconnect(quiet=false){ this.connected=false; this.activeIndex=null; this.id=''; this.profile='Generic Controller'; this.resetInputState(); if(!quiet) toast('Controller disconnected.'); try{renderAll();}catch(err){} },
@@ -9063,10 +9095,10 @@
     labels(){ const p=this.profile; if(/PlayStation/.test(p)) return {south:'Cross',east:'Circle',west:'Square',north:'Triangle',start:'Options',select:'Share'}; if(/Switch/.test(p)) return {south:'B',east:'A',west:'Y',north:'X',start:'+',select:'-'}; if(/Xbox/.test(p)) return {south:'A',east:'B',west:'X',north:'Y',start:'Menu',select:'View'}; return {south:'Button 1',east:'Button 2',west:'Button 3',north:'Button 4',start:'Start',select:'Select'}; },
     statusText(){ if(!('getGamepads' in navigator)) return 'Not supported by this browser'; const pad=this.currentPad(); if(!pad) return 'No controller detected'; const l=this.labels(); return `${this.profile} // ${l.south}: confirm/interact // ${l.east}: back/heal // ${l.start}: pause // ${l.select}: Playtest`; },
     currentPad(){ const pads=this.pads(); if(!pads.length){ if(this.connected) this.disconnect(true); return null; } const current=(this.activeIndex!=null)?pads.find(p=>p.index===this.activeIndex):null; const active=current || pads.find(p=>this.padHasInput(p)) || pads[0]; if(active) this.connect(active,true); return active||null; },
-    pressed(pad,index){ const b=pad?.buttons?.[index]; return !!b && (b.pressed || b.value>.28); },
+    pressed(pad,index){ const b=pad?.buttons?.[index]; return !!b && (b.pressed || b.value>.20); },
     justPressed(pad,index){ const now=this.pressed(pad,index); const key=`b${index}`; const was=!!this.lastButtons[key]; this.lastButtons[key]=now; return now&&!was; },
     axis(pad,index){ return Number(pad?.axes?.[index]||0); },
-    hatAxis(pad,index){ const v=this.axis(pad,index); return Math.abs(v)>0.55 ? Math.sign(v) : 0; },
+    hatAxis(pad,index){ const v=this.axis(pad,index); return Math.abs(v)>0.45 ? Math.sign(v) : 0; },
     movement(pad){
       let dx=0,dy=0;
       if(this.pressed(pad,14)) dx=-1; else if(this.pressed(pad,15)) dx=1;
@@ -9089,18 +9121,108 @@
       const delay=now-this.lastMoveAt>=this.moveDelay;
       if(fresh||delay){ this.lastMoveDir=mv.key; this.lastMoveAt=now; tryMove(mv.dx,mv.dy,'controller'); }
     },
-    menuButtons(root=document){ return Array.from(root.querySelectorAll('button:not([disabled]), select, input, [tabindex]:not([tabindex="-1"])')).filter(el=>el.offsetParent!==null); },
-    moveFocus(delta=1){ const open=Array.from(document.querySelectorAll('.overlay:not(.hidden), #mainMenu:not(.hidden), #bootScreen:not(.hidden)')).pop() || document; const buttons=this.menuButtons(open); if(!buttons.length) return; let i=buttons.indexOf(document.activeElement); i=(i+delta+buttons.length)%buttons.length; try{buttons[i].focus({preventScroll:true});}catch(err){} },
-    clickFocused(){ const el=document.activeElement; if(el && typeof el.click==='function' && el!==document.body){ el.click(); return true; } return false; },
+    menuButtons(root=document){ return controllerMenuElements(root); },
+    focusTopMenu(root=null){
+      const target=root || visibleOverlayRoot() || document;
+      if(target!==this.navRoot){ this.navRoot=target; this.navIndex=0; }
+      const result=updateControllerMenuFocus(target, this.navIndex);
+      this.navIndex=result.index;
+      return result;
+    },
+    moveFocus(delta=1){
+      const root=visibleOverlayRoot() || document;
+      const items=controllerMenuElements(root);
+      if(!items.length) return false;
+      if(root!==this.navRoot){ this.navRoot=root; this.navIndex=0; }
+      const activeIndex=items.indexOf(document.activeElement);
+      if(activeIndex>=0) this.navIndex=activeIndex;
+      this.navIndex=(this.navIndex+delta+items.length)%items.length;
+      updateControllerMenuFocus(root,this.navIndex);
+      return true;
+    },
+    clickFocused(){
+      const root=visibleOverlayRoot() || document;
+      const items=controllerMenuElements(root);
+      let el=document.activeElement;
+      if(!items.includes(el)){
+        const focused=this.focusTopMenu(root);
+        el=focused.items[focused.index];
+      }
+      return activateControllerMenuElement(el);
+    },
+    backFromTopMenu(){
+      const modal=$('vectorLockdownRewardModal');
+      if(modal && !modal.classList.contains('hidden')){ return false; }
+      const pause=$('mobilePauseMenu');
+      if(pause && !pause.classList.contains('hidden')){ pause.classList.add('hidden'); pause.style.display=''; return true; }
+      const pre=$('preBattleOverlay');
+      if(pre && !pre.classList.contains('hidden')){ closePreBattleOverlay?.(); return true; }
+      const open=Array.from(document.querySelectorAll('.overlay')).filter(o=>!o.classList.contains('hidden'));
+      if(open.length){ closeOverlays(); return true; }
+      return false;
+    },
+    handleMenuRoot(root,pad,south,east,start,select){
+      const mv=this.movement(pad);
+      if(mv.dy||mv.dx){
+        const now=performance.now();
+        if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); }
+      }else{
+        this.lastMoveDir='';
+      }
+      if(south||start){ this.clickFocused(); return true; }
+      if(east){ this.backFromTopMenu(); return true; }
+      if(select && !$('bootScreen').classList.contains('hidden')) return false;
+      return true;
+    },
     handle(pad){
       const south=this.justPressed(pad,0), east=this.justPressed(pad,1), west=this.justPressed(pad,2), north=this.justPressed(pad,3), select=this.justPressed(pad,8), start=this.justPressed(pad,9);
-      if(!$('bootScreen').classList.contains('hidden')){ if(south||start){ startIntroVideo(); return; } if(east||select){ forceIntroMenuRecovery(); return; } }
-      if(select && $('bootScreen').classList.contains('hidden')){ openOverlay('playtestOverlay'); return; }
-      if(!$('mainMenu').classList.contains('hidden')){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ if(!this.clickFocused()){ if(hasSaveData()) continueSavedGame(); else newGameRootStart(); } return; } }
-      const overlayOpen=Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
-      if(overlayOpen){ const mv=this.movement(pad); if(mv.dy||mv.dx){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; this.moveFocus(mv.dy||mv.dx); } } if(south||start){ this.clickFocused(); return; } if(east){ closeOverlays(); return; } }
-      if(battle){ if(south) playerAttack(0); else if(east) playerAttack(1); else if(west) playerAttack(2); else if(north) playerAttack(3); else if(start) guardBattle(); return; }
-      if(!$('app').classList.contains('hidden')){ this.navMove(pad); if(south){ interactNearbyNpc(); return; } if(east){ useMedPatch(); return; } if(west){ useVectorCell(); return; } if(north){ showObjectivePing(); return; } if(start){ showMobilePauseMenu(); return; } }
+      const boot=$('bootScreen'), menu=$('mainMenu'), app=$('app');
+      if(storyActive){
+        if(south||start){ advanceStory(); return; }
+        if(east||select){ finishStory(); return; }
+      }
+      if(boot && !boot.classList.contains('hidden')){
+        if(south||start){ startIntroVideo(); return; }
+        if(east||select){ forceIntroMenuRecovery(); return; }
+        return;
+      }
+      const reward=$('vectorLockdownRewardModal');
+      if(reward && !reward.classList.contains('hidden')){
+        this.handleMenuRoot(reward,pad,south,east,start,select);
+        return;
+      }
+      const pause=$('mobilePauseMenu');
+      if(pause && !pause.classList.contains('hidden')){
+        this.handleMenuRoot(pause,pad,south,east,start,select);
+        return;
+      }
+      if(select && boot && boot.classList.contains('hidden')){ openOverlay('playtestOverlay'); return; }
+      if(menu && !menu.classList.contains('hidden')){
+        this.handleMenuRoot(menu,pad,south,east,start,select);
+        if((south||start) && !document.activeElement){ if(hasSaveData()) continueSavedGame(); else newGameRootStart(); }
+        return;
+      }
+      const topRoot=visibleOverlayRoot();
+      const overlayOpen=topRoot && topRoot.id!=='battleOverlay' && topRoot.id!=='mainMenu' && topRoot.id!=='bootScreen';
+      if(overlayOpen){
+        this.handleMenuRoot(topRoot,pad,south,east,start,select);
+        return;
+      }
+      if(battle){
+        if(south) playerAttack(0); else if(east) playerAttack(1); else if(west) playerAttack(2); else if(north) playerAttack(3); else if(start) guardBattle(); else {
+          const mv=this.movement(pad);
+          if(mv.dx||mv.dy){ const now=performance.now(); if(now-this.lastNavAt>this.navDelay){ this.lastNavAt=now; battleCommandIndex=(battleCommandIndex+(mv.dy||mv.dx)+4)%4; renderBattle(); } }
+        }
+        return;
+      }
+      if(app && !app.classList.contains('hidden')){
+        this.navMove(pad);
+        if(south){ interactNearbyNpc(); return; }
+        if(east){ useMedPatch(); return; }
+        if(west){ useVectorCell(); return; }
+        if(north){ showObjectivePing(); return; }
+        if(start){ showMobilePauseMenu(); return; }
+      }
     },
     loop(){ const pad=this.currentPad(); if(pad){ try{ this.handle(pad); }catch(err){ const now=Date.now(); if(!this._lastErr || now-this._lastErr>2000){ console.warn('[AV] controller loop error',err); this._lastErr=now; } } } this.loopId=requestAnimationFrame(()=>this.loop()); }
   };
