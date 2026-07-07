@@ -2925,3 +2925,23 @@ body.lockdown-reward-open .vector-lockdown-reward-modal{display:flex!important;v
   .lockdown-reward-modal-card h2{font-size:22px!important;margin:0!important;}
   .lockdown-reward-modal-card p{font-size:10px!important;margin:2px 0!important;}
 }
+
+
+/* V217: true pause visual polish */
+body.game-paused #app canvas{filter:saturate(.85) brightness(.78);}
+body.game-paused #mobileActionPad{opacity:.92;}
+body.game-paused .mobile-pause-card::before{
+  content:'GAME PAUSED';
+  display:inline-flex;
+  width:max-content;
+  max-width:100%;
+  margin:0 0 10px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,216,108,.55);
+  background:rgba(255,216,108,.12);
+  color:#ffe3a3;
+  font-weight:900;
+  letter-spacing:.14em;
+  font-size:.75rem;
+}

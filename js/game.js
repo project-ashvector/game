@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '216';
-  const BUILD_TITLE = 'CONTROLLER MENU UI PASS';
+  const BUILD_VERSION = '217';
+  const BUILD_TITLE = 'TRUE PAUSE FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1955,6 +1955,7 @@
     return Object.values(state.respawns || {}).filter(r => r && r.stage === key).map(r => ({...r, seconds:Math.max(0, Math.ceil((r.readyAt-now)/1000))}));
   }
   function processRespawns(){
+    if(isGameplayPaused()) return;
     if(!state || !state.map) return;
     ensureRespawnState();
     const now=Date.now();
@@ -5791,6 +5792,7 @@
   function vectorLockdownBlocked(){ return !gameStarted || !!battle || !!storyActive || !!state.rogueEvent?.active || !!state.rogueWarning?.active; }
   function lockdownMobileCompact(){ return !!(window.matchMedia && (window.matchMedia('(max-width:720px)').matches || window.matchMedia('(pointer: coarse)').matches)); }
   function maybeTriggerVectorLockdown(){
+    if(isGameplayPaused()) return;
     if(vectorLockdownBlocked()) return;
     const now=Date.now();
     if(!Number.isFinite(Number(state.rogueNextAt))) scheduleNextVectorLockdown('initial randomized timer');
@@ -5862,6 +5864,7 @@
     if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=`<span>Move anywhere. Auto-fire starts when the surge begins.</span><span>${safeHtml(lockdownPersistentSummary())}</span>`;
   }
   function tickVectorLockdownWarning(){
+    if(isGameplayPaused()){ const w=state.rogueWarning; if(w?.active) w.endsAt=(w.endsAt||Date.now())+300; return; }
     const w=state.rogueWarning;
     if(!w?.active){ cancelVectorLockdownWarning('Vector warning ended.'); return; }
     if(battle || storyActive){ cancelVectorLockdownWarning('Vector warning paused by story/combat.'); return; }
@@ -6001,6 +6004,7 @@
     try{
       const e=state.rogueEvent;
       if(!e?.active){ if(window._avLockdownTimer){ clearInterval(window._avLockdownTimer); window._avLockdownTimer=null; } return; }
+      if(isGameplayPaused()){ e.lastFrameAt=Date.now(); updateVectorLockdownHud(); return; }
       ensureLockdownPlayerState(e);
       const now=Date.now(); const dt=Math.min(180, now-(e.lastFrameAt||now)); e.lastFrameAt=now;
       const pressure=Math.max(0,Math.min(1,(now-e.startedAt)/(e.duration||60000)));
@@ -8523,6 +8527,7 @@
 
   function closeOverlays(){
     radioMode=false;
+    setGameplayPaused(false,'overlay close');
     document.querySelectorAll('.overlay').forEach(o=>{ o.classList.add('hidden'); o.style.display=''; });
     document.body.classList.remove('menu-protocol-open');
     const previous = uiState.returnStack.pop() || (gameStarted && !$('app').classList.contains('hidden') ? 'game' : 'menu');
@@ -8753,6 +8758,64 @@
     const firstOwned = Object.keys(state.inventory)[0]; if(firstOwned) showItemDetail(firstOwned);
   }
 
+  // v217: true pause helpers. The pause menu now freezes timed gameplay systems instead of only opening a UI layer.
+  let gameplayPauseStartedAt = 0;
+  function gameplayPauseMenuVisible(){
+    const panel=$('mobilePauseMenu');
+    return !!(panel && !panel.classList.contains('hidden'));
+  }
+  function isGameplayPaused(){
+    return !!(document.body.classList.contains('game-paused') || gameplayPauseMenuVisible());
+  }
+  function shiftTimedGameStateAfterPause(delta=0){
+    delta = Math.max(0, Number(delta)||0);
+    if(!delta || !state) return;
+    if(state.rogueNextAt) state.rogueNextAt += delta;
+    if(state.rogueWarning?.active){
+      state.rogueWarning.startedAt = (state.rogueWarning.startedAt||Date.now()) + delta;
+      state.rogueWarning.endsAt = (state.rogueWarning.endsAt||Date.now()) + delta;
+    }
+    const e=state.rogueEvent;
+    if(e?.active){
+      ['startedAt','lastFrameAt','nextUpgradeAt','nextSpawnAt','nextShotAt','nextOrbitAt'].forEach(k=>{ if(e[k]) e[k]+=delta; });
+      (e.projectiles||[]).forEach(p=>{ if(p.spawnedAt) p.spawnedAt+=delta; });
+      (e.enemies||[]).forEach(m=>{ if(m.spawnedAt) m.spawnedAt+=delta; if(m.hitAt) m.hitAt+=delta; });
+    }
+    Object.values(state.respawns||{}).forEach(r=>{ if(r?.readyAt) r.readyAt += delta; });
+  }
+  function setGameplayPaused(paused, source='pause menu'){
+    const now=Date.now();
+    if(paused){
+      if(!document.body.classList.contains('game-paused')){
+        gameplayPauseStartedAt = now;
+        document.body.classList.add('game-paused');
+        document.body.dataset.pauseSource = source;
+        stopMobileMove();
+        try{ AudioManager.play('pause'); }catch(err){}
+        try{ toast('Game paused.'); }catch(err){}
+      }
+      return;
+    }
+    if(document.body.classList.contains('game-paused')){
+      const delta = gameplayPauseStartedAt ? now - gameplayPauseStartedAt : 0;
+      shiftTimedGameStateAfterPause(delta);
+      gameplayPauseStartedAt = 0;
+      document.body.classList.remove('game-paused');
+      delete document.body.dataset.pauseSource;
+      try{ AudioManager.play(activeMusicForState()); }catch(err){}
+      try{ renderAll(); }catch(err){}
+    }
+  }
+  function hideMobilePauseMenu(){
+    const panel=$('mobilePauseMenu');
+    if(panel){ panel.classList.add('hidden'); panel.style.display=''; }
+    setGameplayPaused(false,'pause menu');
+    if(gameStarted && !$('app').classList.contains('hidden')){
+      uiState.mode='game';
+      try{ canvas.focus({preventScroll:true}); }catch(err){}
+    }
+  }
+
   // v82: phone/mobile playability helpers.
   // Keeps the canvas scaled to the phone viewport, adds hold-to-walk touch movement,
   // and exposes the important hotkeys as tap buttons.
@@ -8839,14 +8902,15 @@
       panel.className='overlay mobile-pause-menu hidden';
       panel.innerHTML=`<div class="database-modal avos-crt mobile-pause-card"><button id="mobilePauseClose" class="modal-close">Close</button><div class="db-header"><div>PAUSE MENU</div><div>PHONE / TOUCH ACCESS</div></div><div class="mobile-pause-grid"><button data-mobile-menu="inventoryOverlay">Inventory</button><button data-mobile-menu="missionOverlay">Mission</button><button data-mobile-menu="progressionOverlay">Progress</button><button data-mobile-menu="operatorOverlay">Operators</button><button data-mobile-menu="characterOverlay">Characters</button><button data-mobile-menu="playtestOverlay">Playtest</button><button data-mobile-menu="configOverlay">Settings</button><button data-mobile-menu="save">Save</button></div><p class="menu-info">Rotate your phone sideways for the proper layout. Use Playtest here when debugging the mini-game.</p></div>`;
       document.body.appendChild(panel);
-      $('mobilePauseClose').onclick=()=>panel.classList.add('hidden');
+      $('mobilePauseClose').onclick=hideMobilePauseMenu;
       panel.addEventListener('click',e=>{
         const btn=e.target.closest('[data-mobile-menu]'); if(!btn) return;
         e.preventDefault(); const target=btn.dataset.mobileMenu;
         if(target==='save'){ save(false); return; }
-        panel.classList.add('hidden'); openOverlay(target);
+        panel.classList.add('hidden'); panel.style.display=''; openOverlay(target);
       });
     }
+    setGameplayPaused(true,'pause menu');
     panel.classList.remove('hidden');
     panel.style.display='grid';
     setTimeout(()=>{ try{ ControllerManager.focusTopMenu(panel); }catch(err){} },0);
@@ -9154,7 +9218,7 @@
       const modal=$('vectorLockdownRewardModal');
       if(modal && !modal.classList.contains('hidden')){ return false; }
       const pause=$('mobilePauseMenu');
-      if(pause && !pause.classList.contains('hidden')){ pause.classList.add('hidden'); pause.style.display=''; return true; }
+      if(pause && !pause.classList.contains('hidden')){ hideMobilePauseMenu(); return true; }
       const pre=$('preBattleOverlay');
       if(pre && !pre.classList.contains('hidden')){ closePreBattleOverlay?.(); return true; }
       const open=Array.from(document.querySelectorAll('.overlay')).filter(o=>!o.classList.contains('hidden'));
@@ -9193,6 +9257,7 @@
       }
       const pause=$('mobilePauseMenu');
       if(pause && !pause.classList.contains('hidden')){
+        if(start){ hideMobilePauseMenu(); return; }
         this.handleMenuRoot(pause,pad,south,east,start,select);
         return;
       }
@@ -9233,10 +9298,10 @@
   function startAutosave(){
     if(autosaveStarted) return;
     autosaveStarted=true;
-    setInterval(()=>{ if(!$('app').classList.contains('hidden')) save(true); }, 30000);
-    setInterval(()=>{ processRespawns(); renderUI(); }, 1000);
-    setInterval(processRespawns, 500);
-    setInterval(()=>{ if(state?.map && state?.player) clampPlayerToMap(); }, 900);
+    setInterval(()=>{ if(!isGameplayPaused() && !$('app').classList.contains('hidden')) save(true); }, 30000);
+    setInterval(()=>{ if(!isGameplayPaused()){ processRespawns(); renderUI(); } }, 1000);
+    setInterval(()=>{ if(!isGameplayPaused()) processRespawns(); }, 500);
+    setInterval(()=>{ if(!isGameplayPaused() && state?.map && state?.player) clampPlayerToMap(); }, 900);
   }
 
   // v47: hard menu router. This runs in capture phase so menu protocols work
@@ -9316,6 +9381,7 @@
         }
       }
       if(e.key==='Escape' && overlayOpen){ e.preventDefault(); closeOverlays(); return; }
+      if((e.key==='Escape' || String(e.key||'').toLowerCase()==='p') && gameIsOpen && !overlayOpen){ e.preventDefault(); showMobilePauseMenu(); return; }
       if((e.key==='f'||e.key==='F') && gameIsOpen){ e.preventDefault(); toggleFullscreenMode(); return; }
       if(gameIsOpen && !overlayOpen){
         const tag = (e.target && e.target.tagName || '').toLowerCase();
@@ -9368,7 +9434,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
