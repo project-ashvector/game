@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '220';
-  const BUILD_TITLE = 'NPC SPAWN SAFETY PASS';
+  const BUILD_VERSION = '221';
+  const BUILD_TITLE = 'NPC PURPOSE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -849,6 +849,53 @@
     return `<section class="fracture-card side-quest-board"><div class="record-kicker">SIDE QUEST // FERMILAT FAVOR</div><h3>${safeHtml(def.title)}</h3><p>${safeHtml(q?.status==='claimed' ? def.done : def.ask)}</p><div class="statrow">Progress ${q?.progress||0}/${q?.target||def.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Status</b><span>${safeHtml(sideQuestStatusText(stage))}</span></div><div><b>Reward</b><span>${safeHtml(reward)}</span></div></div><button onclick="window.AV.claimFermilatQuest('${stage}')" ${q?.status==='complete'?'':'disabled'}>${q?.status==='complete'?'Claim Reward':'Talk / Hunt to Progress'}</button></section>`;
   }
 
+  function metallikSignalReward(stage=currentStageKey()){
+    const n=Math.max(1,stageNumberFromKey(stage)||1);
+    const items={
+      'Vector Cell':1+Math.floor(n/4),
+      'Scrap Metal':2+Math.floor(n/3)
+    };
+    if(n>=4) items['Burnt Alloy']=1;
+    if(n>=8) items['Corrupted Catalyst']=1;
+    if(n>=11) items['Rust Core']=1;
+    return {
+      title:'MetalliK Resonance Cache',
+      credits:40+n*12,
+      xp:80+n*30,
+      skillXp:90+n*35,
+      items
+    };
+  }
+  function metallikStatusText(stage=currentStageKey()){
+    const reward=metallikSignalReward(stage);
+    const key=`metallik:${stage}`;
+    const claimed=!!state?.npcRewards?.[key];
+    const itemText=Object.entries(reward.items||{}).filter(([_,q])=>q>0).map(([n,q])=>`${q} ${n}`).join(' // ');
+    return `${claimed?'✅ Tuned':'⬜ Untuned'} // ${reward.credits} credits // ${reward.xp} Player XP // ${reward.skillXp} Anomaly Hunting XP${itemText?` // ${itemText}`:''}`;
+  }
+  function claimMetallikSignal(npc){
+    ensureNpcState();
+    const key=npcRewardKey(npc);
+    const stage=npc.stage || currentStageKey();
+    const reward=metallikSignalReward(stage);
+    state.metallikSignals ||= {};
+    if(state.npcRewards[key]){
+      log(`MetalliK route signal already tuned on ${stageDef(stage)?.id || stage}. ${metallikStatusText(stage)}`);
+      toast('MetalliK already tuned this route.');
+      return false;
+    }
+    state.npcRewards[key]=true;
+    state.metallikSignals[stage]={claimed:true, claimedAt:Date.now(), reward};
+    addCredits(reward.credits||0);
+    if(reward.xp) gainXp(reward.xp);
+    if(reward.skillXp) grantStyleXp('slayer', reward.skillXp);
+    Object.entries(reward.items||{}).forEach(([name,qty])=>{ if(qty>0) addItem(name,qty); });
+    log(`${reward.title} tuned by MetalliK on ${stageDef(stage)?.title || stage}. +${reward.credits} credits, +${reward.xp} XP.`);
+    toast(`${reward.title} claimed.`);
+    save(true);
+    return true;
+  }
+
   // v220: NPC placement safety. Older hand-placed NPC coordinates can land in
   // walls after map/tileset edits, and some were too close to the player spawn.
   // Resolve every NPC to a walkable floor tile away from spawn at draw/talk time.
@@ -985,8 +1032,8 @@
     }
 
     if(npc.id === 'metallik'){
-      log('MetalliK contact logged. Role pending assignment.');
-      toast('MetalliK is standing by. Role coming soon.');
+      const claimed=claimMetallikSignal(npc);
+      if(!claimed) toast(metallikStatusText(npc.stage));
       renderAll();
       return;
     }
@@ -6906,7 +6953,12 @@
     },
     npcMetallik: {
       kicker:'FIELD CONTACT // METALLIK', speaker:'METALLIK',
-      lines:['MetalliK: Signal received. I am posted up until the job is defined.', 'AVOS: MetalliK has been added as a field NPC. Function package pending.']
+      lines:[
+        {speaker:'METALLIK', portrait:'metallik', text:'I hear the fracture before I see it. Bad rhythm, dirty signal, teeth in the bassline.'},
+        {speaker:'VYRA', portrait:'vyra', text:'Can you do anything useful with that, or is this another speech?'} ,
+        {speaker:'METALLIK', portrait:'metallik', text:'I can tune the route once per level. You get a resonance cache. I get proof the signal bleeds.'},
+        {speaker:'AVOS', portrait:'vyra', text:'MetalliK function online: once-per-stage cache with credits, XP, Anomaly Hunting XP, and scaling materials.'}
+      ]
     }};
   function safeHtml(v){return String(v).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));}
   function stageStoryKey(base){
