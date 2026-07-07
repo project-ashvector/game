@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.19';
-  const BUILD_TITLE = 'ITEM ART REMAP FIX PATCH';
+  const BUILD_VERSION = '1.2.13';
+  const BUILD_TITLE = 'PREVIOUS PORTAL PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -30,7 +30,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const MAP_VERSION = 'sector_stage_v12_v182_boss_gate_hard_reset';
+  const MAP_VERSION = 'sector_stage_v13_v208_previous_portals';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
     pause: 'assets/music/pause.mp3',
@@ -692,7 +692,7 @@
         if(y<=1 || y>=height-2 || x<=1 || x>=width-2){
           chars[x] = '#';
         }
-        if(!['.','P','S','C','H','L','E','B','X','D','#'].includes(chars[x])){
+        if(!['.','P','S','C','H','L','E','B','X','R','D','#'].includes(chars[x])){
           chars[x] = '#';
         }
       }
@@ -1539,6 +1539,7 @@
     terminal: 'assets/imported/props/buildings/magic_stone_tower.png',
     door: 'assets/imported/environment/fences/wooden_fence_horizontal.png',
     exit: 'assets/tilesets/custom/next_level_exit_portal.png',
+    prevPortal: 'assets/tilesets/custom/previous_level_portal.png',
     // v53: non-colliding decorative prop stamps disabled.
     // Map blockers now come from # tiles only, so visuals match collision.
     props: []
@@ -1657,21 +1658,21 @@
     f004: {
       ground: ['assets/tilesets/cursed/ground_01.png','assets/tilesets/cursed/ground_02.png','assets/tilesets/cursed/ground_03.png','assets/tilesets/cursed/ground_04.png'],
       blocked: ['assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/stone_fence_01.png','assets/tilesets/undead/rock_04.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/cursed/ruins_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/cursed/ruins_01.png', exit:'assets/tilesets/custom/next_level_exit_portal.png',
       floorTint:'rgba(74,82,92,.18)', pathTint:'rgba(92,170,255,.13)', wallTint:'rgba(10,13,17,.97)', wallEdge:'rgba(92,170,255,.28)',
       props:[{x:13,y:3,img:'assets/tilesets/cursed/ruins_01.png',w:58,h:50},{x:28,y:3,img:'assets/tilesets/cursed/rock_eyes_01.png',w:54,h:48},{x:6,y:11,img:'assets/tilesets/forbidden/rock_03.png',w:38,h:34},{x:18,y:12,img:'assets/tilesets/undead/bones_03.png',w:64,h:42},{x:31,y:14,img:'assets/tilesets/cursed/spike_plant_01.png',w:54,h:48},{x:11,y:20,img:'assets/tilesets/undead/dead_tree_02.png',w:54,h:64},{x:24,y:21,img:'assets/tilesets/cursed/tentacle_plant_01.png',w:52,h:48}]
     },
     f005: {
       ground: ['assets/tilesets/undead/ground_01.png','assets/tilesets/undead/ground_02.png','assets/tilesets/undead/ground_03.png','assets/tilesets/undead/ground_04.png'],
       blocked: ['assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/ruins_01.png','assets/tilesets/cursed/jaws_plant_01.png','assets/tilesets/undead/rock_04.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/undead/ruin_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/undead/ruin_01.png', exit:'assets/tilesets/custom/next_level_exit_portal.png',
       floorTint:'rgba(24,38,62,.20)', pathTint:'rgba(180,96,255,.14)', wallTint:'rgba(8,8,22,.97)', wallEdge:'rgba(190,96,255,.30)',
       props:[{x:12,y:4,img:'assets/tilesets/undead/crystal_01.png',w:44,h:44},{x:29,y:5,img:'assets/tilesets/undead/lich_01.png',w:68,h:78},{x:5,y:11,img:'assets/tilesets/cursed/meat_flower_01.png',w:48,h:48},{x:22,y:11,img:'assets/tilesets/undead/crystal_01.png',w:48,h:48},{x:35,y:13,img:'assets/tilesets/cursed/eye_plant_01.png',w:42,h:42},{x:9,y:20,img:'assets/tilesets/undead/bones_02.png',w:48,h:34},{x:25,y:22,img:'assets/tilesets/undead/skull_pile_01.png',w:60,h:54}]
     },
     f006: {
       ground: ['assets/tilesets/forbidden/ground_01.png','assets/tilesets/forbidden/ground_02.png','assets/tilesets/forbidden/ground_03.png','assets/tilesets/forbidden/ground_04.png'],
       blocked: ['assets/tilesets/undead/ruin_01.png','assets/tilesets/undead/crystal_01.png','assets/tilesets/cursed/rock_eyes_01.png','assets/tilesets/forbidden/crypt_01.png'],
-      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/forbidden/signpost_01.png',
+      chest:'assets/tilesets/forbidden/locked_chest_01.png', med:'assets/tilesets/forbidden/life_01.png', lore:'assets/items/memory_core.png', terminal:'assets/tilesets/forbidden/lantern_01.png', door:'assets/tilesets/forbidden/stone_fence_01.png', exit:'assets/tilesets/custom/next_level_exit_portal.png',
       floorTint:'rgba(12,48,64,.22)', pathTint:'rgba(0,255,200,.14)', wallTint:'rgba(3,10,18,.98)', wallEdge:'rgba(0,255,200,.34)',
       props:[{x:15,y:3,img:'assets/tilesets/undead/ruin_01.png',w:70,h:68},{x:31,y:4,img:'assets/tilesets/undead/crystal_01.png',w:50,h:50},{x:6,y:12,img:'assets/tilesets/undead/dead_arm_01.png',w:58,h:52},{x:24,y:11,img:'assets/tilesets/cursed/rock_eyes_01.png',w:58,h:50},{x:35,y:14,img:'assets/tilesets/undead/lich_01.png',w:72,h:82},{x:9,y:22,img:'assets/tilesets/forbidden/skull_01.png',w:36,h:36},{x:24,y:21,img:'assets/tilesets/undead/skull_pile_01.png',w:64,h:58}]
     },
@@ -4395,7 +4396,7 @@
       ...Object.values(NPC_DEFS).map(n => n.asset),
       ...mapArt.ground,
       ...mapArt.blocked,
-      mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit,
+      mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal,
       ...mapArt.props.map(p => p.img),
       ...stageVisualAssetPaths(),
       ...importedAnomalyRoster.slice(0,80).flatMap(c => [c.battle, iconPathFor(c)]),
@@ -5140,7 +5141,7 @@
           chars[x]='#';
         } else if(stageManualBlockAt(x,y)){
           chars[x]='#';
-        } else if(!['.','P','S','C','H','L','E','B','X','D','#'].includes(chars[x])){
+        } else if(!['.','P','S','C','H','L','E','B','X','R','D','#'].includes(chars[x])){
           chars[x]='#';
         }
         if(chars[x]!==old) rowChanged=true;
@@ -5171,7 +5172,7 @@
     normalizeLiveMap();
     if(!inMapBounds(x,y)) return false;
     if(isOuterMapEdge(x,y)) v='#';
-    const safe=['.','P','S','C','H','L','E','B','X','D','#'].includes(v) ? v : '#';
+    const safe=['.','P','S','C','H','L','E','B','X','R','D','#'].includes(v) ? v : '#';
     const row=rowAt(y);
     if(Array.isArray(row)) row[x]=safe;
     else state.map[y]=String(row || '').slice(0,x) + safe + String(row || '').slice(x+1);
@@ -5248,7 +5249,7 @@
   }
   function routeProtectedEventTile(x,y,target){
     if(target && x===target.x && y===target.y) return true;
-    return ['S','E','B','X','C','H','L'].includes(tileAt(x,y));
+    return ['S','E','B','X','R','C','H','L'].includes(tileAt(x,y));
   }
   function routeOpenTile(x,y,target=null){
     if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
@@ -5377,7 +5378,7 @@
   function forceOpenTile(x,y){
     if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
     const c=tileAt(x,y);
-    if(['S','E','B','X','C','H','L'].includes(c)) return 0;
+    if(['S','E','B','X','R','C','H','L'].includes(c)) return 0;
     if(c!=='.'){
       setTile(x,y,'.');
       return 1;
@@ -5387,7 +5388,7 @@
   function forceGateTile(x,y){
     if(!inMapBounds(x,y) || isOuterMapEdge(x,y)) return 0;
     const c=tileAt(x,y);
-    if(['S','E','B','X','C','H','L'].includes(c)) return 0;
+    if(['S','E','B','X','R','C','H','L'].includes(c)) return 0;
     if(state.flags?.bossUnlocked || state.flags?.bossDefeated || state.flags?.chapterComplete){
       return forceOpenTile(x,y);
     }
@@ -5453,8 +5454,8 @@
     return false;
   }
   function sanitizeLiveMapEdges(){ return normalizeLiveMap(true); }
-  function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','D','#'].includes(c); }
-  function isEventWalkableTile(c){ return ['.','P','S','C','H','L','E','B','X'].includes(c); }
+  function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','R','D','#'].includes(c); }
+  function isEventWalkableTile(c){ return ['.','P','S','C','H','L','E','B','X','R'].includes(c); }
   function isRegionPassableTile(c){ return ['.','P','S','C','H','L','E','B','X','D'].includes(c); }
   function isBlocked(c){ return !isKnownMapTile(c) || c==='#' || c==='D'; }
 
@@ -6355,14 +6356,41 @@
       renderAll();
     } else toast('Boss gate locked. Clear the required anomalies or find access.');
   }
+  function previousStageKeyForCurrent(){
+    const order=Object.keys(STAGE_DEFS);
+    const idx=order.indexOf(currentStageKey());
+    return idx>0 ? order[idx-1] : null;
+  }
+  function placePlayerNearExitOrSpawn(){
+    const exit=nearestTile('X');
+    if(exit && Number.isFinite(exit.x) && Number.isFinite(exit.y)){
+      const spots=[{x:exit.x-1,y:exit.y},{x:exit.x+1,y:exit.y},{x:exit.x,y:exit.y-1},{x:exit.x,y:exit.y+1},{x:exit.x-2,y:exit.y},{x:exit.x,y:exit.y-2}];
+      const spot=spots.find(p=>canStandAt(p.x,p.y));
+      if(spot){ state.player.x=spot.x; state.player.y=spot.y; state.visited ||= {}; state.visited[`${spot.x},${spot.y}`]=1; return true; }
+    }
+    clampPlayerToMap();
+    return false;
+  }
+  function usePreviousPortal(){
+    const prev=previousStageKeyForCurrent();
+    if(!prev){ toast('Previous portal inactive on the first fracture.'); return false; }
+    const current=stageDef();
+    const prevDef=stageDef(prev);
+    log(`Previous portal opened: ${current.id} → ${prevDef.id}.`);
+    toast(`Previous portal: returning to ${prevDef.id}.`);
+    const ok=loadStage(prev,{force:true, fromPreviousPortal:true});
+    if(ok){ placePlayerNearExitOrSpawn(); setCheckpoint(`${prevDef.id} Return Portal`); renderAll(); queueAutosave(); }
+    return ok;
+  }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(lockdownNormalInteractionsLocked() && 'CSHLEBX'.includes(c)){ lockdownInteractionToast(c==='E'||c==='B'?'map monsters':(c==='X'?'exits':'map objects')); return; }
+    if(lockdownNormalInteractionsLocked() && 'CSHLEBXR'.includes(c)){ lockdownInteractionToast(c==='E'||c==='B'?'map monsters':(c==='X'?'exits':'map objects')); return; }
     if(c==='C'){openStageCache(x,y);}
     if(c==='S'){const firstTerminalSync=!state.flags.terminal; state.flags.terminal=true; if(firstTerminalSync) advanceProtocolChallenge('terminals',1); setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal'),()=>showTutorialTip('terminal','Recovery Terminals','Terminals save your checkpoint and push the main mission forward. After syncing, the route beacon will point toward anomaly targets.',`Clear ${requiredAnomaliesForStage()} anomalies to open the boss route.`)); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, graveyard champion.');}
     if(c==='L'){setTile(x,y,'.'); state.flags.lore=true; addItem('Archive Log 001',1); log('Recovered Archive 001: The First Vector.'); showStoryOnce(stageStoryKey('lore'));}
     if(c==='E'||c==='B'){startEncounterTile(c,x,y);}
+    if(c==='R'){usePreviousPortal();}
     if(c==='X'){ if(state.flags.chapterComplete){showChapterClearPanel();} else if(state.flags.bossDefeated && state.flags.bossUnlocked && state.flags.anomaliesCleared>=requiredAnomaliesForStage()){completeChapter();} else toast('Exit protocol denied. Finish the objective.');}
   }
   function startEncounterTile(code,x,y){
@@ -8361,6 +8389,10 @@
       if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,42,32,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
       // v92: field letter rings are hidden; door marker stays on the minimap only.
     }
+    if(c==='R'){
+      if(!drawAsset(mapArt.prevPortal,x,y,46,46,true)){ctx.fillStyle='#70d7ff';ctx.beginPath();ctx.arc(x+TILE/2,y+TILE/2,17,0,Math.PI*2);ctx.fill();ctx.fillStyle='#050608';ctx.fillText('R',x+16,y+27)}
+      // v208: previous-level portal appears in the boss zone from F-002 onward.
+    }
     if(c==='X'){
       if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,42,42,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
       // v92: field letter rings are hidden; exit marker stays on the minimap only.
@@ -8371,7 +8403,7 @@
     const w=Math.max(1,mapWidth()),h=Math.max(1,mapHeight()); mctx.clearRect(0,0,mini.width,mini.height); const sx=mini.width/w, sy=mini.height/h;
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){
       const c=tileAt(x,y);
-      mctx.fillStyle=c==='#'?'#05080c':c==='C'?'#e0b64b':c==='S'?'#70d7ff':c==='H'?'#59ffa0':c==='L'?'#d2a8ff':c==='D'?'#ffb840':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':'#31424c';
+      mctx.fillStyle=c==='#'?'#05080c':c==='C'?'#e0b64b':c==='S'?'#70d7ff':c==='H'?'#59ffa0':c==='L'?'#d2a8ff':c==='D'?'#ffb840':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':c==='R'?'#70d7ff':'#31424c';
       mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));
     }
     stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
@@ -8936,7 +8968,7 @@
       <div class="fs-row">ATK ${s.atk}+${s.strBonus} // DEF ${s.def}<br>Anomalies: ${Math.min(3, state.flags.anomaliesCleared||0)}/3 // Kills ${(state.enemyKills||{})[def.key]||0} // Boss: ${state.flags.bossUnlocked?'Open':'Locked'}<br>Contract: ${activeContract().progress}/${activeContract().target}</div>`;
     const c=$('fsMinimap'); if(!c) return;
     const x=c.getContext('2d'); const w=c.width,h=c.height; x.clearRect(0,0,w,h); const rows=state.map.length, cols=state.map[0].length; const sx=w/cols, sy=h/rows;
-    for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
+    for(let y=0;y<rows;y++)for(let xx=0;xx<cols;xx++){const t=tileAt(xx,y); x.fillStyle=t==='#'?'#303944':t==='C'?'#c49328':t==='E'||t==='B'?'#9d1b2a':t==='X'?'#fff':t==='R'?'#70d7ff':'#10151b'; x.fillRect(xx*sx,y*sy,Math.max(1,sx),Math.max(1,sy));}
     const navTarget=objectiveTarget();
     if(navTarget && navTarget.x != null){ x.strokeStyle='#00d9ff'; x.lineWidth=2; x.strokeRect(navTarget.x*sx-1,navTarget.y*sy-1,Math.max(4,sx*3),Math.max(4,sy*3)); }
     x.fillStyle='#ff3048'; x.fillRect(state.player.x*sx,state.player.y*sy,Math.max(3,sx*2),Math.max(3,sy*2));
@@ -14219,6 +14251,25 @@
   });
   // Keep the first 12 stages paced for a 20-stage / Lv 99 final chain.
   Object.entries(V118_STAGE_LEVEL_REQS).forEach(([key,req])=>{ if(STAGE_DEFS[key]) STAGE_DEFS[key].levelReq=req; });
+
+
+  function addPreviousPortalToStageMap(key){
+    const def=STAGE_DEFS[key];
+    if(!def || key==='f001' || !Array.isArray(def.map)) return;
+    const rows=def.map.map(row=>Array.isArray(row)?row.slice():String(row).split(''));
+    let bx=-1, by=-1;
+    for(let y=0;y<rows.length;y++){
+      const x=rows[y].indexOf('B');
+      if(x>=0){ bx=x; by=y; break; }
+    }
+    if(bx<0) return;
+    const candidates=[{x:bx-1,y:by},{x:bx+1,y:by},{x:bx,y:by-1},{x:bx,y:by+1},{x:bx-2,y:by},{x:bx+2,y:by},{x:bx,y:by-2},{x:bx,y:by+2}];
+    const spot=candidates.find(p=>rows[p.y] && rows[p.y][p.x]==='.');
+    if(!spot) return;
+    rows[spot.y][spot.x]='R';
+    def.map=normalizeMapRows(rows.map(r=>r.join('')));
+  }
+  Object.keys(STAGE_DEFS).forEach(addPreviousPortalToStageMap);
 
   loadImages(); bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave(); renderAll();
 })();
