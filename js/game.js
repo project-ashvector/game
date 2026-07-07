@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.2.13';
-  const BUILD_TITLE = 'PREVIOUS PORTAL PASS';
+  const BUILD_VERSION = '214';
+  const BUILD_TITLE = 'RETURN PORTAL FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -30,7 +30,7 @@
   // Browser rule: music cannot begin until the first real click/key/tap.
   // This manager keeps a desired track queued, unlocks from any gesture/SFX,
   // and force-resumes the current track whenever the game state changes.
-  const MAP_VERSION = 'sector_stage_v13_v208_previous_portals';
+  const MAP_VERSION = 'sector_stage_v14_v214_return_portal_access';
   const MUSIC = {
     intro: 'assets/music/pause.mp3',
     pause: 'assets/music/pause.mp3',
@@ -5456,7 +5456,7 @@
   function sanitizeLiveMapEdges(){ return normalizeLiveMap(true); }
   function isKnownMapTile(c){ return ['.','P','S','C','H','L','E','B','X','R','D','#'].includes(c); }
   function isEventWalkableTile(c){ return ['.','P','S','C','H','L','E','B','X','R'].includes(c); }
-  function isRegionPassableTile(c){ return ['.','P','S','C','H','L','E','B','X','D'].includes(c); }
+  function isRegionPassableTile(c){ return ['.','P','S','C','H','L','E','B','X','R','D'].includes(c); }
   function isBlocked(c){ return !isKnownMapTile(c) || c==='#' || c==='D'; }
 
   function rawSpawnForStage(key=currentStageKey()){
@@ -6372,19 +6372,25 @@
     return false;
   }
   function usePreviousPortal(){
+    if(lockdownNormalInteractionsLocked()){
+      lockdownInteractionToast('return portal');
+      return false;
+    }
     const prev=previousStageKeyForCurrent();
     if(!prev){ toast('Previous portal inactive on the first fracture.'); return false; }
     const current=stageDef();
     const prevDef=stageDef(prev);
-    log(`Previous portal opened: ${current.id} → ${prevDef.id}.`);
-    toast(`Previous portal: returning to ${prevDef.id}.`);
+    log(`Return portal opened: ${current.id} → ${prevDef.id}.`);
+    toast(`Return portal: going back to ${prevDef.id}.`);
+    // Return portals are escape/backtrack tools. They intentionally bypass boss gates,
+    // anomaly requirements, and stage clear requirements. Only Vector Lockdown disables them.
     const ok=loadStage(prev,{force:true, fromPreviousPortal:true});
     if(ok){ placePlayerNearExitOrSpawn(); setCheckpoint(`${prevDef.id} Return Portal`); renderAll(); queueAutosave(); }
     return ok;
   }
   function handleTile(c,x,y){
     ensureStoryFlags();
-    if(lockdownNormalInteractionsLocked() && 'CSHLEBXR'.includes(c)){ lockdownInteractionToast(c==='E'||c==='B'?'map monsters':(c==='X'?'exits':'map objects')); return; }
+    if(lockdownNormalInteractionsLocked() && 'CSHLEBXR'.includes(c)){ lockdownInteractionToast(c==='R'?'return portal':(c==='E'||c==='B'?'map monsters':(c==='X'?'exits':'map objects'))); return; }
     if(c==='C'){openStageCache(x,y);}
     if(c==='S'){const firstTerminalSync=!state.flags.terminal; state.flags.terminal=true; if(firstTerminalSync) advanceProtocolChallenge('terminals',1); setCheckpoint('Recovery Terminal'); save(); log('Recovery Terminal synced your archive.'); showStoryOnce(stageStoryKey('terminal'),()=>showTutorialTip('terminal','Recovery Terminals','Terminals save your checkpoint and push the main mission forward. After syncing, the route beacon will point toward anomaly targets.',`Clear ${requiredAnomaliesForStage()} anomalies to open the boss route.`)); pulseObjective(currentObjectiveText());}
     if(c==='H'){state.player.hp=combatStatBlock().maxHp; state.player.ep=combatStatBlock().maxEp||state.player.maxEp; setCheckpoint('Healing Station'); log('Healing station restored HP/EP and checkpointed your route.'); pulseObjective('HP/EP restored. Get back in there, graveyard champion.');}
