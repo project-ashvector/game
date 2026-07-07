@@ -2957,3 +2957,17 @@ body.game-paused .mobile-pause-card::before{
 .field-reward-loot{max-height:180px;overflow:auto;}
 .field-reward-card button{width:100%;margin-top:14px;min-height:46px;}
 @media(max-width:760px){.field-contact-reward-modal{padding:10px}.field-reward-card{width:98vw;max-height:88vh;padding:16px}.field-reward-loot{max-height:128px}.field-reward-card button{min-height:44px}}
+
+
+/* V224 Player Guide Pass */
+.player-guide-board{border-color:rgba(0,217,255,.42);}
+.player-guide-board .guide-flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:12px 0;}
+.player-guide-board .guide-flow>div{display:grid;grid-template-columns:34px 1fr;gap:10px;align-items:start;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(0,0,0,.26);}
+.player-guide-board .guide-flow b{display:grid;place-items:center;width:30px;height:30px;border-radius:999px;background:rgba(0,217,255,.16);border:1px solid rgba(0,217,255,.45);font-size:13px;color:#dffcff;}
+.player-guide-board .guide-flow span{font-size:12px;line-height:1.35;color:rgba(235,247,255,.86);}
+.player-guide-board .guide-flow strong{display:block;color:#fff;font-size:13px;margin-bottom:2px;}
+.compact-guide-list div span{font-size:12px;line-height:1.35;}
+@media (max-width:760px){
+  .player-guide-board .guide-flow{grid-template-columns:1fr;}
+  .player-guide-board .guide-flow>div{padding:9px;}
+}

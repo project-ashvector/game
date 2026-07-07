@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '223';
-  const BUILD_TITLE = 'NPC REWARD POPUP PASS';
+  const BUILD_VERSION = '224';
+  const BUILD_TITLE = 'PLAYER GUIDE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -867,6 +867,25 @@
     const metalItems=Object.entries(metalReward.items||{}).filter(([_,qty])=>qty>0).map(([name,qty])=>`${qty} ${name}`).join(' // ');
     const fermilatStatus=sideQuestStatusText(stage);
     return `<section class="fracture-card npc-route-board"><div class="record-kicker">NPC ROUTE BOARD // ${safeHtml(def.id||stage)}</div><h3>Field Contacts</h3><p>Use this board to see what each NPC can still do on the current level.</p><div class="protocol-list"><div><b>Fermilat</b><span>${safeHtml(fermilatStatus)}</span></div><div><b>MetalliK</b><span>${metalClaimed?'✅ Resonance cache claimed':`⬜ Resonance cache ready // ${metalReward.credits} credits // ${metalReward.xp} XP${metalItems?` // ${metalItems}`:''}`}</span></div></div><div class="statrow">Fermilat Favor ${q?.progress||0}/${q?.target||0}<div class="bar xp"><span style="width:${qPct}%"></span></div></div><p class="fineprint">Talk to NPCs in the field to claim their rewards. MetalliK is once per level. Fermilat favors progress by deleting anomalies on that level.</p></section>`;
+  }
+
+  function playerGuideBoardHtml(stage=currentStageKey()){
+    const def=stageDef(stage)||stageDef();
+    const stageId=def.id || stage.toUpperCase();
+    const bossReq=requiredAnomaliesForStage(stage);
+    const flow=[
+      ['1', 'Sync', 'Use the cyan terminal/checkpoint first so the route and story line are clear.'],
+      ['2', 'Hunt', `Clear ${bossReq} anomalies to open the boss route. Contracts and Fermilat favors progress here.`],
+      ['3', 'NPCs', 'Talk to Fermilat for side favors and MetalliK for one Resonance Cache per level.'],
+      ['4', 'Boss', 'Fight the boss when ready. The return portal can take you back before the random event starts.'],
+      ['5', 'Extract', 'Use the exit portal after the boss/core objective is finished.']
+    ];
+    const controlRows=[
+      ['Keyboard', 'WASD / Arrows move // E interact // P or Esc pause // N ping objective'],
+      ['Controller', 'Left stick / D-pad move // A/Cross confirm // B/Circle back // Start pause // Select playtest'],
+      ['Phone', 'Rotate landscape // use bottom buttons // Pause opens all menus, Playtest, and settings']
+    ];
+    return `<section class="fracture-card player-guide-board"><div class="record-kicker">PLAYER GUIDE // ${safeHtml(stageId)}</div><h3>Route Flow</h3><p>Quick guide for testing and normal play. This is built into Mission Briefing so you can check it without leaving the level.</p><div class="guide-flow">${flow.map(([n,title,desc])=>`<div><b>${safeHtml(n)}</b><span><strong>${safeHtml(title)}</strong>${safeHtml(desc)}</span></div>`).join('')}</div><h3>Controls</h3><div class="protocol-list compact-guide-list">${controlRows.map(([k,v])=>`<div><b>${safeHtml(k)}</b><span>${safeHtml(v)}</span></div>`).join('')}</div><p class="fineprint">Random Vector Lockdown pauses portals and NPC actions while active. Finish or fail the event to restore normal route travel.</p></section>`;
   }
 
   function metallikSignalReward(stage=currentStageKey()){
@@ -2590,7 +2609,7 @@
     if(!grid) return;
     let panel = $('missionContractBoard');
     if(!panel){ panel = document.createElement('div'); panel.id = 'missionContractBoard'; grid.appendChild(panel); }
-    panel.innerHTML = npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
+    panel.innerHTML = playerGuideBoardHtml() + npcRouteBoardHtml() + contractHtml() + sideQuestHtml();
     renderProtocolChallengeBoard();
     renderRouteIntelBoard();
   }
@@ -9663,7 +9682,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
