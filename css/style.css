@@ -3033,3 +3033,13 @@ body.game-paused .mobile-pause-card::before{
 .route-prep-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px;}
 .route-prep-actions button{min-height:44px;white-space:normal;line-height:1.15;}
 @media(max-width:760px){.route-prep-grid,.route-prep-actions{grid-template-columns:1fr 1fr;gap:7px}.route-prep-actions button{font-size:12px;padding:.55rem .45rem;}}
+
+
+/* v230: Portal guide card for return/exit portal rules. */
+.portal-guide-board{border-color:rgba(0,217,255,.34);box-shadow:inset 0 0 0 1px rgba(0,217,255,.08),0 0 22px rgba(0,217,255,.07);}
+.portal-guide-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:10px 0 8px;}
+.portal-guide-row{display:grid;grid-template-columns:42px 1fr;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.11);border-radius:13px;background:rgba(0,0,0,.27);padding:9px 10px;min-height:58px;}
+.portal-guide-row>b{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;border:1px solid rgba(0,217,255,.48);background:rgba(0,217,255,.14);color:#e9fbff;font-size:16px;text-shadow:0 0 8px rgba(0,217,255,.55);}
+.portal-guide-row span{display:block;font-size:12px;line-height:1.28;color:rgba(230,243,250,.82);}
+.portal-guide-row strong{display:block;color:#fff;font-size:13px;margin-bottom:2px;}
+@media(max-width:760px){.portal-guide-grid{grid-template-columns:1fr 1fr;gap:7px}.portal-guide-row{grid-template-columns:34px 1fr;padding:8px;min-height:54px}.portal-guide-row>b{width:30px;height:30px;font-size:14px}.portal-guide-row span{font-size:11px}}
