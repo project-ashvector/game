@@ -60,8 +60,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/cape/common/it-1001_cape_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Cape.",
+    "asset": "assets/items/custom/v211/common_cape.png",
+    "description": "Common Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -73,8 +73,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/cape/epic/it-1002_cape_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Cape.",
+    "asset": "assets/items/custom/v211/epic_cape.png",
+    "description": "Epic Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -86,8 +86,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/cape/legendary/it-1003_cape_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Cape.",
+    "asset": "assets/items/custom/v211/legendary_cape.png",
+    "description": "Legendary Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -99,8 +99,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/cape/mythic/it-1004_cape_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Cape.",
+    "asset": "assets/items/custom/v211/mythic_cape.png",
+    "description": "Mythic Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -112,8 +112,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/cape/rare/it-1005_cape_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Cape.",
+    "asset": "assets/items/custom/v211/rare_cape.png",
+    "description": "Rare Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -125,8 +125,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/cape/uncommon/it-1006_cape_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Cape.",
+    "asset": "assets/items/custom/v211/uncommon_cape.png",
+    "description": "Uncommon Cape recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -138,8 +138,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/chest/common/it-1007_chest_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Chest.",
+    "asset": "assets/items/custom/v211/common_chest.png",
+    "description": "Common Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -151,8 +151,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/chest/epic/it-1008_chest_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Chest.",
+    "asset": "assets/items/custom/v211/epic_chest.png",
+    "description": "Epic Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -164,8 +164,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/chest/legendary/it-1009_chest_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Chest.",
+    "asset": "assets/items/custom/v211/legendary_chest.png",
+    "description": "Legendary Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -177,8 +177,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/chest/mythic/it-1010_chest_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Chest.",
+    "asset": "assets/items/custom/v211/mythic_chest.png",
+    "description": "Mythic Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -190,8 +190,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/chest/rare/it-1011_chest_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Chest.",
+    "asset": "assets/items/custom/v211/rare_chest.png",
+    "description": "Rare Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -203,8 +203,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/chest/uncommon/it-1012_chest_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Chest.",
+    "asset": "assets/items/custom/v211/uncommon_chest.png",
+    "description": "Uncommon Chest recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -216,8 +216,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/gloves/common/it-1013_gloves_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Gloves.",
+    "asset": "assets/items/custom/v211/common_gloves.png",
+    "description": "Common Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -229,8 +229,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/gloves/epic/it-1014_gloves_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Gloves.",
+    "asset": "assets/items/custom/v211/epic_gloves.png",
+    "description": "Epic Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -242,8 +242,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/gloves/legendary/it-1015_gloves_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Gloves.",
+    "asset": "assets/items/custom/v211/legendary_gloves.png",
+    "description": "Legendary Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -255,8 +255,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/gloves/mythic/it-1016_gloves_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Gloves.",
+    "asset": "assets/items/custom/v211/mythic_gloves.png",
+    "description": "Mythic Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -268,8 +268,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/gloves/rare/it-1017_gloves_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Gloves.",
+    "asset": "assets/items/custom/v211/rare_gloves.png",
+    "description": "Rare Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -281,8 +281,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/gloves/uncommon/it-1018_gloves_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Gloves.",
+    "asset": "assets/items/custom/v211/uncommon_gloves.png",
+    "description": "Uncommon Gloves recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -294,8 +294,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/helm/common/it-1019_helm_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Helm.",
+    "asset": "assets/items/custom/v211/common_helm.png",
+    "description": "Common Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -307,8 +307,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/helm/epic/it-1020_helm_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Helm.",
+    "asset": "assets/items/custom/v211/epic_helm.png",
+    "description": "Epic Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -320,8 +320,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/helm/legendary/it-1021_helm_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Helm.",
+    "asset": "assets/items/custom/v211/legendary_helm.png",
+    "description": "Legendary Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -333,8 +333,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/helm/mythic/it-1022_helm_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Helm.",
+    "asset": "assets/items/custom/v211/mythic_helm.png",
+    "description": "Mythic Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -346,8 +346,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/helm/rare/it-1023_helm_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Helm.",
+    "asset": "assets/items/custom/v211/rare_helm.png",
+    "description": "Rare Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -359,8 +359,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/helm/uncommon/it-1024_helm_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Helm.",
+    "asset": "assets/items/custom/v211/uncommon_helm.png",
+    "description": "Uncommon Helm recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -372,8 +372,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/legs/common/it-1025_legs_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Legs.",
+    "asset": "assets/items/custom/v211/common_legs.png",
+    "description": "Common Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -385,8 +385,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/legs/epic/it-1026_legs_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Legs.",
+    "asset": "assets/items/custom/v211/epic_legs.png",
+    "description": "Epic Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -398,8 +398,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/legs/legendary/it-1027_legs_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Legs.",
+    "asset": "assets/items/custom/v211/legendary_legs.png",
+    "description": "Legendary Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -411,8 +411,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/legs/mythic/it-1028_legs_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Legs.",
+    "asset": "assets/items/custom/v211/mythic_legs.png",
+    "description": "Mythic Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -424,8 +424,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/legs/rare/it-1029_legs_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Legs.",
+    "asset": "assets/items/custom/v211/rare_legs.png",
+    "description": "Rare Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -437,8 +437,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/legs/uncommon/it-1030_legs_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Legs.",
+    "asset": "assets/items/custom/v211/uncommon_legs.png",
+    "description": "Uncommon Legs recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -450,8 +450,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/neckless/common/it-1031_neckless_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Neckless.",
+    "asset": "assets/items/custom/v211/common_neckless.png",
+    "description": "Common Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -463,8 +463,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/neckless/epic/it-1032_neckless_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Neckless.",
+    "asset": "assets/items/custom/v211/epic_neckless.png",
+    "description": "Epic Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -476,8 +476,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/neckless/legendary/it-1033_neckless_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Neckless.",
+    "asset": "assets/items/custom/v211/legendary_neckless.png",
+    "description": "Legendary Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -489,8 +489,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/neckless/mythic/it-1034_neckless_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Neckless.",
+    "asset": "assets/items/custom/v211/mythic_neckless.png",
+    "description": "Mythic Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -502,8 +502,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/neckless/rare/it-1035_neckless_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Neckless.",
+    "asset": "assets/items/custom/v211/rare_neckless.png",
+    "description": "Rare Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -515,8 +515,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/neckless/uncommon/it-1036_neckless_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Neckless.",
+    "asset": "assets/items/custom/v211/uncommon_neckless.png",
+    "description": "Uncommon Neckless recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -528,8 +528,8 @@
     "rarity": "Common",
     "stackSize": 1,
     "sellPrice": 5,
-    "asset": "assets/items/imported/armor/ring/common/it-1037_ring_common.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Common Ring.",
+    "asset": "assets/items/custom/v211/common_ring.png",
+    "description": "Common Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -541,8 +541,8 @@
     "rarity": "Epic",
     "stackSize": 1,
     "sellPrice": 40,
-    "asset": "assets/items/imported/armor/ring/epic/it-1038_ring_epic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Epic Ring.",
+    "asset": "assets/items/custom/v211/epic_ring.png",
+    "description": "Epic Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -554,8 +554,8 @@
     "rarity": "Legendary",
     "stackSize": 1,
     "sellPrice": 80,
-    "asset": "assets/items/imported/armor/ring/legendary/it-1039_ring_legendary.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Legendary Ring.",
+    "asset": "assets/items/custom/v211/legendary_ring.png",
+    "description": "Legendary Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -567,8 +567,8 @@
     "rarity": "Mythic",
     "stackSize": 1,
     "sellPrice": 160,
-    "asset": "assets/items/imported/armor/ring/mythic/it-1040_ring_mythic.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Mythic Ring.",
+    "asset": "assets/items/custom/v211/mythic_ring.png",
+    "description": "Mythic Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -580,8 +580,8 @@
     "rarity": "Rare",
     "stackSize": 1,
     "sellPrice": 20,
-    "asset": "assets/items/imported/armor/ring/rare/it-1041_ring_rare.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Rare Ring.",
+    "asset": "assets/items/custom/v211/rare_ring.png",
+    "description": "Rare Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -593,8 +593,8 @@
     "rarity": "Uncommon",
     "stackSize": 1,
     "sellPrice": 10,
-    "asset": "assets/items/imported/armor/ring/uncommon/it-1042_ring_uncommon.png",
-    "description": "Dedicated Project Ash Vector equipment icon for Uncommon Ring.",
+    "asset": "assets/items/custom/v211/uncommon_ring.png",
+    "description": "Uncommon Ring recovered from the ASH VECTOR imported item library. Replace this art later without changing the item ID.",
     "status": "dedicated-item-art"
   },
   {
@@ -2037,265 +2037,5 @@
     "sellPrice": 35,
     "asset": "assets/items/custom/vector_shard_cache.png",
     "description": "Locked cache of glowing vector shards from Vector Lockdown events."
-  },
-  {
-    "id": "EQ-002",
-    "name": "Sewer Guard Vest",
-    "type": "Equipment",
-    "category": "Armor",
-    "slot": "Chest",
-    "rarity": "Common",
-    "stackSize": 1,
-    "sellPrice": 10,
-    "asset": "assets/items/custom/sewer_guard_vest.png",
-    "status": "dedicated-item-art",
-    "description": "Starter sewer guard chest armor with dedicated item art."
-  },
-  {
-    "id": "EQ-007",
-    "name": "Wasteland Guard Helm",
-    "type": "Equipment",
-    "category": "Armor",
-    "slot": "Helm",
-    "rarity": "Rare",
-    "stackSize": 1,
-    "sellPrice": 65,
-    "asset": "assets/items/custom/wasteland_guard_helm.png",
-    "status": "dedicated-item-art",
-    "description": "Rare wasteland guard helmet with dedicated item art."
-  },
-  {
-    "id": "IT-020",
-    "name": "Ash Ore",
-    "type": "Material",
-    "category": "Mining",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 3,
-    "asset": "assets/training/items/cryptomining/ash_ore.png",
-    "status": "dedicated-item-art",
-    "description": "Ore chipped from ash-veined salvage nodes."
-  },
-  {
-    "id": "IT-022",
-    "name": "Circuit Scrap",
-    "type": "Material",
-    "category": "Codecraft",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 3,
-    "asset": "assets/training/items/codecraft/circuit_scrap.png",
-    "status": "dedicated-item-art",
-    "description": "Circuit fragments used for codecraft and gear assembly."
-  },
-  {
-    "id": "IT-023",
-    "name": "Mutagen Sample",
-    "type": "Material",
-    "category": "Forgenetics",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 8,
-    "asset": "assets/training/items/forgenetics/mutagen_sample.png",
-    "status": "dedicated-item-art",
-    "description": "Unstable bio sample harvested from corrupted growths."
-  },
-  {
-    "id": "IT-030",
-    "name": "Ash Pebble",
-    "type": "Material",
-    "category": "Cryptomining",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 1,
-    "asset": "assets/training/items/cryptomining/ash_pebble.png",
-    "status": "dedicated-item-art",
-    "description": "Level 1 cryptomining resource with dedicated item art."
-  },
-  {
-    "id": "IT-031",
-    "name": "Dense Ash Ore",
-    "type": "Material",
-    "category": "Cryptomining",
-    "slot": "Stack",
-    "rarity": "Uncommon",
-    "stackSize": 999,
-    "sellPrice": 5,
-    "asset": "assets/training/items/cryptomining/dense_ash_ore.png",
-    "status": "dedicated-item-art",
-    "description": "Mid-tier cryptomining resource from packed ash veins."
-  },
-  {
-    "id": "IT-032",
-    "name": "Vector Crystal",
-    "type": "Material",
-    "category": "Cryptomining",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 12,
-    "asset": "assets/training/items/cryptomining/vector_crystal.png",
-    "status": "dedicated-item-art",
-    "description": "High-tier cryptomining resource with a faint blue pulse."
-  },
-  {
-    "id": "IT-033",
-    "name": "Static Packet",
-    "type": "Material",
-    "category": "Datafishing",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 1,
-    "asset": "assets/training/items/datafishing/static_packet.png",
-    "status": "dedicated-item-art",
-    "description": "Level 1 datafishing resource pulled from dead signals."
-  },
-  {
-    "id": "IT-034",
-    "name": "Ghost Log",
-    "type": "Material",
-    "category": "Datafishing",
-    "slot": "Stack",
-    "rarity": "Uncommon",
-    "stackSize": 999,
-    "sellPrice": 6,
-    "asset": "assets/training/items/datafishing/ghost_log.png",
-    "status": "dedicated-item-art",
-    "description": "Mid-tier datafishing resource containing broken field logs."
-  },
-  {
-    "id": "IT-035",
-    "name": "Blackbox File",
-    "type": "Material",
-    "category": "Datafishing",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 14,
-    "asset": "assets/training/items/datafishing/blackbox_file.png",
-    "status": "dedicated-item-art",
-    "description": "High-tier datafishing resource recovered from locked crash memory."
-  },
-  {
-    "id": "IT-036",
-    "name": "Wire Scrap",
-    "type": "Material",
-    "category": "Codecraft",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 1,
-    "asset": "assets/training/items/codecraft/wire_scrap.png",
-    "status": "dedicated-item-art",
-    "description": "Level 1 codecraft resource with dedicated item art."
-  },
-  {
-    "id": "IT-037",
-    "name": "Logic Board",
-    "type": "Material",
-    "category": "Codecraft",
-    "slot": "Stack",
-    "rarity": "Uncommon",
-    "stackSize": 999,
-    "sellPrice": 6,
-    "asset": "assets/training/items/codecraft/logic_board.png",
-    "status": "dedicated-item-art",
-    "description": "Mid-tier codecraft resource used to rebuild cleaner modules."
-  },
-  {
-    "id": "IT-038",
-    "name": "Quantum Relay",
-    "type": "Material",
-    "category": "Codecraft",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 15,
-    "asset": "assets/training/items/codecraft/quantum_relay.png",
-    "status": "dedicated-item-art",
-    "description": "High-tier codecraft part that still argues with physics."
-  },
-  {
-    "id": "IT-039",
-    "name": "Spore Sample",
-    "type": "Material",
-    "category": "Forgenetics",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 1,
-    "asset": "assets/training/items/forgenetics/spore_sample.png",
-    "status": "dedicated-item-art",
-    "description": "Level 1 forgenetics resource with dedicated item art."
-  },
-  {
-    "id": "IT-040",
-    "name": "Mutated Tissue",
-    "type": "Material",
-    "category": "Forgenetics",
-    "slot": "Stack",
-    "rarity": "Uncommon",
-    "stackSize": 999,
-    "sellPrice": 7,
-    "asset": "assets/training/items/forgenetics/mutated_tissue.png",
-    "status": "dedicated-item-art",
-    "description": "Mid-tier forgenetics resource that refuses to stay still."
-  },
-  {
-    "id": "IT-041",
-    "name": "Vector DNA",
-    "type": "Material",
-    "category": "Forgenetics",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 18,
-    "asset": "assets/training/items/forgenetics/vector_dna.png",
-    "status": "dedicated-item-art",
-    "description": "High-tier forgenetics resource from unstable vector mutations."
-  },
-  {
-    "id": "IT-042",
-    "name": "Broken Token",
-    "type": "Material",
-    "category": "System Hacking",
-    "slot": "Stack",
-    "rarity": "Common",
-    "stackSize": 999,
-    "sellPrice": 1,
-    "asset": "assets/training/items/system_hacking/broken_token.png",
-    "status": "dedicated-item-art",
-    "description": "Level 1 system hacking resource with dedicated item art."
-  },
-  {
-    "id": "IT-043",
-    "name": "Security Keybit",
-    "type": "Material",
-    "category": "System Hacking",
-    "slot": "Stack",
-    "rarity": "Uncommon",
-    "stackSize": 999,
-    "sellPrice": 6,
-    "asset": "assets/training/items/system_hacking/security_keybit.png",
-    "status": "dedicated-item-art",
-    "description": "Mid-tier hacking resource used to crack stronger relays."
-  },
-  {
-    "id": "IT-044",
-    "name": "Root Cipher",
-    "type": "Material",
-    "category": "System Hacking",
-    "slot": "Stack",
-    "rarity": "Rare",
-    "stackSize": 999,
-    "sellPrice": 16,
-    "asset": "assets/training/items/system_hacking/root_cipher.png",
-    "status": "dedicated-item-art",
-    "description": "High-tier hacking cipher with root-level system traces."
   }
 ]
