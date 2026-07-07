@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '1.0.16';
-  const BUILD_TITLE = 'FORCED LOCKDOWN REWARD POPUP PASS';
+  const BUILD_VERSION = '1.0.17';
+  const BUILD_TITLE = 'UI SAFE SCROLL POLISH PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
