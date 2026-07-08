@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '234';
-  const BUILD_TITLE = 'EVENT JOURNAL PASS';
+  const BUILD_VERSION = '235';
+  const BUILD_TITLE = 'INTRO LOAD SPEED PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3292,6 +3292,7 @@
       return false;
     }
     const parsed=parseStageMap(key);
+    preloadCurrentStageAssets(key);
     state.currentStage=key;
     state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
@@ -4637,7 +4638,8 @@
     syncHpCap();
     if(state.player) state.player.lastMoveAt = 0;
     applyOperatorVisuals();
-    loadImages();
+    preloadCriticalImages();
+    scheduleBackgroundAssetPreload();
     save(true);
     render();
     renderMini();
@@ -4699,13 +4701,73 @@
     images[path] = im;
     return im;
   }
-  function loadImages(){
-    const projectilePaths = [
-      'assets/projectiles/ash_bolt.png','assets/projectiles/rust_spike.png','assets/projectiles/vector_pulse.png','assets/projectiles/bone_dart.png',
-      'assets/projectiles/toxic_splinter.png','assets/projectiles/scrap_shot.png','assets/projectiles/ember_round.png','assets/projectiles/static_needle.png',
-      'assets/projectiles/corrupted_shard.png','assets/projectiles/plasma_cube.png','assets/projectiles/blood_spark.png','assets/projectiles/ash_disc.png',
-      'assets/projectiles/echo_pellet.png','assets/projectiles/grave_flame.png'
-    ];
+  const projectileAssetPaths = [
+    'assets/projectiles/ash_bolt.png','assets/projectiles/rust_spike.png','assets/projectiles/vector_pulse.png','assets/projectiles/bone_dart.png',
+    'assets/projectiles/toxic_splinter.png','assets/projectiles/scrap_shot.png','assets/projectiles/ember_round.png','assets/projectiles/static_needle.png',
+    'assets/projectiles/corrupted_shard.png','assets/projectiles/plasma_cube.png','assets/projectiles/blood_spark.png','assets/projectiles/ash_disc.png',
+    'assets/projectiles/echo_pellet.png','assets/projectiles/grave_flame.png'
+  ];
+  const lockdownBuffAssetPaths = [
+    'assets/buffs/split_chamber.png','assets/buffs/core_tipped_rounds.png','assets/buffs/rapid_vector_feed.png','assets/buffs/vector_velocity.png','assets/buffs/piercing_static.png',
+    'assets/buffs/blood_circuit.png','assets/buffs/static_crit_loop.png','assets/buffs/chain_static.png','assets/buffs/gravity_leak.png','assets/buffs/orbiting_scrap.png','assets/buffs/cache_magnet.png',
+    'assets/buffs/ash_rifling.png','assets/buffs/rust_accelerator.png','assets/buffs/overcharged_barrel.png','assets/buffs/scatter_vector.png','assets/buffs/twin_feed.png'
+  ];
+  let backgroundAssetPreloadStarted=false;
+  function preloadPaths(paths, {defer=false, chunk=8}={}){
+    const list=[...new Set((paths||[]).filter(Boolean))];
+    if(!defer){ list.forEach(ensureImageCached); return; }
+    let i=0;
+    const run=()=>{
+      const end=Math.min(i+chunk, list.length);
+      for(; i<end; i++) ensureImageCached(list[i]);
+      if(i<list.length){
+        if('requestIdleCallback' in window) requestIdleCallback(run, {timeout:900});
+        else setTimeout(run, 80);
+      }
+    };
+    run();
+  }
+  function currentStageAssetPaths(key=currentStageKey()){
+    const pack=stageVisualPacks[key] || {};
+    return [
+      ...mapArt.ground, ...mapArt.blocked,
+      mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal,
+      ...mapArt.props.map(p=>p.img),
+      ...(pack.ground||[]), ...(pack.blocked||[]), pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
+      ...((pack.props||[]).map(p=>p.img)),
+      ...Object.values(NPC_DEFS).map(n=>n.asset),
+      ...operatorAssetPaths(currentOperator()),
+      'assets/items/memory_core.png'
+    ].filter(Boolean);
+  }
+  function preloadCriticalImages(){
+    preloadPaths([
+      ...operatorAssetPaths(currentOperator()),
+      ...currentStageAssetPaths(),
+      ...Object.values(NPC_DEFS).map(n=>n.asset)
+    ], {defer:false});
+  }
+  function preloadCurrentStageAssets(key=currentStageKey()){
+    preloadPaths(currentStageAssetPaths(key), {defer:false});
+    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
+    preloadPaths([
+      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
+      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
+    ], {defer:true, chunk:4});
+  }
+  function preloadLockdownAssets(){
+    preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:6});
+  }
+  function scheduleBackgroundAssetPreload(){
+    if(backgroundAssetPreloadStarted) return;
+    backgroundAssetPreloadStarted=true;
+    const start=()=>loadImages({defer:true});
+    setTimeout(()=>{
+      if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:1600});
+      else start();
+    }, 1400);
+  }
+  function loadImages(opts={}){
     const paths = [
       ...Object.values(OPERATOR_DEFS).flatMap(op=>operatorAssetPaths(op)),
       ...legacyOperatorAssetPaths(),
@@ -4718,13 +4780,11 @@
       ...stageVisualAssetPaths(),
       ...importedAnomalyRoster.slice(0,80).flatMap(c => [c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(0,20).flatMap(c => [c.battle, iconPathFor(c)]),
-      ...projectilePaths,
+      ...projectileAssetPaths,
       'assets/items/memory_core.png',
-      'assets/buffs/split_chamber.png','assets/buffs/core_tipped_rounds.png','assets/buffs/rapid_vector_feed.png','assets/buffs/vector_velocity.png','assets/buffs/piercing_static.png',
-      'assets/buffs/blood_circuit.png','assets/buffs/static_crit_loop.png','assets/buffs/chain_static.png','assets/buffs/gravity_leak.png','assets/buffs/orbiting_scrap.png','assets/buffs/cache_magnet.png',
-      'assets/buffs/ash_rifling.png','assets/buffs/rust_accelerator.png','assets/buffs/overcharged_barrel.png','assets/buffs/scatter_vector.png','assets/buffs/twin_feed.png'
+      ...lockdownBuffAssetPaths
     ];
-    [...new Set(paths)].filter(Boolean).forEach(ensureImageCached);
+    preloadPaths(paths, {defer:!!opts.defer, chunk:opts.chunk||8});
   }
   const SAVE_SCHEMA_VERSION = 183;
   const SAVE_KEY = 'ashVectorSave';
@@ -5482,7 +5542,7 @@
       if(!current) open();
     }catch(err){}
   }
-  function showMenu(){syncBuildLabels(); syncContinueButton(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause');}
+  function showMenu(){syncBuildLabels(); syncContinueButton(); setBattleMobileMode(false); hideAll(); uiState.mode='menu'; uiState.returnStack.length=0; document.body.classList.remove('game-active','intro-video-active'); document.body.classList.add('fullscreen-mode'); $('mainMenu').classList.remove('hidden'); AudioManager.play('pause'); scheduleBackgroundAssetPreload();}
   function startOpeningStorySequence(){
     const afterIntro=()=>{
       ensureStoryFlags();
@@ -5502,6 +5562,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
+    preloadCriticalImages(); preloadCurrentStageAssets(); preloadLockdownAssets();
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
@@ -15118,5 +15179,5 @@
   }
   Object.keys(STAGE_DEFS).forEach(addPreviousPortalToStageMap);
 
-  loadImages(); bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave(); renderAll();
+  bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave();
 })();
