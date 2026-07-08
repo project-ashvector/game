@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '232';
-  const BUILD_TITLE = 'CONTROLS HELP PASS';
+  const BUILD_VERSION = '233';
+  const BUILD_TITLE = 'QUICK STATUS PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -8957,6 +8957,58 @@
     if(el) el.innerHTML=controlsHelpHtml();
   }
 
+
+
+  // v233: compact quick status strip keeps the most important route info visible without opening every menu.
+  function quickStatusStripHtml(){
+    try{
+      ensureSaveShape();
+      const p=state.player||{};
+      const stats=combatStatBlock();
+      const def=stageDef();
+      const required=requiredAnomaliesForStage();
+      const cleared=Math.min(required, state.flags?.anomaliesCleared || 0);
+      const hpMax=Math.max(1, Number(stats.maxHp||p.maxHp||1));
+      const epMax=Math.max(1, Number(stats.maxEp||p.maxEp||1));
+      const hpPct=Math.max(0, Math.min(100, Math.round((Number(p.hp||0)/hpMax)*100)));
+      const epPct=Math.max(0, Math.min(100, Math.round((Number(p.ep||0)/epMax)*100)));
+      const bossStatus=state.flags?.bossDefeated?'Boss down':state.flags?.bossUnlocked?'Boss route open':'Boss locked';
+      const lockdown=state.rogueEvent?.active ? state.rogueEvent : null;
+      const warning=state.rogueWarning?.active ? state.rogueWarning : null;
+      let lockdownText='Lockdown ready later';
+      let lockdownCls='ok';
+      if(lockdown){
+        const left=Math.max(0, Math.ceil(((lockdown.duration||0)-(Date.now()-(lockdown.startedAt||Date.now())))/1000));
+        lockdownText=`Lockdown live ${left}s`;
+        lockdownCls='danger';
+      }else if(warning){
+        const left=Math.max(0, Math.ceil(((warning.endsAt||Date.now())-Date.now())/1000));
+        lockdownText=`Lockdown warning ${left}s`;
+        lockdownCls='warn';
+      }else if(Number.isFinite(Number(state.rogueNextAt))){
+        const next=Math.max(0, Math.ceil((Number(state.rogueNextAt)-Date.now())/1000));
+        lockdownText=next>0?`Next surge ~${next}s`:'Surge window open';
+        lockdownCls=next>30?'ok':'warn';
+      }
+      const metal=metallikStatusText(currentStageKey());
+      const contract=activeContract();
+      const contractText=contract?.complete?'Contract ready':`${contract?.progress||0}/${contract?.target||0} contract`;
+      return `<div class="qol-route-strip" role="status" aria-label="Quick route status">
+        <div class="qol-pill strong"><b>${safeHtml(def.id)}</b><span>${safeHtml(def.title)}</span></div>
+        <div class="qol-pill ${hpPct<=35?'danger':hpPct<=60?'warn':'ok'}"><b>HP</b><span>${Number(p.hp||0)}/${hpMax}</span></div>
+        <div class="qol-pill ${epPct<=25?'warn':'ok'}"><b>EP</b><span>${Number(p.ep||0)}/${epMax}</span></div>
+        <div class="qol-pill"><b>Anomaly</b><span>${cleared}/${required}</span></div>
+        <div class="qol-pill ${state.flags?.bossDefeated?'ok':state.flags?.bossUnlocked?'warn':''}"><b>Boss</b><span>${safeHtml(bossStatus)}</span></div>
+        <div class="qol-pill ${lockdownCls}"><b>Event</b><span>${safeHtml(lockdownText)}</span></div>
+        <div class="qol-pill"><b>NPC</b><span>${safeHtml(metal)}</span></div>
+        <div class="qol-pill"><b>Task</b><span>${safeHtml(contractText)}</span></div>
+      </div>`;
+    }catch(err){
+      console.warn('[AV] quick status failed', err);
+      return '';
+    }
+  }
+
   function renderUI(){
     ensureProgression(); ensureContracts(); ensureResearch(); syncHpCap(); unlockNextStages(); ensureStoryFlags();
     applyOperatorVisuals();
@@ -8986,7 +9038,7 @@
     const metallikLine=safeHtml(metallikStatusText(currentStageKey()));
     const target=objectiveTarget();
     const targetSummary=target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
-    $('objectiveTracker').innerHTML=`<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine} &nbsp; 🎸 ${metallikLine} &nbsp; 🏆 ${protocolLine}`;
+    $('objectiveTracker').innerHTML=quickStatusStripHtml() + `<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine} &nbsp; 🎸 ${metallikLine} &nbsp; 🏆 ${protocolLine}`;
     $('missionProgress').innerHTML=objectiveGuideHtml() + onboardingMiniStatusHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div><div class="mission-row">🎸 MetalliK: ${metallikLine}</div><div class="mission-row">🏆 Protocol Challenges: ${safeHtml(protocolChallengeSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();
