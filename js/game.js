@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '237';
-  const BUILD_TITLE = 'AUDIO LAZY LOAD PASS';
+  const BUILD_VERSION = '238';
+  const BUILD_TITLE = 'STARTUP RENDER THROTTLE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4964,7 +4964,7 @@
       unlockNextStages();
       save(true); // rewrite using the latest schema so Continue stays fixed after migration.
       if(!silent) toast(`Archive loaded: ${stageDef(state.currentStage).id} // Lv ${state.player.level}.`);
-      try{ renderAll(); renderSaveHub(); syncContinueButton(); }catch(err){}
+      try{ scheduleLightRender('image-load'); renderSaveHub(); syncContinueButton(); }catch(err){}
       return true;
     }catch(err){
       console.error('Load failed:', err);
@@ -9176,7 +9176,36 @@
     renderOperatorDb();
     renderCharacterMenuDb();
   }
-  function renderAll(){render(); renderMini(); renderUI(); renderFullscreenHud(); restoreLockdownRewardModal();}
+  function renderAll(){
+    // V238: keep startup/menu light. The intro video should not compete with full map/minimap/UI redraws.
+    const mode = uiState?.mode || '';
+    const bootVisible = $('bootScreen') && !$('bootScreen').classList.contains('hidden');
+    const appHidden = $('app') && $('app').classList.contains('hidden');
+    if(mode==='boot' || bootVisible){
+      try{ syncContinueButton(); }catch(err){}
+      restoreLockdownRewardModal();
+      return;
+    }
+    if(mode==='menu' && appHidden){
+      try{ syncContinueButton(); }catch(err){}
+      restoreLockdownRewardModal();
+      return;
+    }
+    render();
+    renderMini();
+    renderUI();
+    renderFullscreenHud();
+    restoreLockdownRewardModal();
+  }
+
+  let avosPendingRender=false;
+  function scheduleLightRender(reason=''){
+    if(avosPendingRender) return;
+    avosPendingRender=true;
+    const run=()=>{ avosPendingRender=false; try{ renderAll(); }catch(err){ console.warn('[AV] scheduled render failed', reason, err); } };
+    if(window.requestAnimationFrame) requestAnimationFrame(run);
+    else setTimeout(run, 16);
+  }
   function openOverlay(id){
     const target=$(id);
     if(!target){toast('Protocol missing: '+id); return;}
@@ -9547,7 +9576,7 @@
     }
     try{ canvas.style.touchAction = 'none'; }catch(err){}
     clearTimeout(mobileResizeTimer);
-    mobileResizeTimer = setTimeout(()=>{ try{ renderAll(); updatePhoneOrientationWarning(); }catch(err){} }, 90);
+    mobileResizeTimer = setTimeout(()=>{ try{ scheduleLightRender('resize'); updatePhoneOrientationWarning(); }catch(err){} }, 90);
   }
   function moveByName(dir){
     const moves={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
