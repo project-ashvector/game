@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '236';
-  const BUILD_TITLE = 'ASSET STREAMING PASS';
+  const BUILD_VERSION = '237';
+  const BUILD_TITLE = 'AUDIO LAZY LOAD PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -83,7 +83,9 @@
       Object.entries(MUSIC).forEach(([key, src]) => {
         const audio = new Audio(`${src}?v=${BUILD_VERSION}`);
         audio.loop = true;
-        audio.preload = 'auto';
+        // Keep intro/menu music easy to start, but do not force every level track
+        // to download at boot. Later tracks are promoted to auto-load on demand.
+        audio.preload = (key === 'intro' || key === 'pause') ? 'auto' : 'none';
         audio.volume = 0;
         audio.muted = false;
         audio.setAttribute('playsinline', 'true');
@@ -116,7 +118,17 @@
     unlock(){
       if(this.unlocked) return;
       this.unlocked = true;
+      try{ this.prime(this.requested || 'pause'); }catch(err){}
       this.forceResume();
+    },
+
+    prime(key){
+      const audio = this.tracks?.[key];
+      if(!audio) return;
+      if(audio.preload !== 'auto') audio.preload = 'auto';
+      try{
+        if(audio.readyState === 0) audio.load();
+      }catch(err){}
     },
 
     force(key){
@@ -138,6 +150,7 @@
       this.musicStopped = false;
       if(!this.unlocked) return;
 
+      this.prime(key);
       const next = this.tracks[key];
       next.loop = true;
       next.muted = false;
@@ -285,7 +298,8 @@
       const all = [SFX.step, SFX.item, SFX.battleWin, SFX.levelWin, SFX.death, ...SFX.slashes];
       all.forEach(src => {
         const audio = new Audio(`${src}?v=${BUILD_VERSION}`);
-        audio.preload = 'auto';
+        // SFX should be instant when used, but not block intro/menu loading.
+        audio.preload = src === SFX.step ? 'metadata' : 'none';
         audio.volume = this.volume;
         this.cache[src] = audio;
       });
@@ -297,6 +311,7 @@
       AudioManager.unlock();
       try{
         const base = this.cache[src] || new Audio(`${src}?v=${BUILD_VERSION}`);
+        try{ if(base.preload !== 'auto') base.preload = 'auto'; if(base.readyState === 0) base.load(); }catch(err){}
         const a = base.cloneNode(true);
         const scale = this.volume / 0.72;
         a.volume = Math.max(0, Math.min(1, volume * scale));
@@ -4784,11 +4799,11 @@
   function scheduleBackgroundAssetPreload(){
     if(backgroundAssetPreloadStarted) return;
     backgroundAssetPreloadStarted=true;
-    const start=()=>loadImages({defer:true, chunk:3});
+    const start=()=>loadImages({defer:true, chunk:2});
     setTimeout(()=>{
       if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:2600});
       else start();
-    }, 3600);
+    }, 5200);
   }
   function loadImages(opts={}){
     const paths = [
