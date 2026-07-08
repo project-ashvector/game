@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '238';
-  const BUILD_TITLE = 'STARTUP RENDER THROTTLE PASS';
+  const BUILD_VERSION = '239';
+  const BUILD_TITLE = 'NPC MENU CACHE PERFORMANCE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1087,9 +1087,15 @@
     if(good.length){ good.sort((a,b)=>a.score-b.score); return {x:good[0].x,y:good[0].y}; }
     return base;
   }
+  const npcStagePlacementCache = new Map();
+  function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); }
   function stageNpcs(key=currentStageKey()){
+    // V239: NPC safety placement can scan the map. Cache per stage so every draw/frame does not redo that work.
+    const cacheKey = `${key}:${MAP_VERSION}:${Object.keys(NPC_DEFS).length}`;
+    const cached = npcStagePlacementCache.get(cacheKey);
+    if(cached) return cached;
     const used=new Set();
-    return Object.values(NPC_DEFS).map(n => {
+    const list = Object.values(NPC_DEFS).map(n => {
       const original = n.stages[key];
       if(!original) return null;
       const fallback = NPC_SAFE_FALLBACKS[key]?.[n.id];
@@ -1098,6 +1104,8 @@
       used.add(`${pos.x},${pos.y}`);
       return {...n, ...original, x:pos.x, y:pos.y, stage:key};
     }).filter(Boolean);
+    npcStagePlacementCache.set(cacheKey, list);
+    return list;
   }
   function npcAt(x,y,key=currentStageKey()){
     return stageNpcs(key).find(n => n.x === x && n.y === y) || null;
@@ -3309,6 +3317,7 @@
     const parsed=parseStageMap(key);
     preloadCurrentStageAssets(key);
     state.currentStage=key;
+    clearNpcStagePlacementCache();
     state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
     invalidateCollisionRegion();
@@ -4767,7 +4776,7 @@
       ...mapArt.props.map(p=>p.img),
       ...(pack.ground||[]), ...(pack.blocked||[]), pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
       ...((pack.props||[]).map(p=>p.img)),
-      ...Object.values(NPC_DEFS).map(n=>n.asset),
+      ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset),
       ...operatorAssetPaths(currentOperator()),
       'assets/items/memory_core.png'
     ].filter(Boolean);
@@ -4894,6 +4903,7 @@
     Object.keys(STAGE_DEFS).forEach((k,i)=> merged.stages[k]={unlocked:i===0,complete:false, ...(loaded.stages?.[k]||{})});
     merged.stages.f001.unlocked=true;
     state=merged;
+    clearNpcStagePlacementCache();
     state.currentStage = STAGE_DEFS[state.currentStage] ? state.currentStage : 'f001';
     if(!state.map || !Array.isArray(state.map) || state.mapVersion!==MAP_VERSION){
       const parsed=parseStageMap(state.currentStage);
@@ -9206,6 +9216,12 @@
     if(window.requestAnimationFrame) requestAnimationFrame(run);
     else setTimeout(run, 16);
   }
+  function runDeferredUiTask(fn, label='ui'){
+    const runner=()=>{ try{ fn(); }catch(err){ console.warn('[AV] deferred '+label+' failed', err); } };
+    if('requestIdleCallback' in window) requestIdleCallback(runner, {timeout:700});
+    else setTimeout(runner, 70);
+  }
+
   function openOverlay(id){
     const target=$(id);
     if(!target){toast('Protocol missing: '+id); return;}
@@ -9234,10 +9250,18 @@
       if(id==='operatorOverlay') renderOperatorDb();
       if(id==='characterOverlay') renderCharacterMenuDb();
       if(id==='fractureOverlay') renderFractureDb();
-      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRoutePrepPanel(); renderRouteRecordsPanel(); renderEventJournalPanel(); }
-      if(id==='playtestOverlay'){ renderUI(); renderQaLockdownBuffBoard(); }
+      if(id==='missionOverlay'){
+        renderUI();
+        renderRoutePrepPanel();
+        runDeferredUiTask(()=>{ renderMissionContractPanel(); renderStoryArchivePanel(); }, 'mission core panels');
+        runDeferredUiTask(()=>{ renderRouteRecordsPanel(); renderEventJournalPanel(); }, 'mission archive panels');
+      }
+      if(id==='playtestOverlay'){ renderUI(); runDeferredUiTask(renderQaLockdownBuffBoard, 'playtest board'); }
       if(id==='progressionOverlay') renderProgressionDb();
-      if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); renderArchiveSafetyPanel(); renderControlsHelpPanel(); }
+      if(id==='configOverlay'){
+        renderSaveHub(); renderAudioMixer();
+        runDeferredUiTask(()=>{ renderArchiveSafetyPanel(); renderControlsHelpPanel(); }, 'config safety panels');
+      }
       if(id==='radioOverlay'){ radioMode=true; radioTrack=radioTrack||'pause'; renderRadioDb(); AudioManager.play(radioTrack, true); }
     }catch(err){
       console.error('Overlay render failed:', id, err);
