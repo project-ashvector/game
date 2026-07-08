@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '242';
-  const BUILD_TITLE = 'DEFERRED ASSET QUEUE PASS';
+  const BUILD_VERSION = '243';
+  const BUILD_TITLE = 'SPRITE LOAD PRIORITY FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3333,7 +3333,7 @@
       return false;
     }
     const parsed=parseStageMap(key);
-    preloadCurrentStageAssets(key);
+    preloadCurrentStageAssets(key, {immediate:true});
     state.currentStage=key;
     clearNpcStagePlacementCache();
     state.mapVersion=MAP_VERSION;
@@ -4748,12 +4748,21 @@
     if('requestAnimationFrame' in window) requestAnimationFrame(run);
     else setTimeout(run, 60);
   }
-  function ensureImageCached(path){
+  function ensureImageCached(path, opts={}){
     if(!path) return null;
-    if(images[path]) return images[path];
+    if(images[path]){
+      if(opts.critical){
+        try{ images[path].loading = 'eager'; images[path].fetchPriority = 'high'; }catch(err){}
+      }
+      return images[path];
+    }
     const im = new Image();
-    im.loading = 'lazy';
-    im.decoding = 'async';
+    const critical = !!opts.critical;
+    // V243: visible sprites must not use lazy image priority. The V242 deferred queue helped the intro,
+    // but player/NPC/enemy images could sit in fallback shape mode too long during gameplay.
+    try{ im.loading = critical ? 'eager' : 'lazy'; }catch(err){}
+    try{ im.fetchPriority = critical ? 'high' : 'auto'; }catch(err){}
+    im.decoding = critical ? 'auto' : 'async';
     im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
@@ -4814,19 +4823,22 @@
     });
     requestDeferredImagePump();
   }
-  function preloadPaths(paths, {defer=false, chunk=8}={}){
+  function preloadPaths(paths, {defer=false, chunk=8, critical=false}={}){
     const list=[...new Set((paths||[]).filter(Boolean))].filter(path=>!images[path]);
     if(!list.length) return;
-    if(!defer){ list.forEach(ensureImageCached); return; }
+    if(!defer){ list.forEach(path=>ensureImageCached(path, {critical})); return; }
     queueDeferredImages(list, chunk);
   }
   function currentStageCriticalAssetPaths(key=currentStageKey()){
     const pack=stageVisualPacks[key] || {};
+    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
     return [
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal,
       pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
       ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset),
       ...operatorAssetPaths(currentOperator()),
+      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
+      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)]),
       'assets/items/memory_core.png'
     ].filter(Boolean);
   }
@@ -4844,25 +4856,15 @@
   function operatorCriticalAssetPaths(op=currentOperator()){
     return [op.mapSprite, op.icon, op.portrait, ...(Object.values(op.rotations||{}))].filter(Boolean);
   }
-  function preloadCriticalImages(){
-    const key=currentStageKey();
-    const pack=stageVisualPacks[key] || {};
-    preloadPaths([
-      ...operatorCriticalAssetPaths(currentOperator()),
-      mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal, mapArt.chest, mapArt.med,
-      pack.terminal, pack.door, pack.exit, pack.prevPortal, pack.chest, pack.med,
-      ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset)
-    ], {defer:false});
+  function preloadCriticalImages(key=currentStageKey()){
+    // V243: force all visible gameplay sprites/assets for the active stage to eager/high priority.
+    preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, critical:true});
   }
   function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
     const immediate=!!opts.immediate;
-    preloadPaths(currentStageCriticalAssetPaths(key), {defer:!immediate, chunk:5});
+    // V243: stage-critical sprites always load immediately; only decorative scenery is deferred.
+    preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, critical:true});
     setTimeout(()=>preloadPaths(currentStageDecorAssetPaths(key), {defer:true, chunk:2}), immediate ? 350 : 1500);
-    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
-    setTimeout(()=>preloadPaths([
-      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
-      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
-    ], {defer:true, chunk:2}), 900);
   }
   function preloadLockdownAssets(){
     preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
@@ -5686,7 +5688,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
-    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:false}); setTimeout(preloadLockdownAssets, 1200);
+    preloadCriticalImages(currentStageKey()); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
@@ -8696,7 +8698,7 @@
       const drawW=compact?44:(m.size||40), drawH=drawW;
       ctx.fillStyle='rgba(0,0,0,.55)';
       ctx.beginPath(); ctx.ellipse(x,y+Math.floor(drawH*.43),drawW*.42,6,0,0,Math.PI*2); ctx.fill();
-      const im=ensureImageCached(m.icon || m.img) || ensureImageCached(m.img);
+      const im=ensureImageCached(m.icon || m.img, {critical:true}) || ensureImageCached(m.img, {critical:true});
       if(im && im.complete && im.naturalWidth){
         ctx.save();
         ctx.shadowColor='rgba(255,48,72,.70)';
@@ -8757,7 +8759,7 @@
         p.trail.forEach((t,i)=>{ const tx=t.x*TILE, ty=t.y*TILE; if(i===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty); }); ctx.stroke(); ctx.globalAlpha=1;
       }
       const asset=p.assetPath || lockdownProjectileAsset(p.assetIndex||p.kind||0).path;
-      const im=ensureImageCached(asset);
+      const im=ensureImageCached(asset, {critical:true});
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(angle);
@@ -8843,7 +8845,7 @@
 
   function drawPlayerSprite(x,y){
     const spritePath = currentOperatorMapSpriteForFacing(state?.player?.facing || 'down');
-    const im = ensureImageCached(spritePath) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite);
+    const im = ensureImageCached(spritePath, {critical:true}) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite, {critical:true});
     const lockdownActive = !!state.rogueEvent?.active;
     // v130: same map footprint as NPCs and monsters.
     const drawW = MAP_ENTITY_W;
