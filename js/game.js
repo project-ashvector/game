@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '233';
-  const BUILD_TITLE = 'QUICK STATUS PASS';
+  const BUILD_VERSION = '234';
+  const BUILD_TITLE = 'EVENT JOURNAL PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4687,7 +4687,7 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, rogueNextAt:Date.now()+45000+Math.floor(Math.random()*45000), lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, rogueNextAt:Date.now()+45000+Math.floor(Math.random()*45000), lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], eventHistory:[{at:Date.now(), stage:'f001', text:'AVOS connection established.'}], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   function ensureImageCached(path){
     if(!path) return null;
@@ -4757,6 +4757,7 @@
     state.visited ||= {};
     state.lockdownPersistentBuffs ||= {};
     state.lockdownRunHistory ||= [];
+    state.eventHistory = Array.isArray(state.eventHistory) ? state.eventHistory.slice(-60) : [];
     if(!Number.isFinite(Number(state.rogueNextAt)) || Number(state.rogueNextAt)<Date.now()-600000){ state.rogueNextAt=Date.now()+45000+Math.floor(Math.random()*45000); }
     ensureCharacterState();
     ensureOperatorProgress();
@@ -4786,6 +4787,7 @@
     merged.operatorProgress={...(fresh.operatorProgress||{}), ...(loaded.operatorProgress||{})};
     merged.lockdownPersistentBuffs={...(fresh.lockdownPersistentBuffs||{}), ...(loaded.lockdownPersistentBuffs||{})};
     merged.lockdownRunHistory=Array.isArray(loaded.lockdownRunHistory)?loaded.lockdownRunHistory.slice(-20):[];
+    merged.eventHistory=Array.isArray(loaded.eventHistory)?loaded.eventHistory.slice(-60):[];
     merged.rogueNextAt=Number(loaded.rogueNextAt)||fresh.rogueNextAt;
     merged.equipment={...createEmptyEquipment(), ...(loaded.equipment||{})};
     merged.settings={...(fresh.settings||{}), ...(loaded.settings||{})};
@@ -5126,7 +5128,28 @@
     }).join('');
     panel.innerHTML=`<div class="record-kicker">ARCHIVE BACKUP TERMINAL</div><h2>Save Slots + Transfer Code</h2><p>Active Save: ${safeHtml(main.stage)} ${safeHtml(main.title)} // Player Lv ${main.level} // ${main.credits} Credits // ${safeHtml(main.when)}</p><div class="save-slot-grid">${slotCards}</div><div class="save-hub-actions"><button onclick="window.AV.exportSaveCode()">Export Save Code</button><button onclick="window.AV.importSaveCode()">Import Save Code</button><button onclick="window.AV.save()">Save Active Archive</button></div><p class="fineprint">Slots and backup codes use browser localStorage. Export a code before clearing cache, switching phones, or testing risky patches.</p>`;
   }
-  function log(msg){state.log.unshift(msg); state.log=state.log.slice(0,7); renderUI();}
+  function eventJournalTime(ts){
+    try{ return new Date(Number(ts)||Date.now()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }catch(err){ return '--:--'; }
+  }
+  function log(msg){
+    if(!state) return;
+    const text=String(msg||'');
+    state.log ||= [];
+    state.log.unshift(text);
+    state.log=state.log.slice(0,7);
+    state.eventHistory ||= [];
+    state.eventHistory.unshift({at:Date.now(), stage:currentStageKey?.() || state.currentStage || 'f001', text});
+    state.eventHistory=state.eventHistory.slice(0,60);
+    renderUI();
+  }
+  function renderEventJournalPanel(){
+    const grid=document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('eventJournalPanel');
+    if(!panel){ panel=document.createElement('section'); panel.id='eventJournalPanel'; panel.className='fracture-card event-journal-card'; grid.appendChild(panel); }
+    const rows=(state.eventHistory||[]).slice(0,24).map(entry=>`<div class="event-journal-row"><b>${safeHtml(eventJournalTime(entry.at))}</b><span>${safeHtml((entry.stage||'F-???').toString().toUpperCase())}</span><p>${safeHtml(entry.text||'')}</p></div>`).join('') || '<div class="event-journal-empty">No route events logged yet.</div>';
+    panel.innerHTML=`<div class="record-kicker">AVOS EVENT JOURNAL</div><h3>Recent Route Log</h3><p>Longer activity history for testing rewards, NPC claims, portals, Lockdown events, and route progress. The small HUD log still stays compact.</p><div class="event-journal-list">${rows}</div>`;
+  }
   function toast(msg){let t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
 
   // v106: optional first-run tutorial cards. They are local-save aware and can be disabled in Configuration.
@@ -9046,6 +9069,7 @@
     renderRoutePrepPanel();
     renderRouteRecordsPanel();
     renderControlsHelpPanel();
+    renderEventJournalPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Player Level: ${p.level} // QA Bypass: ${state.qaUnlockAllStages?'ON':'OFF'}</div><div class="statrow">Level Locks: ${Object.entries(STAGE_DEFS).map(([k,d])=>d.id+': '+(playerMeetsStageRequirement(k)?'open':'locked')).join(' // ')}</div><div class="statrow">Characters: ${Object.values(OPERATOR_DEFS).filter(op=>operatorUnlocked(op.id)).length}/${Object.values(OPERATOR_DEFS).length} unlocked // QA Unlock: ${state.qaUnlockAllCharacters?'ON':'OFF'}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Controller: ${ControllerManager.statusText()}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
     renderFullscreenHud();
@@ -9082,7 +9106,7 @@
       if(id==='operatorOverlay') renderOperatorDb();
       if(id==='characterOverlay') renderCharacterMenuDb();
       if(id==='fractureOverlay') renderFractureDb();
-      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRoutePrepPanel(); renderRouteRecordsPanel(); }
+      if(id==='missionOverlay'){ renderUI(); renderMissionContractPanel(); renderStoryArchivePanel(); renderRoutePrepPanel(); renderRouteRecordsPanel(); renderEventJournalPanel(); }
       if(id==='playtestOverlay'){ renderUI(); renderQaLockdownBuffBoard(); }
       if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){ renderSaveHub(); renderAudioMixer(); renderArchiveSafetyPanel(); renderControlsHelpPanel(); }
@@ -10041,7 +10065,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),

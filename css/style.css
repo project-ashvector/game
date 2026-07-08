@@ -3121,3 +3121,19 @@ body.game-paused .mobile-pause-card::before{
 .qol-pill.danger b{color:#ff6b7d;}
 @media(max-width:900px){.qol-route-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:7px}.qol-pill{padding:6px 7px}.qol-pill b{font-size:9px}.qol-pill span{font-size:10px}}
 @media(max-width:520px){.qol-route-strip{grid-template-columns:1fr 1fr}.qol-pill:nth-child(n+7){display:none}}
+
+
+/* v234: Event Journal polish */
+.event-journal-card{min-height:0;}
+.event-journal-card p{color:rgba(221,245,255,.82);line-height:1.45;}
+.event-journal-list{display:grid;gap:8px;max-height:min(360px,42vh);overflow:auto;padding-right:4px;scrollbar-width:thin;}
+.event-journal-row{display:grid;grid-template-columns:70px 76px 1fr;gap:8px;align-items:start;padding:9px 10px;border:1px solid rgba(0,217,255,.16);border-radius:12px;background:rgba(0,0,0,.22);}
+.event-journal-row b{color:#96ffdf;font-size:12px;white-space:nowrap;}
+.event-journal-row span{color:#ffd37a;font-size:11px;letter-spacing:.08em;white-space:nowrap;}
+.event-journal-row p{margin:0;color:#dff8ff;font-size:12px;line-height:1.35;overflow-wrap:anywhere;}
+.event-journal-empty{padding:12px;border:1px dashed rgba(255,255,255,.22);border-radius:12px;color:rgba(221,245,255,.7);}
+@media (max-width: 760px){
+  .event-journal-list{max-height:34vh;}
+  .event-journal-row{grid-template-columns:58px 64px 1fr;padding:8px;gap:6px;}
+  .event-journal-row p{font-size:11px;}
+}
