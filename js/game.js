@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '235';
-  const BUILD_TITLE = 'INTRO LOAD SPEED PASS';
+  const BUILD_VERSION = '236';
+  const BUILD_TITLE = 'ASSET STREAMING PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4691,11 +4691,28 @@
     const parsed = parseStageMap('f001');
     return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, rogueNextAt:Date.now()+45000+Math.floor(Math.random()*45000), lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], eventHistory:[{at:Date.now(), stage:'f001', text:'AVOS connection established.'}], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
+  let imageRenderQueued=false;
+  function requestImageRenderRefresh(){
+    if(imageRenderQueued) return;
+    imageRenderQueued=true;
+    const run=()=>{
+      imageRenderQueued=false;
+      try{
+        if(uiState?.mode==='game' || uiState?.mode==='pause'){
+          render(); renderMini(); renderUI();
+        }
+      }catch(err){}
+    };
+    if('requestAnimationFrame' in window) requestAnimationFrame(run);
+    else setTimeout(run, 60);
+  }
   function ensureImageCached(path){
     if(!path) return null;
     if(images[path]) return images[path];
     const im = new Image();
-    im.onload = () => { try{ renderAll(); }catch(err){} };
+    im.loading = 'lazy';
+    im.decoding = 'async';
+    im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
     images[path] = im;
@@ -4740,32 +4757,38 @@
       'assets/items/memory_core.png'
     ].filter(Boolean);
   }
+  function operatorCriticalAssetPaths(op=currentOperator()){
+    return [op.mapSprite, op.icon, op.portrait, ...(Object.values(op.rotations||{}))].filter(Boolean);
+  }
   function preloadCriticalImages(){
+    const pack=stageVisualPacks[currentStageKey()] || {};
     preloadPaths([
-      ...operatorAssetPaths(currentOperator()),
-      ...currentStageAssetPaths(),
-      ...Object.values(NPC_DEFS).map(n=>n.asset)
+      ...operatorCriticalAssetPaths(currentOperator()),
+      mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal, mapArt.chest, mapArt.med,
+      pack.terminal, pack.door, pack.exit, pack.prevPortal, pack.chest, pack.med,
+      ...Object.values(NPC_DEFS).map(n=>n.asset).slice(0,4)
     ], {defer:false});
   }
-  function preloadCurrentStageAssets(key=currentStageKey()){
-    preloadPaths(currentStageAssetPaths(key), {defer:false});
+  function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
+    const immediate=!!opts.immediate;
+    preloadPaths(currentStageAssetPaths(key), {defer:!immediate, chunk:5});
     const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
     preloadPaths([
       ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
-    ], {defer:true, chunk:4});
+    ], {defer:true, chunk:3});
   }
   function preloadLockdownAssets(){
-    preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:6});
+    preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
   }
   function scheduleBackgroundAssetPreload(){
     if(backgroundAssetPreloadStarted) return;
     backgroundAssetPreloadStarted=true;
-    const start=()=>loadImages({defer:true});
+    const start=()=>loadImages({defer:true, chunk:3});
     setTimeout(()=>{
-      if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:1600});
+      if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:2600});
       else start();
-    }, 1400);
+    }, 3600);
   }
   function loadImages(opts={}){
     const paths = [
@@ -4784,7 +4807,7 @@
       'assets/items/memory_core.png',
       ...lockdownBuffAssetPaths
     ];
-    preloadPaths(paths, {defer:!!opts.defer, chunk:opts.chunk||8});
+    preloadPaths(paths, {defer:!!opts.defer, chunk:opts.chunk||3});
   }
   const SAVE_SCHEMA_VERSION = 183;
   const SAVE_KEY = 'ashVectorSave';
@@ -5562,7 +5585,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
-    preloadCriticalImages(); preloadCurrentStageAssets(); preloadLockdownAssets();
+    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:false}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
