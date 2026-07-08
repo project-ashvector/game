@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '239';
-  const BUILD_TITLE = 'NPC MENU CACHE PERFORMANCE PASS';
+  const BUILD_VERSION = '240';
+  const BUILD_TITLE = 'SAVE WRITE THROTTLE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3276,10 +3276,28 @@
     return stats;
   }
   let autosaveQueued=false;
-  function queueAutosave(){
-    if(autosaveQueued) return;
+  let autosaveTimer=null;
+  let lastSaveWriteAt=0;
+  let lastBackupWriteAt=0;
+  const AUTOSAVE_MIN_GAP_MS=4200;
+  const BACKUP_MIN_GAP_MS=45000;
+  function runQueuedAutosave(){
+    autosaveTimer=null;
+    autosaveQueued=false;
+    if(isGameplayPaused && isGameplayPaused()){ queueAutosave(1200); return; }
+    try{ save(true, {queued:true}); }catch(e){ console.warn('[AV] queued autosave failed', e); }
+  }
+  function queueAutosave(delay=900){
+    const now=Date.now();
+    const wait=Math.max(delay, AUTOSAVE_MIN_GAP_MS - (now-lastSaveWriteAt));
     autosaveQueued=true;
-    setTimeout(()=>{ autosaveQueued=false; try{ save(true); }catch(e){} }, 350);
+    if(autosaveTimer) return;
+    const schedule=()=>{ autosaveTimer=setTimeout(runQueuedAutosave, wait); };
+    if(window.requestIdleCallback){
+      window.requestIdleCallback(schedule, {timeout: Math.max(1200, wait+250)});
+    }else{
+      schedule();
+    }
   }
   function levelBenefit(skill, oldLevel, newLevel){
     if(newLevel <= oldLevel) return;
@@ -4933,19 +4951,33 @@
       return !!(localStorage.getItem(SAVE_KEY) || localStorage.getItem(SAVE_AUTOSLOT_KEY) || localStorage.getItem(SAVE_BACKUP_KEY));
     }catch(err){ return false; }
   }
-  function save(silent=false){
+  function save(silent=false, opts={}){
     if(typeof silent !== 'boolean') silent=false;
+    opts = opts || {};
     try{
+      const now=Date.now();
+      if(silent && !opts.force && now-lastSaveWriteAt < AUTOSAVE_MIN_GAP_MS){
+        queueAutosave(AUTOSAVE_MIN_GAP_MS - (now-lastSaveWriteAt) + 200);
+        return true;
+      }
       const snapshot=saveSnapshotForStorage();
       const raw=JSON.stringify(snapshot);
       const prev=localStorage.getItem(SAVE_KEY);
-      if(prev) localStorage.setItem(SAVE_BACKUP_KEY, prev);
+      if(prev && (!silent || now-lastBackupWriteAt > BACKUP_MIN_GAP_MS)){
+        localStorage.setItem(SAVE_BACKUP_KEY, prev);
+        lastBackupWriteAt=now;
+      }
       localStorage.setItem(SAVE_KEY, raw);
       localStorage.setItem(SAVE_AUTOSLOT_KEY, raw);
-      const verify=localStorage.getItem(SAVE_KEY);
-      if(verify !== raw) throw new Error('Browser storage did not verify the archive write.');
-      if(!silent) toast(`Archive saved: ${stageDef(snapshot.currentStage).id} // Lv ${snapshot.player.level}.`);
-      try{ renderUI(); renderSaveHub(); syncContinueButton(); }catch(err){}
+      lastSaveWriteAt=now;
+      if(!silent){
+        const verify=localStorage.getItem(SAVE_KEY);
+        if(verify !== raw) throw new Error('Browser storage did not verify the archive write.');
+        toast(`Archive saved: ${stageDef(snapshot.currentStage).id} // Lv ${snapshot.player.level}.`);
+        try{ renderUI(); renderSaveHub(); syncContinueButton(); }catch(err){}
+      }else{
+        try{ syncContinueButton(); }catch(err){}
+      }
       return true;
     }catch(err){
       console.error('Save failed:', err);
@@ -10067,10 +10099,10 @@
   function startAutosave(){
     if(autosaveStarted) return;
     autosaveStarted=true;
-    setInterval(()=>{ if(!isGameplayPaused() && !$('app').classList.contains('hidden')) save(true); }, 30000);
-    setInterval(()=>{ if(!isGameplayPaused()){ processRespawns(); renderUI(); } }, 1000);
-    setInterval(()=>{ if(!isGameplayPaused()) processRespawns(); }, 500);
-    setInterval(()=>{ if(!isGameplayPaused() && state?.map && state?.player) clampPlayerToMap(); }, 900);
+    setInterval(()=>{ if(!isGameplayPaused() && !$('app').classList.contains('hidden')) save(true, {force:true}); }, 60000);
+    setInterval(()=>{ if(!isGameplayPaused()){ processRespawns(); renderUI(); } }, 1200);
+    setInterval(()=>{ if(!isGameplayPaused()) processRespawns(); }, 900);
+    setInterval(()=>{ if(!isGameplayPaused() && state?.map && state?.player) clampPlayerToMap(); }, 1200);
   }
 
   // v47: hard menu router. This runs in capture phase so menu protocols work
