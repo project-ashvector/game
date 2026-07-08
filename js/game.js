@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '244';
-  const BUILD_TITLE = 'CURRENT LEVEL ASSET LOAD PASS';
+  const BUILD_VERSION = '245';
+  const BUILD_TITLE = 'CURRENT MAP ASSET EAGER LOAD FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3333,7 +3333,7 @@
       return false;
     }
     const parsed=parseStageMap(key);
-    preloadCurrentStageAssets(key, {loadAdjacent:true});
+    preloadCurrentStageAssets(key, {immediate:true});
     state.currentStage=key;
     clearNpcStagePlacementCache();
     state.mapVersion=MAP_VERSION;
@@ -4752,9 +4752,12 @@
     if(!path) return null;
     if(images[path]) return images[path];
     const im = new Image();
+    // Gameplay-critical sprites and current-level map props must not be lazy-loaded.
+    // Lazy is still used for off-stage/background art so the intro stays fast.
     const eager = !!opts.eager;
-    im.loading = eager ? 'eager' : 'lazy';
-    im.decoding = eager ? 'sync' : 'async';
+    try{ im.loading = eager ? 'eager' : 'lazy'; }catch(err){}
+    try{ im.decoding = eager ? 'auto' : 'async'; }catch(err){}
+    try{ im.fetchPriority = eager ? 'high' : 'auto'; }catch(err){}
     im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
@@ -4793,7 +4796,7 @@
       if((performance.now ? performance.now() : Date.now()) - start > 10) break;
       const path=deferredImageQueue.shift();
       deferredImageQueued.delete(path);
-      if(!images[path]) ensureImageCached(path);
+      if(!images[path]) ensureImageCached(path, {eager:false});
       count++;
     }
     if(deferredImageQueue.length) requestDeferredImagePump();
@@ -4821,6 +4824,22 @@
     if(!defer){ list.forEach(path=>ensureImageCached(path, {eager})); return; }
     queueDeferredImages(list, chunk);
   }
+  function currentStageTrainingAssetPaths(key=currentStageKey()){
+    try{
+      return stageTrainingNodes(key).map(node=>trainingObjectAssetForLabel(node.baseLabel || node.label)).filter(Boolean);
+    }catch(err){ return []; }
+  }
+  function currentStageEncounterAssetPaths(key=currentStageKey()){
+    try{
+      const slots=Object.entries(ENCOUNTER_SLOTS[key] || {});
+      return slots.flatMap(([coord, slot])=>{
+        const [x,y]=coord.split(',').map(Number);
+        const def=getEncounterDef(slot.type === 'boss' ? 'B' : 'E', x, y);
+        return [def.icon, def.img, def.battle].filter(Boolean);
+      });
+    }catch(err){ return []; }
+  }
+
   function currentStageCriticalAssetPaths(key=currentStageKey()){
     const pack=stageVisualPacks[key] || {};
     return [
@@ -4828,6 +4847,8 @@
       pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
       ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset),
       ...operatorAssetPaths(currentOperator()),
+      ...currentStageTrainingAssetPaths(key),
+      ...currentStageEncounterAssetPaths(key),
       'assets/items/memory_core.png'
     ].filter(Boolean);
   }
@@ -4842,40 +4863,28 @@
   function currentStageAssetPaths(key=currentStageKey()){
     return [...currentStageCriticalAssetPaths(key), ...currentStageDecorAssetPaths(key)].filter(Boolean);
   }
-  function currentStageEnemyAssetPaths(key=currentStageKey()){
-    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
-    return [
-      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
-      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
-    ].filter(Boolean);
-  }
   function operatorCriticalAssetPaths(op=currentOperator()){
     return [op.mapSprite, op.icon, op.portrait, ...(Object.values(op.rotations||{}))].filter(Boolean);
   }
   function preloadCriticalImages(){
     const key=currentStageKey();
-    const pack=stageVisualPacks[key] || {};
-    preloadPaths([
-      ...operatorCriticalAssetPaths(currentOperator()),
-      mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal, mapArt.chest, mapArt.med,
-      pack.terminal, pack.door, pack.exit, pack.prevPortal, pack.chest, pack.med,
-      ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset)
-    ], {defer:false, eager:true});
+    preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, eager:true});
   }
   function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
-    // v244: load the full current-level visual set immediately. Only later levels stay deferred.
-    // This keeps the intro lighter, but prevents in-map sprites/props from falling back to boxes.
-    const fullCurrentLevel=[
-      ...currentStageAssetPaths(key),
-      ...currentStageEnemyAssetPaths(key)
-    ];
-    preloadPaths(fullCurrentLevel, {defer:false, eager:true});
-    if(opts.loadAdjacent){
-      const keys=Object.keys(STAGE_DEFS);
-      const idx=Math.max(0, keys.indexOf(key));
-      const next=keys[idx+1];
-      if(next) setTimeout(()=>preloadPaths(currentStageCriticalAssetPaths(next), {defer:true, chunk:2}), 1800);
+    const immediate = opts.immediate !== false;
+    const critical=currentStageCriticalAssetPaths(key);
+    const decor=currentStageDecorAssetPaths(key);
+    const encounters=currentStageEncounterAssetPaths(key);
+    const stageAssets=[...critical, ...decor, ...encounters];
+    if(immediate){
+      // Load the whole CURRENT level right now. This keeps the player, NPCs, enemies,
+      // terminals, portals, training objects, and map props from showing as placeholder boxes.
+      preloadPaths(stageAssets, {defer:false, eager:true});
+      requestImageRenderRefresh();
+      return;
     }
+    preloadPaths(critical, {defer:false, eager:true});
+    setTimeout(()=>preloadPaths([...decor, ...encounters], {defer:true, chunk:3}), 450);
   }
   function preloadLockdownAssets(){
     preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
@@ -5699,7 +5708,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
-    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {loadAdjacent:true}); setTimeout(preloadLockdownAssets, 1800);
+    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
