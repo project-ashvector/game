@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '241';
-  const BUILD_TITLE = 'CRITICAL ASSET PATH PASS';
+  const BUILD_VERSION = '242';
+  const BUILD_TITLE = 'DEFERRED ASSET QUEUE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4772,19 +4772,53 @@
     'assets/buffs/ash_rifling.png','assets/buffs/rust_accelerator.png','assets/buffs/overcharged_barrel.png','assets/buffs/scatter_vector.png','assets/buffs/twin_feed.png'
   ];
   let backgroundAssetPreloadStarted=false;
+  const deferredImageQueue=[];
+  const deferredImageQueued=new Set();
+  let deferredImagePumpActive=false;
+  let deferredImageChunkSize=2;
+  function shouldPauseDeferredImageWork(){
+    return document.body?.classList.contains('intro-video-active') || uiState?.mode==='boot';
+  }
+  function pumpDeferredImages(deadline){
+    if(shouldPauseDeferredImageWork()){
+      setTimeout(()=>requestDeferredImagePump(), 420);
+      return;
+    }
+    const start=performance.now ? performance.now() : Date.now();
+    let count=0;
+    while(deferredImageQueue.length){
+      if(count>=deferredImageChunkSize) break;
+      if(deadline?.timeRemaining && deadline.timeRemaining() < 5) break;
+      if((performance.now ? performance.now() : Date.now()) - start > 10) break;
+      const path=deferredImageQueue.shift();
+      deferredImageQueued.delete(path);
+      if(!images[path]) ensureImageCached(path);
+      count++;
+    }
+    if(deferredImageQueue.length) requestDeferredImagePump();
+    else deferredImagePumpActive=false;
+  }
+  function requestDeferredImagePump(){
+    if(deferredImagePumpActive) return;
+    deferredImagePumpActive=true;
+    const run=(deadline)=>{ deferredImagePumpActive=false; pumpDeferredImages(deadline); };
+    if('requestIdleCallback' in window) requestIdleCallback(run, {timeout:1400});
+    else setTimeout(()=>run(null), 90);
+  }
+  function queueDeferredImages(paths, chunk=2){
+    deferredImageChunkSize=Math.max(1, Math.min(4, Number(chunk)||2));
+    [...new Set((paths||[]).filter(Boolean))].forEach(path=>{
+      if(images[path] || deferredImageQueued.has(path)) return;
+      deferredImageQueued.add(path);
+      deferredImageQueue.push(path);
+    });
+    requestDeferredImagePump();
+  }
   function preloadPaths(paths, {defer=false, chunk=8}={}){
-    const list=[...new Set((paths||[]).filter(Boolean))];
+    const list=[...new Set((paths||[]).filter(Boolean))].filter(path=>!images[path]);
+    if(!list.length) return;
     if(!defer){ list.forEach(ensureImageCached); return; }
-    let i=0;
-    const run=()=>{
-      const end=Math.min(i+chunk, list.length);
-      for(; i<end; i++) ensureImageCached(list[i]);
-      if(i<list.length){
-        if('requestIdleCallback' in window) requestIdleCallback(run, {timeout:900});
-        else setTimeout(run, 80);
-      }
-    };
-    run();
+    queueDeferredImages(list, chunk);
   }
   function currentStageCriticalAssetPaths(key=currentStageKey()){
     const pack=stageVisualPacks[key] || {};
@@ -4838,9 +4872,9 @@
     backgroundAssetPreloadStarted=true;
     const start=()=>loadImages({defer:true, chunk:1});
     setTimeout(()=>{
-      if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:2600});
+      if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:3200});
       else start();
-    }, 7600);
+    }, 9200);
   }
   function loadImages(opts={}){
     const paths = [
