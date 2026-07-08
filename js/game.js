@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '240';
-  const BUILD_TITLE = 'SAVE WRITE THROTTLE PASS';
+  const BUILD_VERSION = '241';
+  const BUILD_TITLE = 'CRITICAL ASSET PATH PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4786,39 +4786,49 @@
     };
     run();
   }
-  function currentStageAssetPaths(key=currentStageKey()){
+  function currentStageCriticalAssetPaths(key=currentStageKey()){
     const pack=stageVisualPacks[key] || {};
     return [
-      ...mapArt.ground, ...mapArt.blocked,
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal,
-      ...mapArt.props.map(p=>p.img),
-      ...(pack.ground||[]), ...(pack.blocked||[]), pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
-      ...((pack.props||[]).map(p=>p.img)),
+      pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
       ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset),
       ...operatorAssetPaths(currentOperator()),
       'assets/items/memory_core.png'
     ].filter(Boolean);
   }
+  function currentStageDecorAssetPaths(key=currentStageKey()){
+    const pack=stageVisualPacks[key] || {};
+    return [
+      ...mapArt.ground, ...mapArt.blocked,
+      ...mapArt.props.map(p=>p.img),
+      ...(pack.ground||[]), ...(pack.blocked||[]), ...((pack.props||[]).map(p=>p.img))
+    ].filter(Boolean);
+  }
+  function currentStageAssetPaths(key=currentStageKey()){
+    return [...currentStageCriticalAssetPaths(key), ...currentStageDecorAssetPaths(key)].filter(Boolean);
+  }
   function operatorCriticalAssetPaths(op=currentOperator()){
     return [op.mapSprite, op.icon, op.portrait, ...(Object.values(op.rotations||{}))].filter(Boolean);
   }
   function preloadCriticalImages(){
-    const pack=stageVisualPacks[currentStageKey()] || {};
+    const key=currentStageKey();
+    const pack=stageVisualPacks[key] || {};
     preloadPaths([
       ...operatorCriticalAssetPaths(currentOperator()),
       mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal, mapArt.chest, mapArt.med,
       pack.terminal, pack.door, pack.exit, pack.prevPortal, pack.chest, pack.med,
-      ...Object.values(NPC_DEFS).map(n=>n.asset).slice(0,4)
+      ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset)
     ], {defer:false});
   }
   function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
     const immediate=!!opts.immediate;
-    preloadPaths(currentStageAssetPaths(key), {defer:!immediate, chunk:5});
+    preloadPaths(currentStageCriticalAssetPaths(key), {defer:!immediate, chunk:5});
+    setTimeout(()=>preloadPaths(currentStageDecorAssetPaths(key), {defer:true, chunk:2}), immediate ? 350 : 1500);
     const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
-    preloadPaths([
+    setTimeout(()=>preloadPaths([
       ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
       ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
-    ], {defer:true, chunk:3});
+    ], {defer:true, chunk:2}), 900);
   }
   function preloadLockdownAssets(){
     preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
@@ -4826,11 +4836,11 @@
   function scheduleBackgroundAssetPreload(){
     if(backgroundAssetPreloadStarted) return;
     backgroundAssetPreloadStarted=true;
-    const start=()=>loadImages({defer:true, chunk:2});
+    const start=()=>loadImages({defer:true, chunk:1});
     setTimeout(()=>{
       if('requestIdleCallback' in window) requestIdleCallback(start, {timeout:2600});
       else start();
-    }, 5200);
+    }, 7600);
   }
   function loadImages(opts={}){
     const paths = [
