@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '243';
-  const BUILD_TITLE = 'SPRITE LOAD PRIORITY FIX';
+  const BUILD_VERSION = '244';
+  const BUILD_TITLE = 'CURRENT LEVEL ASSET LOAD PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3333,7 +3333,7 @@
       return false;
     }
     const parsed=parseStageMap(key);
-    preloadCurrentStageAssets(key, {immediate:true});
+    preloadCurrentStageAssets(key, {loadAdjacent:true});
     state.currentStage=key;
     clearNpcStagePlacementCache();
     state.mapVersion=MAP_VERSION;
@@ -4750,19 +4750,11 @@
   }
   function ensureImageCached(path, opts={}){
     if(!path) return null;
-    if(images[path]){
-      if(opts.critical){
-        try{ images[path].loading = 'eager'; images[path].fetchPriority = 'high'; }catch(err){}
-      }
-      return images[path];
-    }
+    if(images[path]) return images[path];
     const im = new Image();
-    const critical = !!opts.critical;
-    // V243: visible sprites must not use lazy image priority. The V242 deferred queue helped the intro,
-    // but player/NPC/enemy images could sit in fallback shape mode too long during gameplay.
-    try{ im.loading = critical ? 'eager' : 'lazy'; }catch(err){}
-    try{ im.fetchPriority = critical ? 'high' : 'auto'; }catch(err){}
-    im.decoding = critical ? 'auto' : 'async';
+    const eager = !!opts.eager;
+    im.loading = eager ? 'eager' : 'lazy';
+    im.decoding = eager ? 'sync' : 'async';
     im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
@@ -4823,22 +4815,19 @@
     });
     requestDeferredImagePump();
   }
-  function preloadPaths(paths, {defer=false, chunk=8, critical=false}={}){
+  function preloadPaths(paths, {defer=false, chunk=8, eager=false}={}){
     const list=[...new Set((paths||[]).filter(Boolean))].filter(path=>!images[path]);
     if(!list.length) return;
-    if(!defer){ list.forEach(path=>ensureImageCached(path, {critical})); return; }
+    if(!defer){ list.forEach(path=>ensureImageCached(path, {eager})); return; }
     queueDeferredImages(list, chunk);
   }
   function currentStageCriticalAssetPaths(key=currentStageKey()){
     const pack=stageVisualPacks[key] || {};
-    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
     return [
       mapArt.chest, mapArt.med, mapArt.lore, mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal,
       pack.chest, pack.med, pack.lore, pack.terminal, pack.door, pack.exit, pack.prevPortal,
       ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset),
       ...operatorAssetPaths(currentOperator()),
-      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
-      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)]),
       'assets/items/memory_core.png'
     ].filter(Boolean);
   }
@@ -4853,18 +4842,40 @@
   function currentStageAssetPaths(key=currentStageKey()){
     return [...currentStageCriticalAssetPaths(key), ...currentStageDecorAssetPaths(key)].filter(Boolean);
   }
+  function currentStageEnemyAssetPaths(key=currentStageKey()){
+    const idx=Math.max(0, Object.keys(STAGE_DEFS).indexOf(key));
+    return [
+      ...importedAnomalyRoster.slice(idx*4, idx*4+8).flatMap(c=>[c.battle, iconPathFor(c)]),
+      ...importedBossRoster.slice(idx, idx+2).flatMap(c=>[c.battle, iconPathFor(c)])
+    ].filter(Boolean);
+  }
   function operatorCriticalAssetPaths(op=currentOperator()){
     return [op.mapSprite, op.icon, op.portrait, ...(Object.values(op.rotations||{}))].filter(Boolean);
   }
-  function preloadCriticalImages(key=currentStageKey()){
-    // V243: force all visible gameplay sprites/assets for the active stage to eager/high priority.
-    preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, critical:true});
+  function preloadCriticalImages(){
+    const key=currentStageKey();
+    const pack=stageVisualPacks[key] || {};
+    preloadPaths([
+      ...operatorCriticalAssetPaths(currentOperator()),
+      mapArt.terminal, mapArt.door, mapArt.exit, mapArt.prevPortal, mapArt.chest, mapArt.med,
+      pack.terminal, pack.door, pack.exit, pack.prevPortal, pack.chest, pack.med,
+      ...Object.values(NPC_DEFS).filter(n=>n.stages?.[key]).map(n=>n.asset)
+    ], {defer:false, eager:true});
   }
   function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
-    const immediate=!!opts.immediate;
-    // V243: stage-critical sprites always load immediately; only decorative scenery is deferred.
-    preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, critical:true});
-    setTimeout(()=>preloadPaths(currentStageDecorAssetPaths(key), {defer:true, chunk:2}), immediate ? 350 : 1500);
+    // v244: load the full current-level visual set immediately. Only later levels stay deferred.
+    // This keeps the intro lighter, but prevents in-map sprites/props from falling back to boxes.
+    const fullCurrentLevel=[
+      ...currentStageAssetPaths(key),
+      ...currentStageEnemyAssetPaths(key)
+    ];
+    preloadPaths(fullCurrentLevel, {defer:false, eager:true});
+    if(opts.loadAdjacent){
+      const keys=Object.keys(STAGE_DEFS);
+      const idx=Math.max(0, keys.indexOf(key));
+      const next=keys[idx+1];
+      if(next) setTimeout(()=>preloadPaths(currentStageCriticalAssetPaths(next), {defer:true, chunk:2}), 1800);
+    }
   }
   function preloadLockdownAssets(){
     preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
@@ -5688,7 +5699,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
-    preloadCriticalImages(currentStageKey()); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
+    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {loadAdjacent:true}); setTimeout(preloadLockdownAssets, 1800);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
@@ -8698,7 +8709,7 @@
       const drawW=compact?44:(m.size||40), drawH=drawW;
       ctx.fillStyle='rgba(0,0,0,.55)';
       ctx.beginPath(); ctx.ellipse(x,y+Math.floor(drawH*.43),drawW*.42,6,0,0,Math.PI*2); ctx.fill();
-      const im=ensureImageCached(m.icon || m.img, {critical:true}) || ensureImageCached(m.img, {critical:true});
+      const im=ensureImageCached(m.icon || m.img) || ensureImageCached(m.img);
       if(im && im.complete && im.naturalWidth){
         ctx.save();
         ctx.shadowColor='rgba(255,48,72,.70)';
@@ -8759,7 +8770,7 @@
         p.trail.forEach((t,i)=>{ const tx=t.x*TILE, ty=t.y*TILE; if(i===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty); }); ctx.stroke(); ctx.globalAlpha=1;
       }
       const asset=p.assetPath || lockdownProjectileAsset(p.assetIndex||p.kind||0).path;
-      const im=ensureImageCached(asset, {critical:true});
+      const im=ensureImageCached(asset);
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(angle);
@@ -8845,7 +8856,7 @@
 
   function drawPlayerSprite(x,y){
     const spritePath = currentOperatorMapSpriteForFacing(state?.player?.facing || 'down');
-    const im = ensureImageCached(spritePath, {critical:true}) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite, {critical:true});
+    const im = ensureImageCached(spritePath) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite);
     const lockdownActive = !!state.rogueEvent?.active;
     // v130: same map footprint as NPCs and monsters.
     const drawW = MAP_ENTITY_W;
