@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '245';
-  const BUILD_TITLE = 'CURRENT MAP ASSET EAGER LOAD FIX';
+  const BUILD_VERSION = '246';
+  const BUILD_TITLE = 'DRAW-TIME ASSET LOAD FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1221,7 +1221,7 @@
   }
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
-    const im = images[npc.asset];
+    const im = ensureImageCached(npc.asset, {eager:true}) || images[npc.asset];
     const drawW = MAP_ENTITY_W;
     const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
@@ -2102,7 +2102,7 @@
 
   function imgFor(path){ return images[path]; }
   function drawAsset(path,x,y,w,h,anchorBottom=false){
-    const im=imgFor(path);
+    const im=path ? (ensureImageCached(path, {eager: uiState?.mode === 'game' || uiState?.mode === 'pause'}) || imgFor(path)) : null;
     if(im && im.complete && im.naturalWidth){
       const dx = anchorBottom ? x + (TILE-w)/2 : x + (TILE-w)/2;
       const dy = anchorBottom ? y + TILE - h + 5 : y + (TILE-h)/2;
@@ -2301,7 +2301,9 @@
   }
   function getMapCreatureImage(code, x, y){
     const def = getEncounterDef(code, x, y);
-    return images[def.icon] || images[def.img];
+    const icon = def.icon ? ensureImageCached(def.icon, {eager:true}) : null;
+    const img = def.img ? ensureImageCached(def.img, {eager:true}) : null;
+    return icon || images[def.icon] || img || images[def.img];
   }
   const attacks = [
     {name:'Vector Slash', dmg:13, ep:0, text:'Vyra carves a cyan vector through the target.'},
@@ -5710,7 +5712,7 @@
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
     preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
-    renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
+    renderAll(); setTimeout(requestImageRenderRefresh, 220); setTimeout(requestImageRenderRefresh, 700); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
   }
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
@@ -7733,6 +7735,7 @@
     document.body.classList.add('game-active','fullscreen-mode');
     document.body.dataset.stage=stageDef().key;
     try{ ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); }catch(err){ console.warn('[AV] mobile setup skipped', err); }
+    try{ preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1400); }catch(err){ console.warn('[AV] current-stage preload skipped', err); }
     const app=document.getElementById('app');
     if(app) app.classList.remove('hidden');
     try{ canvas && canvas.focus && canvas.focus({preventScroll:true}); }catch(err){}
@@ -7746,7 +7749,7 @@
       try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
-    try{ renderAll(); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
+    try{ renderAll(); setTimeout(requestImageRenderRefresh, 220); setTimeout(requestImageRenderRefresh, 700); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
     try{ unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); }catch(err){ console.warn('[AV] audio/radio skipped', err); }
     try{ save(true); }catch(err){}
     return true;
@@ -8953,7 +8956,7 @@
     ctx.shadowColor=highlight;
     ctx.shadowBlur=near?18:10;
     const asset=trainingObjectAssetForLabel(node.baseLabel || node.label);
-    const im=asset && images[asset];
+    const im=asset && (ensureImageCached(asset, {eager:true}) || images[asset]);
 
     if(im && im.complete && im.naturalWidth){
       const oldSmooth=ctx.imageSmoothingEnabled;
