@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '257';
-  const BUILD_TITLE = 'NPC ROAMING CONTACT PASS';
+  const BUILD_VERSION = '258';
+  const BUILD_TITLE = 'FULL MAP NPC ROAM PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1149,19 +1149,36 @@
   }
   const npcStagePlacementCache = new Map();
   const npcRoamPositions = new Map();
-  const NPC_ROAM_RADIUS = 5;
-  const NPC_ROAM_STEP_MS = 1900;
-  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v257:${Object.keys(NPC_DEFS).length}`; }
+  const NPC_ROAM_STEP_MS = 2100;
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v258:${Object.keys(NPC_DEFS).length}`; }
   function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
-  function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); }
-  function npcRoamTargetSafe(pos,home,key=currentStageKey(),used=null){
-    if(!pos || !home) return false;
+  const npcRoamTargets = new Map();
+  function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); npcRoamTargets.clear(); }
+  function npcRoamTargetSafe(pos,home=null,key=currentStageKey(),used=null){
+    if(!pos) return false;
     const x=Math.floor(Number(pos.x)), y=Math.floor(Number(pos.y));
     if(used?.has(`${x},${y}`)) return false;
-    if(npcChebDistance({x,y}, home) > NPC_ROAM_RADIUS) return false;
     if(!npcTileSafeAt(x,y,key)) return false;
     if(!npcRouteClearAt(x,y,key)) return false;
+    const spawn=npcRawSpawnForKey(key);
+    if(npcChebDistance({x,y}, spawn) < 5) return false;
     return true;
+  }
+  function npcRandomRoamTile(key=currentStageKey(),used=null){
+    try{
+      const parsed=parseStageMap(key);
+      const choices=[];
+      const px=state?.player?.x, py=state?.player?.y;
+      for(let y=1;y<(parsed.map?.length||0)-1;y++){
+        for(let x=1;x<(parsed.map[y]?.length||0)-1;x++){
+          if(!npcRoamTargetSafe({x,y},null,key,used)) continue;
+          if(Number.isFinite(px) && Number.isFinite(py) && npcChebDistance({x,y},{x:px,y:py}) < 4) continue;
+          choices.push({x,y});
+        }
+      }
+      if(!choices.length) return null;
+      return choices[Math.floor(Math.random()*choices.length)];
+    }catch(err){ return null; }
   }
   function applyNpcRoamPositions(homes,key=currentStageKey()){
     return (homes||[]).map(n=>{
@@ -1209,13 +1226,35 @@
       homes.forEach(homeNpc=>{
         const home={x:homeNpc.homeX ?? homeNpc.x, y:homeNpc.homeY ?? homeNpc.y};
         const rKey=npcRoamKey(homeNpc,key);
-        const current=npcRoamPositions.get(rKey) || home;
+        let current=npcRoamPositions.get(rKey);
+        if(!current || !npcRoamTargetSafe(current,null,key,used)){
+          // V258: spread contacts across the whole playable level instead of pinning
+          // them to a tiny home radius. They remain walkthrough, so this is visual/life only.
+          current=npcRandomRoamTile(key,used) || home;
+          npcRoamPositions.set(rKey,current);
+          moved=true;
+        }
+        let target=npcRoamTargets.get(rKey);
+        if(force || !target || !npcRoamTargetSafe(target,null,key) || npcChebDistance(current,target)<=1 || Math.random()<0.08){
+          target=npcRandomRoamTile(key,used) || home;
+          npcRoamTargets.set(rKey,target);
+        }
         const options=dirs.map(([dx,dy])=>({x:Math.floor(current.x)+dx,y:Math.floor(current.y)+dy}))
-          .filter(p=>npcRoamTargetSafe(p,home,key,used));
-        if(!options.length){ npcRoamPositions.set(rKey, home); used.add(`${home.x},${home.y}`); return; }
-        // Weighted pause: NPCs usually stand still, then shuffle one tile at a time.
-        let pick=options[Math.floor(Math.random()*options.length)];
-        if(!force && Math.random()<0.55 && npcRoamTargetSafe(current,home,key,used)) pick={x:Math.floor(current.x),y:Math.floor(current.y)};
+          .filter(p=>npcRoamTargetSafe(p,null,key,used));
+        if(!options.length){
+          const reset=npcRandomRoamTile(key,used) || home;
+          npcRoamPositions.set(rKey, reset);
+          used.add(`${reset.x},${reset.y}`);
+          moved=true;
+          return;
+        }
+        let pick=current;
+        if(!force && Math.random()<0.22 && npcRoamTargetSafe(current,null,key,used)){
+          pick={x:Math.floor(current.x),y:Math.floor(current.y)};
+        }else{
+          options.sort((a,b)=>(Math.abs(a.x-target.x)+Math.abs(a.y-target.y))-(Math.abs(b.x-target.x)+Math.abs(b.y-target.y)) || Math.random()-0.5);
+          pick=options[0];
+        }
         used.add(`${pick.x},${pick.y}`);
         if(pick.x !== current.x || pick.y !== current.y) moved=true;
         npcRoamPositions.set(rKey,pick);
