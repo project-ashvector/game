@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '262';
-  const BUILD_TITLE = 'TUTORIAL TIP CLEANUP PASS';
+  const BUILD_VERSION = '263';
+  const BUILD_TITLE = 'NPC ROAM SMOOTHNESS PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1150,7 +1150,7 @@
   }
   const npcStagePlacementCache = new Map();
   const npcRoamPositions = new Map();
-  const NPC_ROAM_STEP_MS = 5600;
+  const NPC_ROAM_STEP_MS = 7200;
   const NPC_MIN_ROOM_SEPARATION = 12;
   const NPC_MIN_ROAM_SEPARATION = 8;
   function npcUsedTilesToList(used){
@@ -1171,7 +1171,7 @@
     if(!pts.length) return 24;
     return Math.min(...pts.map(p=>npcChebDistance({x,y},p)));
   }
-  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v261-one-npc-per-room:${Object.keys(NPC_DEFS).length}`; }
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v263-roam-smooth-one-room:${Object.keys(NPC_DEFS).length}`; }
   function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
   const npcRoamTargets = new Map();
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); npcRoamTargets.clear(); }
@@ -1305,7 +1305,7 @@
     return list;
   }
   function stageNpcs(key=currentStageKey()){
-    // V260: NPCs are spread so only one contact occupies a room/zone when possible.
+    // V263: NPCs are spread so only one contact occupies a room/zone when possible.
     // They only drift a little around their assigned room to avoid lag and visual crowding.
     return applyNpcRoamPositions(stageNpcHomes(key), key);
   }
@@ -1332,7 +1332,7 @@
           moved=true;
         }
         let target=npcRoamTargets.get(rKey);
-        if(force || !target || !npcRoamTargetSafe(target,home,key) || npcChebDistance(current,target)<=1 || Math.random()<0.18){
+        if(force || !target || !npcRoamTargetSafe(target,home,key) || npcChebDistance(current,target)<=1 || Math.random()<0.10){
           target=npcLocalRoamTile(home,key,used) || home;
           npcRoamTargets.set(rKey,target);
         }
@@ -1346,7 +1346,7 @@
         }
         let pick=current;
         // Mostly stay still. Movement is intentionally subtle to avoid map/menu lag.
-        if(!force && Math.random()<0.55 && npcRoamTargetSafe(current,home,key,used)){
+        if(!force && Math.random()<0.70 && npcRoamTargetSafe(current,home,key,used)){
           pick={x:Math.floor(current.x),y:Math.floor(current.y)};
         }else{
           options.sort((a,b)=>(Math.abs(a.x-target.x)+Math.abs(a.y-target.y))-(Math.abs(b.x-target.x)+Math.abs(b.y-target.y)) || Math.random()-0.5);
