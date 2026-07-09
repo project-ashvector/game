@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '253';
-  const BUILD_TITLE = 'NPC WALKTHROUGH SPRITE FIX PASS';
+  const BUILD_VERSION = '254';
+  const BUILD_TITLE = 'NPC CONTACT POLISH PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1251,7 +1251,7 @@
     if(npc){ talkToNpc(npc); return true; }
     const node=nearbyTrainingNode();
     if(node) return collectTrainingNode(node);
-    toast('No survivor or training object close enough. Move close to the NPC and press E.');
+    toast('No survivor or training object close enough. Move close and press E / A / Talk.');
     return false;
   }
   function drawNpc(npc){
@@ -1293,11 +1293,38 @@
       ctx.fillStyle='#b9ff7c';
       ctx.font='10px monospace';
       ctx.textAlign='center';
-      ctx.fillText('PRESS E', x+TILE/2, labelY+10);
+      ctx.fillText('E / A', x+TILE/2, labelY+10);
     }
-    ctx.strokeStyle=near?'rgba(148,255,98,.88)':'rgba(148,255,98,.38)';
+    // V254: make field contacts readable without turning them into blockers.
+    // Nameplates and ready/claimed rings help players know who they are walking past,
+    // especially after NPCs were changed into walkthrough contacts.
+    const rewardKey = npcRewardKey(npc);
+    const claimed = !!state?.npcRewards?.[rewardKey];
+    const isSpecial = npc.id === 'fermilat' || npc.id === 'metallik';
+    const labelText = String(npc.name || npc.id || 'Contact').slice(0, 18).toUpperCase();
+    const labelNear = near || npcChebDistance(npc, state?.player || {x:-999,y:-999}) <= 7 || isSpecial;
+    if(labelNear){
+      const nameW=Math.max(78, Math.min(142, labelText.length*7+18));
+      const nameX=x+(TILE-nameW)/2;
+      const nameY=dy-15;
+      ctx.fillStyle=near?'rgba(8,12,14,.9)':'rgba(8,12,14,.66)';
+      ctx.fillRect(nameX,nameY,nameW,13);
+      ctx.strokeStyle=claimed?'rgba(148,178,164,.55)':'rgba(148,255,98,.68)';
+      ctx.strokeRect(nameX+.5,nameY+.5,nameW-1,12);
+      ctx.fillStyle=claimed?'#a8b5ad':'#b9ff7c';
+      ctx.font='9px monospace';
+      ctx.textAlign='center';
+      ctx.fillText(labelText, x+TILE/2, nameY+9);
+    }
+    ctx.strokeStyle=near?'rgba(148,255,98,.88)':(claimed?'rgba(148,178,164,.28)':'rgba(148,255,98,.38)');
     ctx.lineWidth=near?2:1;
     ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
+    if(!claimed){
+      ctx.strokeStyle='rgba(148,255,98,.34)';
+      ctx.beginPath();
+      ctx.arc(x+TILE/2,y+TILE-6, near?22:18,0,Math.PI*2);
+      ctx.stroke();
+    }
     ctx.restore();
   }
   function drawNpcs(){
