@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '259';
-  const BUILD_TITLE = 'ROOM NPC ROAM BALANCE PASS';
+  const BUILD_VERSION = '260';
+  const BUILD_TITLE = 'ONE NPC PER ROOM PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1073,11 +1073,11 @@
     f001:{
       // V253: park F-001 field contacts in side pockets, not the central route.
       // NPCs are also walkthrough now, but these coords keep the art out of entry lanes.
-      scavenger:{x:9,y:20},
-      medic:{x:20,y:36},
-      warden:{x:18,y:37},
-      metallik:{x:10,y:33},
-      fermilat:{x:21,y:35}
+      scavenger:{x:8,y:18},
+      medic:{x:48,y:30},
+      warden:{x:24,y:38},
+      metallik:{x:13,y:10},
+      fermilat:{x:39,y:20}
     }
   };
   function npcChebDistance(a,b){ return Math.max(Math.abs((a?.x||0)-(b?.x||0)), Math.abs((a?.y||0)-(b?.y||0))); }
@@ -1118,6 +1118,7 @@
     if(!npcTileSafeAt(x,y,key)) return false;
     if(!npcRouteClearAt(x,y,key)) return false;
     if(used?.has(`${x},${y}`)) return false;
+    if(!npcFarEnoughFromUsed(x,y,used,NPC_MIN_ROOM_SEPARATION)) return false;
     const spawn=npcRawSpawnForKey(key);
     return npcChebDistance({x,y}, spawn) >= NPC_MIN_SPAWN_DISTANCE;
   }
@@ -1149,8 +1150,28 @@
   }
   const npcStagePlacementCache = new Map();
   const npcRoamPositions = new Map();
-  const NPC_ROAM_STEP_MS = 4800;
-  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v259-room-roam:${Object.keys(NPC_DEFS).length}`; }
+  const NPC_ROAM_STEP_MS = 5600;
+  const NPC_MIN_ROOM_SEPARATION = 12;
+  const NPC_MIN_ROAM_SEPARATION = 8;
+  function npcUsedTilesToList(used){
+    if(!used || typeof used.forEach !== 'function') return [];
+    const out=[];
+    used.forEach(k=>{
+      const parts=String(k).split(',');
+      const x=Number(parts[0]), y=Number(parts[1]);
+      if(Number.isFinite(x) && Number.isFinite(y)) out.push({x,y});
+    });
+    return out;
+  }
+  function npcFarEnoughFromUsed(x,y,used,minDist=NPC_MIN_ROOM_SEPARATION){
+    return npcUsedTilesToList(used).every(p=>npcChebDistance({x,y},p) >= minDist);
+  }
+  function functionNpcUnusedDistanceScore(x,y,used){
+    const pts=npcUsedTilesToList(used);
+    if(!pts.length) return 24;
+    return Math.min(...pts.map(p=>npcChebDistance({x,y},p)));
+  }
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v260-one-npc-per-room:${Object.keys(NPC_DEFS).length}`; }
   function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
   const npcRoamTargets = new Map();
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); npcRoamTargets.clear(); }
@@ -1158,6 +1179,7 @@
     if(!pos) return false;
     const x=Math.floor(Number(pos.x)), y=Math.floor(Number(pos.y));
     if(used?.has(`${x},${y}`)) return false;
+    if(!npcFarEnoughFromUsed(x,y,used,NPC_MIN_ROAM_SEPARATION)) return false;
     if(!npcTileSafeAt(x,y,key)) return false;
     if(!npcRouteClearAt(x,y,key)) return false;
     const spawn=npcRawSpawnForKey(key);
@@ -1218,7 +1240,8 @@
         if(!npcPlacementSafe(t,key,used)) continue;
         const spawnDist=npcChebDistance(t,spawn);
         if(spawnDist < NPC_MIN_SPAWN_DISTANCE) continue;
-        candidates.push({...t, roomId:room.id, score:Math.abs(t.x-base.x)+Math.abs(t.y-base.y) - Math.min(25,spawnDist)*0.2 - Math.min(12,room.size)*0.1});
+        const contactDist=functionNpcUnusedDistanceScore(t.x,t.y,used);
+        candidates.push({...t, roomId:room.id, score:Math.abs(t.x-base.x)+Math.abs(t.y-base.y) - Math.min(25,spawnDist)*0.2 - Math.min(12,room.size)*0.1 - Math.min(20,contactDist)*0.45});
       }
     }
     if(candidates.length){
@@ -1282,8 +1305,8 @@
     return list;
   }
   function stageNpcs(key=currentStageKey()){
-    // V259: NPCs are spread by room/zone, then only drift a few tiles around that room.
-    // This keeps the map alive without the lag from full-map roaming/path searching.
+    // V260: NPCs are spread so only one contact occupies a room/zone when possible.
+    // They only drift a little around their assigned room to avoid lag and visual crowding.
     return applyNpcRoamPositions(stageNpcHomes(key), key);
   }
   function updateNpcRoaming(force=false){
