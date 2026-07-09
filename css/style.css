@@ -3267,3 +3267,39 @@ body.game-paused .mobile-pause-card::before{
     max-height:100%!important;
   }
 }
+
+
+/* V275: character unlock roadmap polish. */
+.character-unlock-summary{
+  border:1px solid rgba(0,217,255,.28)!important;
+  border-radius:14px!important;
+  background:rgba(0,0,0,.28)!important;
+  padding:10px 12px!important;
+  display:grid!important;
+  gap:4px!important;
+  margin-bottom:8px!important;
+}
+.character-unlock-summary b{color:#fff!important;letter-spacing:.08em;text-transform:uppercase!important;}
+.character-unlock-summary span{color:#9fb7c4!important;font-size:12px!important;line-height:1.35!important;}
+.character-roadmap-panel{
+  border:1px solid rgba(112,215,255,.28)!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(0,217,255,.09),rgba(0,0,0,.25))!important;
+  padding:12px!important;
+  display:grid!important;
+  gap:10px!important;
+}
+.character-roadmap-panel h3{margin:0!important;color:#fff!important;}
+.character-roadmap-steps{display:grid!important;gap:8px!important;}
+.character-roadmap-steps div{
+  display:grid!important;
+  grid-template-columns:42px 1fr!important;
+  gap:8px!important;
+  align-items:start!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:12px!important;
+  background:rgba(0,0,0,.22)!important;
+  padding:8px!important;
+}
+.character-roadmap-steps b{color:#ffe36e!important;text-align:center!important;}
+.character-roadmap-steps span{color:#cfe6ef!important;line-height:1.35!important;}

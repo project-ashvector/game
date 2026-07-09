@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '274';
-  const BUILD_TITLE = 'CHARACTER SCROLL LOCK FIX PASS';
+  const BUILD_VERSION = '275';
+  const BUILD_TITLE = 'CHARACTER UNLOCK ROADMAP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4921,6 +4921,29 @@
   function operatorShardCost(id){ return Number(OPERATOR_DEFS[id]?.shardCost || 0); }
   function ownedOperatorShards(id){ ensureCharacterState(); return Number(state.inventory?.[operatorShardName(id)] || 0); }
   function operatorUnlockProgress(id){ const cost=operatorShardCost(id); const owned=ownedOperatorShards(id); return {owned,cost,needed:Math.max(0,cost-owned),unlocked:operatorUnlocked(id)}; }
+  function operatorUnlockRoadmapHtml(id){
+    const op=OPERATOR_DEFS[id];
+    if(!op) return '';
+    const progress=operatorUnlockProgress(id);
+    const pct=progress.cost ? Math.max(0,Math.min(100,Math.round((progress.owned/progress.cost)*100))) : (progress.unlocked?100:0);
+    const bossHint = op.unlockStage ? `Clear ${safeHtml(String(op.unlockStage).toUpperCase())} routes and hunt boss cores for stronger shard chances.` : 'Boss fights have the best chance to drop character shards.';
+    const steps = progress.unlocked
+      ? [['Complete','Character unlocked and playable.'],['Next','Level this operator by playing and earning Operator XP.']]
+      : [
+          ['1','Hunt anomalies and bosses for rare shard drops.'],
+          ['2',`Collect ${progress.cost} ${safeHtml(operatorShardName(id))}.`],
+          ['3',bossHint],
+          ['4','Use Buy Now later if a store link is attached to this character.']
+        ];
+    return `<section class="character-roadmap-panel"><div class="record-kicker">UNLOCK ROADMAP</div><h3>${safeHtml(op.displayName)} Progress</h3><div class="statrow"><span>${progress.unlocked?'Unlocked':'Locked'} // ${progress.owned}/${progress.cost||0} shards</span><span>${pct}%</span></div><div class="bar xp"><span style="width:${pct}%"></span></div><div class="character-roadmap-steps">${steps.map(([k,v])=>`<div><b>${safeHtml(k)}</b><span>${v}</span></div>`).join('')}</div><p class="menu-info">You can inspect this file before unlock. Only Play As is locked until recruitment is complete.</p></section>`;
+  }
+  function characterUnlockSummaryHtml(){
+    const ops=Object.values(OPERATOR_DEFS);
+    const unlocked=ops.filter(op=>operatorUnlocked(op.id)).length;
+    const next=ops.filter(op=>!operatorUnlocked(op.id)).sort((a,b)=>operatorUnlockProgress(a.id).needed-operatorUnlockProgress(b.id).needed)[0];
+    const nextLine=next ? `${safeHtml(next.displayName)} needs ${operatorUnlockProgress(next.id).needed} more shards` : 'All character files unlocked';
+    return `<section class="character-unlock-summary"><b>Roster ${unlocked}/${ops.length}</b><span>${nextLine}</span></section>`;
+  }
   function unlockOperator(id){
     ensureCharacterState();
     const op=OPERATOR_DEFS[id];
@@ -4989,7 +5012,7 @@
     const previousFileId=previousCard?.dataset?.characterFile || '';
     const previousScroll=Math.max(file.scrollTop||0, file.querySelector('.character-file-scroll')?.scrollTop||0);
     const preserveScroll=previousFileId===op.id && !selectedId;
-    list.innerHTML=Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
+    list.innerHTML=characterUnlockSummaryHtml()+Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
     const progress=operatorUnlockProgress(op.id);
     const locked=!progress.unlocked;
     const active=currentOperatorId()===op.id;
@@ -5003,7 +5026,7 @@
     const buyText = locked ? 'Buy Now' : 'View Upgrades';
     const buyHint = locked ? 'Want this operator faster? Use Buy Now from this file page.' : 'This operator is already unlocked.';
     const lockedNotice = locked ? `<div class="operator-level-card locked-file-notice"><b>LOCKED FILE VIEW</b><span>${unlockHint}</span><em>You can inspect this character file now. Only Play As is locked until enough shards are collected.</em></div>` : '';
-    file.innerHTML=`<div class="character-file-card" data-character-file="${safeHtml(op.id)}"><div class="character-file-scroll"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED FILE VIEW':active?'ACTIVE PLAYABLE':'UNLOCKED FILE VIEW'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><aside class="character-buy-panel"><b>${safeHtml(buyText)}</b><span>${safeHtml(buyHint)}</span><button class="buy-now-btn" onclick="window.AV&&window.AV.buyCharacterNow&&window.AV.buyCharacterNow('${safeHtml(op.id)}')">${safeHtml(buyText)}</button></aside><p class="operator-quote">${safeHtml(op.quote||'')}</p>${lockedNotice}<div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked / Viewable':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Unlock Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${safeHtml(op.id)}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${safeHtml(op.id)}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'This file is viewable before unlock. Collect shards to recruit and play as this operator.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div></div>`;
+    file.innerHTML=`<div class="character-file-card" data-character-file="${safeHtml(op.id)}"><div class="character-file-scroll"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED FILE VIEW':active?'ACTIVE PLAYABLE':'UNLOCKED FILE VIEW'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><aside class="character-buy-panel"><b>${safeHtml(buyText)}</b><span>${safeHtml(buyHint)}</span><button class="buy-now-btn" onclick="window.AV&&window.AV.buyCharacterNow&&window.AV.buyCharacterNow('${safeHtml(op.id)}')">${safeHtml(buyText)}</button></aside><p class="operator-quote">${safeHtml(op.quote||'')}</p>${lockedNotice}${operatorUnlockRoadmapHtml(op.id)}<div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked / Viewable':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Unlock Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${safeHtml(op.id)}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${safeHtml(op.id)}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'This file is viewable before unlock. Collect shards to recruit and play as this operator.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div></div>`;
     const safeSel=(window.CSS && CSS.escape) ? CSS.escape(op.id) : op.id.replace(/"/g,'\\"');
     const selectedCard=list.querySelector(`[data-character-card="${safeSel}"]`);
     if(selectedCard) selectedCard.classList.add('selected-file');
