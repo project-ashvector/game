@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '273';
-  const BUILD_TITLE = 'CHARACTER SCROLL BUY PASS';
+  const BUILD_VERSION = '274';
+  const BUILD_TITLE = 'CHARACTER SCROLL LOCK FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4982,6 +4982,13 @@
     const list=$('characterList');
     const file=$('characterFile');
     if(!list || !file) return;
+    // v274: character files can be long. Preserve the scroll position when the same
+    // file re-renders from controller focus, save refresh, or menu refresh so it no
+    // longer snaps back to the top while the player is reading stats/moves.
+    const previousCard=file.querySelector('[data-character-file]');
+    const previousFileId=previousCard?.dataset?.characterFile || '';
+    const previousScroll=Math.max(file.scrollTop||0, file.querySelector('.character-file-scroll')?.scrollTop||0);
+    const preserveScroll=previousFileId===op.id && !selectedId;
     list.innerHTML=Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
     const progress=operatorUnlockProgress(op.id);
     const locked=!progress.unlocked;
@@ -5003,6 +5010,24 @@
     const safeActive=(window.CSS && CSS.escape) ? CSS.escape(currentOperatorId()) : currentOperatorId().replace(/"/g,'\\"');
     const activeCard=list.querySelector(`[data-character-card="${safeActive}"]`);
     if(activeCard) activeCard.classList.add('active');
+    bindCharacterScrollContainment();
+    const restoreTarget=preserveScroll ? previousScroll : 0;
+    requestAnimationFrame(()=>{
+      file.scrollTop=restoreTarget;
+      const inner=file.querySelector('.character-file-scroll');
+      if(inner) inner.scrollTop=restoreTarget;
+    });
+  }
+  function bindCharacterScrollContainment(){
+    const overlay=$('characterOverlay');
+    if(!overlay || overlay.dataset.charScrollBound==='1') return;
+    overlay.dataset.charScrollBound='1';
+    const stopIfDetail=e=>{
+      if(e.target && e.target.closest && e.target.closest('#characterFile')) e.stopPropagation();
+    };
+    overlay.addEventListener('wheel', stopIfDetail, {passive:true});
+    overlay.addEventListener('touchmove', stopIfDetail, {passive:true});
+    overlay.addEventListener('scroll', stopIfDetail, true);
   }
   function buyCharacterNow(id){
     const op=OPERATOR_DEFS[id];
