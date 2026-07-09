@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '265';
-  const BUILD_TITLE = 'NPC NAV MARKER PASS';
+  const BUILD_VERSION = '266';
+  const BUILD_TITLE = '2.5D DEPTH VISUAL PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1507,16 +1507,13 @@
     const dx = x + (TILE-drawW)/2;
     const dy = y + TILE - drawH + 5;
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,.42)';
-    ctx.beginPath();
-    ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
-    ctx.fill();
+    drawDepthShadow(x+TILE/2, y+TILE-4, 17, 6, .42);
     ctx.shadowColor='#94ff62';
     ctx.shadowBlur=6;
     if(usableCanvasImage(im)){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(im, dx, dy, drawW, drawH);
+      drawImageDepth(im, dx, dy, drawW, drawH, y+TILE-4);
       ctx.imageSmoothingEnabled = oldSmooth;
     } else {
       ctx.fillStyle='#1c3b20'; ctx.fillRect(x+9,y+2,24,38);
@@ -2440,17 +2437,65 @@
     if(!path) return null;
     return images[path] || ensureImageCached(path, {eager:true});
   }
-  function drawAsset(path,x,y,w,h,anchorBottom=false){
+  function drawAsset(path,x,y,w,h,anchorBottom=false, opts={}){
     const im=imgFor(path);
+    const cx=x+TILE/2;
+    const footY=anchorBottom ? y+TILE-4 : y+TILE/2+Math.min(10,h*.2);
+    if(opts.shadow){ drawDepthShadow(cx, footY, opts.shadowRx||Math.max(10,w*.32), opts.shadowRy||Math.max(4,h*.10), opts.shadowAlpha||.30); }
+    if(opts.glow){ drawRadialGlow(cx, anchorBottom ? y+TILE-h*.55 : y+TILE/2, opts.glowRadius||Math.max(w,h)*.62, opts.glow); }
     if(im && im.complete && im.naturalWidth){
-      const dx = anchorBottom ? x + (TILE-w)/2 : x + (TILE-w)/2;
+      const dx = x + (TILE-w)/2;
       const dy = anchorBottom ? y + TILE - h + 5 : y + (TILE-h)/2;
-      ctx.drawImage(im, dx, dy, w, h);
+      if(opts.depth) drawImageDepth(im, dx, dy, w, h, footY, null);
+      else {
+        const oldSmooth=ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled=true;
+        ctx.drawImage(im, dx, dy, w, h);
+        ctx.imageSmoothingEnabled=oldSmooth;
+      }
       return true;
     }
     return false;
   }
   function pickAsset(list,tx,ty){ return list[Math.abs((tx*13 + ty*7) % list.length)]; }
+
+  // V266: 2.5D depth helpers. These are code-side visual upgrades only; no asset paths,
+  // collision, saves, NPC logic, portals, or combat rules are changed.
+  function drawDepthShadow(cx, footY, rx=16, ry=6, alpha=.38){
+    ctx.save();
+    ctx.fillStyle=`rgba(0,0,0,${alpha})`;
+    ctx.beginPath();
+    ctx.ellipse(cx, footY, rx, ry, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  function drawRadialGlow(cx, cy, radius=28, color='rgba(0,217,255,.34)'){
+    ctx.save();
+    const g=ctx.createRadialGradient(cx,cy,2,cx,cy,radius);
+    g.addColorStop(0,color);
+    g.addColorStop(.55,color.replace(/\.34\)|\.32\)|\.28\)|\.25\)/,'.12)'));
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.arc(cx,cy,radius,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+  function depthScaleForY(y){
+    const h=Math.max(1, mapHeight()*TILE);
+    return 0.96 + Math.max(0, Math.min(1, y/h))*0.08;
+  }
+  function drawImageDepth(im, dx, dy, w, h, footY, glowColor=null){
+    const scale=depthScaleForY(footY);
+    const dw=w*scale, dh=h*scale;
+    const ndx=dx+(w-dw)/2;
+    const ndy=dy+(h-dh);
+    if(glowColor) drawRadialGlow(ndx+dw/2, footY-18, Math.max(dw,dh)*.62, glowColor);
+    const oldSmooth=ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled=true;
+    ctx.drawImage(im, ndx, ndy, dw, dh);
+    ctx.imageSmoothingEnabled=oldSmooth;
+  }
 
   const ENCOUNTER_SLOTS = {
     f001: {
@@ -5064,7 +5109,7 @@
     try{ playerSpriteRuntime.lastGood=null; primeCurrentPlayerSprites(); }catch(err){}
   }
   let state = newGameState();
-  let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
+  let battle = null; let camera = {x:0,y:0,targetX:0,targetY:0,ready:false}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   let battleCommandIndex = 0;
   let preBattleCommandIndex = 0;
   const images = {};
@@ -9005,8 +9050,10 @@
     ctx.clearRect(0,0,VIEW_W,VIEW_H);
     const maxCamX=Math.max(0, mapWidth()*TILE - VIEW_W);
     const maxCamY=Math.max(0, mapHeight()*TILE - VIEW_H);
-    camera.x=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, maxCamX));
-    camera.y=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, maxCamY));
+    camera.targetX=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, maxCamX));
+    camera.targetY=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, maxCamY));
+    if(!camera.ready){ camera.x=camera.targetX; camera.y=camera.targetY; camera.ready=true; }
+    else { camera.x += (camera.targetX-camera.x)*0.28; camera.y += (camera.targetY-camera.y)*0.28; }
     ctx.save(); ctx.translate(-camera.x,-camera.y);
     for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
     if(state.rogueWarning?.active) drawLockdownSeals();
@@ -9271,16 +9318,13 @@
     const dx = x + (TILE-drawW)/2;
     const dy = y + TILE - drawH + 5;
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,.42)';
-    ctx.beginPath();
-    ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
-    ctx.fill();
+    drawDepthShadow(x+TILE/2, y+TILE-4, 17, 6, .42);
     ctx.shadowColor=lockdownActive ? 'rgba(112,215,255,.72)' : 'rgba(0,0,0,.35)';
     ctx.shadowBlur=lockdownActive ? 9 : 2;
     if(im && im.complete && im.naturalWidth){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
-      ctx.drawImage(im, dx, dy, drawW, drawH);
+      drawImageDepth(im, dx, dy, drawW, drawH, y+TILE-4);
       ctx.imageSmoothingEnabled = oldSmooth;
       if(lockdownActive){
         ctx.strokeStyle='rgba(200,245,255,.88)';
@@ -9313,7 +9357,7 @@
       const tile = tileAt(p.x,p.y);
       // Only draw decorative props on open floor so they never cover caches, NPCs, doors, or exits.
       if(tile !== '.') return;
-      drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true);
+      drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true,{shadow:true,depth:true,shadowAlpha:.22});
     });
   }
 
@@ -9442,19 +9486,19 @@
     drawPathOverlay(x,y,tx,ty,c);
 
     if(c==='C'){
-      if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true)){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
+      if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true,{shadow:true,depth:true})){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
       // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='S'){
-      if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,38,48,true)){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
+      if(!drawAsset((pack&&pack.terminal)||mapArt.terminal,x,y,38,48,true,{shadow:true,depth:true,glow:'rgba(0,217,255,.26)'})){ctx.fillStyle='#25567d';ctx.fillRect(x+8,y+6,26,30);ctx.fillStyle='#70d7ff';ctx.fillRect(x+13,y+12,16,8)}
       // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='H'){
-      if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,32,32,false)){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
+      if(!drawAsset((pack&&pack.med)||mapArt.med,x,y,32,32,false,{shadow:true,glow:'rgba(93,255,122,.18)'})){ctx.fillStyle='#216d45';ctx.fillRect(x+8,y+8,26,26);ctx.fillStyle='#fff';ctx.fillRect(x+18,y+12,6,18);ctx.fillRect(x+12,y+18,18,6)}
       // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='L'){
-      if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,32,44,true)){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
+      if(!drawAsset((pack&&pack.lore)||mapArt.lore,x,y,32,44,true,{shadow:true,depth:true,glow:'rgba(210,168,255,.20)'})){ctx.fillStyle='#4b316f';ctx.fillRect(x+11,y+8,20,28);ctx.fillStyle='#d2a8ff';ctx.fillRect(x+15,y+13,12,3);ctx.fillRect(x+15,y+20,12,3)}
       // v92: field letter rings are hidden; icons stay in-world and markers stay on the minimap only.
     }
     if(c==='E'||c==='B'){
@@ -9469,12 +9513,10 @@
       ctx.ellipse(x+TILE/2,y+TILE-4,16,6,0,0,Math.PI*2);
       ctx.fill();
       if(im && im.complete && im.naturalWidth){
+        drawRadialGlow(x+TILE/2, y+18, c==='B'?34:28, c==='B'?'rgba(255,48,72,.30)':'rgba(189,31,45,.22)');
         ctx.shadowColor = c==='B' ? '#ff3048' : '#bd1f2d';
         ctx.shadowBlur = c==='B' ? 10 : 7;
-        const oldSmooth = ctx.imageSmoothingEnabled;
-        ctx.imageSmoothingEnabled = true;
-        ctx.drawImage(im, dx, dy, drawW, drawH);
-        ctx.imageSmoothingEnabled = oldSmooth;
+        drawImageDepth(im, dx, dy, drawW, drawH, y+TILE-4);
       } else {
         ctx.fillStyle=c==='B'?'#72202b':'#5c4e41';ctx.beginPath();ctx.arc(x+TILE/2,y+TILE/2,c==='B'?16:15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ff3048';ctx.fillRect(x+13,y+16,6,4);ctx.fillRect(x+24,y+16,6,4);
       }
@@ -9482,15 +9524,15 @@
       // v92: field letter rings are hidden; anomaly/boss markers stay on the minimap only.
     }
     if(c==='D'){
-      if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,42,32,false)){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
+      if(!drawAsset((pack&&pack.door)||mapArt.door,x,y,42,32,false,{shadow:true})){ctx.fillStyle='#5a3422';ctx.fillRect(x+6,y+2,30,38);ctx.fillStyle='#e0b64b';ctx.fillRect(x+29,y+20,4,4)}
       // v92: field letter rings are hidden; door marker stays on the minimap only.
     }
     if(c==='R'){
-      if(!drawAsset(mapArt.prevPortal,x,y,46,46,true)){ctx.fillStyle='#70d7ff';ctx.beginPath();ctx.arc(x+TILE/2,y+TILE/2,17,0,Math.PI*2);ctx.fill();ctx.fillStyle='#050608';ctx.fillText('R',x+16,y+27)}
+      if(!drawAsset(mapArt.prevPortal,x,y,46,46,true,{shadow:true,depth:true,glow:'rgba(112,215,255,.32)',glowRadius:36})){ctx.fillStyle='#70d7ff';ctx.beginPath();ctx.arc(x+TILE/2,y+TILE/2,17,0,Math.PI*2);ctx.fill();ctx.fillStyle='#050608';ctx.fillText('R',x+16,y+27)}
       // v208: previous-level portal appears in the boss zone from F-002 onward.
     }
     if(c==='X'){
-      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,42,42,true)){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
+      if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,42,42,true,{shadow:true,depth:true,glow:'rgba(255,255,255,.25)',glowRadius:34})){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
       // v92: field letter rings are hidden; exit marker stays on the minimap only.
     }
   }
