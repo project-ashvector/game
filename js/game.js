@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '267';
-  const BUILD_TITLE = 'ATMOSPHERE FOG CLEANUP PASS';
+  const BUILD_VERSION = '268';
+  const BUILD_TITLE = 'WALL DEPTH LIGHTING PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2380,8 +2380,19 @@
   function drawWallBase(x,y,tx,ty){
     const pack = stageVisualPack();
     const edge = hasWalkableNeighbor(tx,ty);
-    ctx.fillStyle = (pack && pack.wallTint) || 'rgba(8,10,13,.96)';
+    const wallTint = (pack && pack.wallTint) || 'rgba(8,10,13,.96)';
+    ctx.fillStyle = wallTint;
     ctx.fillRect(x,y,TILE,TILE);
+
+    // v268: give wall blocks a cleaner 2.5D bevel without adding noisy moving lines.
+    // The map should read like layered rooms, not flat black squares.
+    const wallGrad = ctx.createLinearGradient(x, y, x, y + TILE);
+    wallGrad.addColorStop(0, 'rgba(255,255,255,.045)');
+    wallGrad.addColorStop(.45, 'rgba(255,255,255,.012)');
+    wallGrad.addColorStop(1, 'rgba(0,0,0,.34)');
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(x,y,TILE,TILE);
+
     const h=hashTile(tx,ty,7);
     if(!edge && (h%8===0)){
       ctx.fillStyle='rgba(255,255,255,.018)';
@@ -2389,20 +2400,27 @@
     }
     if(edge){
       const edgeColor=(pack && pack.wallEdge) || 'rgba(0,217,255,.18)';
-      ctx.strokeStyle=edgeColor;
-      ctx.lineWidth=2;
       const openN=tileAt(tx,ty-1) !== '#';
       const openS=tileAt(tx,ty+1) !== '#';
       const openW=tileAt(tx-1,ty) !== '#';
       const openE=tileAt(tx+1,ty) !== '#';
+
+      // Ambient-occlusion style shadows on floor-facing edges.
+      ctx.fillStyle='rgba(0,0,0,.28)';
+      if(openS) ctx.fillRect(x+2,y+TILE-7,TILE-4,7);
+      if(openE) ctx.fillRect(x+TILE-7,y+2,7,TILE-4);
+      ctx.fillStyle='rgba(255,255,255,.035)';
+      if(openN) ctx.fillRect(x+2,y+1,TILE-4,3);
+      if(openW) ctx.fillRect(x+1,y+2,3,TILE-4);
+
+      ctx.strokeStyle=edgeColor;
+      ctx.lineWidth=2;
       ctx.beginPath();
       if(openN){ ctx.moveTo(x+2,y+2); ctx.lineTo(x+TILE-2,y+2); }
       if(openS){ ctx.moveTo(x+2,y+TILE-2); ctx.lineTo(x+TILE-2,y+TILE-2); }
       if(openW){ ctx.moveTo(x+2,y+2); ctx.lineTo(x+2,y+TILE-2); }
       if(openE){ ctx.moveTo(x+TILE-2,y+2); ctx.lineTo(x+TILE-2,y+TILE-2); }
       ctx.stroke();
-      ctx.fillStyle='rgba(0,0,0,.18)';
-      ctx.fillRect(x,y+TILE-5,TILE,5);
     }
   }
   function drawInteractMarker(label,x,y,color='rgba(0,217,255,.9)'){
