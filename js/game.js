@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '263';
-  const BUILD_TITLE = 'NPC ROAM SMOOTHNESS PASS';
+  const BUILD_VERSION = '264';
+  const BUILD_TITLE = 'NPC PROXIMITY UI PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1483,7 +1483,7 @@
     toast('No survivor or training object close enough. Move close and press E / A / Talk.');
     return false;
   }
-  function drawNpc(npc){
+  function drawNpc(npc, focusedContact=false){
     const x = npc.x * TILE, y = npc.y * TILE;
     // V253: NPCs are canvas-drawn, so request their image at draw time.
     // Do not wait for background preload or they can stay as invisible/fallback boxes.
@@ -1533,7 +1533,9 @@
     // V261: declutter field contacts. Keep NPCs readable when the player is close,
     // but do not keep every special NPC label permanently open across the whole room.
     const contactDist = npcChebDistance(npc, state?.player || {x:-999,y:-999});
-    const labelNear = near || contactDist <= 5;
+    // V264: only the closest/active contact gets the stronger name/prompt treatment.
+    // This keeps one-NPC-per-room readable without filling the screen with labels.
+    const labelNear = focusedContact || near || contactDist <= 3;
     if(labelNear){
       const nameW=Math.max(78, Math.min(142, labelText.length*7+18));
       const nameX=x+(TILE-nameW)/2;
@@ -1547,11 +1549,12 @@
       ctx.textAlign='center';
       ctx.fillText(labelText, x+TILE/2, nameY+9);
     }
-    ctx.strokeStyle=near?'rgba(148,255,98,.88)':(claimed?'rgba(148,178,164,.20)':'rgba(148,255,98,.26)');
-    ctx.lineWidth=near?2:1;
-    ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
-    if(!claimed && contactDist <= 8){
-      ctx.strokeStyle='rgba(148,255,98,.28)';
+    const ringActive = focusedContact || near;
+    ctx.strokeStyle=ringActive?'rgba(148,255,98,.9)':(claimed?'rgba(148,178,164,.14)':'rgba(148,255,98,.16)');
+    ctx.lineWidth=ringActive?2:1;
+    if(ringActive || contactDist <= 4) ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
+    if(!claimed && ringActive){
+      ctx.strokeStyle='rgba(148,255,98,.32)';
       ctx.beginPath();
       ctx.arc(x+TILE/2,y+TILE-6, near?22:18,0,Math.PI*2);
       ctx.stroke();
@@ -1559,8 +1562,15 @@
     ctx.restore();
   }
   function drawNpcs(){
-    stageNpcs().forEach(npc=>{
-      try{ drawNpc(npc); }
+    const npcs=stageNpcs();
+    const focus=closestNpcForInteract(5);
+    // Draw farther NPCs first, then the focused/closest contact last so its prompt is readable.
+    npcs.sort((a,b)=>{
+      const ax=Math.abs((a.x||0)-(state?.player?.x||0))+Math.abs((a.y||0)-(state?.player?.y||0));
+      const bx=Math.abs((b.x||0)-(state?.player?.x||0))+Math.abs((b.y||0)-(state?.player?.y||0));
+      return bx-ax;
+    }).forEach(npc=>{
+      try{ drawNpc(npc, !!focus && npc.id===focus.id); }
       catch(err){
         console.warn('[AV NPC] draw skipped:', npc?.id, err);
       }
