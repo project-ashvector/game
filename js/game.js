@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '251';
-  const BUILD_TITLE = 'NPC INTERACTION FIX PASS';
+  const BUILD_VERSION = '252';
+  const BUILD_TITLE = 'NPC ROUTE CLEAR FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1029,13 +1029,17 @@
   // walls after map/tileset edits, and some were too close to the player spawn.
   // Resolve every NPC to a walkable floor tile away from spawn at draw/talk time.
   const NPC_MIN_SPAWN_DISTANCE = 15;
+  // V252: keep field contacts out of spawn, walls, and route chokepoints.
+  // The old F-001 Fermilat fallback pointed outside the map, so the safety resolver
+  // could shove him into the boss-entry lane. These hand-safe tiles park NPCs in
+  // open floor pockets while leaving doors, entries, boss routes, and main corridors clear.
   const NPC_SAFE_FALLBACKS = {
     f001:{
-      fermilat:{x:42,y:26},
-      scavenger:{x:22,y:19},
-      medic:{x:25,y:23},
-      warden:{x:31,y:21},
-      metallik:{x:35,y:24}
+      scavenger:{x:7,y:21},
+      medic:{x:13,y:22},
+      warden:{x:18,y:21},
+      metallik:{x:22,y:23},
+      fermilat:{x:25,y:22}
     }
   };
   function npcChebDistance(a,b){ return Math.max(Math.abs((a?.x||0)-(b?.x||0)), Math.abs((a?.y||0)-(b?.y||0))); }
@@ -1046,17 +1050,35 @@
     x=Math.floor(Number(x)); y=Math.floor(Number(y));
     if(!Number.isFinite(x) || !Number.isFinite(y)) return false;
     try{
-      if(typeof stageManualBlockAt === 'function' && stageManualBlockAt(x,y,key)) return false;
-      if(key===currentStageKey() && state?.map && typeof canStandAt === 'function') return canStandAt(x,y);
+      // Use the raw stage map for NPC placement instead of current canStandAt().
+      // canStandAt() can change while events/collisions update and made NPC placement unstable.
       const parsed=parseStageMap(key);
       const c=parsed.map?.[y]?.[x];
-      return ['.','P','S','C','H','L','E','B','X','R'].includes(c);
+      if(!['.','P','S','C','H','L'].includes(c)) return false;
+      if(typeof stageManualBlockAt === 'function' && stageManualBlockAt(x,y,key)) return false;
+      return true;
     }catch(err){ return false; }
+  }
+  function npcRouteClearAt(x,y,key=currentStageKey()){
+    // Do not park tall NPC art on top of important route markers or one-tile door lanes.
+    try{
+      const parsed=parseStageMap(key);
+      const important=new Set(['D','B','X','R','E','S','C','H','L']);
+      for(let yy=y-1; yy<=y+1; yy++){
+        for(let xx=x-1; xx<=x+1; xx++){
+          const c=parsed.map?.[yy]?.[xx];
+          if(important.has(c)) return false;
+        }
+      }
+      const openNeighbors=[[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>npcTileSafeAt(x+dx,y+dy,key)).length;
+      return openNeighbors >= 2;
+    }catch(err){ return true; }
   }
   function npcPlacementSafe(pos,key=currentStageKey(),used=null){
     if(!pos) return false;
     const x=Math.floor(Number(pos.x)), y=Math.floor(Number(pos.y));
     if(!npcTileSafeAt(x,y,key)) return false;
+    if(!npcRouteClearAt(x,y,key)) return false;
     if(used?.has(`${x},${y}`)) return false;
     const spawn=npcRawSpawnForKey(key);
     return npcChebDistance({x,y}, spawn) >= NPC_MIN_SPAWN_DISTANCE;
@@ -1091,7 +1113,7 @@
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); }
   function stageNpcs(key=currentStageKey()){
     // V239: NPC safety placement can scan the map. Cache per stage so every draw/frame does not redo that work.
-    const cacheKey = `${key}:${MAP_VERSION}:${Object.keys(NPC_DEFS).length}`;
+    const cacheKey = `${key}:${MAP_VERSION}:v252:${Object.keys(NPC_DEFS).length}`;
     const cached = npcStagePlacementCache.get(cacheKey);
     if(cached) return cached;
     const used=new Set();
@@ -1126,7 +1148,7 @@
   }
   function npcPlayerNearby(npc){
     if(!state?.player || !npc) return false;
-    return Math.max(Math.abs(npc.x-state.player.x), Math.abs(npc.y-state.player.y)) <= 2;
+    return Math.max(Math.abs(npc.x-state.player.x), Math.abs(npc.y-state.player.y)) <= 3;
   }
   function ensureNpcState(){
     if(!state) return;
@@ -1221,14 +1243,14 @@
   function interactNearbyNpc(){
     if(storyActive || battle) return false;
     if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('NPCs and training nodes'); return false; }
+    // V252: prefer NPCs over nearby loot/training nodes. Players expect Talk to talk
+    // when a tall NPC sprite is in front of them, even if a training object is also nearby.
+    const npc = closestNpcForInteract(4);
+    if(npc){ talkToNpc(npc); return true; }
     const node=nearbyTrainingNode();
     if(node) return collectTrainingNode(node);
-    // V251: NPCs are tall sprites and can look adjacent even when their tile origin is not exactly beside the player.
-    // Use a slightly wider nearest-NPC check so keyboard, mobile Talk, and controller Confirm reliably talk.
-    const npc = closestNpcForInteract(3);
-    if(!npc){ toast('No survivor or training object close enough. Move close to the NPC and press E.'); return false; }
-    talkToNpc(npc);
-    return true;
+    toast('No survivor or training object close enough. Move close to the NPC and press E.');
+    return false;
   }
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
