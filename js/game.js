@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '276';
-  const BUILD_TITLE = 'CHARACTER ROSTER FILTER PASS';
+  const BUILD_VERSION = '277';
+  const BUILD_TITLE = 'INVENTORY QUICK ACTIONS PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -10251,8 +10251,13 @@
     }).join('') || '<div class="invrow">No recovered assets yet.</div>';
     const fullRegistry=[...coreItemRegistry.map(normalizeItem), ...importedItemRegistry.map(normalizeItem)];
     const stats=combatStatBlock(); const epMax=stats.maxEp||state.player.maxEp; const equipmentPanel=renderEquipmentPanel(); const workshopPanel=renderWorkshopPanel(); const dropLogPanel=renderDropLogPanel(); const skillMini=['attack','strength','defense','health'].map(k=>{const d=state.skillData[k]; return `<div>${skillEmblem(k)}<span>${skillList[k].short} Lv ${d.level}</span></div>`}).join('');
+    const medQty = state.inventory['Med Patch'] || 0;
+    const cellQty = state.inventory['Vector Cell'] || 0;
+    const hpMissing = Math.max(0, stats.maxHp - state.player.hp);
+    const epMissing = Math.max(0, epMax - state.player.ep);
+    const quickActions = `<section class="inventory-quick-actions"><div><div class="record-kicker">QUICK ACTIONS</div><h3>Field Ready</h3><p>Use the common survival items without digging through the bag.</p></div><div class="inventory-quick-grid"><button onclick="window.AV.useMedPatch(); window.AV.renderInventoryDb();" ${medQty && hpMissing ? '' : 'disabled'}><b>Use Med Patch</b><span>${medQty} owned // ${hpMissing ? `${hpMissing} HP missing` : 'HP full'}</span></button><button onclick="window.AV.useVectorCell(); window.AV.renderInventoryDb();" ${cellQty && epMissing ? '' : 'disabled'}><b>Use Vector Cell</b><span>${cellQty} owned // ${epMissing ? `${epMissing} EP missing` : 'EP full'}</span></button><button onclick="window.AV.openOverlay('missionOverlay')"><b>Mission</b><span>Route, boss, NPCs</span></button><button onclick="window.AV.save(true); window.AV.renderInventoryDb();"><b>Manual Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'Create save'}</span></button></div></section>`;
     $('inventoryDatabaseList').innerHTML=`
-      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${epMax} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div>${bankInventoryHtml()}${equipmentPanel}${workshopPanel}${dropLogPanel}<div class="item-tools">
+      <div class="inventory-hero-panel"><div><div class="record-kicker">OPERATOR STATUS</div><h2>Vyra // Player Lv. ${state.player.level}</h2><p>HP ${state.player.hp}/${stats.maxHp} // EP ${state.player.ep}/${epMax} // Credits ${state.player.credits}</p><div class="record-grid"><div><b>ATK</b><span>${stats.atk}+${stats.strBonus}</span></div><div><b>DEF</b><span>${stats.def}</span></div><div><b>Stage</b><span>${stageDef().id}</span></div><div><b>Save</b><span>${state.lastSave?new Date(state.lastSave).toLocaleTimeString():'new'}</span></div></div></div><div class="inventory-skill-strip">${skillMini}</div></div>${quickActions}${bankInventoryHtml()}${equipmentPanel}${workshopPanel}${dropLogPanel}<div class="item-tools">
         <input id="itemSearch" placeholder="Search items / weapons / armor...">
         <div class="item-filter-row">
           <select id="itemFilter"><option value="all">All categories</option><option value="Weapon">Weapons</option><option value="Equipment">Equipment</option><option value="Consumable">Consumables</option><option value="Material">Materials</option><option value="Key Item">Key Items</option><option value="Archive">Archives</option><option value="Shard">Operator Shards</option></select>

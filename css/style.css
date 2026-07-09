@@ -3321,3 +3321,16 @@ body.game-paused .mobile-pause-card::before{
 #characterRosterSearch:focus{border-color:rgba(0,217,255,.85)!important;box-shadow:0 0 14px rgba(0,217,255,.14)!important;}
 .character-empty-state{border:1px dashed rgba(255,255,255,.22)!important;border-radius:16px!important;padding:14px!important;background:rgba(0,0,0,.22)!important;color:#9fb7c4!important;display:grid!important;gap:5px!important;}
 .character-empty-state b{color:#fff!important;}
+
+
+/* V277 Inventory Quick Actions */
+.inventory-quick-actions{display:grid;grid-template-columns:minmax(180px,.9fr) 1.6fr;gap:14px;align-items:stretch;margin:12px 0 16px;padding:14px;border:1px solid rgba(0,217,255,.24);border-radius:18px;background:linear-gradient(135deg,rgba(0,217,255,.10),rgba(0,0,0,.42));box-shadow:0 0 24px rgba(0,217,255,.08) inset}
+.inventory-quick-actions h3{margin:2px 0 4px;color:#fff;text-transform:uppercase;letter-spacing:.06em}
+.inventory-quick-actions p{margin:0;color:rgba(255,255,255,.70);font-size:13px;line-height:1.35}
+.inventory-quick-grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:10px}
+.inventory-quick-grid button{min-height:64px;border-radius:14px;text-align:left;display:flex;flex-direction:column;justify-content:center;gap:4px;white-space:normal;line-height:1.2;padding:10px 12px}
+.inventory-quick-grid button b{font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+.inventory-quick-grid button span{font-size:11px;color:rgba(255,255,255,.70)}
+.inventory-quick-grid button:disabled{opacity:.48;filter:saturate(.55);cursor:not-allowed}
+@media (max-width:900px){.inventory-quick-actions{grid-template-columns:1fr}.inventory-quick-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
+@media (max-width:560px){.inventory-quick-grid{grid-template-columns:1fr}.inventory-quick-grid button{min-height:54px}}
