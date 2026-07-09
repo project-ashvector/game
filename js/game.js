@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '249';
-  const BUILD_TITLE = 'PLAYER SPRITE CACHE FIX';
+  const BUILD_VERSION = '250';
+  const BUILD_TITLE = 'STABILITY CHECKPOINT PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -2101,7 +2101,10 @@
   }
 
   function imgFor(path){
-    // v248: canvas-drawn game assets cannot depend on browser lazy loading.
+    // v250 stability checkpoint:
+    // Keep canvas-drawn gameplay assets eager/reliable. Do not route player, NPC,
+    // current-level map props, anomalies, bosses, or Lockdown assets through
+    // browser lazy-loading again; canvas images must be requested by draw-time code.
     // If a map/object/enemy image is about to be drawn, request it immediately.
     if(!path) return null;
     return images[path] || ensureImageCached(path, {eager:true});
