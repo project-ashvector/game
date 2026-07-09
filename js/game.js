@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '269';
-  const BUILD_TITLE = 'INTERACTABLE POLISH PASS';
+  const BUILD_VERSION = '270';
+  const BUILD_TITLE = 'CHARACTER FILE VIEW PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4983,17 +4983,21 @@
     const prog=operatorProgressFor(op.id);
     const moves=defaultOperatorRpgDef(op.id).moves || attacks;
     const moveHtml=moves.map(m=>`<div><b>${safeHtml(m.name)}</b><span>${safeHtml(m.heal?'Heal / Sustain':(m.special?m.special.toUpperCase():'Damage'))} // ${m.ep?m.ep+' EP':'Free'} // ${safeHtml(m.text||'')}</span></div>`).join('');
-    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p><div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'Unlock with shards first, or use Playtest → Unlock All Characters.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div>`;
+    const unlockHint = locked ? `${progress.owned}/${progress.cost} ${safeHtml(operatorShardName(op.id))} collected // ${progress.needed} still needed` : 'Complete';
+    const lockedNotice = locked ? `<div class="operator-level-card locked-file-notice"><b>LOCKED FILE VIEW</b><span>${unlockHint}</span><em>You can inspect this character file now. Only Play As is locked until enough shards are collected.</em></div>` : '';
+    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED FILE VIEW':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p>${lockedNotice}<div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked / Viewable':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Unlock Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'This file is viewable before unlock. Collect shards to recruit and play as this operator.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div>`;
     const activeCard=list.querySelector(`[data-character-card="${CSS && CSS.escape ? CSS.escape(currentOperatorId()) : currentOperatorId()}"]`);
     if(activeCard) activeCard.classList.add('active');
   }
   function showCharacterFile(id){ renderCharacterMenuDb(id); }
   function characterCardClick(id){
-    if(operatorUnlocked(id)) return playAsOperator(id);
+    // v270: clicking a character card should always open that character's file first.
+    // Locked characters are viewable; only the Play As action stays locked.
     renderCharacterMenuDb(id);
+    const op=OPERATOR_DEFS[id];
     const progress=operatorUnlockProgress(id);
-    toast(`${OPERATOR_DEFS[id]?.displayName || 'Character'} locked: ${progress.owned}/${progress.cost} shards.`);
-    return false;
+    if(!progress.unlocked) toast(`${op?.displayName || 'Character'} file opened: ${progress.owned}/${progress.cost} shards.`);
+    return true;
   }
 
   function currentOperatorId(){
