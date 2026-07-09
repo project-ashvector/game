@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '258';
-  const BUILD_TITLE = 'FULL MAP NPC ROAM PASS';
+  const BUILD_VERSION = '259';
+  const BUILD_TITLE = 'ROOM NPC ROAM BALANCE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1149,8 +1149,8 @@
   }
   const npcStagePlacementCache = new Map();
   const npcRoamPositions = new Map();
-  const NPC_ROAM_STEP_MS = 2100;
-  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v258:${Object.keys(NPC_DEFS).length}`; }
+  const NPC_ROAM_STEP_MS = 4800;
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v259-room-roam:${Object.keys(NPC_DEFS).length}`; }
   function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
   const npcRoamTargets = new Map();
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); npcRoamTargets.clear(); }
@@ -1162,23 +1162,89 @@
     if(!npcRouteClearAt(x,y,key)) return false;
     const spawn=npcRawSpawnForKey(key);
     if(npcChebDistance({x,y}, spawn) < 5) return false;
+    // V259: roaming is local again for performance. NPCs can move around a bit,
+    // but they no longer path/search across the whole map every few seconds.
+    if(home && npcChebDistance({x,y}, home) > 3) return false;
     return true;
   }
-  function npcRandomRoamTile(key=currentStageKey(),used=null){
-    try{
-      const parsed=parseStageMap(key);
-      const choices=[];
-      const px=state?.player?.x, py=state?.player?.y;
-      for(let y=1;y<(parsed.map?.length||0)-1;y++){
-        for(let x=1;x<(parsed.map[y]?.length||0)-1;x++){
-          if(!npcRoamTargetSafe({x,y},null,key,used)) continue;
-          if(Number.isFinite(px) && Number.isFinite(py) && npcChebDistance({x,y},{x:px,y:py}) < 4) continue;
-          choices.push({x,y});
+  function npcBuildRoomData(key=currentStageKey()){
+    // Build once per stage cache. This lets us spread contacts so each open room/zone
+    // gets at most one NPC when possible without doing expensive work every roam tick.
+    const parsed=parseStageMap(key);
+    const map=parsed.map || [];
+    const h=map.length, w=Math.max(...map.map(r=>r.length), 0);
+    const roomId=new Map();
+    const rooms=[];
+    const keyFor=(x,y)=>`${x},${y}`;
+    const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+    for(let y=0;y<h;y++){
+      for(let x=0;x<(map[y]?.length||0);x++){
+        const k=keyFor(x,y);
+        if(roomId.has(k) || !npcTileSafeAt(x,y,key) || !npcRouteClearAt(x,y,key)) continue;
+        const id=rooms.length;
+        const tiles=[];
+        const q=[[x,y]];
+        roomId.set(k,id);
+        for(let qi=0; qi<q.length; qi++){
+          const [cx,cy]=q[qi];
+          tiles.push({x:cx,y:cy});
+          dirs.forEach(([dx,dy])=>{
+            const nx=cx+dx, ny=cy+dy, nk=keyFor(nx,ny);
+            if(roomId.has(nk)) return;
+            if(!npcTileSafeAt(nx,ny,key) || !npcRouteClearAt(nx,ny,key)) return;
+            roomId.set(nk,id);
+            q.push([nx,ny]);
+          });
         }
+        rooms.push({id,tiles,size:tiles.length});
       }
-      if(!choices.length) return null;
-      return choices[Math.floor(Math.random()*choices.length)];
-    }catch(err){ return null; }
+    }
+    rooms.sort((a,b)=>b.size-a.size);
+    return {roomId, rooms};
+  }
+  function npcRoomFor(pos,roomData){ return roomData?.roomId?.get(`${Math.floor(pos?.x)},${Math.floor(pos?.y)}`); }
+  function findSafeNpcPlacementInUnusedRoom(preferred,key=currentStageKey(),used=null,usedRooms=null,roomData=null){
+    roomData ||= npcBuildRoomData(key);
+    const spawn=npcRawSpawnForKey(key);
+    const base={x:Math.floor(Number(preferred?.x)||spawn.x), y:Math.floor(Number(preferred?.y)||spawn.y)};
+    if(npcPlacementSafe(base,key,used)){
+      const rid=npcRoomFor(base,roomData);
+      if(rid==null || !usedRooms?.has(rid)) return base;
+    }
+    const candidates=[];
+    for(const room of roomData.rooms||[]){
+      if(usedRooms?.has(room.id)) continue;
+      for(const t of room.tiles){
+        if(!npcPlacementSafe(t,key,used)) continue;
+        const spawnDist=npcChebDistance(t,spawn);
+        if(spawnDist < NPC_MIN_SPAWN_DISTANCE) continue;
+        candidates.push({...t, roomId:room.id, score:Math.abs(t.x-base.x)+Math.abs(t.y-base.y) - Math.min(25,spawnDist)*0.2 - Math.min(12,room.size)*0.1});
+      }
+    }
+    if(candidates.length){
+      candidates.sort((a,b)=>a.score-b.score);
+      return {x:candidates[0].x,y:candidates[0].y};
+    }
+    // If we run out of actual rooms, fall back to the older safe placement.
+    return findSafeNpcPlacement(preferred,key,used);
+  }
+  function npcLocalRoamTile(home,key=currentStageKey(),used=null){
+    if(!home) return null;
+    const choices=[];
+    const hx=Math.floor(home.x), hy=Math.floor(home.y);
+    for(let dy=-3; dy<=3; dy++){
+      for(let dx=-3; dx<=3; dx++){
+        const x=hx+dx, y=hy+dy;
+        if(Math.max(Math.abs(dx),Math.abs(dy))>3) continue;
+        if(!npcRoamTargetSafe({x,y},home,key,used)) continue;
+        choices.push({x,y,score:Math.abs(dx)+Math.abs(dy)});
+      }
+    }
+    if(!choices.length) return null;
+    // Prefer slight movement around the room, not teleporting to every edge.
+    choices.sort((a,b)=>a.score-b.score || Math.random()-0.5);
+    const start=Math.min(choices.length-1, Math.floor(Math.random()*Math.min(choices.length, 8)));
+    return {x:choices[start].x,y:choices[start].y};
   }
   function applyNpcRoamPositions(homes,key=currentStageKey()){
     return (homes||[]).map(n=>{
@@ -1193,21 +1259,31 @@
     const cached = npcStagePlacementCache.get(cacheKey);
     if(cached) return cached;
     const used=new Set();
+    const usedRooms=new Set();
+    let roomData=null;
+    try{ roomData=npcBuildRoomData(key); }catch(err){ roomData=null; }
     const list = Object.values(NPC_DEFS).map(n => {
       const original = n.stages[key];
       if(!original) return null;
       const fallback = NPC_SAFE_FALLBACKS[key]?.[n.id];
       const preferred = fallback ? {...original, ...fallback} : original;
-      const pos = npcPlacementSafe(preferred,key,used) ? preferred : findSafeNpcPlacement(preferred,key,used);
+      let pos;
+      if(roomData){
+        pos = findSafeNpcPlacementInUnusedRoom(preferred,key,used,usedRooms,roomData);
+      }else{
+        pos = npcPlacementSafe(preferred,key,used) ? preferred : findSafeNpcPlacement(preferred,key,used);
+      }
       used.add(`${pos.x},${pos.y}`);
-      return {...n, ...original, x:pos.x, y:pos.y, homeX:pos.x, homeY:pos.y, stage:key};
+      const rid=roomData ? npcRoomFor(pos,roomData) : null;
+      if(rid!=null) usedRooms.add(rid);
+      return {...n, ...original, x:pos.x, y:pos.y, homeX:pos.x, homeY:pos.y, stage:key, roomId:rid};
     }).filter(Boolean);
     npcStagePlacementCache.set(cacheKey, list);
     return list;
   }
   function stageNpcs(key=currentStageKey()){
-    // V257: cache the safe home positions, then apply a tiny runtime roam overlay.
-    // NPCs stay walkthrough contacts, so roaming cannot block player paths.
+    // V259: NPCs are spread by room/zone, then only drift a few tiles around that room.
+    // This keeps the map alive without the lag from full-map roaming/path searching.
     return applyNpcRoamPositions(stageNpcHomes(key), key);
   }
   function updateNpcRoaming(force=false){
@@ -1227,29 +1303,27 @@
         const home={x:homeNpc.homeX ?? homeNpc.x, y:homeNpc.homeY ?? homeNpc.y};
         const rKey=npcRoamKey(homeNpc,key);
         let current=npcRoamPositions.get(rKey);
-        if(!current || !npcRoamTargetSafe(current,null,key,used)){
-          // V258: spread contacts across the whole playable level instead of pinning
-          // them to a tiny home radius. They remain walkthrough, so this is visual/life only.
-          current=npcRandomRoamTile(key,used) || home;
+        if(!current || !npcRoamTargetSafe(current,home,key,used)){
+          current=home;
           npcRoamPositions.set(rKey,current);
           moved=true;
         }
         let target=npcRoamTargets.get(rKey);
-        if(force || !target || !npcRoamTargetSafe(target,null,key) || npcChebDistance(current,target)<=1 || Math.random()<0.08){
-          target=npcRandomRoamTile(key,used) || home;
+        if(force || !target || !npcRoamTargetSafe(target,home,key) || npcChebDistance(current,target)<=1 || Math.random()<0.18){
+          target=npcLocalRoamTile(home,key,used) || home;
           npcRoamTargets.set(rKey,target);
         }
         const options=dirs.map(([dx,dy])=>({x:Math.floor(current.x)+dx,y:Math.floor(current.y)+dy}))
-          .filter(p=>npcRoamTargetSafe(p,null,key,used));
+          .filter(p=>npcRoamTargetSafe(p,home,key,used));
         if(!options.length){
-          const reset=npcRandomRoamTile(key,used) || home;
-          npcRoamPositions.set(rKey, reset);
-          used.add(`${reset.x},${reset.y}`);
+          npcRoamPositions.set(rKey, home);
+          used.add(`${home.x},${home.y}`);
           moved=true;
           return;
         }
         let pick=current;
-        if(!force && Math.random()<0.22 && npcRoamTargetSafe(current,null,key,used)){
+        // Mostly stay still. Movement is intentionally subtle to avoid map/menu lag.
+        if(!force && Math.random()<0.55 && npcRoamTargetSafe(current,home,key,used)){
           pick={x:Math.floor(current.x),y:Math.floor(current.y)};
         }else{
           options.sort((a,b)=>(Math.abs(a.x-target.x)+Math.abs(a.y-target.y))-(Math.abs(b.x-target.x)+Math.abs(b.y-target.y)) || Math.random()-0.5);
@@ -1259,7 +1333,7 @@
         if(pick.x !== current.x || pick.y !== current.y) moved=true;
         npcRoamPositions.set(rKey,pick);
       });
-      if(moved){ try{ renderAll(); }catch(err){} }
+      if(moved){ try{ requestAnimationFrame(()=>renderAll()); }catch(err){ try{ renderAll(); }catch(e){} } }
       return moved;
     }catch(err){ console.warn('[AV NPC] roam update skipped', err); return false; }
   }
