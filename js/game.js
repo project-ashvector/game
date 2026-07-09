@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '256';
-  const BUILD_TITLE = 'NPC CONTACT CODEX PASS';
+  const BUILD_VERSION = '257';
+  const BUILD_TITLE = 'NPC ROAMING CONTACT PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1148,10 +1148,31 @@
     return base;
   }
   const npcStagePlacementCache = new Map();
-  function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); }
-  function stageNpcs(key=currentStageKey()){
-    // V239: NPC safety placement can scan the map. Cache per stage so every draw/frame does not redo that work.
-    const cacheKey = `${key}:${MAP_VERSION}:v253:${Object.keys(NPC_DEFS).length}`;
+  const npcRoamPositions = new Map();
+  const NPC_ROAM_RADIUS = 5;
+  const NPC_ROAM_STEP_MS = 1900;
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v257:${Object.keys(NPC_DEFS).length}`; }
+  function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
+  function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); }
+  function npcRoamTargetSafe(pos,home,key=currentStageKey(),used=null){
+    if(!pos || !home) return false;
+    const x=Math.floor(Number(pos.x)), y=Math.floor(Number(pos.y));
+    if(used?.has(`${x},${y}`)) return false;
+    if(npcChebDistance({x,y}, home) > NPC_ROAM_RADIUS) return false;
+    if(!npcTileSafeAt(x,y,key)) return false;
+    if(!npcRouteClearAt(x,y,key)) return false;
+    return true;
+  }
+  function applyNpcRoamPositions(homes,key=currentStageKey()){
+    return (homes||[]).map(n=>{
+      const home={x:n.homeX ?? n.x, y:n.homeY ?? n.y};
+      const roam=npcRoamPositions.get(npcRoamKey(n,key));
+      if(roam && npcRoamTargetSafe(roam,home,key)) return {...n, x:roam.x, y:roam.y, homeX:home.x, homeY:home.y};
+      return {...n, x:home.x, y:home.y, homeX:home.x, homeY:home.y};
+    });
+  }
+  function stageNpcHomes(key=currentStageKey()){
+    const cacheKey = npcStageCacheKey(key);
     const cached = npcStagePlacementCache.get(cacheKey);
     if(cached) return cached;
     const used=new Set();
@@ -1162,10 +1183,46 @@
       const preferred = fallback ? {...original, ...fallback} : original;
       const pos = npcPlacementSafe(preferred,key,used) ? preferred : findSafeNpcPlacement(preferred,key,used);
       used.add(`${pos.x},${pos.y}`);
-      return {...n, ...original, x:pos.x, y:pos.y, stage:key};
+      return {...n, ...original, x:pos.x, y:pos.y, homeX:pos.x, homeY:pos.y, stage:key};
     }).filter(Boolean);
     npcStagePlacementCache.set(cacheKey, list);
     return list;
+  }
+  function stageNpcs(key=currentStageKey()){
+    // V257: cache the safe home positions, then apply a tiny runtime roam overlay.
+    // NPCs stay walkthrough contacts, so roaming cannot block player paths.
+    return applyNpcRoamPositions(stageNpcHomes(key), key);
+  }
+  function updateNpcRoaming(force=false){
+    try{
+      if(!state?.player || battle || storyActive) return false;
+      if(typeof isGameplayPaused === 'function' && isGameplayPaused()) return false;
+      if(typeof lockdownNormalInteractionsLocked === 'function' && lockdownNormalInteractionsLocked()) return false;
+      const app=$('app');
+      if(app?.classList?.contains('hidden')) return false;
+      const key=currentStageKey();
+      const homes=stageNpcHomes(key);
+      if(!homes.length) return false;
+      const used=new Set();
+      let moved=false;
+      const dirs=[[0,0],[1,0],[-1,0],[0,1],[0,-1]];
+      homes.forEach(homeNpc=>{
+        const home={x:homeNpc.homeX ?? homeNpc.x, y:homeNpc.homeY ?? homeNpc.y};
+        const rKey=npcRoamKey(homeNpc,key);
+        const current=npcRoamPositions.get(rKey) || home;
+        const options=dirs.map(([dx,dy])=>({x:Math.floor(current.x)+dx,y:Math.floor(current.y)+dy}))
+          .filter(p=>npcRoamTargetSafe(p,home,key,used));
+        if(!options.length){ npcRoamPositions.set(rKey, home); used.add(`${home.x},${home.y}`); return; }
+        // Weighted pause: NPCs usually stand still, then shuffle one tile at a time.
+        let pick=options[Math.floor(Math.random()*options.length)];
+        if(!force && Math.random()<0.55 && npcRoamTargetSafe(current,home,key,used)) pick={x:Math.floor(current.x),y:Math.floor(current.y)};
+        used.add(`${pick.x},${pick.y}`);
+        if(pick.x !== current.x || pick.y !== current.y) moved=true;
+        npcRoamPositions.set(rKey,pick);
+      });
+      if(moved){ try{ renderAll(); }catch(err){} }
+      return moved;
+    }catch(err){ console.warn('[AV NPC] roam update skipped', err); return false; }
   }
   function npcAt(x,y,key=currentStageKey()){
     return stageNpcs(key).find(n => n.x === x && n.y === y) || null;
@@ -10349,6 +10406,7 @@
     setInterval(()=>{ if(!isGameplayPaused() && !$('app').classList.contains('hidden')) save(true, {force:true}); }, 60000);
     setInterval(()=>{ if(!isGameplayPaused()){ processRespawns(); renderUI(); } }, 1200);
     setInterval(()=>{ if(!isGameplayPaused()) processRespawns(); }, 900);
+    setInterval(()=>{ updateNpcRoaming(false); }, NPC_ROAM_STEP_MS);
     setInterval(()=>{ if(!isGameplayPaused() && state?.map && state?.player) clampPlayerToMap(); }, 1200);
   }
 
