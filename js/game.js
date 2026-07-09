@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '279';
-  const BUILD_TITLE = 'MENU SCROLL MODERN UI PASS';
+  const BUILD_VERSION = '280';
+  const BUILD_TITLE = 'MISSION MENU LAYOUT FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
