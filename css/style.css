@@ -3303,3 +3303,21 @@ body.game-paused .mobile-pause-card::before{
 }
 .character-roadmap-steps b{color:#ffe36e!important;text-align:center!important;}
 .character-roadmap-steps span{color:#cfe6ef!important;line-height:1.35!important;}
+
+
+/* V276: Character roster filter/search polish. */
+.character-roster-controls{
+  border:1px solid rgba(112,215,255,.22)!important;
+  border-radius:16px!important;
+  background:rgba(0,0,0,.25)!important;
+  padding:10px!important;
+  display:grid!important;
+  gap:8px!important;
+}
+.character-filter-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;}
+.character-filter-tabs button{font-size:11px!important;padding:8px 7px!important;border-radius:10px!important;}
+.character-filter-tabs button.active{border-color:rgba(0,217,255,.95)!important;box-shadow:0 0 16px rgba(0,217,255,.18)!important;color:#fff!important;}
+#characterRosterSearch{width:100%!important;box-sizing:border-box!important;border:1px solid rgba(255,255,255,.18)!important;background:rgba(0,0,0,.42)!important;color:#e9faff!important;border-radius:12px!important;padding:10px!important;font:800 12px monospace!important;outline:none!important;}
+#characterRosterSearch:focus{border-color:rgba(0,217,255,.85)!important;box-shadow:0 0 14px rgba(0,217,255,.14)!important;}
+.character-empty-state{border:1px dashed rgba(255,255,255,.22)!important;border-radius:16px!important;padding:14px!important;background:rgba(0,0,0,.22)!important;color:#9fb7c4!important;display:grid!important;gap:5px!important;}
+.character-empty-state b{color:#fff!important;}

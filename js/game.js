@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '275';
-  const BUILD_TITLE = 'CHARACTER UNLOCK ROADMAP PASS';
+  const BUILD_VERSION = '276';
+  const BUILD_TITLE = 'CHARACTER ROSTER FILTER PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4944,6 +4944,37 @@
     const nextLine=next ? `${safeHtml(next.displayName)} needs ${operatorUnlockProgress(next.id).needed} more shards` : 'All character files unlocked';
     return `<section class="character-unlock-summary"><b>Roster ${unlocked}/${ops.length}</b><span>${nextLine}</span></section>`;
   }
+  function characterRosterControlsHtml(){
+    const filter=state.characterRosterFilter || 'all';
+    const search=safeHtml(state.characterRosterSearch || '');
+    const opts=[['all','All'],['unlocked','Unlocked'],['locked','Locked'],['active','Active']];
+    return `<section class="character-roster-controls"><div class="record-kicker">ROSTER FILTER</div><div class="character-filter-tabs">${opts.map(([id,label])=>`<button type="button" class="${filter===id?'active':''}" onclick="window.AV&&window.AV.setCharacterRosterFilter&&window.AV.setCharacterRosterFilter('${id}')">${label}</button>`).join('')}</div><input id="characterRosterSearch" value="${search}" placeholder="Search character files..." oninput="window.AV&&window.AV.setCharacterRosterSearch&&window.AV.setCharacterRosterSearch(this.value)"></section>`;
+  }
+  function filteredCharacterRoster(){
+    const filter=state.characterRosterFilter || 'all';
+    const query=String(state.characterRosterSearch || '').trim().toLowerCase();
+    return Object.values(OPERATOR_DEFS).filter(op=>{
+      const unlocked=operatorUnlocked(op.id), active=currentOperatorId()===op.id;
+      if(filter==='unlocked' && !unlocked) return false;
+      if(filter==='locked' && unlocked) return false;
+      if(filter==='active' && !active) return false;
+      if(query){
+        const hay=[op.displayName,op.id,op.code,op.codename,op.title,defaultOperatorRpgDef(op.id).role,defaultOperatorRpgDef(op.id).passive,operatorShardName(op.id)].filter(Boolean).join(' ').toLowerCase();
+        if(!hay.includes(query)) return false;
+      }
+      return true;
+    });
+  }
+  function setCharacterRosterFilter(filter){
+    state.characterRosterFilter = ['all','unlocked','locked','active'].includes(filter) ? filter : 'all';
+    renderCharacterMenuDb(state.characterFileId || currentOperatorId());
+  }
+  function setCharacterRosterSearch(value){
+    state.characterRosterSearch = String(value || '').slice(0,40);
+    renderCharacterMenuDb(state.characterFileId || currentOperatorId());
+    const input=$('characterRosterSearch');
+    if(input){ input.focus(); input.setSelectionRange(input.value.length,input.value.length); }
+  }
   function unlockOperator(id){
     ensureCharacterState();
     const op=OPERATOR_DEFS[id];
@@ -5012,7 +5043,9 @@
     const previousFileId=previousCard?.dataset?.characterFile || '';
     const previousScroll=Math.max(file.scrollTop||0, file.querySelector('.character-file-scroll')?.scrollTop||0);
     const preserveScroll=previousFileId===op.id && !selectedId;
-    list.innerHTML=characterUnlockSummaryHtml()+Object.values(OPERATOR_DEFS).map(characterCardHtml).join('');
+    const visibleRoster=filteredCharacterRoster();
+    const emptyRoster='<div class="character-empty-state"><b>No matching files</b><span>Clear the search or switch the filter back to All.</span></div>';
+    list.innerHTML=characterUnlockSummaryHtml()+characterRosterControlsHtml()+(visibleRoster.length?visibleRoster.map(characterCardHtml).join(''):emptyRoster);
     const progress=operatorUnlockProgress(op.id);
     const locked=!progress.unlocked;
     const active=currentOperatorId()===op.id;
@@ -10965,7 +10998,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, renderNpcContactCodexPanel, pingNpcContact, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, buyCharacterNow, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, renderNpcContactCodexPanel, pingNpcContact, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, buyCharacterNow, setCharacterRosterFilter, setCharacterRosterSearch, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
