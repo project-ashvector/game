@@ -3142,3 +3142,63 @@ body.game-paused .mobile-pause-card::before{
 .character-card-btn.selected-file{border-color:rgba(0,217,255,.95)!important;box-shadow:0 0 22px rgba(0,217,255,.26)!important;}
 .character-card-btn.selected-file em{color:#00d9ff;font-weight:900;}
 .character-card-btn.active:not(.selected-file){border-color:rgba(105,211,145,.70)!important;}
+
+
+/* V273: Character file scroll + Buy Now panel. */
+#characterOverlay .character-modal{
+  width:min(1180px,calc(100vw - 24px))!important;
+  height:min(860px,calc(100svh - 24px))!important;
+  max-height:calc(100svh - 24px)!important;
+  overflow:hidden!important;
+  display:flex!important;
+  flex-direction:column!important;
+}
+#characterOverlay .character-layout{
+  min-height:0!important;
+  flex:1 1 auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(180px,320px) minmax(0,1fr)!important;
+  gap:14px!important;
+  overflow:hidden!important;
+}
+#characterOverlay .character-list,
+#characterOverlay .character-file{
+  min-height:0!important;
+  max-height:100%!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  padding-right:4px!important;
+}
+#characterOverlay .character-file-card{
+  min-height:0!important;
+  max-height:none!important;
+  display:block!important;
+  overflow:visible!important;
+}
+#characterOverlay .character-file-scroll{
+  display:grid!important;
+  gap:12px!important;
+  padding-bottom:18px!important;
+}
+#characterOverlay .character-preview img{
+  max-height:260px!important;
+  object-fit:contain!important;
+}
+.character-buy-panel{
+  border:1px solid rgba(255,211,106,.42)!important;
+  border-radius:16px!important;
+  background:linear-gradient(180deg,rgba(255,185,64,.13),rgba(0,0,0,.24))!important;
+  padding:12px!important;
+  display:grid!important;
+  gap:8px!important;
+}
+.character-buy-panel b{color:#ffe36e!important;font-size:16px!important;letter-spacing:.08em;text-transform:uppercase;}
+.character-buy-panel span{color:#d8c38a!important;line-height:1.35!important;}
+.character-buy-panel .buy-now-btn{border-color:rgba(255,211,106,.8)!important;box-shadow:0 0 18px rgba(255,211,106,.16)!important;background:rgba(90,54,6,.42)!important;}
+@media(max-width:780px){
+  #characterOverlay .character-modal{height:calc(100svh - 12px)!important;max-height:calc(100svh - 12px)!important;}
+  #characterOverlay .character-layout{grid-template-columns:1fr!important;overflow:auto!important;}
+  #characterOverlay .character-list{max-height:160px!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:8px!important;}
+  #characterOverlay .character-file{overflow:visible!important;}
+  #characterOverlay .character-preview img{max-height:190px!important;}
+}
