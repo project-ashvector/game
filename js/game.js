@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '247';
-  const BUILD_TITLE = 'LEVEL ASSET RESTORE PASS';
+  const BUILD_VERSION = '248';
+  const BUILD_TITLE = 'RELIABLE ASSET LOAD ROLLBACK PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1221,7 +1221,7 @@
   }
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
-    const im = ensureImageCached(npc.asset, {eager:true});
+    const im = images[npc.asset];
     const drawW = MAP_ENTITY_W;
     const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
@@ -2100,7 +2100,12 @@
     ctx.restore();
   }
 
-  function imgFor(path){ return ensureImageCached(path, {eager:true}); }
+  function imgFor(path){
+    // v248: canvas-drawn game assets cannot depend on browser lazy loading.
+    // If a map/object/enemy image is about to be drawn, request it immediately.
+    if(!path) return null;
+    return images[path] || ensureImageCached(path, {eager:true});
+  }
   function drawAsset(path,x,y,w,h,anchorBottom=false){
     const im=imgFor(path);
     if(im && im.complete && im.naturalWidth){
@@ -2301,7 +2306,7 @@
   }
   function getMapCreatureImage(code, x, y){
     const def = getEncounterDef(code, x, y);
-    return ensureImageCached(def.icon, {eager:true}) || ensureImageCached(def.img, {eager:true});
+    return imgFor(def.icon) || imgFor(def.img);
   }
   const attacks = [
     {name:'Vector Slash', dmg:13, ep:0, text:'Vyra carves a cyan vector through the target.'},
@@ -4752,14 +4757,12 @@
     if(!path) return null;
     if(images[path]) return images[path];
     const im = new Image();
-    // V247: Canvas-drawn images must not use browser lazy-loading. Lazy images that are
-    // never inserted into the DOM can sit unloaded forever on some browsers, which is
-    // what caused map props, NPCs, encounters, and Lockdown art to stay as placeholder
-    // boxes/circles. We still control startup speed by choosing WHEN to request paths;
-    // once requested, always load them normally/eagerly.
+    // v248: do not use browser lazy loading for canvas assets. Canvas images are never
+    // inserted into the DOM, so lazy loading can leave the game stuck on fallback shapes.
+    const eager = opts.eager !== false;
     try{ im.loading = 'eager'; }catch(err){}
-    try{ im.decoding = opts.sync ? 'sync' : 'async'; }catch(err){}
-    try{ im.fetchPriority = opts.low ? 'low' : 'high'; }catch(err){}
+    try{ im.decoding = 'auto'; }catch(err){}
+    try{ im.fetchPriority = eager ? 'high' : 'auto'; }catch(err){}
     im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
@@ -6478,7 +6481,7 @@
     if(Math.random()>0.12) return;
     startVectorLockdownWarning();
   }
-  function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; preloadLockdownAssets(); const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; state.rogueNextAt=now+300000; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
+  function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; state.rogueNextAt=now+300000; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
   function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; state.rogueHudMode=null; scheduleNextVectorLockdown('warning cancelled'); ensureRogueHud().classList.add('hidden'); ensureLockdownBuffDock().classList.add('hidden'); hideLockdownRewardModal(); renderAll(); }
 
   function lockdownArenaBounds(cx=state.player.x, cy=state.player.y){
@@ -6551,8 +6554,6 @@
     render();
   }
   function startVectorLockdown(warning=null){
-    preloadCurrentStageAssets(currentStageKey(), {immediate:true});
-    preloadLockdownAssets();
     if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer);
     window._avLockdownWarningTimer=null;
     document.body.classList.remove('vector-lockdown-warning');
@@ -8722,7 +8723,7 @@
       const drawW=compact?44:(m.size||40), drawH=drawW;
       ctx.fillStyle='rgba(0,0,0,.55)';
       ctx.beginPath(); ctx.ellipse(x,y+Math.floor(drawH*.43),drawW*.42,6,0,0,Math.PI*2); ctx.fill();
-      const im=ensureImageCached(m.icon || m.img, {eager:true}) || ensureImageCached(m.img, {eager:true});
+      const im=ensureImageCached(m.icon || m.img) || ensureImageCached(m.img);
       if(im && im.complete && im.naturalWidth){
         ctx.save();
         ctx.shadowColor='rgba(255,48,72,.70)';
@@ -8783,7 +8784,7 @@
         p.trail.forEach((t,i)=>{ const tx=t.x*TILE, ty=t.y*TILE; if(i===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty); }); ctx.stroke(); ctx.globalAlpha=1;
       }
       const asset=p.assetPath || lockdownProjectileAsset(p.assetIndex||p.kind||0).path;
-      const im=ensureImageCached(asset, {eager:true});
+      const im=ensureImageCached(asset);
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(angle);
@@ -8957,7 +8958,7 @@
     ctx.shadowColor=highlight;
     ctx.shadowBlur=near?18:10;
     const asset=trainingObjectAssetForLabel(node.baseLabel || node.label);
-    const im=asset && ensureImageCached(asset, {eager:true});
+    const im=asset && imgFor(asset);
 
     if(im && im.complete && im.naturalWidth){
       const oldSmooth=ctx.imageSmoothingEnabled;
