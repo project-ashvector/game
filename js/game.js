@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '246';
-  const BUILD_TITLE = 'DRAW-TIME ASSET LOAD FIX';
+  const BUILD_VERSION = '247';
+  const BUILD_TITLE = 'LEVEL ASSET RESTORE PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1221,7 +1221,7 @@
   }
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
-    const im = ensureImageCached(npc.asset, {eager:true}) || images[npc.asset];
+    const im = ensureImageCached(npc.asset, {eager:true});
     const drawW = MAP_ENTITY_W;
     const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
@@ -2100,9 +2100,9 @@
     ctx.restore();
   }
 
-  function imgFor(path){ return images[path]; }
+  function imgFor(path){ return ensureImageCached(path, {eager:true}); }
   function drawAsset(path,x,y,w,h,anchorBottom=false){
-    const im=path ? (ensureImageCached(path, {eager: uiState?.mode === 'game' || uiState?.mode === 'pause'}) || imgFor(path)) : null;
+    const im=imgFor(path);
     if(im && im.complete && im.naturalWidth){
       const dx = anchorBottom ? x + (TILE-w)/2 : x + (TILE-w)/2;
       const dy = anchorBottom ? y + TILE - h + 5 : y + (TILE-h)/2;
@@ -2301,9 +2301,7 @@
   }
   function getMapCreatureImage(code, x, y){
     const def = getEncounterDef(code, x, y);
-    const icon = def.icon ? ensureImageCached(def.icon, {eager:true}) : null;
-    const img = def.img ? ensureImageCached(def.img, {eager:true}) : null;
-    return icon || images[def.icon] || img || images[def.img];
+    return ensureImageCached(def.icon, {eager:true}) || ensureImageCached(def.img, {eager:true});
   }
   const attacks = [
     {name:'Vector Slash', dmg:13, ep:0, text:'Vyra carves a cyan vector through the target.'},
@@ -4754,12 +4752,14 @@
     if(!path) return null;
     if(images[path]) return images[path];
     const im = new Image();
-    // Gameplay-critical sprites and current-level map props must not be lazy-loaded.
-    // Lazy is still used for off-stage/background art so the intro stays fast.
-    const eager = !!opts.eager;
-    try{ im.loading = eager ? 'eager' : 'lazy'; }catch(err){}
-    try{ im.decoding = eager ? 'auto' : 'async'; }catch(err){}
-    try{ im.fetchPriority = eager ? 'high' : 'auto'; }catch(err){}
+    // V247: Canvas-drawn images must not use browser lazy-loading. Lazy images that are
+    // never inserted into the DOM can sit unloaded forever on some browsers, which is
+    // what caused map props, NPCs, encounters, and Lockdown art to stay as placeholder
+    // boxes/circles. We still control startup speed by choosing WHEN to request paths;
+    // once requested, always load them normally/eagerly.
+    try{ im.loading = 'eager'; }catch(err){}
+    try{ im.decoding = opts.sync ? 'sync' : 'async'; }catch(err){}
+    try{ im.fetchPriority = opts.low ? 'low' : 'high'; }catch(err){}
     im.onload = requestImageRenderRefresh;
     im.onerror = () => console.warn('Missing image asset:', path);
     im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
@@ -4889,7 +4889,7 @@
     setTimeout(()=>preloadPaths([...decor, ...encounters], {defer:true, chunk:3}), 450);
   }
   function preloadLockdownAssets(){
-    preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:true, chunk:3});
+    preloadPaths([...projectileAssetPaths, ...lockdownBuffAssetPaths], {defer:false, eager:true});
   }
   function scheduleBackgroundAssetPreload(){
     if(backgroundAssetPreloadStarted) return;
@@ -5712,7 +5712,7 @@
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
     preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
-    renderAll(); setTimeout(requestImageRenderRefresh, 220); setTimeout(requestImageRenderRefresh, 700); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
+    renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
   }
   function hideAll(){['bootScreen','mainMenu','app'].forEach(id=>$(id)?.classList.add('hidden')); document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); $('preBattleOverlay')?.classList.add('hidden');}
@@ -6478,7 +6478,7 @@
     if(Math.random()>0.12) return;
     startVectorLockdownWarning();
   }
-  function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; state.rogueNextAt=now+300000; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
+  function startVectorLockdownWarning(){ if(vectorLockdownBlocked()) return; preloadLockdownAssets(); const now=Date.now(); const arena=lockdownArenaBounds(state.player.x,state.player.y); state.rogueWarning={active:true,startedAt:now,endsAt:now+10000,arena,center:{x:state.player.x,y:state.player.y}}; state.rogueLastAt=now; state.rogueNextAt=now+300000; document.body.classList.add('vector-lockdown-warning'); log('VECTOR SURGE WARNING: free-roam lockdown begins in 10 seconds. Normal battles, NPCs, chests, doors, nodes, and exits will pause during the mini-game.'); pulseObjective('WARNING: Vector Lockdown begins in 10 seconds. Free-roam survival incoming.'); ensureRogueHud().classList.remove('hidden'); updateVectorLockdownWarningHud(); if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=setInterval(tickVectorLockdownWarning,250); renderAll(); }
   function cancelVectorLockdownWarning(reason='Vector warning cancelled.'){ if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer); window._avLockdownWarningTimer=null; document.body.classList.remove('vector-lockdown-warning'); if(state.rogueWarning?.active) log(reason); state.rogueWarning={active:false,cancelledAt:Date.now()}; state.rogueHudMode=null; scheduleNextVectorLockdown('warning cancelled'); ensureRogueHud().classList.add('hidden'); ensureLockdownBuffDock().classList.add('hidden'); hideLockdownRewardModal(); renderAll(); }
 
   function lockdownArenaBounds(cx=state.player.x, cy=state.player.y){
@@ -6551,6 +6551,8 @@
     render();
   }
   function startVectorLockdown(warning=null){
+    preloadCurrentStageAssets(currentStageKey(), {immediate:true});
+    preloadLockdownAssets();
     if(window._avLockdownWarningTimer) clearInterval(window._avLockdownWarningTimer);
     window._avLockdownWarningTimer=null;
     document.body.classList.remove('vector-lockdown-warning');
@@ -7735,7 +7737,6 @@
     document.body.classList.add('game-active','fullscreen-mode');
     document.body.dataset.stage=stageDef().key;
     try{ ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); }catch(err){ console.warn('[AV] mobile setup skipped', err); }
-    try{ preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1400); }catch(err){ console.warn('[AV] current-stage preload skipped', err); }
     const app=document.getElementById('app');
     if(app) app.classList.remove('hidden');
     try{ canvas && canvas.focus && canvas.focus({preventScroll:true}); }catch(err){}
@@ -7749,7 +7750,7 @@
       try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
-    try{ renderAll(); setTimeout(requestImageRenderRefresh, 220); setTimeout(requestImageRenderRefresh, 700); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
+    try{ renderAll(); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
     try{ unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState()); }catch(err){ console.warn('[AV] audio/radio skipped', err); }
     try{ save(true); }catch(err){}
     return true;
@@ -8721,7 +8722,7 @@
       const drawW=compact?44:(m.size||40), drawH=drawW;
       ctx.fillStyle='rgba(0,0,0,.55)';
       ctx.beginPath(); ctx.ellipse(x,y+Math.floor(drawH*.43),drawW*.42,6,0,0,Math.PI*2); ctx.fill();
-      const im=ensureImageCached(m.icon || m.img) || ensureImageCached(m.img);
+      const im=ensureImageCached(m.icon || m.img, {eager:true}) || ensureImageCached(m.img, {eager:true});
       if(im && im.complete && im.naturalWidth){
         ctx.save();
         ctx.shadowColor='rgba(255,48,72,.70)';
@@ -8782,7 +8783,7 @@
         p.trail.forEach((t,i)=>{ const tx=t.x*TILE, ty=t.y*TILE; if(i===0) ctx.moveTo(tx,ty); else ctx.lineTo(tx,ty); }); ctx.stroke(); ctx.globalAlpha=1;
       }
       const asset=p.assetPath || lockdownProjectileAsset(p.assetIndex||p.kind||0).path;
-      const im=ensureImageCached(asset);
+      const im=ensureImageCached(asset, {eager:true});
       ctx.save();
       ctx.translate(x,y);
       ctx.rotate(angle);
@@ -8956,7 +8957,7 @@
     ctx.shadowColor=highlight;
     ctx.shadowBlur=near?18:10;
     const asset=trainingObjectAssetForLabel(node.baseLabel || node.label);
-    const im=asset && (ensureImageCached(asset, {eager:true}) || images[asset]);
+    const im=asset && ensureImageCached(asset, {eager:true});
 
     if(im && im.complete && im.naturalWidth){
       const oldSmooth=ctx.imageSmoothingEnabled;
