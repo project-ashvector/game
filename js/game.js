@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '255';
-  const BUILD_TITLE = 'JEREMIE NAME PASS';
+  const BUILD_VERSION = '256';
+  const BUILD_TITLE = 'NPC CONTACT CODEX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -882,6 +882,42 @@
     const metalItems=Object.entries(metalReward.items||{}).filter(([_,qty])=>qty>0).map(([name,qty])=>`${qty} ${name}`).join(' // ');
     const fermilatStatus=sideQuestStatusText(stage);
     return `<section class="fracture-card npc-route-board"><div class="record-kicker">NPC ROUTE BOARD // ${safeHtml(def.id||stage)}</div><h3>Field Contacts</h3><p>Use this board to see what each NPC can still do on the current level.</p><div class="protocol-list"><div><b>Jeremie</b><span>${safeHtml(fermilatStatus)}</span></div><div><b>MetalliK</b><span>${metalClaimed?'✅ Resonance cache claimed':`⬜ Resonance cache ready // ${metalReward.credits} credits // ${metalReward.xp} XP${metalItems?` // ${metalItems}`:''}`}</span></div></div><div class="statrow">Jeremie Favor ${q?.progress||0}/${q?.target||0}<div class="bar xp"><span style="width:${qPct}%"></span></div></div><p class="fineprint">Talk to NPCs in the field to claim their rewards. MetalliK is once per level. Jeremie favors progress by deleting anomalies on that level.</p></section>`;
+  }
+
+
+  function npcRoleText(id){
+    if(id==='fermilat') return 'Side favors, weird stash rewards, anomaly hunt progress.';
+    if(id==='metallik') return 'Once-per-level Resonance Cache with credits, XP, and materials.';
+    if(id==='medic') return 'Field support contact / recovery flavor.';
+    if(id==='warden') return 'Route/security contact / world flavor.';
+    if(id==='scavenger') return 'Scrap and survivor contact / world flavor.';
+    return 'Field contact.';
+  }
+  function renderNpcContactCodexPanel(){
+    const grid=document.querySelector('#missionOverlay .fracture-grid');
+    if(!grid) return;
+    let panel=$('npcContactCodexPanel');
+    if(!panel){ panel=document.createElement('section'); panel.id='npcContactCodexPanel'; panel.className='fracture-card npc-contact-codex'; grid.appendChild(panel); }
+    const stage=currentStageKey();
+    const def=stageDef(stage)||stageDef();
+    const contacts=Object.values(NPC_DEFS).filter(n=>n.stages && n.stages[stage]);
+    const rows=contacts.map(n=>{
+      const talked=!!state.npcTalks?.[`${n.id}:${stage}`];
+      const claimed=!!state.npcRewards?.[`${n.id}:${stage}`];
+      const pos=n.stages[stage]||{};
+      const label=n.name || n.id;
+      const status=claimed?'✅ Reward claimed':talked?'🟡 Contacted':'⬜ Not contacted';
+      return `<div class="mission-row npc-codex-row"><div><b>${safeHtml(label)}</b><span>${safeHtml(npcRoleText(n.id))}</span><small>${safeHtml(status)} // near tile ${Number(pos.x)||0}, ${Number(pos.y)||0}</small></div><button onclick="window.AV.pingNpcContact('${safeHtml(n.id)}')">Ping</button></div>`;
+    }).join('') || '<div class="mission-row">No field contacts registered for this level.</div>';
+    panel.innerHTML=`<div class="record-kicker">FIELD CONTACT CODEX // ${safeHtml(def.id||stage)}</div><h3>NPC Contacts</h3><p>Use this when testing routes. NPCs are walkthrough contacts, so they should never block the player path.</p>${rows}<p class="fineprint">Keyboard E, controller A/Cross, phone Talk, or direct tap/click can trigger nearby contact dialogue.</p>`;
+  }
+  function pingNpcContact(id){
+    const npc=stageNpcs().find(n=>n.id===id);
+    if(!npc){ toast('Contact not found on this level.'); return; }
+    state.objectivePing={x:npc.x,y:npc.y,label:(npc.name||'NPC'),ttl:360};
+    log(`Contact ping set: ${npc.name||id}.`);
+    toast(`Pinging ${npc.name||id}.`);
+    renderAll();
   }
 
   function playerGuideBoardHtml(stage=currentStageKey()){
@@ -9421,6 +9457,7 @@
     renderRouteRecordsPanel();
     renderControlsHelpPanel();
     renderEventJournalPanel();
+    renderNpcContactCodexPanel();
     $('missionActiveHint') && ($('missionActiveHint').textContent=activeText);
     $('qaState') && ($('qaState').innerHTML=`<div class="statrow">Stage: ${def.id} // ${def.title}</div><div class="statrow">Player Level: ${p.level} // QA Bypass: ${state.qaUnlockAllStages?'ON':'OFF'}</div><div class="statrow">Level Locks: ${Object.entries(STAGE_DEFS).map(([k,d])=>d.id+': '+(playerMeetsStageRequirement(k)?'open':'locked')).join(' // ')}</div><div class="statrow">Characters: ${Object.values(OPERATOR_DEFS).filter(op=>operatorUnlocked(op.id)).length}/${Object.values(OPERATOR_DEFS).length} unlocked // QA Unlock: ${state.qaUnlockAllCharacters?'ON':'OFF'}</div><div class="statrow">Position: ${p.x}, ${p.y}</div><div class="statrow">HP: ${p.hp}/${stats.maxHp} // EP ${p.ep}/${stats.maxEp||p.maxEp}</div><div class="statrow">Map Version: ${state.mapVersion || MAP_VERSION}</div><div class="statrow">Controller: ${ControllerManager.statusText()}</div><div class="statrow">Flags: ${JSON.stringify(state.flags)}</div>`); renderQaStagePicker();
     renderFullscreenHud();
@@ -9496,7 +9533,7 @@
         renderUI();
         renderRoutePrepPanel();
         runDeferredUiTask(()=>{ renderMissionContractPanel(); renderStoryArchivePanel(); }, 'mission core panels');
-        runDeferredUiTask(()=>{ renderRouteRecordsPanel(); renderEventJournalPanel(); }, 'mission archive panels');
+        runDeferredUiTask(()=>{ renderRouteRecordsPanel(); renderEventJournalPanel(); renderNpcContactCodexPanel(); }, 'mission archive panels');
       }
       if(id==='playtestOverlay'){ renderUI(); runDeferredUiTask(renderQaLockdownBuffBoard, 'playtest board'); }
       if(id==='progressionOverlay') renderProgressionDb();
@@ -10459,7 +10496,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, renderNpcContactCodexPanel, pingNpcContact, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
