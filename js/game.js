@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '266';
-  const BUILD_TITLE = '2.5D DEPTH VISUAL PASS';
+  const BUILD_VERSION = '267';
+  const BUILD_TITLE = 'ATMOSPHERE FOG CLEANUP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -9288,15 +9288,42 @@
     ctx.fillStyle=light;
     ctx.fillRect(0,0,VIEW_W,VIEW_H);
 
-    for(let i=0;i<8;i++){
-      const y=(i*83 + (t*90)%83) % (VIEW_H+80) - 40;
-      const grd=ctx.createLinearGradient(0,y,VIEW_W,y+46);
-      grd.addColorStop(0,'rgba(120,190,190,0)');
-      grd.addColorStop(0.5,tint.beam);
-      grd.addColorStop(1,'rgba(120,190,190,0)');
-      ctx.fillStyle=grd;
-      ctx.fillRect(0,y,VIEW_W,46);
+    // v267: remove the moving scan-line style atmosphere bands. They looked like
+    // weird colored stripes while the camera moved. Replace them with softer drifting
+    // fog wisps so the level feels hazy instead of striped.
+    ctx.globalCompositeOperation='screen';
+    const mistPasses = 6;
+    for(let i=0;i<mistPasses;i++){
+      const phase = t * (0.45 + i * 0.035) + i * 1.7;
+      const fx = ((Math.sin(phase * 0.72) + 1) * 0.5) * (VIEW_W + 180) - 90;
+      const fy = ((i * 92) + (Math.cos(phase * 0.58) * 24) + ((t * 18 * (i % 2 ? 1 : -1)) % (VIEW_H + 160))) % (VIEW_H + 160) - 80;
+      const rx = 150 + (i % 3) * 34 + Math.sin(phase * 1.21) * 16;
+      const ry = 38 + (i % 2) * 10 + Math.cos(phase * 1.14) * 5;
+      ctx.save();
+      ctx.translate(fx, fy);
+      ctx.rotate(Math.sin(phase * 0.63) * 0.18);
+      ctx.scale(Math.max(1.1, rx / 70), Math.max(0.9, ry / 40));
+      const fog = ctx.createRadialGradient(0, 0, 8, 0, 0, 70);
+      fog.addColorStop(0, tint.glow);
+      fog.addColorStop(0.45, tint.beam);
+      fog.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = fog;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 70, 40, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
+    ctx.globalAlpha = 1;
+
+    // Add a subtle top/bottom haze layer so the scene reads more like fog.
+    const haze = ctx.createLinearGradient(0, 0, 0, VIEW_H);
+    haze.addColorStop(0, 'rgba(255,255,255,0.045)');
+    haze.addColorStop(0.18, 'rgba(255,255,255,0.018)');
+    haze.addColorStop(0.55, 'rgba(255,255,255,0.008)');
+    haze.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = haze;
+    ctx.fillRect(0, 0, VIEW_W, VIEW_H);
 
     ctx.globalCompositeOperation='source-over';
     const vignette = ctx.createRadialGradient(VIEW_W/2, VIEW_H/2, VIEW_W*0.25, VIEW_W/2, VIEW_H/2, VIEW_W*0.78);
