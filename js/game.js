@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '248';
-  const BUILD_TITLE = 'RELIABLE ASSET LOAD ROLLBACK PASS';
+  const BUILD_VERSION = '249';
+  const BUILD_TITLE = 'PLAYER SPRITE CACHE FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1233,7 +1233,7 @@
     ctx.fill();
     ctx.shadowColor='#94ff62';
     ctx.shadowBlur=6;
-    if(im && im.complete && im.naturalWidth){
+    if(usableCanvasImage(im)){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(im, dx, dy, drawW, drawH);
@@ -4727,12 +4727,60 @@
     if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
     if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Operator Level</b><span>Lv. ${activeOperatorProgress().level} // ${activeOperatorProgress().xp}/${activeOperatorProgress().nextXp} XP</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
     if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking'), ...operatorAnimationPaths(op,'idle')].join('\n');
+    try{ playerSpriteRuntime.lastGood=null; primeCurrentPlayerSprites(); }catch(err){}
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   let battleCommandIndex = 0;
   let preBattleCommandIndex = 0;
   const images = {};
+  const playerSpriteRuntime = {lastPath:null,lastGood:null,lastFacing:null,primedOperator:null};
+
+  function playerSpritePathsForOperator(op=currentOperator()){
+    return [...new Set([
+      op?.mapSprite, op?.mapSpriteLarge,
+      ...(Object.values(op?.rotations || {})),
+      ...operatorAnimationPaths(op,'idle'),
+      ...operatorAnimationPaths(op,'walking')
+    ].filter(Boolean))];
+  }
+  function primeCurrentPlayerSprites(){
+    const op=currentOperator();
+    const id=currentOperatorId();
+    playerSpriteRuntime.primedOperator=id;
+    playerSpritePathsForOperator(op).forEach(path=>ensureImageCached(path,{eager:true}));
+  }
+  function usableCanvasImage(im){
+    return !!(im && im.complete && im.naturalWidth && im.naturalHeight);
+  }
+  function resolvePlayerSpriteImage(spritePath){
+    primeCurrentPlayerSprites();
+    const requested = ensureImageCached(spritePath,{eager:true});
+    if(usableCanvasImage(requested)){
+      playerSpriteRuntime.lastPath=spritePath;
+      playerSpriteRuntime.lastGood=requested;
+      playerSpriteRuntime.lastFacing=state?.player?.facing || 'down';
+      return requested;
+    }
+    const op=currentOperator();
+    const dir=normalizeOperatorFacing(state?.player?.facing || 'down');
+    const fallbacks=[
+      op?.rotations?.[dir],
+      op?.mapSprite,
+      op?.mapSpriteLarge,
+      'assets/operators/av001/sprites/map_sprite.png'
+    ].filter(Boolean);
+    for(const path of fallbacks){
+      const im=ensureImageCached(path,{eager:true});
+      if(usableCanvasImage(im)){
+        playerSpriteRuntime.lastPath=path;
+        playerSpriteRuntime.lastGood=im;
+        playerSpriteRuntime.lastFacing=state?.player?.facing || 'down';
+        return im;
+      }
+    }
+    return playerSpriteRuntime.lastGood || requested || null;
+  }
 
   function newGameState(){
     const parsed = parseStageMap('f001');
@@ -5713,7 +5761,7 @@
     hideAll(); uiState.mode='game'; uiState.returnStack.length=0;
     document.body.classList.add('game-active','fullscreen-mode'); document.body.dataset.stage=stageDef().key;
     ensureFullscreenUi(); ensureMobileActionPad(); setMobilePlayMode(); stopIntroVideoForGame();
-    preloadCriticalImages(); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
+    preloadCriticalImages(); primeCurrentPlayerSprites(); preloadCurrentStageAssets(currentStageKey(), {immediate:true}); setTimeout(preloadLockdownAssets, 1200);
     $('app').classList.remove('hidden'); requestNativeFullscreen(); canvas.focus({preventScroll:true});
     renderAll(); unlockRadioTrack(musicKeyForStage()); AudioManager.play(activeMusicForState());
     save(true); setTimeout(()=>pulseObjective(currentObjectiveText()), 240);
@@ -8870,7 +8918,7 @@
 
   function drawPlayerSprite(x,y){
     const spritePath = currentOperatorMapSpriteForFacing(state?.player?.facing || 'down');
-    const im = ensureImageCached(spritePath) || images[spritePath] || ensureImageCached(currentOperator()?.mapSprite);
+    const im = resolvePlayerSpriteImage(spritePath);
     const lockdownActive = !!state.rogueEvent?.active;
     // v130: same map footprint as NPCs and monsters.
     const drawW = MAP_ENTITY_W;
@@ -8895,11 +8943,14 @@
         ctx.strokeRect(dx+6, dy+6, drawW-12, drawH-12);
       }
     } else {
-      // fallback only if asset fails to load
-      ctx.fillStyle=lockdownActive ? '#20374b' : '#111820';
-      ctx.fillRect(x+8,y+6,26,30);
-      ctx.fillStyle='rgba(255,255,255,.82)';
-      ctx.fillRect(x+12,y+16,18,5);
+      // v249: final emergency silhouette only. Normal movement keeps the last good sprite
+      // while a new facing/walking frame loads, so the player no longer flashes into a block.
+      ctx.fillStyle=lockdownActive ? 'rgba(32,55,75,.64)' : 'rgba(17,24,32,.52)';
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x+9,y+7,24,31,7) : ctx.rect(x+9,y+7,24,31);
+      ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.72)';
+      ctx.fillRect(x+13,y+17,16,4);
       ctx.strokeStyle=lockdownActive ? 'rgba(112,215,255,.88)' : 'rgba(255,255,255,.18)';
       ctx.lineWidth=2;
       ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
