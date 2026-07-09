@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '261';
-  const BUILD_TITLE = 'NPC LABEL DECLUTTER PASS';
+  const BUILD_VERSION = '262';
+  const BUILD_TITLE = 'TUTORIAL TIP CLEANUP PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5736,13 +5736,15 @@
     const tip=document.createElement('div');
     tip.id='tutorialTipOverlay';
     tip.className='avos-crt tutorial-tip-overlay';
-    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99999;width:min(380px,calc(100vw - 28px));background:rgba(5,9,14,.96);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 28px rgba(0,217,255,.22);border-radius:14px;padding:14px;color:#eafcff;font-family:monospace;line-height:1.35;pointer-events:none;';
-    tip.innerHTML=`<div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:17px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div>`;
+    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:7000;width:min(360px,calc(100vw - 28px));max-height:min(42vh,320px);overflow:auto;background:rgba(5,9,14,.94);border:1px solid rgba(0,217,255,.45);box-shadow:0 0 22px rgba(0,217,255,.16);border-radius:14px;padding:13px;color:#eafcff;font-family:monospace;line-height:1.35;pointer-events:none;opacity:.96;transition:opacity .22s ease, transform .22s ease;';
+    tip.innerHTML=`<div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:16px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div><div style="margin-top:7px;color:#7da8b8;font-size:10px;letter-spacing:.06em;text-transform:uppercase">Auto hides soon</div>`;
     document.body.appendChild(tip);
     tip.querySelectorAll('button').forEach(btn=>{ btn.style.pointerEvents='auto'; });
-    $('tutorialTipOk').onclick=()=>tip.remove();
-    $('tutorialTipDisable').onclick=()=>{ state.settings.tutorialTips=false; applySettings(); queueAutosave(); tip.remove(); toast('Tutorial tips disabled. Re-enable in Configuration.'); };
-    setTimeout(()=>{ if(document.body.contains(tip)) tip.style.boxShadow='0 0 22px rgba(0,217,255,.16)'; }, 2200);
+    const closeTip=()=>{ if(document.body.contains(tip)){ tip.style.opacity='0'; tip.style.transform='translateY(8px)'; setTimeout(()=>tip.remove(),220); } };
+    $('tutorialTipOk').onclick=closeTip;
+    $('tutorialTipDisable').onclick=()=>{ state.settings.tutorialTips=false; applySettings(); queueAutosave(); closeTip(); toast('Tutorial tips disabled. Re-enable in Configuration.'); };
+    setTimeout(()=>{ if(document.body.contains(tip)) tip.style.boxShadow='0 0 16px rgba(0,217,255,.12)'; }, 2200);
+    setTimeout(closeTip, 11500);
   }
   function resetTutorialTips(){
     ensureSettings();
