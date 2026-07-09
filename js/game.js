@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '252';
-  const BUILD_TITLE = 'NPC ROUTE CLEAR FIX PASS';
+  const BUILD_VERSION = '253';
+  const BUILD_TITLE = 'NPC WALKTHROUGH SPRITE FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1035,11 +1035,13 @@
   // open floor pockets while leaving doors, entries, boss routes, and main corridors clear.
   const NPC_SAFE_FALLBACKS = {
     f001:{
-      scavenger:{x:7,y:21},
-      medic:{x:13,y:22},
-      warden:{x:18,y:21},
-      metallik:{x:22,y:23},
-      fermilat:{x:25,y:22}
+      // V253: park F-001 field contacts in side pockets, not the central route.
+      // NPCs are also walkthrough now, but these coords keep the art out of entry lanes.
+      scavenger:{x:9,y:20},
+      medic:{x:20,y:36},
+      warden:{x:18,y:37},
+      metallik:{x:10,y:33},
+      fermilat:{x:21,y:35}
     }
   };
   function npcChebDistance(a,b){ return Math.max(Math.abs((a?.x||0)-(b?.x||0)), Math.abs((a?.y||0)-(b?.y||0))); }
@@ -1113,7 +1115,7 @@
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); }
   function stageNpcs(key=currentStageKey()){
     // V239: NPC safety placement can scan the map. Cache per stage so every draw/frame does not redo that work.
-    const cacheKey = `${key}:${MAP_VERSION}:v252:${Object.keys(NPC_DEFS).length}`;
+    const cacheKey = `${key}:${MAP_VERSION}:v253:${Object.keys(NPC_DEFS).length}`;
     const cached = npcStagePlacementCache.get(cacheKey);
     if(cached) return cached;
     const used=new Set();
@@ -1254,7 +1256,9 @@
   }
   function drawNpc(npc){
     const x = npc.x * TILE, y = npc.y * TILE;
-    const im = images[npc.asset];
+    // V253: NPCs are canvas-drawn, so request their image at draw time.
+    // Do not wait for background preload or they can stay as invisible/fallback boxes.
+    const im = imgFor(npc.asset);
     const drawW = MAP_ENTITY_W;
     const drawH = MAP_ENTITY_H;
     const dx = x + (TILE-drawW)/2;
@@ -4970,6 +4974,8 @@
   function preloadCriticalImages(){
     const key=currentStageKey();
     preloadPaths(currentStageCriticalAssetPaths(key), {defer:false, eager:true});
+    // V253: NPC portraits/sprites are small enough to keep reliable and prevent contact fallback art.
+    preloadPaths(Object.values(NPC_DEFS).map(n=>n.asset).filter(Boolean), {defer:false, eager:true});
   }
   function preloadCurrentStageAssets(key=currentStageKey(), opts={}){
     const immediate = opts.immediate !== false;
@@ -7114,7 +7120,13 @@
 
     const c=tileAt(nx,ny);
     const npcBlock=npcAt(nx,ny);
-    if(npcBlock){ if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('NPC talk'); renderAll(); return; } toast('Fermilat is here. Press E/A to talk, or walk around him.'); renderAll(); return; }
+    // V253: NPCs are contacts, not hard walls. They can never block a route/entry lane.
+    // The player can stand on or pass through them and press E/A/Talk when nearby.
+    if(npcBlock && lockdownNormalInteractionsLocked()){
+      lockdownInteractionToast('NPC talk');
+      renderAll();
+      return;
+    }
     if(c==='D'){ if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('boss gates'); renderAll(); return; } handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
     if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); clampPlayerToMap(); renderAll(); return; }
 
