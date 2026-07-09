@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '260';
-  const BUILD_TITLE = 'ONE NPC PER ROOM PASS';
+  const BUILD_VERSION = '261';
+  const BUILD_TITLE = 'NPC LABEL DECLUTTER PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1171,7 +1171,7 @@
     if(!pts.length) return 24;
     return Math.min(...pts.map(p=>npcChebDistance({x,y},p)));
   }
-  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v260-one-npc-per-room:${Object.keys(NPC_DEFS).length}`; }
+  function npcStageCacheKey(key=currentStageKey()){ return `${key}:${MAP_VERSION}:v261-one-npc-per-room:${Object.keys(NPC_DEFS).length}`; }
   function npcRoamKey(npc,key=currentStageKey()){ return `${key}:${npc?.id || 'npc'}`; }
   const npcRoamTargets = new Map();
   function clearNpcStagePlacementCache(){ npcStagePlacementCache.clear(); npcRoamPositions.clear(); npcRoamTargets.clear(); }
@@ -1529,9 +1529,11 @@
     // especially after NPCs were changed into walkthrough contacts.
     const rewardKey = npcRewardKey(npc);
     const claimed = !!state?.npcRewards?.[rewardKey];
-    const isSpecial = npc.id === 'fermilat' || npc.id === 'metallik';
     const labelText = String(npc.name || npc.id || 'Contact').slice(0, 18).toUpperCase();
-    const labelNear = near || npcChebDistance(npc, state?.player || {x:-999,y:-999}) <= 7 || isSpecial;
+    // V261: declutter field contacts. Keep NPCs readable when the player is close,
+    // but do not keep every special NPC label permanently open across the whole room.
+    const contactDist = npcChebDistance(npc, state?.player || {x:-999,y:-999});
+    const labelNear = near || contactDist <= 5;
     if(labelNear){
       const nameW=Math.max(78, Math.min(142, labelText.length*7+18));
       const nameX=x+(TILE-nameW)/2;
@@ -1545,11 +1547,11 @@
       ctx.textAlign='center';
       ctx.fillText(labelText, x+TILE/2, nameY+9);
     }
-    ctx.strokeStyle=near?'rgba(148,255,98,.88)':(claimed?'rgba(148,178,164,.28)':'rgba(148,255,98,.38)');
+    ctx.strokeStyle=near?'rgba(148,255,98,.88)':(claimed?'rgba(148,178,164,.20)':'rgba(148,255,98,.26)');
     ctx.lineWidth=near?2:1;
     ctx.strokeRect(x+7,y+7,TILE-14,TILE-13);
-    if(!claimed){
-      ctx.strokeStyle='rgba(148,255,98,.34)';
+    if(!claimed && contactDist <= 8){
+      ctx.strokeStyle='rgba(148,255,98,.28)';
       ctx.beginPath();
       ctx.arc(x+TILE/2,y+TILE-6, near?22:18,0,Math.PI*2);
       ctx.stroke();
