@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '254';
-  const BUILD_TITLE = 'NPC CONTACT POLISH PASS';
+  const BUILD_VERSION = '255';
+  const BUILD_TITLE = 'JEREMIE NAME PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -727,11 +727,11 @@
   // v74/v75: NPC contact system. NPCs are drawn on the map, can be clicked,
   // or can be talked to by standing near them and pressing E. v75 moves them deeper
   // into each route and supports alternating speaker portraits during dialog.
-  // v76 moves the talk prompt to Fermilat's feet and adds one-time NPC stash rewards.
+  // v76 moves the talk prompt to Jeremie's feet and adds one-time NPC stash rewards.
   const NPC_DEFS = {
     fermilat: {
       id: 'fermilat',
-      name: 'Fermilat',
+      name: 'Jeremie',
       asset: 'assets/npcs/fermilat.png',
       stages: {
         f001:{x:28,y:20,scene:'fermilatF001'}, f002:{x:24,y:21,scene:'fermilatF002'}, f003:{x:30,y:19,scene:'fermilatF003'},
@@ -786,21 +786,21 @@
     }
   };
 
-  // v81: lightweight side quest journal. Fermilat now offers a small optional
+  // v81: lightweight side quest journal. Jeremie now offers a small optional
   // grind objective per stage after you find him near the boss route.
-  const FERMILAT_FAVOR_DEFS = {
-    f001:{title:"Fermilat\'s Suspicious Favor", target:3, credits:35, syncXp:70, skillXp:120, items:{'Vector Cell':1,'Med Patch':1}, ask:'Fermilat wants you to defeat 3 anomalies before he "trusts your footwork."', done:'Fermilat is weirdly proud of your graveyard footwork.'},
-    f002:{title:'Ash Wastes Footwork', target:4, credits:65, syncXp:115, skillXp:180, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Fermilat wants proof you can survive the dry outpost without sending evidence.', done:'Fermilat says the ash is terrible for "collectible preservation."'},
-    f003:{title:'Graveyard Toe-tal Chaos', target:5, credits:95, syncXp:165, skillXp:260, items:{'Vector Cell':2,'Corrupted Catalyst':1}, ask:'Fermilat wants 5 graveyard anomalies deleted. He calls it "spooky foot traffic control."', done:'Fermilat congratulates you in the least normal way possible.'},
-    f004:{title:'Transit Tunnel Favor', target:5, credits:115, syncXp:190, skillXp:270, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Fermilat wants proof you can sprint through the subway without tripping over cursed rails.', done:'Fermilat says the Transit Ruins have excellent echo acoustics for terrible opinions.'},
-    f005:{title:'Prism Lab Favor', target:6, credits:145, syncXp:230, skillXp:320, items:{'Vector Cell':2,'Corrupted Catalyst':2}, ask:'Fermilat wants 6 prism anomalies deleted because glass floors make him nervous.', done:'Fermilat is impressed and asks if the lab can clone socks. AVOS refuses.'},
-    f006:{title:'Core Spire Favor', target:6, credits:180, syncXp:280, skillXp:380, items:{'Vector Cell':3,'Rust Core':2}, ask:'Fermilat wants 6 core anomaly defeats before he admits the final route is terrifying.', done:'Fermilat salutes you with absolutely no dignity and three suspicious snacks.'}
+  const JEREMIE_FAVOR_DEFS = {
+    f001:{title:"Jeremie\'s Suspicious Favor", target:3, credits:35, syncXp:70, skillXp:120, items:{'Vector Cell':1,'Med Patch':1}, ask:'Jeremie wants you to defeat 3 anomalies before he "trusts your footwork."', done:'Jeremie is weirdly proud of your graveyard footwork.'},
+    f002:{title:'Ash Wastes Footwork', target:4, credits:65, syncXp:115, skillXp:180, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Jeremie wants proof you can survive the dry outpost without sending evidence.', done:'Jeremie says the ash is terrible for "collectible preservation."'},
+    f003:{title:'Graveyard Toe-tal Chaos', target:5, credits:95, syncXp:165, skillXp:260, items:{'Vector Cell':2,'Corrupted Catalyst':1}, ask:'Jeremie wants 5 graveyard anomalies deleted. He calls it "spooky foot traffic control."', done:'Jeremie congratulates you in the least normal way possible.'},
+    f004:{title:'Transit Tunnel Favor', target:5, credits:115, syncXp:190, skillXp:270, items:{'Vector Cell':2,'Burnt Alloy':2}, ask:'Jeremie wants proof you can sprint through the subway without tripping over cursed rails.', done:'Jeremie says the Transit Ruins have excellent echo acoustics for terrible opinions.'},
+    f005:{title:'Prism Lab Favor', target:6, credits:145, syncXp:230, skillXp:320, items:{'Vector Cell':2,'Corrupted Catalyst':2}, ask:'Jeremie wants 6 prism anomalies deleted because glass floors make him nervous.', done:'Jeremie is impressed and asks if the lab can clone socks. AVOS refuses.'},
+    f006:{title:'Core Spire Favor', target:6, credits:180, syncXp:280, skillXp:380, items:{'Vector Cell':3,'Rust Core':2}, ask:'Jeremie wants 6 core anomaly defeats before he admits the final route is terrifying.', done:'Jeremie salutes you with absolutely no dignity and three suspicious snacks.'}
   };
   function sideQuestKey(stage=currentStageKey()){ return `fermilat:${stage}`; }
   function ensureSideQuests(){
     if(!state) return;
     state.sideQuests ||= {};
-    Object.entries(FERMILAT_FAVOR_DEFS).forEach(([stage,def]) => {
+    Object.entries(JEREMIE_FAVOR_DEFS).forEach(([stage,def]) => {
       const key=sideQuestKey(stage);
       state.sideQuests[key] ||= {id:key, stage, npc:'fermilat', title:def.title, status:'locked', progress:0, target:def.target, claimed:false};
       const q=state.sideQuests[key];
@@ -811,7 +811,7 @@
     });
   }
   function fermilatQuest(stage=currentStageKey()){ ensureSideQuests(); return state.sideQuests[sideQuestKey(stage)]; }
-  function startFermilatQuest(stage=currentStageKey()){
+  function startJeremieQuest(stage=currentStageKey()){
     ensureSideQuests();
     const q=fermilatQuest(stage);
     if(!q || q.claimed || q.status === 'active' || q.status === 'complete') return false;
@@ -829,15 +829,15 @@
     q.lastTarget=enemyName;
     if(q.progress >= q.target){
       q.status='complete';
-      log(`${q.title} complete. Return to Fermilat for a reward.`);
-      toast('Side quest complete. Return to Fermilat.');
+      log(`${q.title} complete. Return to Jeremie for a reward.`);
+      toast('Side quest complete. Return to Jeremie.');
     }
     queueAutosave();
   }
-  function claimFermilatQuest(stage=currentStageKey()){
+  function claimJeremieQuest(stage=currentStageKey()){
     ensureSideQuests();
     const q=fermilatQuest(stage);
-    const def=FERMILAT_FAVOR_DEFS[stage];
+    const def=JEREMIE_FAVOR_DEFS[stage];
     if(!q || q.status !== 'complete' || q.claimed) return false;
     q.status='claimed'; q.claimed=true; q.claimedAt=Date.now();
     addCredits(def.credits||0);
@@ -847,9 +847,9 @@
     log(`Side quest reward claimed: ${def.title}. +${def.credits||0} credits.`);
     toast(`Quest reward claimed: ${def.title}`);
     showFieldRewardModal({
-      kicker:'FERMILAT FAVOR COMPLETE',
+      kicker:'JEREMIE FAVOR COMPLETE',
       title:def.title,
-      message:def.done || 'Fermilat coughs up the stash and tries to look normal about it.',
+      message:def.done || 'Jeremie coughs up the stash and tries to look normal about it.',
       stats:[`Credits +${def.credits||0}`, `Player XP +${def.syncXp||0}`, `Anomaly Hunting XP +${def.skillXp||0}`],
       items:def.items||{}
     });
@@ -857,18 +857,18 @@
     return true;
   }
   function sideQuestStatusText(stage=currentStageKey()){
-    const q=fermilatQuest(stage); const def=FERMILAT_FAVOR_DEFS[stage];
+    const q=fermilatQuest(stage); const def=JEREMIE_FAVOR_DEFS[stage];
     if(!q || !def) return 'No side quest available.';
     if(q.status === 'claimed') return `✅ ${q.title}: claimed`;
-    if(q.status === 'complete') return `✅ ${q.title}: return to Fermilat`;
+    if(q.status === 'complete') return `✅ ${q.title}: return to Jeremie`;
     if(q.status === 'active') return `⬜ ${q.title}: ${q.progress}/${q.target} anomalies`;
-    return `⬜ Find Fermilat near the boss route to unlock his side quest.`;
+    return `⬜ Find Jeremie near the boss route to unlock his side quest.`;
   }
   function sideQuestHtml(stage=currentStageKey()){
-    const q=fermilatQuest(stage); const def=FERMILAT_FAVOR_DEFS[stage] || FERMILAT_FAVOR_DEFS.f001;
+    const q=fermilatQuest(stage); const def=JEREMIE_FAVOR_DEFS[stage] || JEREMIE_FAVOR_DEFS.f001;
     const pct=q ? Math.min(100, Math.floor((q.progress||0)/Math.max(1,q.target||def.target)*100)) : 0;
     const reward=`${def.credits} credits // ${def.syncXp} Sync XP // ${def.skillXp} Anomaly Hunting XP${Object.entries(def.items||{}).map(([n,qty])=>` // ${qty} ${n}`).join('')}`;
-    return `<section class="fracture-card side-quest-board"><div class="record-kicker">SIDE QUEST // FERMILAT FAVOR</div><h3>${safeHtml(def.title)}</h3><p>${safeHtml(q?.status==='claimed' ? def.done : def.ask)}</p><div class="statrow">Progress ${q?.progress||0}/${q?.target||def.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Status</b><span>${safeHtml(sideQuestStatusText(stage))}</span></div><div><b>Reward</b><span>${safeHtml(reward)}</span></div></div><button onclick="window.AV.claimFermilatQuest('${stage}')" ${q?.status==='complete'?'':'disabled'}>${q?.status==='complete'?'Claim Reward':'Talk / Hunt to Progress'}</button></section>`;
+    return `<section class="fracture-card side-quest-board"><div class="record-kicker">SIDE QUEST // JEREMIE FAVOR</div><h3>${safeHtml(def.title)}</h3><p>${safeHtml(q?.status==='claimed' ? def.done : def.ask)}</p><div class="statrow">Progress ${q?.progress||0}/${q?.target||def.target}<div class="bar xp"><span style="width:${pct}%"></span></div></div><div class="protocol-list"><div><b>Status</b><span>${safeHtml(sideQuestStatusText(stage))}</span></div><div><b>Reward</b><span>${safeHtml(reward)}</span></div></div><button onclick="window.AV.claimJeremieQuest('${stage}')" ${q?.status==='complete'?'':'disabled'}>${q?.status==='complete'?'Claim Reward':'Talk / Hunt to Progress'}</button></section>`;
   }
 
   function npcRouteBoardHtml(stage=currentStageKey()){
@@ -881,7 +881,7 @@
     const metalReward=metallikSignalReward(stage);
     const metalItems=Object.entries(metalReward.items||{}).filter(([_,qty])=>qty>0).map(([name,qty])=>`${qty} ${name}`).join(' // ');
     const fermilatStatus=sideQuestStatusText(stage);
-    return `<section class="fracture-card npc-route-board"><div class="record-kicker">NPC ROUTE BOARD // ${safeHtml(def.id||stage)}</div><h3>Field Contacts</h3><p>Use this board to see what each NPC can still do on the current level.</p><div class="protocol-list"><div><b>Fermilat</b><span>${safeHtml(fermilatStatus)}</span></div><div><b>MetalliK</b><span>${metalClaimed?'✅ Resonance cache claimed':`⬜ Resonance cache ready // ${metalReward.credits} credits // ${metalReward.xp} XP${metalItems?` // ${metalItems}`:''}`}</span></div></div><div class="statrow">Fermilat Favor ${q?.progress||0}/${q?.target||0}<div class="bar xp"><span style="width:${qPct}%"></span></div></div><p class="fineprint">Talk to NPCs in the field to claim their rewards. MetalliK is once per level. Fermilat favors progress by deleting anomalies on that level.</p></section>`;
+    return `<section class="fracture-card npc-route-board"><div class="record-kicker">NPC ROUTE BOARD // ${safeHtml(def.id||stage)}</div><h3>Field Contacts</h3><p>Use this board to see what each NPC can still do on the current level.</p><div class="protocol-list"><div><b>Jeremie</b><span>${safeHtml(fermilatStatus)}</span></div><div><b>MetalliK</b><span>${metalClaimed?'✅ Resonance cache claimed':`⬜ Resonance cache ready // ${metalReward.credits} credits // ${metalReward.xp} XP${metalItems?` // ${metalItems}`:''}`}</span></div></div><div class="statrow">Jeremie Favor ${q?.progress||0}/${q?.target||0}<div class="bar xp"><span style="width:${qPct}%"></span></div></div><p class="fineprint">Talk to NPCs in the field to claim their rewards. MetalliK is once per level. Jeremie favors progress by deleting anomalies on that level.</p></section>`;
   }
 
   function playerGuideBoardHtml(stage=currentStageKey()){
@@ -890,8 +890,8 @@
     const bossReq=requiredAnomaliesForStage(stage);
     const flow=[
       ['1', 'Sync', 'Use the cyan terminal/checkpoint first so the route and story line are clear.'],
-      ['2', 'Hunt', `Clear ${bossReq} anomalies to open the boss route. Contracts and Fermilat favors progress here.`],
-      ['3', 'NPCs', 'Talk to Fermilat for side favors and MetalliK for one Resonance Cache per level.'],
+      ['2', 'Hunt', `Clear ${bossReq} anomalies to open the boss route. Contracts and Jeremie favors progress here.`],
+      ['3', 'NPCs', 'Talk to Jeremie for side favors and MetalliK for one Resonance Cache per level.'],
       ['4', 'Boss', 'Fight the boss when ready. The return portal can take you back before the random event starts.'],
       ['5', 'Extract', 'Use the exit portal after the boss/core objective is finished.']
     ];
@@ -963,7 +963,7 @@
       ['Boss Route Open', !!state.flags?.bossUnlocked, 'When open, push to the boss zone or use the return portal to backtrack.'],
       ['Boss Defeated', !!state.flags?.bossDefeated, 'Beat the level boss to unlock extraction.'],
       ['MetalliK Cache', metalClaimed, metalClaimed?'Current level cache claimed.':'Talk to MetalliK once on this level for a scaling cache.'],
-      ['Fermilat Favor', q?.status==='claimed', q?.status==='complete'?'Return to Fermilat and claim.':q?.status==='active'?`${q.progress||0}/${q.target||0} favor progress.`:'Talk to Fermilat near the boss route.'],
+      ['Jeremie Favor', q?.status==='claimed', q?.status==='complete'?'Return to Jeremie and claim.':q?.status==='active'?`${q.progress||0}/${q.target||0} favor progress.`:'Talk to Jeremie near the boss route.'],
       ['Contract', !!contract.complete, contract.complete?'Claim the repeatable contract from this briefing.':`${contract.progress}/${contract.target} contract progress.`]
     ];
     const done=rows.filter(r=>r[1]).length;
@@ -1030,7 +1030,7 @@
   // Resolve every NPC to a walkable floor tile away from spawn at draw/talk time.
   const NPC_MIN_SPAWN_DISTANCE = 15;
   // V252: keep field contacts out of spawn, walls, and route chokepoints.
-  // The old F-001 Fermilat fallback pointed outside the map, so the safety resolver
+  // The old F-001 Jeremie fallback pointed outside the map, so the safety resolver
   // could shove him into the boss-entry lane. These hand-safe tiles park NPCs in
   // open floor pockets while leaving doors, entries, boss routes, and main corridors clear.
   const NPC_SAFE_FALLBACKS = {
@@ -1175,9 +1175,9 @@
 
     if(npc.id === 'fermilat'){
       const q=fermilatQuest(npc.stage);
-      const claimedQuest=claimFermilatQuest(npc.stage);
+      const claimedQuest=claimJeremieQuest(npc.stage);
       if(!claimedQuest){
-        if(q?.status === 'locked') startFermilatQuest(npc.stage);
+        if(q?.status === 'locked') startJeremieQuest(npc.stage);
         else if(q?.status === 'active') log(`${npc.name} side quest: ${q.progress}/${q.target} anomalies deleted.`);
         else if(q?.status === 'claimed') log(`${npc.name} side quest already claimed on ${stageDef(npc.stage).id}.`);
       }
@@ -1187,19 +1187,19 @@
         return;
       }
       const rewards = {
-        f001:{credits:15, items:{'Vector Cell':1,'Med Patch':1}, label:'Fermilat Creep Stash'},
-        f002:{credits:30, items:{'Vector Cell':2,'Burnt Alloy':1}, label:'Fermilat Ash Stash'},
-        f003:{credits:45, items:{'Vector Cell':2,'Corrupted Catalyst':1}, label:'Fermilat Grave Stash'}
-      }[npc.stage] || {credits:15 + stageTier*6, items:{'Vector Cell':1 + Math.floor(stageTier/4)}, label:'Fermilat Salvage Stash'};
+        f001:{credits:15, items:{'Vector Cell':1,'Med Patch':1}, label:'Jeremie Creep Stash'},
+        f002:{credits:30, items:{'Vector Cell':2,'Burnt Alloy':1}, label:'Jeremie Ash Stash'},
+        f003:{credits:45, items:{'Vector Cell':2,'Corrupted Catalyst':1}, label:'Jeremie Grave Stash'}
+      }[npc.stage] || {credits:15 + stageTier*6, items:{'Vector Cell':1 + Math.floor(stageTier/4)}, label:'Jeremie Salvage Stash'};
       state.npcRewards[key]=true;
       addCredits(rewards.credits||0);
       Object.entries(rewards.items||{}).forEach(([name,qty])=>addItem(name,qty));
-      log(`${rewards.label} recovered. Fermilat says this is absolutely not weird. +${rewards.credits||0} credits.`);
+      log(`${rewards.label} recovered. Jeremie says this is absolutely not weird. +${rewards.credits||0} credits.`);
       toast(`${rewards.label} recovered.`);
       showFieldRewardModal({
-        kicker:'FERMILAT STASH',
+        kicker:'JEREMIE STASH',
         title:rewards.label,
-        message:'One-time contact stash recovered from Fermilat.',
+        message:'One-time contact stash recovered from Jeremie.',
         stats:[`Credits +${rewards.credits||0}`],
         items:rewards.items||{}
       });
@@ -1282,7 +1282,7 @@
     ctx.shadowBlur=0;
     const near = npcPlayerNearby(npc);
     if(near){
-      // v76: prompt moved down to Fermilat's feet so it no longer covers nearby caches/stashes.
+      // v76: prompt moved down to Jeremie's feet so it no longer covers nearby caches/stashes.
       const labelW=64, labelH=14;
       const labelX=x+(TILE-labelW)/2;
       const labelY=y+TILE-12;
@@ -5831,7 +5831,7 @@
       save(true);
       requestNativeFullscreen();
       try{ pulseObjective(currentObjectiveText()); }catch(err){}
-      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
   }
@@ -5876,7 +5876,7 @@
       if(y>=21 && y<=23 && x>=16 && x<=26) return true;
       if(y===20 && x>=21 && x<=26) return true;
 
-      // Expanded V118 map: reported Fermilat / bench / cyan-corner dead shelf.
+      // Expanded V118 map: reported Jeremie / bench / cyan-corner dead shelf.
       // This was the real active layout after V118 overwrote the early compact map.
       if(y>=27 && y<=28 && x>=35 && x<=48) return true;
       if(y>=25 && y<=26 && x>=47 && x<=48) return true;
@@ -7582,57 +7582,57 @@
       lines:['The gate is down. Core secured.', 'AVOS: Excellent. You have defeated a trash king. The resume writes itself. Extraction route is open.']
     },
     fermilatF001: {
-      kicker:'NPC CONTACT // F-001 FORBIDDEN GRAVEYARD', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-001 FORBIDDEN GRAVEYARD', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'hey got any feet pics i can sniff—i mean have?'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'hey got any feet pics i can sniff—i mean have?'},
         {speaker:'VYRA', portrait:'vyra', text:'I fought through a haunted graveyard and the hidden NPC near the boss is asking for feet pics?'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'Hidden? No. Strategically stationed. Also the word is “collectibles.”'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'Hidden? No. Strategically stationed. Also the word is “collectibles.”'},
         {speaker:'VYRA', portrait:'vyra', text:'Ask again and I am marking you as a hostile object on the minimap.'}
       ]
     },
     fermilatF002: {
-      kicker:'NPC CONTACT // F-002 ASH WASTES OUTPOST', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-002 ASH WASTES OUTPOST', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'i still want them feet pics.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'i still want them feet pics.'},
         {speaker:'VYRA', portrait:'vyra', text:'You crossed into the ash wastes for this?'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'The grind is real. The outpost is dry. The collection remains tragically empty.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'The grind is real. The outpost is dry. The collection remains tragically empty.'},
         {speaker:'VYRA', portrait:'vyra', text:'AVOS, remind me to install an ignore button.'}
       ]
     },
     fermilatF003: {
-      kicker:'NPC CONTACT // F-003 NEON GRAVEYARD', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-003 NEON GRAVEYARD', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'dead frequencies, neon graves, zero feet pics. this is basically endgame suffering.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'dead frequencies, neon graves, zero feet pics. this is basically endgame suffering.'},
         {speaker:'VYRA', portrait:'vyra', text:'You are hiding beside a boss gate in a haunted graveyard and that is still your main concern?'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'Consistency is important for character development.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'Consistency is important for character development.'},
         {speaker:'VYRA', portrait:'vyra', text:'Your character development needs a patch note and a warning label.'}
       ]
     },
     fermilatF004: {
-      kicker:'NPC CONTACT // F-004 TRANSIT RUINS', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-004 TRANSIT RUINS', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'subway tunnels are perfect for dramatic running shots. also for sniffing abandoned sneakers.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'subway tunnels are perfect for dramatic running shots. also for sniffing abandoned sneakers.'},
         {speaker:'VYRA', portrait:'vyra', text:'Every route somehow makes you worse.'},
         {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Please complete it so he stops saying “sneaker archaeology.”'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'delete five tunnel anomalies and i will share my totally legal transit stash.'}
+        {speaker:'JEREMIE', portrait:'fermilat', text:'delete five tunnel anomalies and i will share my totally legal transit stash.'}
       ]
     },
     fermilatF005: {
-      kicker:'NPC CONTACT // F-005 GLASS STORM LAB', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-005 GLASS STORM LAB', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'this lab has too many reflections. one of them saw my search history.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'this lab has too many reflections. one of them saw my search history.'},
         {speaker:'VYRA', portrait:'vyra', text:'I am not asking.'},
         {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Six prism anomalies. Reward is cleaner than his browser history.'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'clear the lab and i will give you my premium not-cursed stash.'}
+        {speaker:'JEREMIE', portrait:'fermilat', text:'clear the lab and i will give you my premium not-cursed stash.'}
       ]
     },
     fermilatF006: {
-      kicker:'NPC CONTACT // F-006 VECTOR CORE SPIRE', speaker:'FERMILAT',
+      kicker:'NPC CONTACT // F-006 VECTOR CORE SPIRE', speaker:'JEREMIE',
       lines:[
-        {speaker:'FERMILAT', portrait:'fermilat', text:'i followed you to the heart of reality because i believe in friendship and loot tables.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'i followed you to the heart of reality because i believe in friendship and loot tables.'},
         {speaker:'VYRA', portrait:'vyra', text:'That is the worst motivational speech I have ever heard.'},
-        {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Six core anomalies. I recommend accepting before Fermilat starts naming the walls.'},
-        {speaker:'FERMILAT', portrait:'fermilat', text:'the walls already named me back.'}
+        {speaker:'AVOS', portrait:'vyra', text:'Side quest available. Six core anomalies. I recommend accepting before Jeremie starts naming the walls.'},
+        {speaker:'JEREMIE', portrait:'fermilat', text:'the walls already named me back.'}
       ]
     },
     bossDefeated: {
@@ -7884,7 +7884,7 @@
       save(true);
       requestNativeFullscreen();
       try{ pulseObjective(currentObjectiveText()); }catch(err){}
-      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Fermilat to talk.'); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
     try{ renderAll(); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
@@ -7920,10 +7920,10 @@
     const storyPortrait = document.querySelector('#storyOverlay .story-body img');
     const lineData = raw => {
       if(raw && typeof raw === 'object') return raw;
-      const speaker = scene.speaker || (key.startsWith('fermilat') ? 'FERMILAT' : 'VYRA');
+      const speaker = scene.speaker || (key.startsWith('fermilat') ? 'JEREMIE' : 'VYRA');
       return {speaker, portrait:key.startsWith('fermilat') ? 'fermilat' : 'vyra', text:String(raw || '')};
     };
-    const portraitSrc = line => line.portrait === 'fermilat' || String(line.speaker||'').toUpperCase().includes('FERMILAT')
+    const portraitSrc = line => line.portrait === 'fermilat' || String(line.speaker||'').toUpperCase().includes('JEREMIE')
       ? NPC_DEFS.fermilat.asset
       : currentOperator().portrait;
     $('storyKicker').textContent=scene.kicker;
@@ -9270,7 +9270,7 @@
     const cleared=Math.min(required, state.flags?.anomaliesCleared || 0);
     const metal=metallikStatusText(currentStageKey());
     const q=sideQuestStatusText(currentStageKey());
-    return `<div class="mission-row onboarding-mini-row"><b>Quick Read:</b> Terminal ${state.flags?.terminal?'✅':'⬜'} // Anomalies ${cleared}/${required} // Boss ${state.flags?.bossDefeated?'Defeated':state.flags?.bossUnlocked?'Route Open':'Locked'} // MetalliK ${safeHtml(metal)} // Fermilat ${safeHtml(q)}</div>`;
+    return `<div class="mission-row onboarding-mini-row"><b>Quick Read:</b> Terminal ${state.flags?.terminal?'✅':'⬜'} // Anomalies ${cleared}/${required} // Boss ${state.flags?.bossDefeated?'Defeated':state.flags?.bossUnlocked?'Route Open':'Locked'} // MetalliK ${safeHtml(metal)} // Jeremie ${safeHtml(q)}</div>`;
   }
 
   // v227: Route Records gives the Mission menu a clean progress archive for every fracture.
@@ -10459,7 +10459,7 @@
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
   }
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimFermilatQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),
@@ -10802,13 +10802,13 @@
     f012: {x:39, y:25, scene:'fermilatF012'}
   });
 
-  Object.assign(FERMILAT_FAVOR_DEFS, {
-    f007:{title:'Cinder Express Yard Favor', target:7, credits:210, syncXp:330, skillXp:430, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Fermilat wants 7 anomalies deleted in Cinder Express Yard before he calls the route survivable.', done:'Fermilat admits Cinder Express Yard is slightly less horrible now. This is his version of praise.'},
-    f008:{title:'Flooded Data Vault Favor', target:8, credits:255, syncXp:400, skillXp:510, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Fermilat wants 8 anomalies deleted in Flooded Data Vault before he calls the route survivable.', done:'Fermilat admits Flooded Data Vault is slightly less horrible now. This is his version of praise.'},
-    f009:{title:'Rust Orchard Favor', target:9, credits:300, syncXp:470, skillXp:590, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':1}, ask:'Fermilat wants 9 anomalies deleted in Rust Orchard before he calls the route survivable.', done:'Fermilat admits Rust Orchard is slightly less horrible now. This is his version of praise.'},
-    f010:{title:'Blacksite Observatory Favor', target:10, credits:345, syncXp:540, skillXp:670, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':2}, ask:'Fermilat wants 10 anomalies deleted in Blacksite Observatory before he calls the route survivable.', done:'Fermilat admits Blacksite Observatory is slightly less horrible now. This is his version of praise.'},
-    f011:{title:'Cryo Basilica Favor', target:11, credits:390, syncXp:610, skillXp:750, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Fermilat wants 11 anomalies deleted in Cryo Basilica before he calls the route survivable.', done:'Fermilat admits Cryo Basilica is slightly less horrible now. This is his version of praise.'},
-    f012:{title:'Ash Crown Citadel Favor', target:12, credits:435, syncXp:680, skillXp:830, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Fermilat wants 12 anomalies deleted in Ash Crown Citadel before he calls the route survivable.', done:'Fermilat admits Ash Crown Citadel is slightly less horrible now. This is his version of praise.'}
+  Object.assign(JEREMIE_FAVOR_DEFS, {
+    f007:{title:'Cinder Express Yard Favor', target:7, credits:210, syncXp:330, skillXp:430, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Jeremie wants 7 anomalies deleted in Cinder Express Yard before he calls the route survivable.', done:'Jeremie admits Cinder Express Yard is slightly less horrible now. This is his version of praise.'},
+    f008:{title:'Flooded Data Vault Favor', target:8, credits:255, syncXp:400, skillXp:510, items:{'Vector Cell':3,'Corrupted Catalyst':1,'Rust Core':1}, ask:'Jeremie wants 8 anomalies deleted in Flooded Data Vault before he calls the route survivable.', done:'Jeremie admits Flooded Data Vault is slightly less horrible now. This is his version of praise.'},
+    f009:{title:'Rust Orchard Favor', target:9, credits:300, syncXp:470, skillXp:590, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':1}, ask:'Jeremie wants 9 anomalies deleted in Rust Orchard before he calls the route survivable.', done:'Jeremie admits Rust Orchard is slightly less horrible now. This is his version of praise.'},
+    f010:{title:'Blacksite Observatory Favor', target:10, credits:345, syncXp:540, skillXp:670, items:{'Vector Cell':4,'Corrupted Catalyst':2,'Rust Core':2}, ask:'Jeremie wants 10 anomalies deleted in Blacksite Observatory before he calls the route survivable.', done:'Jeremie admits Blacksite Observatory is slightly less horrible now. This is his version of praise.'},
+    f011:{title:'Cryo Basilica Favor', target:11, credits:390, syncXp:610, skillXp:750, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Jeremie wants 11 anomalies deleted in Cryo Basilica before he calls the route survivable.', done:'Jeremie admits Cryo Basilica is slightly less horrible now. This is his version of praise.'},
+    f012:{title:'Ash Crown Citadel Favor', target:12, credits:435, syncXp:680, skillXp:830, items:{'Vector Cell':5,'Corrupted Catalyst':3,'Rust Core':2}, ask:'Jeremie wants 12 anomalies deleted in Ash Crown Citadel before he calls the route survivable.', done:'Jeremie admits Ash Crown Citadel is slightly less horrible now. This is his version of praise.'}
   });
 
   Object.assign(stageVisualPacks, {
@@ -10836,42 +10836,42 @@
     f007BossIntro: {kicker:'F-007 BOSS // CORE GUARDIAN', title:'CINDERLINE LOCOMAW', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Cinderline Locomaw. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f007BossDefeated: {kicker:'F-007 BOSS DELETED // CORE EXPOSED', title:'CINDERLINE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 7/20.'}]},
     f007Clear: {kicker:'CHAPTER 7 COMPLETE // CINDERLINE CORE', title:'CINDER EXPRESS YARD STABILIZED', tag:'Next route: Flooded Data Vault', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cinderline Core secured. Cinder Express Yard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF007: {kicker:'FERMILAT CONTACT // F-007', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cinder Express Yard. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    fermilatF007: {kicker:'JEREMIE CONTACT // F-007', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Cinder Express Yard. I will reward you with things I definitely did not steal from a vending machine.'}]},
     f008Intro: {kicker:'F-008 INTRO // FLOODED DATA VAULT', title:'Drowned Archive', tag:'Level Req 35 // Route 8/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Flooded Data Vault is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f008Terminal: {kicker:'F-008 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f008Lore: {kicker:'F-008 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f008BossIntro: {kicker:'F-008 BOSS // CORE GUARDIAN', title:'THE DROWNED LIBRARIAN', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: The Drowned Librarian. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f008BossDefeated: {kicker:'F-008 BOSS DELETED // CORE EXPOSED', title:'DROWNED ARCHIVE CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 8/20.'}]},
     f008Clear: {kicker:'CHAPTER 8 COMPLETE // DROWNED ARCHIVE CORE', title:'FLOODED DATA VAULT STABILIZED', tag:'Next route: Rust Orchard', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Drowned Archive Core secured. Flooded Data Vault is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF008: {kicker:'FERMILAT CONTACT // F-008', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Flooded Data Vault. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    fermilatF008: {kicker:'JEREMIE CONTACT // F-008', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Flooded Data Vault. I will reward you with things I definitely did not steal from a vending machine.'}]},
     f009Intro: {kicker:'F-009 INTRO // RUST ORCHARD', title:'Harvest Alloy', tag:'Level Req 40 // Route 9/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Rust Orchard is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f009Terminal: {kicker:'F-009 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f009Lore: {kicker:'F-009 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f009BossIntro: {kicker:'F-009 BOSS // CORE GUARDIAN', title:'HARVEST ALLOY TYRANT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Harvest Alloy Tyrant. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f009BossDefeated: {kicker:'F-009 BOSS DELETED // CORE EXPOSED', title:'HARVEST ALLOY CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 9/20.'}]},
     f009Clear: {kicker:'CHAPTER 9 COMPLETE // HARVEST ALLOY CORE', title:'RUST ORCHARD STABILIZED', tag:'Next route: Blacksite Observatory', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Harvest Alloy Core secured. Rust Orchard is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF009: {kicker:'FERMILAT CONTACT // F-009', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Rust Orchard. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    fermilatF009: {kicker:'JEREMIE CONTACT // F-009', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Rust Orchard. I will reward you with things I definitely did not steal from a vending machine.'}]},
     f010Intro: {kicker:'F-010 INTRO // BLACKSITE OBSERVATORY', title:'Parallax Eye', tag:'Level Req 45 // Route 10/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Blacksite Observatory is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f010Terminal: {kicker:'F-010 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f010Lore: {kicker:'F-010 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f010BossIntro: {kicker:'F-010 BOSS // CORE GUARDIAN', title:'PARALLAX WATCHER', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Parallax Watcher. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f010BossDefeated: {kicker:'F-010 BOSS DELETED // CORE EXPOSED', title:'PARALLAX LENS CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 10/20.'}]},
     f010Clear: {kicker:'CHAPTER 10 COMPLETE // PARALLAX LENS CORE', title:'BLACKSITE OBSERVATORY STABILIZED', tag:'Next route: Cryo Basilica', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Parallax Lens Core secured. Blacksite Observatory is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF010: {kicker:'FERMILAT CONTACT // F-010', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Blacksite Observatory. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    fermilatF010: {kicker:'JEREMIE CONTACT // F-010', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Blacksite Observatory. I will reward you with things I definitely did not steal from a vending machine.'}]},
     f011Intro: {kicker:'F-011 INTRO // CRYO BASILICA', title:'Frozen Prayer', tag:'Level Req 50 // Route 11/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Cryo Basilica is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f011Terminal: {kicker:'F-011 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f011Lore: {kicker:'F-011 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f011BossIntro: {kicker:'F-011 BOSS // CORE GUARDIAN', title:'BASILICA WYRM', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Basilica Wyrm. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f011BossDefeated: {kicker:'F-011 BOSS DELETED // CORE EXPOSED', title:'BASILICA WYRM CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 11/20.'}]},
     f011Clear: {kicker:'CHAPTER 11 COMPLETE // BASILICA WYRM CORE', title:'CRYO BASILICA STABILIZED', tag:'Next route: Ash Crown Citadel', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Basilica Wyrm Core secured. Cryo Basilica is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF011: {kicker:'FERMILAT CONTACT // F-011', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Cryo Basilica. I will reward you with things I definitely did not steal from a vending machine.'}]},
+    fermilatF011: {kicker:'JEREMIE CONTACT // F-011', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Cryo Basilica. I will reward you with things I definitely did not steal from a vending machine.'}]},
     f012Intro: {kicker:'F-012 INTRO // ASH CROWN CITADEL', title:'Crown of Static', tag:'Level Req 55 // Route 12/20', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Citadel is online. Bigger map, more locked branches, and enemies that failed every personality test.'},{speaker:'VYRA', portrait:'vyra', text:'So the route gets worse and the level cap is still 99? Good. I was worried this would be relaxing.'},{speaker:'AVOS', portrait:'vyra', text:'This fracture is tuned for the 20-stage chain. Clear it, recover the core, and keep moving.'}]},
     f012Terminal: {kicker:'F-012 TERMINAL // ROUTE SYNC', title:'TERMINAL ONLINE', tag:'Checkpoint and anomaly routing updated.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Terminal synced. AVOS marked three major anomaly signatures and the locked boss route.'},{speaker:'VYRA', portrait:'vyra', text:'I see more locked doors than exits.'},{speaker:'AVOS', portrait:'vyra', text:'Correct. Clear three anomalies and the security doors will embarrass themselves open.'}]},
     f012Lore: {kicker:'F-012 ARCHIVE // FIELD LOG', title:'BROKEN ROUTE LOG', tag:'Recovered lore fragment.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Archive fragment recovered. This zone was expanded after the Ash Event to hold something that learned how to knock back.'},{speaker:'AVOS', portrait:'vyra', text:'Bad news: it worked. Worse news: it is still here.'}]},
     f012BossIntro: {kicker:'F-012 BOSS // CORE GUARDIAN', title:'ASH CROWN REGENT', tag:'Boss route unlocked.', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Boss-class guardian detected: Ash Crown Regent. Its core anchors this fracture.'},{speaker:'VYRA', portrait:'vyra', text:'Then I take the core.'},{speaker:'AVOS', portrait:'vyra', text:'Yes. Preferably while not becoming a wall decoration.'}]},
     f012BossDefeated: {kicker:'F-012 BOSS DELETED // CORE EXPOSED', title:'ASH CROWN CORE RECOVERED', tag:'Extraction route online.', speaker:'VYRA', lines:[{speaker:'VYRA', portrait:'vyra', text:'Boss down. Core is stable.'},{speaker:'AVOS', portrait:'vyra', text:'Extraction marker is online. Route chain progress: 12/20.'}]},
     f012Clear: {kicker:'CHAPTER 12 COMPLETE // ASH CROWN CORE', title:'ASH CROWN CITADEL STABILIZED', tag:'Next route: future endgame fractures', speaker:'AVOS', lines:[{speaker:'AVOS', portrait:'vyra', text:'Ash Crown Core secured. Ash Crown Citadel is no longer trying to chew through the route map.'},{speaker:'VYRA', portrait:'vyra', text:'How many of these until the end?'},{speaker:'AVOS', portrait:'vyra', text:'Twenty total stages planned. Twelve are now playable. Eight more remain in the deep endgame chain.'}]},
-    fermilatF012: {kicker:'FERMILAT CONTACT // F-012', title:'Fermilat Found Something', tag:'Optional favor and stash.', speaker:'FERMILAT', lines:[{speaker:'FERMILAT', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'FERMILAT', portrait:'fermilat', text:'Delete the anomalies in Ash Crown Citadel. I will reward you with things I definitely did not steal from a vending machine.'}]}
+    fermilatF012: {kicker:'JEREMIE CONTACT // F-012', title:'Jeremie Found Something', tag:'Optional favor and stash.', speaker:'JEREMIE', lines:[{speaker:'JEREMIE', portrait:'fermilat', text:'I found a locked route branch and immediately decided it was your problem.'},{speaker:'VYRA', portrait:'vyra', text:'That is every conversation with you.'},{speaker:'JEREMIE', portrait:'fermilat', text:'Delete the anomalies in Ash Crown Citadel. I will reward you with things I definitely did not steal from a vending machine.'}]}
   });
 
   function avStageAtOrBeyond(key){
@@ -15412,7 +15412,7 @@
         }
     ]
 };
-  const V118_FERMILAT_STAGES = {
+  const V118_JEREMIE_STAGES = {
     "f001": {
         "x": 42,
         "y": 26,
@@ -15484,7 +15484,7 @@
   });
   Object.assign(ENCOUNTER_SLOTS, V118_ENCOUNTER_SLOTS);
   Object.assign(STAGE_ENCOUNTER_DEFS, V118_STAGE_ENCOUNTERS);
-  Object.assign(NPC_DEFS.fermilat.stages, V118_FERMILAT_STAGES);
+  Object.assign(NPC_DEFS.fermilat.stages, V118_JEREMIE_STAGES);
   Object.entries(V118_STAGE_PROPS).forEach(([key,extra])=>{
     stageVisualPacks[key] ||= {};
     stageVisualPacks[key].props = [...(stageVisualPacks[key].props || []), ...extra];
