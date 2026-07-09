@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '271';
-  const BUILD_TITLE = 'LOCKED CHARACTER VIEW FIX PASS';
+  const BUILD_VERSION = '272';
+  const BUILD_TITLE = 'CHARACTER DETAIL STATE FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -4963,15 +4963,22 @@
   function characterCardHtml(op){
     const progress=operatorUnlockProgress(op.id);
     const active=currentOperatorId()===op.id;
+    const selected=(state.characterFileId||currentOperatorId())===op.id;
     const locked=!progress.unlocked;
-    const status = locked ? `LOCKED // ${progress.owned}/${progress.cost} shards` : (active ? 'ACTIVE PLAYABLE' : 'UNLOCKED // READY');
-    // v271: do not make the entire locked file act like a disabled/play button.
-    // Every card has an always-active View File action. Only Play As is locked.
-    return `<div class="character-card-btn ${active?'active':''} ${locked?'locked':'unlocked'}" data-character-card="${safeHtml(op.id)}" role="button" tabindex="0"><img src="${op.icon || op.portrait}" alt="${safeHtml(op.displayName)}"><div class="character-card-copy"><b>${safeHtml(op.displayName)}</b><span>${status}</span><em>${locked?'FILE VIEWABLE':'UNLOCKED'}</em></div><div class="character-card-actions"><button type="button" class="character-view-btn" data-character-card="${safeHtml(op.id)}">View File</button><button type="button" class="character-play-btn" data-character-select="${safeHtml(op.id)}" ${locked?'disabled':''}>${active?'Active':'Play As'}</button></div></div>`;
+    const status = locked ? `LOCKED // ${progress.owned}/${progress.cost} shards` : (active ? 'ACTIVE PLAYABLE' : 'UNLOCKED // VIEW OR PLAY');
+    const safeId=safeHtml(op.id);
+    return `<button type="button" class="character-card-btn ${active?'active':''} ${selected?'selected-file':''} ${locked?'locked':'unlocked'}" data-character-card="${safeId}" onclick="window.AV&&window.AV.characterCardClick&&window.AV.characterCardClick('${safeId}')"><img src="${op.icon || op.portrait}" alt="${safeHtml(op.displayName)}"><b>${safeHtml(op.displayName)}</b><span>${status}</span><em>VIEW FILE</em></button>`;
   }
-  function renderCharacterMenuDb(selectedId=currentOperatorId()){
+  function setCharacterFileSelection(id){
+    const wanted=String(id||'');
+    const resolved=OPERATOR_DEFS[wanted] ? wanted : (state.characterFileId && OPERATOR_DEFS[state.characterFileId] ? state.characterFileId : currentOperatorId());
+    state.characterFileId=resolved;
+    return resolved;
+  }
+  function renderCharacterMenuDb(selectedId=null){
     ensureCharacterState();
-    const op=OPERATOR_DEFS[selectedId] || currentOperator();
+    const viewId=setCharacterFileSelection(selectedId || state.characterFileId || currentOperatorId());
+    const op=OPERATOR_DEFS[viewId] || currentOperator();
     const list=$('characterList');
     const file=$('characterFile');
     if(!list || !file) return;
@@ -4987,31 +4994,26 @@
     const moveHtml=moves.map(m=>`<div><b>${safeHtml(m.name)}</b><span>${safeHtml(m.heal?'Heal / Sustain':(m.special?m.special.toUpperCase():'Damage'))} // ${m.ep?m.ep+' EP':'Free'} // ${safeHtml(m.text||'')}</span></div>`).join('');
     const unlockHint = locked ? `${progress.owned}/${progress.cost} ${safeHtml(operatorShardName(op.id))} collected // ${progress.needed} still needed` : 'Complete';
     const lockedNotice = locked ? `<div class="operator-level-card locked-file-notice"><b>LOCKED FILE VIEW</b><span>${unlockHint}</span><em>You can inspect this character file now. Only Play As is locked until enough shards are collected.</em></div>` : '';
-    file.innerHTML=`<div class="character-file-card"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED FILE VIEW':active?'ACTIVE PLAYABLE':'UNLOCKED'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p>${lockedNotice}<div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked / Viewable':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Unlock Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${op.id}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${op.id}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'This file is viewable before unlock. Collect shards to recruit and play as this operator.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div>`;
-    const activeCard=list.querySelector(`[data-character-card="${CSS && CSS.escape ? CSS.escape(currentOperatorId()) : currentOperatorId()}"]`);
+    file.innerHTML=`<div class="character-file-card" data-character-file="${safeHtml(op.id)}"><div class="record-kicker">${safeHtml(op.code)} // ${locked?'LOCKED FILE VIEW':active?'ACTIVE PLAYABLE':'UNLOCKED FILE VIEW'}</div><h2>${safeHtml(op.displayName)} <span>// ${safeHtml(op.codename||op.title||'OPERATOR')}</span></h2><div class="character-preview"><img src="${op.profile || op.portrait}" alt="${safeHtml(op.displayName)} profile"></div><p class="operator-quote">${safeHtml(op.quote||'')}</p>${lockedNotice}<div class="operator-level-card"><b>Operator Lv. ${prog.level}</b><span>${prog.xp}/${prog.nextXp} XP</span><div class="bar xp operator-xp"><span style="width:${Math.max(0,Math.min(100,100*prog.xp/prog.nextXp))}%"></span></div><em>${safeHtml(rpg.role)} — ${safeHtml(rpg.passive)}</em></div><div class="record-grid"><div><b>HP Bonus</b><span>+${rpg.hp}</span></div><div><b>EP Bonus</b><span>+${rpg.ep}</span></div><div><b>Attack Bonus</b><span>+${rpg.atk}</span></div><div><b>Defense Bonus</b><span>+${rpg.def}</span></div><div><b>Crit</b><span>${Math.round((rpg.crit||0)*100)}%</span></div><div><b>Status</b><span>${locked?'Locked / Viewable':active?'Active / Playable':'Unlocked / Ready'}</span></div><div><b>Shard</b><span>${safeHtml(operatorShardName(op.id))}</span></div><div><b>Unlock Progress</b><span>${progress.unlocked?'Complete':`${progress.owned}/${progress.cost} shards`}</span></div></div><h3>Battle Moves</h3><div class="protocol-list character-move-list">${moveHtml}</div><div class="story-actions"><button data-character-unlock="${safeHtml(op.id)}" onclick="window.AV&&window.AV.unlockOperator&&window.AV.unlockOperator('${safeHtml(op.id)}')" ${unlockDisabled}>Unlock ${safeHtml(op.displayName)}</button><button data-character-select="${safeHtml(op.id)}" onclick="window.AV&&window.AV.playAsOperator&&window.AV.playAsOperator('${safeHtml(op.id)}')" ${playDisabled}>${active?'Currently Playing':'Play As '+safeHtml(op.displayName)}</button><button onclick="window.AV&&window.AV.renderCharacterMenuDb&&window.AV.renderCharacterMenuDb('${currentOperatorId()}')">Show Active</button></div><p class="menu-info">${locked?'This file is viewable before unlock. Collect shards to recruit and play as this operator.':'Each operator now has separate level progression, stat bonuses, and battle moves.'}</p></div>`;
+    const safeSel=(window.CSS && CSS.escape) ? CSS.escape(op.id) : op.id.replace(/"/g,'\\"');
+    const selectedCard=list.querySelector(`[data-character-card="${safeSel}"]`);
+    if(selectedCard) selectedCard.classList.add('selected-file');
+    const safeActive=(window.CSS && CSS.escape) ? CSS.escape(currentOperatorId()) : currentOperatorId().replace(/"/g,'\\"');
+    const activeCard=list.querySelector(`[data-character-card="${safeActive}"]`);
     if(activeCard) activeCard.classList.add('active');
-    list.querySelectorAll('[data-character-card]').forEach(el=>{
-      el.addEventListener('click', ev=>{
-        const play=ev.target.closest && ev.target.closest('[data-character-select]');
-        if(play) return;
-        ev.preventDefault(); ev.stopPropagation();
-        characterCardClick(el.dataset.characterCard);
-      });
-      el.addEventListener('keydown', ev=>{
-        if(ev.key==='Enter' || ev.key===' '){ ev.preventDefault(); ev.stopPropagation(); characterCardClick(el.dataset.characterCard); }
-      });
-    });
   }
-  function showCharacterFile(id){ renderCharacterMenuDb(id); }
-  function characterCardClick(id){
-    // v271: locked characters are truly viewable. This function never selects/plays.
-    // It only opens the file panel for the requested operator.
-    if(!OPERATOR_DEFS[id]){ toast('Character file missing.'); return false; }
+  function showCharacterFile(id){
+    setCharacterFileSelection(id);
     renderCharacterMenuDb(id);
-    const op=OPERATOR_DEFS[id];
-    const progress=operatorUnlockProgress(id);
+  }
+  function characterCardClick(id){
+    // v272: keep selected character file separate from active playable character.
+    // This stops locked cards from snapping back to Vyra/current operator after click/render refresh.
+    const viewId=setCharacterFileSelection(id);
+    renderCharacterMenuDb(viewId);
+    const op=OPERATOR_DEFS[viewId];
+    const progress=operatorUnlockProgress(viewId);
     if(!progress.unlocked) toast(`${op?.displayName || 'Character'} file opened: ${progress.owned}/${progress.cost} shards.`);
-    else toast(`${op?.displayName || 'Character'} file opened.`);
     return true;
   }
 
@@ -5422,6 +5424,7 @@
     state.eventHistory = Array.isArray(state.eventHistory) ? state.eventHistory.slice(-60) : [];
     if(!Number.isFinite(Number(state.rogueNextAt)) || Number(state.rogueNextAt)<Date.now()-600000){ state.rogueNextAt=Date.now()+45000+Math.floor(Math.random()*45000); }
     ensureCharacterState();
+    state.characterFileId = OPERATOR_DEFS[state.characterFileId] ? state.characterFileId : currentOperatorId();
     ensureOperatorProgress();
     state.settings={...(newGameState().settings||{}), ...(state.settings||{})};
     state.stages ||= {};
@@ -10893,8 +10896,8 @@
       const selectBtn=e.target.closest && e.target.closest('[data-character-select]');
       const cardBtn=e.target.closest && e.target.closest('[data-character-card]');
       const unlockBtn=e.target.closest && e.target.closest('[data-character-unlock]');
+      if(selectBtn){ e.preventDefault(); e.stopPropagation(); playAsOperator(selectBtn.dataset.characterSelect); return; }
       if(unlockBtn){ e.preventDefault(); e.stopPropagation(); unlockOperator(unlockBtn.dataset.characterUnlock); return; }
-      if(selectBtn && selectBtn.closest('#characterOverlay')){ e.preventDefault(); e.stopPropagation(); if(!selectBtn.disabled) playAsOperator(selectBtn.dataset.characterSelect); else characterCardClick(selectBtn.dataset.characterSelect); return; }
       if(cardBtn && cardBtn.closest('#characterOverlay')){ e.preventDefault(); e.stopPropagation(); characterCardClick(cardBtn.dataset.characterCard); return; }
     }, true);
     $('qaHeal').onclick=()=>{state.player.hp=combatStatBlock().maxHp;state.player.ep=combatStatBlock().maxEp||state.player.maxEp;renderAll();}; $('qaCredits').onclick=()=>{addCredits(100);renderAll();}; $('qaSetLevel') && ($('qaSetLevel').onclick=()=>qaSetPlayerLevel($('qaPlayerLevel')?.value)); document.querySelectorAll('[data-qa-level]').forEach(btn=>btn.onclick=()=>qaSetPlayerLevel(btn.dataset.qaLevel)); $('qaClearAnomalies').onclick=()=>{state.flags.anomaliesCleared=3;state.flags.bossUnlocked=true;renderAll();}; $('qaBossReady').onclick=()=>{state.flags.bossUnlocked=true;renderAll();}; $('qaCompleteChapter').onclick=()=>{state.flags.chapterComplete=true;renderAll();}; $('qaResetRun').onclick=()=>{state=newGameState();renderAll();}; if($('qaReplayStory')) $('qaReplayStory').onclick=()=>showStory('intro'); if($('qaReplayClearStory')) $('qaReplayClearStory').onclick=()=>{ const key=`${currentStageKey()}Clear`; if(STORY_SCENES[key]) showStory(key); else toast('No stage clear story for this level yet.'); }; if($('qaResetTips')) $('qaResetTips').onclick=resetTutorialTips; if($('qaToggleNavAssist')) $('qaToggleNavAssist').onclick=()=>{ ensureSettings(); const on = !(state.settings.routeBeacon !== false || state.settings.objectiveCompass !== false || state.settings.minimapRoute !== false); state.settings.routeBeacon=on; state.settings.objectiveCompass=on; state.settings.minimapRoute=on; applySettings(); renderAll(); toast(on?'Navigation assist enabled.':'Navigation assist hidden.'); queueAutosave(); }; if($('qaRestoreCheckpoint')) $('qaRestoreCheckpoint').onclick=restoreCheckpointFromQa; if($('qaResetChallenges')) $('qaResetChallenges').onclick=resetProtocolChallenges; $('qaPath').onclick=()=>toast(`${stageDef().id} Route: Terminal → 3 Anomalies → Boss → Exit`); $('qaLoadStage') && ($('qaLoadStage').onclick=()=>qaLoadStage($('qaStageSelect')?.value || currentStageKey())); document.querySelectorAll('[data-qa-stage]').forEach(btn=>btn.onclick=()=>qaLoadStage(btn.dataset.qaStage)); $('qaUnlockStages') && ($('qaUnlockStages').onclick=qaUnlockAllStages); $('qaUnlockCharacters') && ($('qaUnlockCharacters').onclick=qaUnlockAllCharacters); $('qaGrantCharacterShards') && ($('qaGrantCharacterShards').onclick=qaGrantAllCharacterShards); renderQaLockdownBuffBoard();
