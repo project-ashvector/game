@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '268';
-  const BUILD_TITLE = 'WALL DEPTH LIGHTING PASS';
+  const BUILD_VERSION = '269';
+  const BUILD_TITLE = 'INTERACTABLE POLISH PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -9502,6 +9502,66 @@
     stageTrainingNodes().forEach(drawTrainingNode);
   }
 
+  function interactableLabelForTile(c){
+    if(c==='S') return 'SYNC';
+    if(c==='C') return 'CACHE';
+    if(c==='H') return 'HEAL';
+    if(c==='L') return 'LOG';
+    if(c==='D') return 'DOOR';
+    if(c==='R') return 'RETURN';
+    if(c==='X') return 'EXIT';
+    if(c==='E') return 'ANOMALY';
+    if(c==='B') return 'BOSS';
+    return '';
+  }
+  function drawInteractablePolish(c,x,y,tx,ty){
+    // v269: cleaner interactable presentation. Important objects get a soft base pad and
+    // nearby objects get a readable prompt without bringing back giant field-letter boxes.
+    if(!['S','C','H','L','D','R','X','E','B'].includes(c)) return;
+    const px=state.player.x, py=state.player.y;
+    const dist=Math.abs(px-tx)+Math.abs(py-ty);
+    const near=dist<=1;
+    const objective=objectiveTarget();
+    const isObjective=objective && objective.x===tx && objective.y===ty;
+    const pulse=.55+.25*Math.sin(Date.now()*.006 + tx*.7 + ty*.31);
+    const colors={S:'#00d9ff',C:'#e0b64b',H:'#59ffa0',L:'#d2a8ff',D:'#ffb840',R:'#70d7ff',X:'#ffffff',E:'#ff3048',B:'#ff3048'};
+    const col=colors[c]||'#ffffff';
+    ctx.save();
+    ctx.globalAlpha=near||isObjective?.95:.38;
+    ctx.strokeStyle=col;
+    ctx.lineWidth=near||isObjective?2.4:1.25;
+    ctx.shadowColor=col;
+    ctx.shadowBlur=near||isObjective?14:6;
+    ctx.beginPath();
+    ctx.ellipse(x+TILE/2,y+TILE-7,near||isObjective?18:14,near||isObjective?7:5,0,0,Math.PI*2);
+    ctx.stroke();
+    ctx.shadowBlur=0;
+    ctx.globalAlpha=(near||isObjective?0.13:0.065) + pulse*.035;
+    ctx.fillStyle=col;
+    ctx.beginPath();
+    ctx.ellipse(x+TILE/2,y+TILE-7,near||isObjective?17:13,near||isObjective?6:4,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha=1;
+    if(near){
+      const label=interactableLabelForTile(c);
+      const text=(c==='E'||c==='B')?label:`E/A ${label}`;
+      const w=Math.min(118, Math.max(58, text.length*7+14));
+      const lx=x+(TILE-w)/2, ly=y-9;
+      ctx.fillStyle='rgba(2,8,14,.86)';
+      ctx.strokeStyle=col;
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(lx,ly,w,16,4); else ctx.rect(lx,ly,w,16);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle='rgba(235,255,255,.96)';
+      ctx.font='900 9px monospace';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(text,x+TILE/2,ly+8);
+    }
+    ctx.restore();
+  }
+
   function drawTile(c,x,y,tx,ty){
     const pack = stageVisualPack();
 
@@ -9580,6 +9640,7 @@
       if(!drawAsset((pack&&pack.exit)||mapArt.exit,x,y,42,42,true,{shadow:true,depth:true,glow:'rgba(255,255,255,.25)',glowRadius:34})){ctx.fillStyle='#eee';ctx.fillRect(x+6,y+6,30,30);ctx.fillStyle='#050608';ctx.fillText('X',x+16,y+27)}
       // v92: field letter rings are hidden; exit marker stays on the minimap only.
     }
+    drawInteractablePolish(c,x,y,tx,ty);
   }
   function renderMini(){
     clampPlayerToMap();
