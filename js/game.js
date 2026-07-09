@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '250';
-  const BUILD_TITLE = 'STABILITY CHECKPOINT PASS';
+  const BUILD_VERSION = '251';
+  const BUILD_TITLE = 'NPC INTERACTION FIX PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1110,14 +1110,23 @@
   function npcAt(x,y,key=currentStageKey()){
     return stageNpcs(key).find(n => n.x === x && n.y === y) || null;
   }
-  function nearbyNpc(){
+  function nearbyNpc(radius=2){
     if(!state?.player) return null;
     const px = state.player.x, py = state.player.y;
-    return stageNpcs().find(n => Number.isFinite(n.x) && Number.isFinite(n.y) && Math.max(Math.abs(n.x-px), Math.abs(n.y-py)) <= 1) || null;
+    const npcs = stageNpcs()
+      .filter(n => Number.isFinite(n.x) && Number.isFinite(n.y))
+      .map(n => ({...n, _dist:Math.max(Math.abs(n.x-px), Math.abs(n.y-py)), _manhattan:Math.abs(n.x-px)+Math.abs(n.y-py)}))
+      .filter(n => n._dist <= radius)
+      .sort((a,b)=>(a._dist-b._dist)||(a._manhattan-b._manhattan));
+    return npcs[0] || null;
+  }
+  function closestNpcForInteract(radius=3){
+    if(!state?.player) return null;
+    return nearbyNpc(radius);
   }
   function npcPlayerNearby(npc){
     if(!state?.player || !npc) return false;
-    return Math.max(Math.abs(npc.x-state.player.x), Math.abs(npc.y-state.player.y)) <= 1;
+    return Math.max(Math.abs(npc.x-state.player.x), Math.abs(npc.y-state.player.y)) <= 2;
   }
   function ensureNpcState(){
     if(!state) return;
@@ -1214,8 +1223,10 @@
     if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('NPCs and training nodes'); return false; }
     const node=nearbyTrainingNode();
     if(node) return collectTrainingNode(node);
-    const npc = nearbyNpc();
-    if(!npc){ toast('No survivor or training object close enough. Move next to a glowing node/NPC and press E.'); return false; }
+    // V251: NPCs are tall sprites and can look adjacent even when their tile origin is not exactly beside the player.
+    // Use a slightly wider nearest-NPC check so keyboard, mobile Talk, and controller Confirm reliably talk.
+    const npc = closestNpcForInteract(3);
+    if(!npc){ toast('No survivor or training object close enough. Move close to the NPC and press E.'); return false; }
     talkToNpc(npc);
     return true;
   }
@@ -1271,17 +1282,29 @@
       }
     });
   }
+  function npcHitTestAtMapPoint(mx,my){
+    const tx = Math.floor(mx / TILE), ty = Math.floor(my / TILE);
+    const exact = inMapBounds(tx,ty) ? npcAt(tx,ty) : null;
+    if(exact) return exact;
+    // V251: NPC art extends above/around its tile. Let clicks/taps on the visible sprite body talk too.
+    return stageNpcs().find(npc=>{
+      const x=npc.x*TILE, y=npc.y*TILE;
+      const drawW=MAP_ENTITY_W, drawH=MAP_ENTITY_H;
+      const dx=x+(TILE-drawW)/2-8;
+      const dy=y+TILE-drawH-4;
+      return mx>=dx && mx<=dx+drawW+16 && my>=dy && my<=dy+drawH+18;
+    }) || null;
+  }
   function handleCanvasNpcClick(evt){
     if(storyActive || battle || $('app').classList.contains('hidden')) return;
+    if(lockdownNormalInteractionsLocked()) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const mx = (evt.clientX - rect.left) * scaleX + camera.x;
     const my = (evt.clientY - rect.top) * scaleY + camera.y;
-    const tx = Math.floor(mx / TILE), ty = Math.floor(my / TILE);
-    if(!inMapBounds(tx,ty)) return;
-    const npc = npcAt(tx,ty);
-    if(npc){ evt.preventDefault(); talkToNpc(npc); }
+    const npc = npcHitTestAtMapPoint(mx,my);
+    if(npc){ evt.preventDefault(); evt.stopPropagation?.(); talkToNpc(npc); }
   }
 
 
@@ -5427,9 +5450,10 @@
     const tip=document.createElement('div');
     tip.id='tutorialTipOverlay';
     tip.className='avos-crt tutorial-tip-overlay';
-    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99999;width:min(380px,calc(100vw - 28px));background:rgba(5,9,14,.96);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 28px rgba(0,217,255,.22);border-radius:14px;padding:14px;color:#eafcff;font-family:monospace;line-height:1.35;';
+    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:99999;width:min(380px,calc(100vw - 28px));background:rgba(5,9,14,.96);border:1px solid rgba(0,217,255,.55);box-shadow:0 0 28px rgba(0,217,255,.22);border-radius:14px;padding:14px;color:#eafcff;font-family:monospace;line-height:1.35;pointer-events:none;';
     tip.innerHTML=`<div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:17px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div>`;
     document.body.appendChild(tip);
+    tip.querySelectorAll('button').forEach(btn=>{ btn.style.pointerEvents='auto'; });
     $('tutorialTipOk').onclick=()=>tip.remove();
     $('tutorialTipDisable').onclick=()=>{ state.settings.tutorialTips=false; applySettings(); queueAutosave(); tip.remove(); toast('Tutorial tips disabled. Re-enable in Configuration.'); };
     setTimeout(()=>{ if(document.body.contains(tip)) tip.style.boxShadow='0 0 22px rgba(0,217,255,.16)'; }, 2200);
