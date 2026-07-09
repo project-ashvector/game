@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '264';
-  const BUILD_TITLE = 'NPC PROXIMITY UI PASS';
+  const BUILD_VERSION = '265';
+  const BUILD_TITLE = 'NPC NAV MARKER PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -1376,6 +1376,20 @@
   function closestNpcForInteract(radius=3){
     if(!state?.player) return null;
     return nearbyNpc(radius);
+  }
+  function nearestNpcStatusText(){
+    try{
+      if(!state?.player) return 'No contact';
+      const px=Number(state.player.x)||0, py=Number(state.player.y)||0;
+      const list=stageNpcs().filter(n=>Number.isFinite(n.x)&&Number.isFinite(n.y));
+      if(!list.length) return 'No contact';
+      const npc=list.map(n=>({
+        ...n,
+        _dist:Math.abs((Number(n.x)||0)-px)+Math.abs((Number(n.y)||0)-py)
+      })).sort((a,b)=>a._dist-b._dist)[0];
+      const label=npc?.name || npc?.label || npc?.id || 'Contact';
+      return `${label} ${npc._dist} tile${npc._dist===1?'':'s'}`;
+    }catch(err){ return 'Contact scan'; }
   }
   function npcPlayerNearby(npc){
     if(!state?.player || !npc) return false;
@@ -9488,7 +9502,19 @@
       mctx.fillStyle=c==='#'?'#05080c':c==='C'?'#e0b64b':c==='S'?'#70d7ff':c==='H'?'#59ffa0':c==='L'?'#d2a8ff':c==='D'?'#ffb840':c==='E'||c==='B'?'#bd1f2d':c==='X'?'#fff':c==='R'?'#70d7ff':'#31424c';
       mctx.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));
     }
-    stageNpcs().forEach(n=>{ mctx.fillStyle='#94ff62'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); });
+    const miniFocus=closestNpcForInteract(99);
+    stageNpcs().forEach(n=>{
+      const active=miniFocus && n.id===miniFocus.id;
+      const px=n.x*sx, py=n.y*sy;
+      const sz=Math.max(3, Math.ceil((active?2.8:2)*Math.max(sx,sy)));
+      mctx.fillStyle=active?'#ffe66d':'#94ff62';
+      mctx.fillRect(px,py,sz,sz);
+      if(active){
+        mctx.strokeStyle='#ffffff';
+        mctx.lineWidth=1;
+        mctx.strokeRect(px-1,py-1,sz+2,sz+2);
+      }
+    });
     stageTrainingNodes().forEach(n=>{ if(trainingNodeReady(n)){ mctx.fillStyle=TRAINING_NODE_TYPES[n.skill]?.color || '#ffffff'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); } });
     const navTarget=objectiveTarget();
     ensureSettings();
@@ -9608,6 +9634,7 @@
         lockdownCls=next>30?'ok':'warn';
       }
       const metal=metallikStatusText(currentStageKey());
+      const nearestContact=nearestNpcStatusText();
       const contract=activeContract();
       const contractText=contract?.complete?'Contract ready':`${contract?.progress||0}/${contract?.target||0} contract`;
       return `<div class="qol-route-strip" role="status" aria-label="Quick route status">
@@ -9617,7 +9644,8 @@
         <div class="qol-pill"><b>Anomaly</b><span>${cleared}/${required}</span></div>
         <div class="qol-pill ${state.flags?.bossDefeated?'ok':state.flags?.bossUnlocked?'warn':''}"><b>Boss</b><span>${safeHtml(bossStatus)}</span></div>
         <div class="qol-pill ${lockdownCls}"><b>Event</b><span>${safeHtml(lockdownText)}</span></div>
-        <div class="qol-pill"><b>NPC</b><span>${safeHtml(metal)}</span></div>
+        <div class="qol-pill"><b>Contact</b><span>${safeHtml(nearestContact)}</span></div>
+        <div class="qol-pill"><b>Cache</b><span>${safeHtml(metal)}</span></div>
         <div class="qol-pill"><b>Task</b><span>${safeHtml(contractText)}</span></div>
       </div>`;
     }catch(err){
