@@ -8,12 +8,18 @@
   lightingCanvas.width = canvas.width;
   lightingCanvas.height = canvas.height;
   const lightingCtx = lightingCanvas.getContext('2d');
+  const worldBaseCanvas = document.createElement('canvas');
+  const worldBaseCtx = worldBaseCanvas.getContext('2d');
+  let worldBaseRevision = 1;
+  let worldBaseCacheKey = '';
+  const objectiveRouteCache = {key:'', path:[]};
+  const lightingRuntime = {stage:'', lastBuildAt:0};
   const TILE = 42;
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '290';
-  const BUILD_TITLE = 'HELD MOVEMENT PERFORMANCE FIX';
+  const BUILD_VERSION = '291';
+  const BUILD_TITLE = 'SMOOTH HELD MOVEMENT ENGINE';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -76,11 +82,65 @@
   let fieldSequenceActive = false;
   let scriptedCamera = null;
   const fieldFx = { footsteps: [] };
-  let keyboardMoveLockAt = 0;
   let movementMiniLastAt = 0;
   let movementHudLastAt = 0;
+  let movementUiTimer = null;
   let blockedMoveNoticeAt = 0;
-  const KEYBOARD_MOVE_REPEAT_MS = 112;
+  const heldKeyboardMoves = new Map();
+  let heldKeyboardSequence = 0;
+  let heldKeyboardLoopId = null;
+  let heldKeyboardLastStepAt = 0;
+  const HELD_KEYBOARD_STEP_MS = 132;
+
+  function latestHeldKeyboardMove(){
+    let latest=null;
+    heldKeyboardMoves.forEach(move=>{ if(!latest || move.sequence>latest.sequence) latest=move; });
+    return latest;
+  }
+  function keyboardMovementAvailable(){
+    const app=$('app');
+    if(!app || app.classList.contains('hidden') || !gameStarted || battle || storyActive || fieldSequenceActive) return false;
+    return !Array.from(document.querySelectorAll('.overlay')).some(o=>!o.classList.contains('hidden'));
+  }
+  function runHeldKeyboardLoop(now){
+    heldKeyboardLoopId=null;
+    if(!heldKeyboardMoves.size) return;
+    const move=latestHeldKeyboardMove();
+    if(move && keyboardMovementAvailable() && now-heldKeyboardLastStepAt>=HELD_KEYBOARD_STEP_MS){
+      heldKeyboardLastStepAt=now;
+      tryMove(move.dx,move.dy,'keyboard-held');
+    }
+    heldKeyboardLoopId=requestAnimationFrame(runHeldKeyboardLoop);
+  }
+  function ensureHeldKeyboardLoop(){
+    if(heldKeyboardLoopId===null) heldKeyboardLoopId=requestAnimationFrame(runHeldKeyboardLoop);
+  }
+  function pressHeldKeyboardMove(id,dx,dy){
+    if(!id) return;
+    const existing=heldKeyboardMoves.get(id);
+    if(existing){ existing.sequence=++heldKeyboardSequence; return; }
+    const move={id,dx,dy,sequence:++heldKeyboardSequence};
+    heldKeyboardMoves.set(id,move);
+    if(keyboardMovementAvailable()){
+      heldKeyboardLastStepAt=performance.now();
+      tryMove(dx,dy,'keyboard-held');
+    }
+    ensureHeldKeyboardLoop();
+  }
+  function releaseHeldKeyboardMove(id){
+    if(!id) return;
+    heldKeyboardMoves.delete(id);
+    if(!heldKeyboardMoves.size){
+      heldKeyboardLastStepAt=0;
+      renderMovementStep(true);
+    }
+  }
+  function clearHeldKeyboardMoves(){
+    heldKeyboardMoves.clear();
+    heldKeyboardLastStepAt=0;
+    if(heldKeyboardLoopId!==null){ cancelAnimationFrame(heldKeyboardLoopId); heldKeyboardLoopId=null; }
+    renderMovementStep(true);
+  }
 
   const AudioManager = {
     tracks: {},
@@ -556,7 +616,8 @@
     const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
     ctx.save();
     ctx.globalCompositeOperation=(theme.kind==='ember'||theme.kind==='spore'||theme.kind==='shard')?'screen':'source-over';
-    for(let i=0;i<ambientRuntime.particles.length;i++){
+    const particleStride=isFastFieldMotion()?2:1;
+    for(let i=0;i<ambientRuntime.particles.length;i+=particleStride){
       const p=ambientRuntime.particles[i];
       const spanX=VIEW_W+100, spanY=VIEW_H+100;
       const x=wrapRange(p.x + theme.windX*timeSec*p.speed*motionScale - viewX*.028*p.depth + Math.sin(timeSec*.7+p.phase)*14*p.depth,spanX)-50;
@@ -585,7 +646,8 @@
     const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
     ctx.save();
     ctx.globalCompositeOperation='screen';
-    for(let i=0;i<3;i++){
+    const veilPasses=isFastFieldMotion()?1:3;
+    for(let i=0;i<veilPasses;i++){
       const x=wrapRange((i*VIEW_W*.48) - viewX*(.018+i*.008) + timeSec*(4+i*2),VIEW_W+360)-180;
       const y=34+i*72+Math.sin(timeSec*.18+i)*18;
       const g=ctx.createRadialGradient(x,y,8,x,y,210+i*42);
@@ -618,6 +680,13 @@
     if(state?.settings?.dynamicLighting===false) return;
     const profile=graphicsProfile();
     const stage=currentStageKey();
+    const lightNow=performance.now();
+    if(isFastFieldMotion() && lightingRuntime.stage===stage && lightNow-lightingRuntime.lastBuildAt<92){
+      ctx.drawImage(lightingCanvas,0,0);
+      return;
+    }
+    lightingRuntime.stage=stage;
+    lightingRuntime.lastBuildAt=lightNow;
     const darknessByStage={f001:.03,f002:-.015,f003:.015,f004:.01,f005:.035,f006:.01,f007:-.02,f008:.025,f009:-.015,f010:.045,f011:.005,f012:.01};
     const alpha=Math.max(.10,Math.min(.30,profile.darkness+(darknessByStage[stage]||0)));
     const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
@@ -671,6 +740,9 @@
     requestAnimationFrame(loop);
   }
 
+  function isFastFieldMotion(){
+    return heldKeyboardMoves.size>0 || !!playerMotion.active;
+  }
   function currentPlayerRenderPos(now=performance.now()){
     if(!state?.player) return {x:0,y:0};
     if(!playerMotion.active) return {x:Number(state.player.x)||0, y:Number(state.player.y)||0};
@@ -2882,6 +2954,151 @@
       ctx.stroke();
     }
   }
+  function invalidateWorldBaseCache(){
+    worldBaseRevision=(worldBaseRevision+1)%1000000000;
+    worldBaseCacheKey='';
+    objectiveRouteCache.key='';
+    objectiveRouteCache.path=[];
+    lightingRuntime.stage='';
+  }
+  function drawUniformGroundCached(c2,x,y,tx,ty,c){
+    const s=stageFloorStyles[currentStageKey()] || stageFloorStyles.f001;
+    c2.fillStyle=s.base;
+    c2.fillRect(x,y,TILE,TILE);
+    const h1=hashTile(tx,ty,1);
+    const h2=hashTile(tx,ty,2);
+    if((h1%9)===0){
+      c2.save();
+      c2.fillStyle=s.alt || s.base;
+      c2.globalAlpha=.16;
+      c2.beginPath();
+      c2.ellipse(x+10+(h1%22),y+10+(h2%21),10+(h1%9),7+(h2%7),0,0,Math.PI*2);
+      c2.fill();
+      c2.restore();
+    }
+    if(s.accent && (h2%13)===0){
+      c2.save();
+      c2.fillStyle=s.accent;
+      c2.globalAlpha=.28;
+      c2.beginPath();
+      c2.moveTo(x+4+(h1%8),y+TILE-5);
+      c2.lineTo(x+17+(h1%10),y+7);
+      c2.lineTo(x+24+(h2%12),y+9);
+      c2.lineTo(x+13,y+TILE-6);
+      c2.closePath();
+      c2.fill();
+      c2.restore();
+    }
+    const detail=graphicsProfile().terrainDetail;
+    if(detail>0 && (h1%17)===0){
+      c2.save();
+      c2.strokeStyle=s.line || 'rgba(255,255,255,.04)';
+      c2.globalAlpha=detail>1?.58:.34;
+      c2.lineWidth=.8;
+      c2.beginPath();
+      const ox=5+(h2%18), oy=8+(h1%16);
+      c2.moveTo(x+ox,y+oy);
+      c2.lineTo(x+ox+7,y+oy+5);
+      c2.lineTo(x+ox+3,y+oy+12);
+      if(detail>1) c2.lineTo(x+ox+12,y+oy+18);
+      c2.stroke();
+      c2.restore();
+    }
+    if(detail>1 && (h2%19)===0){
+      c2.save();
+      c2.fillStyle=s.grit || 'rgba(255,255,255,.05)';
+      c2.globalAlpha=.42;
+      c2.fillRect(x+7+(h1%23),y+8+(h2%17),1.4,1.4);
+      c2.fillRect(x+16+(h2%17),y+24+(h1%9),1,1);
+      c2.restore();
+    }
+    if(c!=='.'){
+      c2.fillStyle='rgba(255,255,255,.018)';
+      c2.fillRect(x+7,y+7,TILE-14,TILE-14);
+    }
+  }
+  function drawPathOverlayCached(c2,x,y,tx,ty,c){
+    const pack=stageVisualPack();
+    const alpha=c==='.'?.10:.075;
+    c2.save();
+    c2.fillStyle=(pack&&pack.pathTint)||`rgba(0,217,255,${alpha})`;
+    c2.globalAlpha=.72;
+    c2.fillRect(x,y,TILE,TILE);
+    c2.restore();
+    if(c!=='.' && ((tx+ty)%3===0)){
+      c2.fillStyle='rgba(255,255,255,.018)';
+      c2.beginPath();
+      c2.arc(x+TILE/2,y+TILE/2,13,0,Math.PI*2);
+      c2.fill();
+    }
+  }
+  function drawWallBaseCached(c2,x,y,tx,ty){
+    const pack=stageVisualPack();
+    const edge=hasWalkableNeighbor(tx,ty);
+    const wallTint=(pack&&pack.wallTint)||'rgba(8,10,13,.96)';
+    c2.fillStyle=wallTint;
+    c2.fillRect(x,y,TILE,TILE);
+    const wallGrad=c2.createLinearGradient(x,y,x,y+TILE);
+    wallGrad.addColorStop(0,'rgba(255,255,255,.045)');
+    wallGrad.addColorStop(.45,'rgba(255,255,255,.012)');
+    wallGrad.addColorStop(1,'rgba(0,0,0,.34)');
+    c2.fillStyle=wallGrad;
+    c2.fillRect(x,y,TILE,TILE);
+    const h=hashTile(tx,ty,7);
+    if(!edge && (h%8===0)){
+      c2.fillStyle='rgba(255,255,255,.018)';
+      c2.fillRect(x+(h%20),y+((h>>4)%20),10,6);
+    }
+    if(edge){
+      const edgeColor=(pack&&pack.wallEdge)||'rgba(0,217,255,.18)';
+      const openN=tileAt(tx,ty-1)!=='#';
+      const openS=tileAt(tx,ty+1)!=='#';
+      const openW=tileAt(tx-1,ty)!=='#';
+      const openE=tileAt(tx+1,ty)!=='#';
+      c2.fillStyle='rgba(0,0,0,.28)';
+      if(openS) c2.fillRect(x+2,y+TILE-7,TILE-4,7);
+      if(openE) c2.fillRect(x+TILE-7,y+2,7,TILE-4);
+      c2.fillStyle='rgba(255,255,255,.035)';
+      if(openN) c2.fillRect(x+2,y+1,TILE-4,3);
+      if(openW) c2.fillRect(x+1,y+2,3,TILE-4);
+      c2.strokeStyle=edgeColor;
+      c2.lineWidth=2;
+      c2.beginPath();
+      if(openN){ c2.moveTo(x+2,y+2); c2.lineTo(x+TILE-2,y+2); }
+      if(openS){ c2.moveTo(x+2,y+TILE-2); c2.lineTo(x+TILE-2,y+TILE-2); }
+      if(openW){ c2.moveTo(x+2,y+2); c2.lineTo(x+2,y+TILE-2); }
+      if(openE){ c2.moveTo(x+TILE-2,y+2); c2.lineTo(x+TILE-2,y+TILE-2); }
+      c2.stroke();
+    }
+  }
+  function ensureWorldBaseCache(){
+    if(!state?.map) return false;
+    const width=Math.max(1,mapWidth()*TILE);
+    const height=Math.max(1,mapHeight()*TILE);
+    if(width>8192 || height>8192) return false;
+    const key=`${worldBaseRevision}|${currentStageKey()}|${graphicsProfile().key}|${width}x${height}`;
+    if(worldBaseCacheKey===key && worldBaseCanvas.width===width && worldBaseCanvas.height===height) return true;
+    worldBaseCanvas.width=width;
+    worldBaseCanvas.height=height;
+    worldBaseCtx.clearRect(0,0,width,height);
+    worldBaseCtx.imageSmoothingEnabled=true;
+    for(let ty=0;ty<mapHeight();ty++){
+      for(let tx=0;tx<mapWidth();tx++){
+        const c=tileAt(tx,ty);
+        const x=tx*TILE, y=ty*TILE;
+        if(c==='#') drawWallBaseCached(worldBaseCtx,x,y,tx,ty);
+        else{
+          drawUniformGroundCached(worldBaseCtx,x,y,tx,ty,c);
+          const pack=stageVisualPack();
+          if(pack&&pack.floorTint){ worldBaseCtx.fillStyle=pack.floorTint; worldBaseCtx.fillRect(x,y,TILE,TILE); }
+          drawPathOverlayCached(worldBaseCtx,x,y,tx,ty,c);
+        }
+      }
+    }
+    worldBaseCacheKey=key;
+    return true;
+  }
+
   function drawInteractMarker(label,x,y,color='rgba(0,217,255,.9)'){
     const {cx,cy}=tileCenter(x,y);
     ctx.save();
@@ -4199,6 +4416,7 @@
     clearNpcStagePlacementCache();
     state.mapVersion=MAP_VERSION;
     state.map=parsed.map;
+    invalidateWorldBaseCache();
     invalidateCollisionRegion();
     normalizeLiveMap(true);
     repairMissionRoutesForCurrentStage();
@@ -6845,6 +7063,7 @@
     if(Array.isArray(row)) row[x]=safe;
     else state.map[y]=String(row || '').slice(0,x) + safe + String(row || '').slice(x+1);
     resetCollisionCacheOnly();
+    invalidateWorldBaseCache();
     return true;
   }
   function setTile(x,y,v){
@@ -8031,10 +8250,6 @@
     if(fieldSequenceActive) return;
     if(battle) return;
     const moveNow=performance.now();
-    if(source==='keyboard'){
-      if(moveNow < keyboardMoveLockAt) return;
-      keyboardMoveLockAt = moveNow + KEYBOARD_MOVE_REPEAT_MS;
-    }
     if(source==='controller'){
       if(moveNow < controllerStepLockAt) return;
       controllerStepLockAt = moveNow + CONTROLLER_WORLD_STEP_MS;
@@ -8070,7 +8285,8 @@
     const prevX=state.player.x, prevY=state.player.y;
     state.player.x=nx;
     state.player.y=ny;
-    startPlayerMotion(nx,ny,{duration:source==='controller'?170:(state?.settings?.reducedMotion?110:150)});
+    const moveDuration=source==='keyboard-held' ? HELD_KEYBOARD_STEP_MS+18 : (source==='controller'?170:(state?.settings?.reducedMotion?110:150));
+    startPlayerMotion(nx,ny,{duration:moveDuration});
     emitFootstepBurst(prevX,prevY,dx,dy, ambientThemeForStage().kind==='ember'?'ember':(ambientThemeForStage().kind==='rain'?'rain':(ambientThemeForStage().kind==='shard'?'shard':'ash')));
     triggerPlayerStepAnimation();
     SfxManager.step();
@@ -8986,29 +9202,47 @@
   }
   function routePathToObjective(){
     const target=objectiveTarget();
-    if(!target || target.kind==='complete' || target.x == null || target.y == null) return [];
+    if(!target || target.kind==='complete' || target.x == null || target.y == null){
+      objectiveRouteCache.key='';
+      objectiveRouteCache.path=[];
+      return [];
+    }
     const start={x:state.player.x,y:state.player.y};
     const goal={x:target.x,y:target.y};
-    if(start.x===goal.x && start.y===goal.y) return [start];
+    const cacheKey=[
+      worldBaseRevision,currentStageKey(),start.x,start.y,goal.x,goal.y,target.kind||'',
+      state.flags?.bossUnlocked?1:0,state.flags?.key?1:0,state.flags?.anomaliesCleared||0
+    ].join('|');
+    if(objectiveRouteCache.key===cacheKey) return objectiveRouteCache.path;
+    if(start.x===goal.x && start.y===goal.y){
+      objectiveRouteCache.key=cacheKey;
+      objectiveRouteCache.path=[start];
+      return objectiveRouteCache.path;
+    }
     const key=(x,y)=>`${x},${y}`;
     const q=[start];
+    let qIndex=0;
     const seen=new Set([key(start.x,start.y)]);
     const prev=new Map();
     const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
     let found=false;
-    while(q.length){
-      const cur=q.shift();
+    while(qIndex<q.length){
+      const cur=q[qIndex++];
       if(cur.x===goal.x && cur.y===goal.y){ found=true; break; }
       for(const [dx,dy] of dirs){
         const nx=cur.x+dx, ny=cur.y+dy, k=key(nx,ny);
         if(seen.has(k)) continue;
         if(!inMapBounds(nx,ny) || !tileWalkableForRoute(nx,ny,goal)) continue;
         seen.add(k);
-        prev.set(k, cur);
+        prev.set(k,cur);
         q.push({x:nx,y:ny});
       }
     }
-    if(!found) return [];
+    if(!found){
+      objectiveRouteCache.key=cacheKey;
+      objectiveRouteCache.path=[];
+      return objectiveRouteCache.path;
+    }
     const path=[];
     let cur=goal;
     while(cur){
@@ -9016,7 +9250,9 @@
       if(cur.x===start.x && cur.y===start.y) break;
       cur=prev.get(key(cur.x,cur.y));
     }
-    return path.reverse();
+    objectiveRouteCache.key=cacheKey;
+    objectiveRouteCache.path=path.reverse();
+    return objectiveRouteCache.path;
   }
   function drawObjectiveRoute(){
     ensureSettings();
@@ -9700,12 +9936,23 @@
     camera.viewX=camera.x-shakeX;
     camera.viewY=camera.y-shakeY;
     drawFractureBackdrop();
+    const baseCached=ensureWorldBaseCache();
+    if(baseCached){
+      const sx=Math.max(0,Math.min(worldBaseCanvas.width-VIEW_W,camera.viewX));
+      const sy=Math.max(0,Math.min(worldBaseCanvas.height-VIEW_H,camera.viewY));
+      const sw=Math.min(VIEW_W,worldBaseCanvas.width-sx);
+      const sh=Math.min(VIEW_H,worldBaseCanvas.height-sy);
+      if(sw>0 && sh>0) ctx.drawImage(worldBaseCanvas,sx,sy,sw,sh,0,0,sw,sh);
+    }
     ctx.save(); ctx.translate(-camera.viewX,-camera.viewY);
     const tileStartX=Math.max(0,Math.floor(camera.viewX/TILE)-2);
     const tileEndX=Math.min(mapWidth()-1,Math.ceil((camera.viewX+VIEW_W)/TILE)+2);
     const tileStartY=Math.max(0,Math.floor(camera.viewY/TILE)-2);
     const tileEndY=Math.min(mapHeight()-1,Math.ceil((camera.viewY+VIEW_H)/TILE)+2);
-    for(let y=tileStartY;y<=tileEndY;y++) for(let x=tileStartX;x<=tileEndX;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
+    for(let y=tileStartY;y<=tileEndY;y++) for(let x=tileStartX;x<=tileEndX;x++){
+      const c=state.map[y][x];
+      if(!baseCached || c==='#' || (c!=='.' && c!=='P')) drawTile(c,x*TILE,y*TILE,x,y,baseCached);
+    }
     if(state.rogueWarning?.active) drawLockdownSeals();
     drawObjectiveRoute();
     drawCheckpointBeacon();
@@ -9947,7 +10194,7 @@
     // weird colored stripes while the camera moved. Replace them with softer drifting
     // fog wisps so the level feels hazy instead of striped.
     ctx.globalCompositeOperation='screen';
-    const mistPasses = graphicsProfile().mistPasses;
+    const mistPasses = isFastFieldMotion() ? Math.min(2, graphicsProfile().mistPasses) : graphicsProfile().mistPasses;
     for(let i=0;i<mistPasses;i++){
       const phase = t * (0.45 + i * 0.035) + i * 1.7;
       const fx = ((Math.sin(phase * 0.72) + 1) * 0.5) * (VIEW_W + 180) - 90;
@@ -10206,13 +10453,13 @@
     ctx.restore();
   }
 
-  function drawTile(c,x,y,tx,ty){
+  function drawTile(c,x,y,tx,ty,skipBase=false){
     const pack = stageVisualPack();
 
     // v91: blocked tiles no longer draw the random floor/platform art underneath.
     // That was the main reason the graveyard looked like mismatched slopes instead of solid ground.
     if(c==='#'){
-      drawWallBase(x,y,tx,ty);
+      if(!skipBase) drawWallBase(x,y,tx,ty);
       const edgeWall = hasWalkableNeighbor(tx,ty);
       const shouldDecorate = (edgeWall && ((tx*13 + ty*19) % 4 === 0)) || (!edgeWall && ((tx*17 + ty*23) % 11 === 0));
       if(shouldDecorate){
@@ -10230,9 +10477,11 @@
       return;
     }
 
-    drawUniformGround(x,y,tx,ty,c);
-    if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
-    drawPathOverlay(x,y,tx,ty,c);
+    if(!skipBase){
+      drawUniformGround(x,y,tx,ty,c);
+      if(pack && pack.floorTint){ ctx.fillStyle = pack.floorTint; ctx.fillRect(x,y,TILE,TILE); }
+      drawPathOverlay(x,y,tx,ty,c);
+    }
 
     if(c==='C'){
       if(!drawAsset((pack&&pack.chest)||mapArt.chest,x,y,38,34,true,{shadow:true,depth:true})){ctx.fillStyle='#9b6b22';ctx.fillRect(x+9,y+13,24,20);ctx.strokeStyle='#e0b64b';ctx.strokeRect(x+9,y+13,24,20)}
@@ -10494,18 +10743,27 @@
     renderCharacterMenuDb();
   }
   function renderMovementStep(force=false){
-    // v290: walking should never rebuild every menu/database panel on every browser
-    // key-repeat event. The animated field stays immediate; minimap/HUD are rate-limited.
-    try{ render(); }catch(err){ console.warn('[AV] movement render failed', err); }
-    const now=performance.now();
-    if(force || now-movementMiniLastAt>=140){
-      movementMiniLastAt=now;
-      try{ renderMini(); }catch(err){}
+    // v291: the continuous field renderer owns canvas frames. Movement only requests
+    // slower UI/minimap refreshes so held input cannot create a second render stream.
+    const refresh=()=>{
+      movementUiTimer=null;
+      const now=performance.now();
+      if(force || now-movementMiniLastAt>=420){
+        movementMiniLastAt=now;
+        try{ renderMini(); }catch(err){}
+      }
+      if(force || now-movementHudLastAt>=420){
+        movementHudLastAt=now;
+        try{ renderFullscreenHud(); renderObjectiveCompass(); }catch(err){}
+      }
+      if(force){ try{ render(); }catch(err){} }
+    };
+    if(force){
+      if(movementUiTimer){ clearTimeout(movementUiTimer); movementUiTimer=null; }
+      refresh();
+      return;
     }
-    if(force || now-movementHudLastAt>=220){
-      movementHudLastAt=now;
-      try{ renderFullscreenHud(); renderObjectiveCompass(); }catch(err){}
-    }
+    if(!movementUiTimer) movementUiTimer=setTimeout(refresh,420);
   }
 
   function renderAll(){
@@ -11490,6 +11748,7 @@
     const cl=$('settingCameraLookAhead'); if(cl) cl.checked=state.settings.cameraLookAhead !== false;
     const gs=$('graphicsResolvedStatus'); if(gs) gs.textContent=graphicsSettingSummary();
     ambientRuntime.stage='';
+    invalidateWorldBaseCache();
     applyAudioSettings();
   }
   let autosaveStarted=false;
@@ -11596,7 +11855,8 @@
           e.preventDefault();
           e.stopPropagation();
           const [mx,my]=move;
-          tryMove(mx,my,'keyboard');
+          const moveId=code || key;
+          pressHeldKeyboardMove(moveId,mx,my);
           return;
         }
         if(key==='e'){ e.preventDefault(); interactNearbyNpc(); return; }
@@ -11613,6 +11873,14 @@
       }
       if(e.key==='Escape' && document.body.classList.contains('fullscreen-mode')){ e.preventDefault(); document.body.classList.remove('fullscreen-mode'); if(document.fullscreenElement && document.exitFullscreen){ document.exitFullscreen().catch(()=>{}); } showFullscreenHint('Fullscreen mode off'); renderAll(); return; }
     }, {passive:false});
+    document.addEventListener('keyup',e=>{
+      const key=String(e.key||'').toLowerCase();
+      const code=String(e.code||'').toLowerCase();
+      const moveCodes=new Set(['arrowup','arrowdown','arrowleft','arrowright','keyw','keys','keya','keyd','w','a','s','d']);
+      if(moveCodes.has(code) || moveCodes.has(key)) releaseHeldKeyboardMove(code || key);
+    }, {passive:true});
+    window.addEventListener('blur', clearHeldKeyboardMoves);
+    document.addEventListener('visibilitychange',()=>{ if(document.hidden) clearHeldKeyboardMoves(); });
     $('newGameBtn').onclick=(e)=>{e.preventDefault(); newGameRootStart();}; $('continueBtn').onclick=(e)=>{ if(e) e.preventDefault(); continueSavedGame(); };
     // v44: if CSS/content gets clipped, clicking the main menu card outside a protocol button also starts.
     $('mainMenu').addEventListener('dblclick',()=>startGame(true)); $('menuBtn').onclick=showMenu; $('saveBtn').onclick=()=>save(false); if($('saveExitBtn')) $('saveExitBtn').onclick=saveAndExitToMenu; $('loadBtn').onclick=load; $('resetBtn').onclick=resetActiveArchiveSafely;
