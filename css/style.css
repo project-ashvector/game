@@ -3487,521 +3487,308 @@ body.game-paused .mobile-pause-card::before{
 }
 
 
-/* V279: Global Menu Scroll + Modern UI Cleanup Pass
-   One consistent scroll model for every overlay/menu so tabs do not trap, jump, or cut off. */
-:root{
-  --av-glass:rgba(5,10,17,.94);
-  --av-glass-2:rgba(10,18,28,.92);
-  --av-soft-line:rgba(112,215,255,.26);
-  --av-soft-line-2:rgba(255,255,255,.10);
-  --av-scroll-thumb:rgba(112,215,255,.55);
-  --av-scroll-track:rgba(0,0,0,.28);
+/* V282: phone overlay hotfix.
+   Fixes mobile menu overlap by hiding gameplay HUD while a protocol menu is open,
+   turning major menus into a single-column mobile stack, and restoring touch scroll. */
+.setting-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  margin:8px 0;
+  border:1px solid rgba(112,215,255,.18);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
 }
-*{scrollbar-width:thin;scrollbar-color:var(--av-scroll-thumb) var(--av-scroll-track);}
-*::-webkit-scrollbar{width:10px;height:10px;}
-*::-webkit-scrollbar-track{background:var(--av-scroll-track);border-radius:999px;}
-*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(112,215,255,.72),rgba(255,48,72,.45));border:2px solid rgba(0,0,0,.38);border-radius:999px;}
-*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(145,235,255,.95),rgba(255,74,105,.72));}
-
-.overlay:not(.hidden){
-  display:grid!important;
-  place-items:center!important;
-  align-items:center!important;
-  justify-items:center!important;
-  padding:clamp(10px,2vw,22px)!important;
-  overflow:hidden!important;
-  overscroll-behavior:contain!important;
-  background:radial-gradient(circle at 50% 0,rgba(0,217,255,.10),transparent 38%),rgba(0,0,0,.74)!important;
+.setting-row span{
+  min-width:0;
+  color:#e6fbff;
+  font-size:12px;
+  line-height:1.3;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  font-weight:900;
 }
-.database-modal,
-.story-card,
-.pre-battle-card,
-.mobile-pause-card,
-.lockdown-reward-modal-card{
-  width:min(1240px,calc(100vw - 26px))!important;
-  max-width:calc(100vw - 26px)!important;
-  height:min(850px,calc(100svh - 28px))!important;
-  max-height:calc(100svh - 28px)!important;
-  min-height:0!important;
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-  background:
-    linear-gradient(180deg,rgba(12,20,32,.96),rgba(4,7,12,.98)),
-    radial-gradient(circle at 10% 0,rgba(112,215,255,.12),transparent 34%)!important;
-  border:1px solid rgba(112,215,255,.30)!important;
-  border-radius:20px!important;
-  box-shadow:0 22px 70px rgba(0,0,0,.62),0 0 38px rgba(0,217,255,.14)!important;
-  padding:clamp(12px,1.8vw,18px)!important;
+.setting-row input[type="checkbox"]{
+  width:22px;
+  height:22px;
+  accent-color:#00d9ff;
 }
-.database-modal:after,
-.story-card:after,
-.pre-battle-card:after,
-.mobile-pause-card:after,
-.lockdown-reward-modal-card:after{border-radius:inherit!important;opacity:.55!important;}
-.modal-close,
-#mobilePauseClose,
-#preBattleBack,
-#lockdownRewardContinueBtn{
-  position:sticky!important;
-  top:0!important;
-  z-index:20!important;
-  flex:0 0 auto!important;
-  float:none!important;
-  align-self:stretch!important;
-  margin:0 0 10px 0!important;
-  border-radius:14px!important;
-  background:linear-gradient(135deg,rgba(0,217,255,.13),rgba(255,255,255,.04))!important;
-  border-color:rgba(112,215,255,.55)!important;
-  box-shadow:0 6px 18px rgba(0,0,0,.26)!important;
-}
-.db-header{
-  flex:0 0 auto!important;
-  position:sticky!important;
-  top:0!important;
-  z-index:15!important;
-  margin:0 0 12px!important;
-  padding:11px 14px!important;
-  border-radius:16px!important;
-  background:rgba(2,8,14,.84)!important;
-  backdrop-filter:blur(10px)!important;
-  border:1px solid rgba(112,215,255,.25)!important;
-  box-shadow:0 10px 24px rgba(0,0,0,.24)!important;
-}
-.db-header>div:first-child{font-size:clamp(16px,2.1vw,24px)!important;letter-spacing:.04em!important;white-space:normal!important;}
-.db-header>div:last-child{font-size:clamp(9px,1.25vw,12px)!important;opacity:.75!important;white-space:normal!important;}
-
-/* Default: modal body area scrolls as one clean surface. */
-.database-modal>.fracture-grid,
-.database-modal>.operator-file,
-.database-modal>.anomaly-layout,
-.database-modal>.inventory-db-layout,
-.database-modal>.character-layout,
-.database-modal>.radio-layout,
-.database-modal>.pre-battle-layout,
-.database-modal>.save-hub-layout,
-#missionOverlay .fracture-grid,
-#configOverlay .fracture-grid,
-#playtestOverlay .fracture-grid,
-#fractureOverlay .fracture-grid,
-#radioOverlay .fracture-grid{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-  padding:2px 4px 8px 2px!important;
-  align-content:start!important;
-}
-#missionOverlay .fracture-grid,
-#configOverlay .fracture-grid,
-#playtestOverlay .fracture-grid,
-#fractureOverlay .fracture-grid,
-#radioOverlay .fracture-grid{
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr))!important;
-  gap:14px!important;
-}
-.fracture-card,
-.record-grid div,
-.protocol-list div,
-.legend span,
-.mission-active-hint,
-.inventory-hero-panel,
-.inventory-quick-actions,
-.item-detail-panel,
-.owned-item,
-.character-file-card,
-.character-roadmap-panel,
-.character-buy-panel,
-.character-unlock-summary{
-  border-radius:16px!important;
-  border-color:rgba(112,215,255,.20)!important;
-  background:linear-gradient(180deg,rgba(8,14,22,.82),rgba(2,5,9,.76))!important;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.025),0 8px 22px rgba(0,0,0,.16)!important;
-}
-.fracture-card{
-  overflow:visible!important;
-  max-height:none!important;
-  min-width:0!important;
-}
-.record-grid,.protocol-list,.legend{min-width:0!important;}
-.record-grid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr))!important;}
-.protocol-list div,.record-grid div{min-width:0!important;overflow-wrap:anywhere!important;}
-button,select,input,textarea{border-radius:12px!important;min-width:0!important;}
-button{transition:filter .12s ease, transform .12s ease, border-color .12s ease, box-shadow .12s ease!important;}
-button:hover{transform:translateY(-1px);}
-button:active{transform:translateY(0);filter:brightness(.95);}
-
-/* Inventory / Bag: one clean playable view, no nested scroll fighting. */
-#inventoryOverlay .database-modal{width:min(1320px,calc(100vw - 24px))!important;}
-#inventoryOverlay .inventory-db-layout{display:block!important;overflow:hidden!important;}
-#inventoryOverlay .inventory-db-layout>section:first-child{
-  height:100%!important;
-  min-height:0!important;
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-}
-#inventoryOverlay .inventory-database-list{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-  padding-right:6px!important;
-}
-#inventoryOverlay .inventory-layout-pro{
-  display:grid!important;
-  grid-template-columns:minmax(320px,.9fr) minmax(420px,1.1fr)!important;
-  gap:14px!important;
-  min-height:0!important;
-  height:min(520px,52svh)!important;
-  max-height:52svh!important;
-  overflow:hidden!important;
-}
-#inventoryOverlay .owned-items,
-#inventoryOverlay .item-detail-panel{
-  min-height:0!important;
-  height:100%!important;
-  max-height:none!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-}
-#inventoryOverlay .item-tools{position:sticky!important;top:0!important;z-index:8!important;border-radius:14px!important;background:rgba(3,8,14,.92)!important;backdrop-filter:blur(8px)!important;padding:9px!important;}
-#inventoryOverlay .owned-item{grid-template-columns:58px minmax(0,1fr) auto!important;align-items:center!important;}
-#inventoryOverlay .owned-item b,
-#inventoryOverlay .owned-item span,
-#inventoryOverlay .owned-item small{white-space:normal!important;}
-
-/* Character menu: list and details both scroll smoothly without resetting. */
-#characterOverlay .character-modal{width:min(1240px,calc(100vw - 24px))!important;}
-#characterOverlay .character-layout{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:hidden!important;
-  display:grid!important;
-  grid-template-columns:minmax(260px,.38fr) minmax(420px,1fr)!important;
-  gap:14px!important;
-}
-#characterOverlay .character-list,
-#characterOverlay .character-file{
-  min-height:0!important;
-  height:100%!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-}
-#characterOverlay .character-file{padding-right:6px!important;scroll-behavior:auto!important;}
-#characterOverlay .character-card-btn{border-radius:15px!important;}
-#characterOverlay .character-preview img{border-radius:18px!important;box-shadow:0 18px 38px rgba(0,0,0,.36)!important;}
-
-/* Dense QA/config/mission boards should wrap instead of forcing tiny columns. */
-#playtestOverlay .playtest-actions,
-#configOverlay .playtest-actions,
-.route-prep-actions,
-.save-hub-actions,
-.audio-actions,
-.controls-help-actions{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:9px!important;}
-#playtestOverlay select,
-#playtestOverlay input,
-#configOverlay select,
-#configOverlay input{width:100%!important;max-width:100%!important;}
-
-@media(max-width:980px){
-  .overlay:not(.hidden){padding:8px!important;align-items:flex-start!important;place-items:start center!important;}
-  .database-modal,.story-card,.pre-battle-card,.mobile-pause-card,.lockdown-reward-modal-card{
-    width:calc(100vw - 14px)!important;
-    max-width:calc(100vw - 14px)!important;
-    height:calc(100svh - 14px)!important;
-    max-height:calc(100svh - 14px)!important;
-    border-radius:15px!important;
-    padding:9px!important;
-    font-size:11px!important;
+@media (max-width: 900px), (pointer: coarse){
+  body.menu-protocol-open .objective-compass,
+  body.menu-protocol-open .mobile-pad,
+  body.menu-protocol-open .mobile-action-pad,
+  body.menu-protocol-open .mobile-battle-pad,
+  body.menu-protocol-open .fs-persistent-stats,
+  body.menu-protocol-open .fullscreen-quickbar,
+  body.menu-protocol-open .objective-tracker,
+  body.menu-protocol-open .mission-strip{
+    display:none !important;
   }
-  .db-header{position:relative!important;top:auto!important;margin:0 0 8px!important;padding:8px 10px!important;}
-  .modal-close,#mobilePauseClose,#preBattleBack{position:relative!important;top:auto!important;min-height:38px!important;}
+
+  .overlay:not(.hidden){
+    padding:max(6px, env(safe-area-inset-top)) 6px max(6px, env(safe-area-inset-bottom)) !important;
+    align-items:flex-start !important;
+    place-items:start center !important;
+    overflow:hidden !important;
+  }
+
+  #inventoryOverlay .database-modal,
+  #missionOverlay .database-modal,
+  #progressionOverlay .database-modal,
+  #configOverlay .database-modal,
+  #characterOverlay .character-modal{
+    width:calc(100vw - 12px) !important;
+    max-width:calc(100vw - 12px) !important;
+    height:calc(100svh - 12px) !important;
+    max-height:calc(100svh - 12px) !important;
+    min-height:0 !important;
+    border-radius:14px !important;
+    padding:8px !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch !important;
+    touch-action:pan-y !important;
+  }
+
+  #inventoryOverlay .modal-close,
+  #missionOverlay .modal-close,
+  #progressionOverlay .modal-close,
+  #configOverlay .modal-close,
+  #characterOverlay .modal-close{
+    position:sticky !important;
+    top:0 !important;
+    margin:0 0 8px !important;
+    width:100% !important;
+    min-height:40px !important;
+    padding:9px 10px !important;
+    font-size:12px !important;
+    z-index:12 !important;
+    background:rgba(5,11,18,.96) !important;
+    backdrop-filter:blur(8px) !important;
+  }
+
+  #inventoryOverlay .db-header,
+  #missionOverlay .db-header,
+  #progressionOverlay .db-header,
+  #configOverlay .db-header,
+  #characterOverlay .db-header{
+    position:relative !important;
+    top:auto !important;
+    margin:0 0 8px !important;
+    padding:8px 10px !important;
+    gap:8px !important;
+    align-items:flex-start !important;
+    flex-wrap:wrap !important;
+  }
+  #inventoryOverlay .db-header > div:first-child,
+  #missionOverlay .db-header > div:first-child,
+  #progressionOverlay .db-header > div:first-child,
+  #configOverlay .db-header > div:first-child,
+  #characterOverlay .db-header > div:first-child{
+    min-width:0 !important;
+    font-size:clamp(13px, 4.4vw, 22px) !important;
+    line-height:1.1 !important;
+  }
+  #inventoryOverlay .db-header > div:last-child,
+  #missionOverlay .db-header > div:last-child,
+  #progressionOverlay .db-header > div:last-child,
+  #configOverlay .db-header > div:last-child,
+  #characterOverlay .db-header > div:last-child{
+    min-width:0 !important;
+    font-size:10px !important;
+    line-height:1.2 !important;
+    opacity:.78 !important;
+    text-align:left !important;
+  }
+
+  #inventoryOverlay .inventory-db-layout,
   #missionOverlay .fracture-grid,
+  #progressionOverlay .progression-layout,
   #configOverlay .fracture-grid,
-  #playtestOverlay .fracture-grid,
-  #fractureOverlay .fracture-grid,
-  #radioOverlay .fracture-grid{grid-template-columns:1fr!important;gap:10px!important;}
-  #inventoryOverlay .inventory-layout-pro{grid-template-columns:1fr!important;height:auto!important;max-height:none!important;overflow:visible!important;}
-  #inventoryOverlay .owned-items,#inventoryOverlay .item-detail-panel{max-height:42svh!important;height:auto!important;}
-  #inventoryOverlay .inventory-quick-grid{grid-template-columns:repeat(2,minmax(110px,1fr))!important;}
-  #characterOverlay .character-layout{grid-template-columns:1fr!important;overflow:auto!important;}
-  #characterOverlay .character-list{height:auto!important;max-height:170px!important;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;gap:8px!important;}
-  #characterOverlay .character-file{height:auto!important;min-height:380px!important;overflow:auto!important;}
-}
-@media(max-height:520px) and (orientation:landscape){
-  .database-modal,.story-card,.pre-battle-card,.mobile-pause-card,.lockdown-reward-modal-card{height:calc(100svh - 8px)!important;max-height:calc(100svh - 8px)!important;padding:8px!important;}
-  .db-header{font-size:10px!important;margin-bottom:6px!important;}
-  #inventoryOverlay .inventory-hero-panel,
-  #inventoryOverlay .inventory-quick-actions{display:none!important;}
-  #inventoryOverlay .inventory-layout-pro{height:calc(100svh - 150px)!important;max-height:calc(100svh - 150px)!important;}
-  #characterOverlay .character-list{max-height:120px!important;}
-  #characterOverlay .character-file{min-height:260px!important;}
-}
+  #characterOverlay .character-layout{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    grid-auto-rows:auto !important;
+    gap:8px !important;
+    flex:none !important;
+    height:auto !important;
+    min-height:0 !important;
+    overflow:visible !important;
+  }
 
+  #inventoryOverlay .fracture-card,
+  #missionOverlay .fracture-card,
+  #progressionOverlay .fracture-card,
+  #configOverlay .fracture-card,
+  #characterOverlay .character-list,
+  #characterOverlay .character-file{
+    min-width:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+    padding:10px !important;
+  }
 
-/* V280: Mission/briefing layout repair.
-   The global modern-scroll pass made Mission cards auto-fit into cramped columns.
-   Mission content is long-form, so it needs a single clean vertical document flow. */
-#missionOverlay .database-modal,
-#fractureOverlay .database-modal,
-#progressOverlay .database-modal,
-#configOverlay .database-modal,
-#playtestOverlay .database-modal,
-#radioOverlay .database-modal{
-  display:flex!important;
-  flex-direction:column!important;
-  overflow:hidden!important;
-}
-#missionOverlay .fracture-grid{
-  display:flex!important;
-  flex-direction:column!important;
-  gap:14px!important;
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-  padding:2px 10px 16px 2px!important;
-  scroll-behavior:smooth!important;
-}
-#missionOverlay .fracture-grid > *,
-#missionOverlay .fracture-card,
-#missionOverlay .route-prep-board,
-#missionOverlay .player-guide-board,
-#missionOverlay .npc-route-board,
-#missionOverlay .stage-reward-preview,
-#missionOverlay .route-records-board,
-#missionOverlay .boss-intel-board,
-#missionOverlay .portal-guide-board,
-#missionOverlay .event-journal-board,
-#missionOverlay .contact-codex-board{
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  box-sizing:border-box!important;
-  overflow:hidden!important;
-  contain:layout paint!important;
-}
-#missionOverlay .fracture-card,
-#missionOverlay section,
-#missionOverlay article{
-  padding:14px!important;
-  border-radius:18px!important;
-  background:linear-gradient(180deg,rgba(8,14,22,.90),rgba(2,5,9,.80))!important;
-}
-#missionOverlay .fracture-card h2,
-#missionOverlay .fracture-card h3,
-#missionOverlay .fracture-card p,
-#missionOverlay .fracture-card span,
-#missionOverlay .fracture-card b,
-#missionOverlay .fracture-card div,
-#missionOverlay .record-grid div,
-#missionOverlay .protocol-list div{
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-  word-break:normal!important;
-  line-height:1.35!important;
-}
-#missionOverlay .record-grid,
-#missionOverlay .route-prep-grid,
-#missionOverlay .npc-route-grid,
-#missionOverlay .stage-reward-grid,
-#missionOverlay .route-record-grid,
-#missionOverlay .boss-intel-grid,
-#missionOverlay .portal-guide-grid,
-#missionOverlay .event-journal-grid,
-#missionOverlay .contact-codex-grid,
-#missionOverlay .protocol-list{
-  display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
-  gap:10px!important;
-  min-width:0!important;
-  max-width:100%!important;
-  overflow:visible!important;
-}
-#missionOverlay .bar,
-#missionOverlay .bar span{
-  min-width:0!important;
-  max-width:100%!important;
-  overflow:hidden!important;
-}
-#missionOverlay button,
-#missionOverlay .route-prep-actions button,
-#missionOverlay .mission-actions button{
-  white-space:normal!important;
-  min-height:38px!important;
-}
+  #inventoryOverlay .inventory-reference-panel{
+    display:none !important;
+  }
 
-/* Keep Progress Matrix two-column on desktop, but make the whole modal scroll cleanly on shorter screens. */
-#progressOverlay .database-modal > .fracture-grid,
-#configOverlay .database-modal > .fracture-grid,
-#playtestOverlay .database-modal > .fracture-grid,
-#radioOverlay .database-modal > .fracture-grid{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch!important;
-  overscroll-behavior:contain!important;
-  padding:2px 10px 16px 2px!important;
-}
-#progressOverlay .fracture-grid > *,
-#configOverlay .fracture-grid > *,
-#playtestOverlay .fracture-grid > *,
-#radioOverlay .fracture-grid > *{
-  min-width:0!important;
-  max-width:100%!important;
-}
-
-/* Scroll hygiene for all major overlays. */
-.overlay .database-modal,
-.overlay .story-card,
-.overlay .pre-battle-card,
-.overlay .mobile-pause-card,
-.overlay .lockdown-reward-modal-card{
-  overscroll-behavior:contain!important;
-  scrollbar-gutter:stable both-edges;
-}
-.overlay *{
-  scrollbar-width:thin;
-  scrollbar-color:rgba(255,48,72,.74) rgba(255,255,255,.055);
-}
-.overlay *::-webkit-scrollbar{width:10px;height:10px;}
-.overlay *::-webkit-scrollbar-track{background:rgba(255,255,255,.045);border-radius:999px;}
-.overlay *::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(0,217,255,.65),rgba(255,48,72,.72));border:2px solid rgba(2,8,14,.84);border-radius:999px;}
-
-@media(max-width:980px){
-  #missionOverlay .fracture-grid{gap:10px!important;padding-right:6px!important;}
-  #missionOverlay .record-grid,
-  #missionOverlay .route-prep-grid,
-  #missionOverlay .npc-route-grid,
-  #missionOverlay .stage-reward-grid,
-  #missionOverlay .route-record-grid,
-  #missionOverlay .boss-intel-grid,
-  #missionOverlay .portal-guide-grid,
-  #missionOverlay .event-journal-grid,
-  #missionOverlay .contact-codex-grid,
-  #missionOverlay .protocol-list{grid-template-columns:1fr!important;}
-}
-
-
-/* V281: direct Mission Briefing + Progression Matrix scroll repair.
-   These rules intentionally override the broad V279/V280 menu grid rules. */
-#missionOverlay .database-modal.mission-modal{
-  display:flex!important;
-  flex-direction:column!important;
-  height:min(860px, calc(100svh - 36px))!important;
-  max-height:calc(100svh - 36px)!important;
-  overflow:hidden!important;
-}
-#missionOverlay .fracture-grid{
-  display:flex!important;
-  flex-direction:column!important;
-  grid-template-columns:none!important;
-  flex:1 1 auto!important;
-  min-height:0!important;
-  height:auto!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  gap:14px!important;
-  padding:4px 12px 18px 4px!important;
-  align-content:stretch!important;
-}
-#missionOverlay .fracture-grid > *,
-#missionOverlay #missionContractBoard,
-#missionOverlay #storyArchiveBoard,
-#missionOverlay #routeRecordsPanel,
-#missionOverlay #eventJournalPanel,
-#missionOverlay #npcContactCodexPanel{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  overflow:visible!important;
-  grid-column:1 / -1!important;
-}
-#missionOverlay #missionContractBoard{
-  display:flex!important;
-  flex-direction:column!important;
-  gap:14px!important;
-}
-#missionOverlay #missionContractBoard > section,
-#missionOverlay .fracture-grid > section,
-#missionOverlay .fracture-grid > article,
-#missionOverlay .fracture-card{
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  min-height:auto!important;
-  overflow:visible!important;
-  margin:0!important;
-}
-#missionOverlay .record-grid,
-#missionOverlay .protocol-list,
-#missionOverlay .route-prep-grid,
-#missionOverlay .npc-route-grid,
-#missionOverlay .stage-reward-grid,
-#missionOverlay .route-record-grid,
-#missionOverlay .boss-intel-grid,
-#missionOverlay .portal-guide-grid,
-#missionOverlay .event-journal-grid,
-#missionOverlay .contact-codex-grid,
-#missionOverlay .story-archive-list,
-#missionOverlay .event-journal-list{
-  display:grid!important;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr))!important;
-  gap:10px!important;
-  width:100%!important;
-  max-width:100%!important;
-  overflow:visible!important;
-}
-#missionOverlay .fracture-card *,
-#missionOverlay #missionContractBoard *{
-  white-space:normal!important;
-  overflow-wrap:anywhere!important;
-  max-width:100%!important;
-}
-#progressOverlay .database-modal.progression-modal{
-  display:flex!important;
-  flex-direction:column!important;
-  height:min(860px, calc(100svh - 36px))!important;
-  max-height:calc(100svh - 36px)!important;
-  overflow:hidden!important;
-}
-#progressOverlay .progression-layout{
-  flex:1 1 auto!important;
-  min-height:0!important;
-  overflow-y:auto!important;
-  overflow-x:hidden!important;
-  align-items:start!important;
-  padding:2px 12px 18px 2px!important;
-  scrollbar-gutter:stable both-edges!important;
-}
-#progressOverlay .progression-layout > .fracture-card{
-  min-height:auto!important;
-  overflow:visible!important;
-}
-#progressOverlay .progression-list{
-  height:auto!important;
-  max-height:none!important;
-  overflow:visible!important;
-}
-@media(max-width:980px){
-  #missionOverlay .record-grid,
-  #missionOverlay .protocol-list,
-  #missionOverlay .route-prep-grid,
-  #missionOverlay .npc-route-grid,
-  #missionOverlay .stage-reward-grid,
-  #missionOverlay .route-record-grid,
-  #missionOverlay .boss-intel-grid,
-  #missionOverlay .portal-guide-grid,
-  #missionOverlay .event-journal-grid,
-  #missionOverlay .contact-codex-grid,
-  #missionOverlay .story-archive-list,
+  #inventoryOverlay .inventory-database-list,
+  #progressionOverlay .progression-list,
+  #characterOverlay .character-list,
+  #characterOverlay .character-file,
   #missionOverlay .event-journal-list,
-  #progressOverlay .progression-layout{grid-template-columns:1fr!important;}
+  #missionOverlay .npc-contact-list{
+    max-height:none !important;
+    overflow:visible !important;
+    padding-right:0 !important;
+  }
+
+  #inventoryOverlay .item-tools,
+  #missionOverlay .record-kicker,
+  #progressionOverlay .record-kicker,
+  #configOverlay .record-kicker,
+  #characterOverlay .record-kicker{
+    word-break:break-word !important;
+  }
+
+  #inventoryOverlay .inventory-layout-pro,
+  #inventoryOverlay .inventory-hero-panel,
+  #inventoryOverlay .inventory-quick-actions{
+    grid-template-columns:1fr !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  #inventoryOverlay .owned-grid,
+  #inventoryOverlay .item-grid,
+  #inventoryOverlay #itemRegistryButtons{
+    grid-template-columns:1fr !important;
+  }
+  #inventoryOverlay .owned-item,
+  #inventoryOverlay .bank-slot,
+  #inventoryOverlay .item-card{
+    min-width:0 !important;
+  }
+  #inventoryOverlay .item-tools{
+    position:sticky !important;
+    top:0 !important;
+    z-index:4 !important;
+    background:rgba(4,8,14,.96) !important;
+    padding:8px !important;
+    border-radius:12px !important;
+    border:1px solid rgba(112,215,255,.15) !important;
+  }
+  #inventoryOverlay .item-filter-row,
+  #inventoryOverlay .inventory-quick-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  #progressionOverlay .style-picker{
+    grid-template-columns:repeat(2, minmax(0,1fr)) !important;
+    gap:6px !important;
+  }
+  #progressionOverlay .style-card{
+    min-height:48px !important;
+    padding:8px !important;
+  }
+  #progressionOverlay .skill-row{
+    grid-template-columns:34px 1fr !important;
+    gap:8px !important;
+    padding:8px !important;
+    align-items:start !important;
+  }
+  #progressionOverlay .style-card img,
+  #progressionOverlay .skill-row img,
+  #progressionOverlay .skill-glyph{
+    width:26px !important;
+    height:26px !important;
+    min-width:26px !important;
+  }
+  #progressionOverlay .skill-row span,
+  #progressionOverlay .skill-row small,
+  #progressionOverlay .upgrade-card span,
+  #progressionOverlay .upgrade-card em{
+    font-size:10px !important;
+    line-height:1.3 !important;
+  }
+
+  #missionOverlay .fracture-grid{
+    grid-template-columns:1fr !important;
+  }
+  #missionOverlay .protocol-list div,
+  #missionOverlay .record-grid div,
+  #missionOverlay .event-journal-row,
+  #missionOverlay .npc-contact-row,
+  #missionOverlay .route-record-row{
+    min-width:0 !important;
+  }
+  #missionOverlay .record-grid{
+    grid-template-columns:1fr !important;
+  }
+  #missionOverlay .event-journal-row p,
+  #missionOverlay .npc-contact-row span,
+  #missionOverlay .route-record-row span{
+    font-size:10px !important;
+    line-height:1.3 !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  #configOverlay .fracture-grid{
+    grid-template-columns:1fr !important;
+  }
+  #configOverlay .save-slot-grid,
+  #configOverlay .archive-health-grid,
+  #configOverlay .audio-mixer-grid,
+  #configOverlay .controls-help-grid{
+    grid-template-columns:1fr !important;
+  }
+  #configOverlay .save-slot > div,
+  #configOverlay .save-hub-actions,
+  #configOverlay .audio-actions,
+  #configOverlay .controls-help-actions,
+  #configOverlay .archive-safety-actions{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+  #configOverlay .audio-row{
+    grid-template-columns:84px minmax(0,1fr) 40px !important;
+    gap:8px !important;
+  }
+  #configOverlay .audio-row span,
+  #configOverlay .audio-row b,
+  #configOverlay .control-map span,
+  #configOverlay .control-status-line,
+  #configOverlay .archive-health-row small,
+  #configOverlay .save-slot span,
+  #configOverlay .save-slot small,
+  #configOverlay .fineprint,
+  #configOverlay .menu-info{
+    font-size:10px !important;
+    line-height:1.35 !important;
+    overflow-wrap:anywhere !important;
+  }
+
+  #characterOverlay .character-list{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+  #characterOverlay .character-preview img{
+    max-height:180px !important;
+  }
+}
+
+@media (max-width: 560px){
+  #inventoryOverlay .db-header > div:last-child,
+  #missionOverlay .db-header > div:last-child,
+  #progressionOverlay .db-header > div:last-child,
+  #configOverlay .db-header > div:last-child,
+  #characterOverlay .db-header > div:last-child{
+    display:none !important;
+  }
+  #progressionOverlay .style-picker{
+    grid-template-columns:1fr !important;
+  }
 }

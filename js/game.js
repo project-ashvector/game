@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '281';
-  const BUILD_TITLE = 'MISSION PROGRESS SCROLL FIX PASS';
+  const BUILD_VERSION = '282';
+  const BUILD_TITLE = 'PHONE OVERLAY HOTFIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -10002,63 +10002,6 @@
     else setTimeout(runner, 70);
   }
 
-  function forceOverlayScrollLayout(id){
-    const overlay=$(id);
-    if(!overlay) return;
-    const modal=overlay.querySelector('.database-modal');
-    if(!modal) return;
-    modal.style.display='flex';
-    modal.style.flexDirection='column';
-    modal.style.overflow='hidden';
-    modal.style.maxHeight='calc(100svh - 36px)';
-    modal.style.height='min(860px, calc(100svh - 36px))';
-    modal.style.minHeight='0';
-
-    if(id==='missionOverlay'){
-      const grid=overlay.querySelector('.fracture-grid');
-      if(grid){
-        grid.style.display='flex';
-        grid.style.flexDirection='column';
-        grid.style.gridTemplateColumns='none';
-        grid.style.flex='1 1 auto';
-        grid.style.minHeight='0';
-        grid.style.overflowY='auto';
-        grid.style.overflowX='hidden';
-        grid.style.gap='14px';
-        grid.style.padding='4px 12px 18px 4px';
-        Array.from(grid.children).forEach(child=>{
-          child.style.width='100%';
-          child.style.maxWidth='100%';
-          child.style.minWidth='0';
-          child.style.overflow='visible';
-          if(child.id==='missionContractBoard'){
-            child.style.display='flex';
-            child.style.flexDirection='column';
-            child.style.gap='14px';
-          }
-        });
-      }
-    }
-
-    if(id==='progressionOverlay'){
-      const layout=overlay.querySelector('.progression-layout');
-      if(layout){
-        layout.style.flex='1 1 auto';
-        layout.style.minHeight='0';
-        layout.style.overflowY='auto';
-        layout.style.overflowX='hidden';
-        layout.style.alignItems='start';
-        layout.style.padding='2px 12px 18px 2px';
-      }
-      const list=overlay.querySelector('.progression-list');
-      if(list){
-        list.style.overflow='visible';
-        list.style.maxHeight='none';
-        list.style.height='auto';
-      }
-    }
-  }
-
   function openOverlay(id){
     const target=$(id);
     if(!target){toast('Protocol missing: '+id); return;}
@@ -10078,7 +10021,6 @@
     target.style.display='grid';
     target.style.zIndex='9000';
     target.style.pointerEvents='auto';
-    forceOverlayScrollLayout(id);
     document.body.classList.add('menu-protocol-open');
     AudioManager.play(activeMusicForState());
 
@@ -10091,12 +10033,11 @@
       if(id==='missionOverlay'){
         renderUI();
         renderRoutePrepPanel();
-        runDeferredUiTask(()=>{ renderMissionContractPanel(); renderStoryArchivePanel(); forceOverlayScrollLayout('missionOverlay'); }, 'mission core panels');
-        runDeferredUiTask(()=>{ renderRouteRecordsPanel(); renderEventJournalPanel(); renderNpcContactCodexPanel(); forceOverlayScrollLayout('missionOverlay'); }, 'mission archive panels');
-        setTimeout(()=>forceOverlayScrollLayout('missionOverlay'), 120);
+        runDeferredUiTask(()=>{ renderMissionContractPanel(); renderStoryArchivePanel(); }, 'mission core panels');
+        runDeferredUiTask(()=>{ renderRouteRecordsPanel(); renderEventJournalPanel(); renderNpcContactCodexPanel(); }, 'mission archive panels');
       }
       if(id==='playtestOverlay'){ renderUI(); runDeferredUiTask(renderQaLockdownBuffBoard, 'playtest board'); }
-      if(id==='progressionOverlay'){ renderProgressionDb(); forceOverlayScrollLayout('progressionOverlay'); setTimeout(()=>forceOverlayScrollLayout('progressionOverlay'),80); }
+      if(id==='progressionOverlay') renderProgressionDb();
       if(id==='configOverlay'){
         renderSaveHub(); renderAudioMixer();
         runDeferredUiTask(()=>{ renderArchiveSafetyPanel(); renderControlsHelpPanel(); }, 'config safety panels');
