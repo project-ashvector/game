@@ -12,8 +12,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '287';
-  const BUILD_TITLE = 'IMMERSIVE WORLD FOUNDATION';
+  const BUILD_VERSION = '288';
+  const BUILD_TITLE = 'PHONE JOYSTICK SPEED TUNE';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -10641,6 +10641,11 @@
   let mobileJoystickDir = null;
   let mobileJoystickActive = false;
   let mobileJoystickPointerId = null;
+  // v288: phone joystick tuning. Keyboard/controller movement stays unchanged, but
+  // touch joystick repeat is slowed so the player does not fly across the map.
+  const MOBILE_JOYSTICK_REPEAT_MS = 190;
+  const MOBILE_JOYSTICK_FIRST_STEP_DELAY_MS = 95;
+  let mobileJoystickFirstStepTimer = null;
   let mobileResizeTimer = null;
   function isPhoneLike(){
     return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
@@ -10665,6 +10670,7 @@
   function stopMobileMove(){
     if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
     if(mobileJoystickTimer){ clearInterval(mobileJoystickTimer); mobileJoystickTimer=null; }
+    if(mobileJoystickFirstStepTimer){ clearTimeout(mobileJoystickFirstStepTimer); mobileJoystickFirstStepTimer=null; }
     mobileJoystickDir = null;
     mobileJoystickActive = false;
     mobileJoystickPointerId = null;
@@ -10723,9 +10729,12 @@
       const absX=Math.abs(x), absY=Math.abs(y);
       if(absX > absY * .72) mobileJoystickDir = x > 0 ? 'right' : 'left';
       if(absY > absX * .72) mobileJoystickDir = y > 0 ? 'down' : 'up';
-      if(!mobileJoystickTimer){
-        moveByName(mobileJoystickDir);
-        mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir); }, 118);
+      if(!mobileJoystickTimer && !mobileJoystickFirstStepTimer){
+        mobileJoystickFirstStepTimer=setTimeout(()=>{
+          mobileJoystickFirstStepTimer=null;
+          if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir);
+          mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir); }, MOBILE_JOYSTICK_REPEAT_MS);
+        }, MOBILE_JOYSTICK_FIRST_STEP_DELAY_MS);
       }
     };
     const start=(e)=>{
