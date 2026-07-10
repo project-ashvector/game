@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '283';
-  const BUILD_TITLE = 'PHONE MENU HARD FIX';
+  const BUILD_VERSION = '284';
+  const BUILD_TITLE = 'COMPACT QUEST HUD PASS';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -8609,6 +8609,20 @@
     document.body.appendChild(c);
     return c;
   }
+
+  // V284: compact quest HUD helper. The objective tracker can be tapped/clicked
+  // to expand/collapse without changing actual quest progress or gameplay logic.
+  function ensureQuestTrackerCompactToggle(){
+    const el=$('objectiveTracker');
+    if(!el || el.dataset.compactToggleReady==='1') return;
+    el.dataset.compactToggleReady='1';
+    el.title='Tap/click to expand or collapse the quest tracker.';
+    el.addEventListener('click', ()=>{
+      el.classList.toggle('quest-expanded');
+      el.classList.toggle('quest-compact', !el.classList.contains('quest-expanded'));
+    }, {passive:true});
+  }
+
   function renderObjectiveCompass(){
     const c=ensureObjectiveCompass();
     ensureSettings();
@@ -9950,6 +9964,7 @@
     const target=objectiveTarget();
     const targetSummary=target ? `${safeHtml(target.label)} // ${safeHtml(target.arrow||'•')} ${Number(target.distance||0)} tiles` : 'No active target';
     $('objectiveTracker').innerHTML=quickStatusStripHtml() + `<b>${activeText}</b><br><span>🎯 ${targetSummary}</span><br>` + objectives.map(([t,done])=>`${done?'✅':'⬜'} ${t}`).join(' &nbsp; ') + ` &nbsp; ${contractLine} &nbsp; 🧾 ${questLine} &nbsp; 🎸 ${metallikLine} &nbsp; 🏆 ${protocolLine}`;
+    if($('objectiveTracker')){ $('objectiveTracker').classList.add('quest-compact'); ensureQuestTrackerCompactToggle(); }
     $('missionProgress').innerHTML=objectiveGuideHtml() + onboardingMiniStatusHtml() + `<div class="mission-row">💾 Checkpoint: ${safeHtml(checkpointSummaryText())}</div><div class="mission-row">🎸 MetalliK: ${metallikLine}</div><div class="mission-row">🏆 Protocol Challenges: ${safeHtml(protocolChallengeSummaryText())}</div>` + objectives.map(([t,done])=>`<div class="mission-row">${done?'✅':'⬜'} ${t}</div>`).join('') + `<div class="mission-row">${contract.complete?'✅':'⬜'} ${contractLine}</div><div class="mission-row">${questLine}</div>`;
     $('missionChecklist') && ($('missionChecklist').innerHTML=$('missionProgress').innerHTML);
     renderMissionContractPanel();

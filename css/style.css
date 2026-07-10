@@ -4110,3 +4110,77 @@ body.game-paused .mobile-pause-card::before{
     grid-template-columns:1fr!important;
   }
 }
+
+
+/* V284: Compact Quest HUD Pass.
+   Keeps the tracker readable while playing and lets players tap/click to expand it. */
+.objective-tracker.quest-compact{
+  cursor:pointer;
+  position:relative;
+  overflow:hidden!important;
+  max-height:118px;
+  transition:max-height .18s ease, opacity .18s ease, background .18s ease;
+}
+.objective-tracker.quest-compact::after{
+  content:'TAP TO EXPAND';
+  position:absolute;
+  right:10px;
+  bottom:6px;
+  font:900 9px/1 Consolas,monospace;
+  color:rgba(112,215,255,.76);
+  letter-spacing:.08em;
+  background:rgba(3,7,12,.78);
+  border:1px solid rgba(112,215,255,.22);
+  border-radius:999px;
+  padding:4px 7px;
+  pointer-events:none;
+}
+.objective-tracker.quest-expanded{
+  max-height:min(48vh,420px)!important;
+  overflow:auto!important;
+  opacity:1!important;
+  cursor:pointer;
+  -webkit-overflow-scrolling:touch;
+}
+.objective-tracker.quest-expanded::after{content:'TAP TO COLLAPSE';}
+.objective-tracker .qol-route-strip{
+  margin-bottom:6px!important;
+}
+@media (max-width:900px), (pointer:coarse){
+  body.game-active .objective-tracker.quest-compact{
+    display:block!important;
+    max-height:54px!important;
+    overflow:hidden!important;
+    font-size:10px!important;
+    line-height:1.18!important;
+  }
+  body.game-active .objective-tracker.quest-compact .qol-route-strip{
+    display:none!important;
+  }
+  body.game-active .objective-tracker.quest-compact::after{
+    content:'+';
+    right:6px;
+    bottom:5px;
+    width:20px;
+    height:20px;
+    display:grid;
+    place-items:center;
+    padding:0;
+    font-size:14px;
+  }
+  body.game-active .objective-tracker.quest-expanded{
+    top:calc(env(safe-area-inset-top) + 8px)!important;
+    left:8px!important;
+    right:8px!important;
+    width:auto!important;
+    max-height:42svh!important;
+    overflow:auto!important;
+    font-size:10px!important;
+    padding-bottom:28px!important;
+  }
+  body.game-active .objective-tracker.quest-expanded .qol-route-strip{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  body.game-active .objective-tracker.quest-expanded::after{content:'−';}
+}
