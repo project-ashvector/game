@@ -12,8 +12,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '289';
-  const BUILD_TITLE = 'F-001 CINEMATIC OVERHAUL';
+  const BUILD_VERSION = '290';
+  const BUILD_TITLE = 'HELD MOVEMENT PERFORMANCE FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -76,6 +76,11 @@
   let fieldSequenceActive = false;
   let scriptedCamera = null;
   const fieldFx = { footsteps: [] };
+  let keyboardMoveLockAt = 0;
+  let movementMiniLastAt = 0;
+  let movementHudLastAt = 0;
+  let blockedMoveNoticeAt = 0;
+  const KEYBOARD_MOVE_REPEAT_MS = 112;
 
   const AudioManager = {
     tracks: {},
@@ -5623,15 +5628,10 @@
   let playerStepAnimId = null;
   function triggerPlayerStepAnimation(){
     if(!state?.player) return;
+    // v290: the immersive field loop already animates walking frames. Starting a second
+    // requestAnimationFrame chain for every repeated key press caused severe held-key lag.
     state.player.lastMoveAt = Date.now();
-    if(playerStepAnimId) cancelAnimationFrame(playerStepAnimId);
-    const endAt = state.player.lastMoveAt + 430;
-    const tick = ()=>{
-      try{ render(); }catch(err){}
-      if(Date.now() < endAt && gameStarted && !battle){ playerStepAnimId = requestAnimationFrame(tick); }
-      else { playerStepAnimId = null; try{ render(); }catch(err){} }
-    };
-    playerStepAnimId = requestAnimationFrame(tick);
+    if(playerStepAnimId){ cancelAnimationFrame(playerStepAnimId); playerStepAnimId=null; }
   }
   function storyPortraitForLine(line={}){
     if(line?.portrait && NPC_DEFS?.[line.portrait]?.asset) return NPC_DEFS[line.portrait].asset;
@@ -8015,14 +8015,29 @@
   }
 
 
+  function blockedMoveFeedback(message='Blocked.'){
+    const now=performance.now();
+    if(now-blockedMoveNoticeAt>=520){
+      blockedMoveNoticeAt=now;
+      toast(message);
+      addWorldShake(.10);
+    }
+    clampPlayerToMap();
+    renderMovementStep();
+  }
+
   function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
     if(fieldSequenceActive) return;
     if(battle) return;
+    const moveNow=performance.now();
+    if(source==='keyboard'){
+      if(moveNow < keyboardMoveLockAt) return;
+      keyboardMoveLockAt = moveNow + KEYBOARD_MOVE_REPEAT_MS;
+    }
     if(source==='controller'){
-      const now=performance.now();
-      if(now < controllerStepLockAt) return;
-      controllerStepLockAt = now + CONTROLLER_WORLD_STEP_MS;
+      if(moveNow < controllerStepLockAt) return;
+      controllerStepLockAt = moveNow + CONTROLLER_WORLD_STEP_MS;
     }
 
     clampPlayerToMap();
@@ -8036,10 +8051,7 @@
 
 
     if(!collisionRegion().set.has(`${nx},${ny}`) || isOuterMapEdge(nx,ny)){
-      toast('Map boundary reached.');
-      addWorldShake(.12);
-      clampPlayerToMap();
-      renderAll();
+      blockedMoveFeedback('Map boundary reached.');
       return;
     }
 
@@ -8048,12 +8060,12 @@
     // V253: NPCs are contacts, not hard walls. They can never block a route/entry lane.
     // The player can stand on or pass through them and press E/A/Talk when nearby.
     if(npcBlock && lockdownNormalInteractionsLocked()){
-      lockdownInteractionToast('NPC talk');
-      renderAll();
+      if(performance.now()-blockedMoveNoticeAt>=520){ blockedMoveNoticeAt=performance.now(); lockdownInteractionToast('NPC talk'); }
+      renderMovementStep();
       return;
     }
     if(c==='D'){ if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('boss gates'); renderAll(); return; } handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
-    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); addWorldShake(.12); clampPlayerToMap(); renderAll(); return; }
+    if(isBlocked(c) || !canStandAt(nx,ny)){ blockedMoveFeedback('Blocked.'); return; }
 
     const prevX=state.player.x, prevY=state.player.y;
     state.player.x=nx;
@@ -8066,7 +8078,8 @@
     handleTile(c,nx,ny);
     if(c==='.' || c==='P') maybeTriggerVectorLockdown();
     clampPlayerToMap();
-    renderAll();
+    if(c==='.' || c==='P') renderMovementStep();
+    else renderAll();
     queueAutosave();
   }
   function handleDoor(x,y){
@@ -10480,6 +10493,21 @@
     renderOperatorDb();
     renderCharacterMenuDb();
   }
+  function renderMovementStep(force=false){
+    // v290: walking should never rebuild every menu/database panel on every browser
+    // key-repeat event. The animated field stays immediate; minimap/HUD are rate-limited.
+    try{ render(); }catch(err){ console.warn('[AV] movement render failed', err); }
+    const now=performance.now();
+    if(force || now-movementMiniLastAt>=140){
+      movementMiniLastAt=now;
+      try{ renderMini(); }catch(err){}
+    }
+    if(force || now-movementHudLastAt>=220){
+      movementHudLastAt=now;
+      try{ renderFullscreenHud(); renderObjectiveCompass(); }catch(err){}
+    }
+  }
+
   function renderAll(){
     // V238: keep startup/menu light. The intro video should not compete with full map/minimap/UI redraws.
     const mode = uiState?.mode || '';
@@ -10914,7 +10942,7 @@
     const moves={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
     const m=moves[dir];
     if(!m) return;
-    tryMove(m[0],m[1]);
+    tryMove(m[0],m[1],'mobile');
   }
   function stopMobileMove(){
     if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
@@ -11568,7 +11596,7 @@
           e.preventDefault();
           e.stopPropagation();
           const [mx,my]=move;
-          tryMove(mx,my);
+          tryMove(mx,my,'keyboard');
           return;
         }
         if(key==='e'){ e.preventDefault(); interactNearbyNpc(); return; }
