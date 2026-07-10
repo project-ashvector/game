@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '291';
-  const BUILD_TITLE = 'SMOOTH HELD MOVEMENT ENGINE';
+  const BUILD_VERSION = '292';
+  const BUILD_TITLE = 'OPERATOR SPRITE RECOVERY';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5914,14 +5914,27 @@
     if($('operatorQuote')) $('operatorQuote').textContent = op.quote || '';
     if($('operatorRecordGrid')) $('operatorRecordGrid').innerHTML = `<div><b>Class</b><span>${safeHtml(op.className||op.title||'Operator')}</span></div><div><b>Affinity</b><span>${safeHtml(op.affinity||'Unknown')}</span></div><div><b>Rarity</b><span>${safeHtml(op.rarity||'Starter')}</span></div><div><b>Clearance</b><span>${safeHtml(op.clearance||'Level 1')}</span></div><div><b>Operator Level</b><span>Lv. ${activeOperatorProgress().level} // ${activeOperatorProgress().xp}/${activeOperatorProgress().nextXp} XP</span></div><div><b>Synchronization</b><span id="operatorSync">Rank ${state?.operatorSyncRank||0}/10</span></div><div><b>File Status</b><span>${safeHtml(op.fileStatus||'Active')}</span></div>`;
     if($('operatorAssetPaths')) $('operatorAssetPaths').textContent = [op.profile, op.portrait, op.battle, op.spriteSheet, op.icon, op.mapSprite, ...(Object.values(op.rotations||{})), ...operatorAnimationPaths(op,'walking'), ...operatorAnimationPaths(op,'idle')].join('\n');
-    try{ playerSpriteRuntime.lastGood=null; primeCurrentPlayerSprites(); }catch(err){}
+    try{
+      // Keep the previous valid frame visible until the newly selected operator is decoded.
+      playerSpriteRuntime.primedOperator=null;
+      playerSpriteRuntime.primedFacing=null;
+      primeCurrentPlayerSprites(true);
+    }catch(err){}
   }
   let state = newGameState();
   let battle = null; let camera = {x:0,y:0,targetX:0,targetY:0,viewX:0,viewY:0,trauma:0,ready:false}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   let battleCommandIndex = 0;
   let preBattleCommandIndex = 0;
   const images = {};
-  const playerSpriteRuntime = {lastPath:null,lastGood:null,lastFacing:null,primedOperator:null};
+  const playerSpriteRuntime = {
+    lastPath:null,
+    lastGood:null,
+    lastFacing:null,
+    primedOperator:null,
+    primedFacing:null,
+    lastPrimeAt:0,
+    deferredPrimeTimer:null
+  };
 
   function playerSpritePathsForOperator(op=currentOperator()){
     return [...new Set([
@@ -5931,42 +5944,81 @@
       ...operatorAnimationPaths(op,'walking')
     ].filter(Boolean))];
   }
-  function primeCurrentPlayerSprites(){
+  function playerSpritePriorityPaths(op=currentOperator(), facing=state?.player?.facing || 'down'){
+    const dir=normalizeOperatorFacing(facing);
+    const idle=op?.animations?.idle?.[dir] || [];
+    const walking=op?.animations?.walking?.[dir] || [];
+    return [...new Set([
+      op?.mapSprite,
+      op?.rotations?.[dir],
+      idle[0],
+      walking[0],
+      op?.mapSpriteLarge,
+      'assets/operators/av001/sprites/map_sprite.png'
+    ].filter(Boolean))];
+  }
+  function primeCurrentPlayerSprites(force=false){
     const op=currentOperator();
     const id=currentOperatorId();
+    const facing=normalizeOperatorFacing(state?.player?.facing || 'down');
+    const now=Date.now();
+    const same=id===playerSpriteRuntime.primedOperator && facing===playerSpriteRuntime.primedFacing;
+    if(!force && same && now-playerSpriteRuntime.lastPrimeAt<1800) return;
     playerSpriteRuntime.primedOperator=id;
-    playerSpritePathsForOperator(op).forEach(path=>ensureImageCached(path,{eager:true}));
+    playerSpriteRuntime.primedFacing=facing;
+    playerSpriteRuntime.lastPrimeAt=now;
+
+    // Load one reliable map frame before requesting the full animation bank. This avoids
+    // starving the visible player image behind dozens of animation requests on first load.
+    playerSpritePriorityPaths(op,facing).forEach(path=>ensureImageCached(path,{eager:true,playerCritical:true}));
+
+    window.clearTimeout(playerSpriteRuntime.deferredPrimeTimer);
+    playerSpriteRuntime.deferredPrimeTimer=window.setTimeout(()=>{
+      playerSpritePathsForOperator(op).forEach(path=>ensureImageCached(path,{eager:false}));
+    }, 650);
   }
   function usableCanvasImage(im){
-    return !!(im && im.complete && im.naturalWidth && im.naturalHeight);
+    return !!(im && im.complete && im.naturalWidth>0 && im.naturalHeight>0 && !im._avFailed);
+  }
+  function rememberPlayerSprite(path,im){
+    if(!usableCanvasImage(im)) return null;
+    playerSpriteRuntime.lastPath=path || im._avPath || null;
+    playerSpriteRuntime.lastGood=im;
+    playerSpriteRuntime.lastFacing=state?.player?.facing || 'down';
+    return im;
   }
   function resolvePlayerSpriteImage(spritePath){
     primeCurrentPlayerSprites();
-    const requested = ensureImageCached(spritePath,{eager:true});
-    if(usableCanvasImage(requested)){
-      playerSpriteRuntime.lastPath=spritePath;
-      playerSpriteRuntime.lastGood=requested;
-      playerSpriteRuntime.lastFacing=state?.player?.facing || 'down';
-      return requested;
-    }
     const op=currentOperator();
     const dir=normalizeOperatorFacing(state?.player?.facing || 'down');
-    const fallbacks=[
+    const idle=op?.animations?.idle?.[dir] || [];
+    const walking=op?.animations?.walking?.[dir] || [];
+    const candidates=[
+      spritePath,
+      walking[0],
+      idle[0],
       op?.rotations?.[dir],
       op?.mapSprite,
       op?.mapSpriteLarge,
       'assets/operators/av001/sprites/map_sprite.png'
     ].filter(Boolean);
-    for(const path of fallbacks){
-      const im=ensureImageCached(path,{eager:true});
-      if(usableCanvasImage(im)){
-        playerSpriteRuntime.lastPath=path;
-        playerSpriteRuntime.lastGood=im;
-        playerSpriteRuntime.lastFacing=state?.player?.facing || 'down';
-        return im;
-      }
+
+    for(const path of [...new Set(candidates)]){
+      const im=ensureImageCached(path,{eager:true,playerCritical:true});
+      if(usableCanvasImage(im)) return rememberPlayerSprite(path,im);
     }
-    return playerSpriteRuntime.lastGood || requested || null;
+
+    // Never replace a valid frame with the gray placeholder while another frame loads.
+    if(usableCanvasImage(playerSpriteRuntime.lastGood)) return playerSpriteRuntime.lastGood;
+
+    // Last-resort real character art. This keeps a recognizable operator visible even if
+    // a directional sprite file was removed from a copied build.
+    const artFallbacks=[op?.avatar,op?.icon,op?.portrait,op?.battle].filter(Boolean);
+    for(const path of artFallbacks){
+      const im=ensureImageCached(path,{eager:true,playerCritical:true});
+      if(usableCanvasImage(im)) return rememberPlayerSprite(path,im);
+    }
+    return null;
   }
 
   function newGameState(){
@@ -5988,19 +6040,48 @@
     if('requestAnimationFrame' in window) requestAnimationFrame(run);
     else setTimeout(run, 60);
   }
+  function imageAssetUrl(path,{withoutVersion=false,retryToken=0}={}){
+    if(!path) return '';
+    if(path.includes('?') || withoutVersion || location.protocol==='file:') return path;
+    const join=path.includes('?')?'&':'?';
+    return `${path}${join}v=${BUILD_VERSION}${retryToken?`&r=${retryToken}`:''}`;
+  }
   function ensureImageCached(path, opts={}){
     if(!path) return null;
-    if(images[path]) return images[path];
+    const cached=images[path];
+    if(cached && !cached._avFailed) return cached;
+    if(cached && cached._avFailed && Date.now()-(cached._avFailedAt||0)<1800) return cached;
+
     const im = new Image();
-    // v248: do not use browser lazy loading for canvas assets. Canvas images are never
-    // inserted into the DOM, so lazy loading can leave the game stuck on fallback shapes.
     const eager = opts.eager !== false;
+    im._avPath=path;
+    im._avFailed=false;
+    im._avFailedAt=0;
+    im._avRetryCount=Number(cached?._avRetryCount||0);
     try{ im.loading = 'eager'; }catch(err){}
-    try{ im.decoding = 'auto'; }catch(err){}
-    try{ im.fetchPriority = eager ? 'high' : 'auto'; }catch(err){}
-    im.onload = requestImageRenderRefresh;
-    im.onerror = () => console.warn('Missing image asset:', path);
-    im.src = path.includes('?') ? path : `${path}?v=${BUILD_VERSION}`;
+    try{ im.decoding = opts.playerCritical ? 'sync' : 'async'; }catch(err){}
+    try{ im.fetchPriority = opts.playerCritical ? 'high' : (eager ? 'high' : 'auto'); }catch(err){}
+    im.onload = () => {
+      im._avFailed=false;
+      im._avFailedAt=0;
+      if(opts.playerCritical) rememberPlayerSprite(path,im);
+      requestImageRenderRefresh();
+    };
+    im.onerror = () => {
+      im._avFailed=true;
+      im._avFailedAt=Date.now();
+      im._avRetryCount=(im._avRetryCount||0)+1;
+      console.warn('Missing image asset:', path, 'attempt', im._avRetryCount);
+      // Some local/static hosts mishandle version-query image URLs. Retry the exact file
+      // path once, then leave the failed image eligible for a later cooldown retry.
+      if(im._avRetryCount===1 && !opts.withoutVersion){
+        window.setTimeout(()=>{
+          if(images[path]===im) delete images[path];
+          ensureImageCached(path,{...opts,withoutVersion:true});
+        },120);
+      }
+    };
+    im.src = imageAssetUrl(path,{withoutVersion:!!opts.withoutVersion,retryToken:im._avRetryCount>1?Date.now():0});
     images[path] = im;
     return im;
   }
@@ -10252,7 +10333,7 @@
     drawDepthShadow(x+TILE/2, y+TILE-4, 17, 6, .42);
     ctx.shadowColor=lockdownActive ? 'rgba(112,215,255,.72)' : 'rgba(0,0,0,.35)';
     ctx.shadowBlur=lockdownActive ? 9 : 2;
-    if(im && im.complete && im.naturalWidth){
+    if(usableCanvasImage(im)){
       const oldSmooth = ctx.imageSmoothingEnabled;
       ctx.imageSmoothingEnabled = true;
       drawImageDepth(im, dx, dy, drawW, drawH, y+TILE-4);
@@ -10263,8 +10344,7 @@
         ctx.strokeRect(dx+6, dy+6, drawW-12, drawH-12);
       }
     } else {
-      // v249: final emergency silhouette only. Normal movement keeps the last good sprite
-      // while a new facing/walking frame loads, so the player no longer flashes into a block.
+      // Emergency silhouette only appears when every operator image path is genuinely unavailable.
       ctx.fillStyle=lockdownActive ? 'rgba(32,55,75,.64)' : 'rgba(17,24,32,.52)';
       ctx.beginPath();
       ctx.roundRect ? ctx.roundRect(x+9,y+7,24,31,7) : ctx.rect(x+9,y+7,24,31);
