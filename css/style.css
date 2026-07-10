@@ -4434,3 +4434,64 @@ body.reduced-motion .game-card:before{animation:none!important;transform:none!im
   body.menu-protocol-open .setting-row.setting-select-row{grid-template-columns:minmax(0,1fr) minmax(138px,42%)!important;overflow:visible!important}
   body.menu-protocol-open .setting-row.setting-select-row select{width:100%!important;max-width:100%!important;min-width:0!important}
 }
+
+/* v289 // F-001 cinematic overhaul */
+.field-cinematic-overlay{
+  position:fixed;
+  inset:0;
+  z-index:95;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  background:linear-gradient(180deg, rgba(3,5,10,.18), rgba(3,5,10,.52));
+  opacity:0;
+  transition:opacity .28s ease;
+}
+.field-cinematic-overlay.visible{ opacity:1; }
+.field-cinematic-overlay.hidden{ display:none; }
+.field-cinematic-banner{
+  width:min(92vw, 780px);
+  padding:20px 24px;
+  border:1px solid rgba(155,215,255,.28);
+  background:linear-gradient(180deg, rgba(11,18,28,.90), rgba(16,10,24,.82));
+  box-shadow:0 18px 60px rgba(0,0,0,.45), 0 0 28px rgba(120,210,255,.10);
+  text-align:center;
+  color:#eef7ff;
+  backdrop-filter:blur(8px);
+}
+.field-cinematic-kicker{
+  font:700 11px/1.2 "IBM Plex Mono", monospace;
+  letter-spacing:.28em;
+  text-transform:uppercase;
+  color:#89e7ff;
+  margin-bottom:8px;
+}
+.field-cinematic-banner h2{
+  margin:0;
+  font-size:clamp(26px,4vw,46px);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#ffffff;
+}
+.field-cinematic-banner p{
+  margin:10px auto 0;
+  max-width:62ch;
+  color:rgba(232,242,255,.86);
+  font-size:clamp(13px,2vw,16px);
+  line-height:1.5;
+}
+body.boss-battle-active #battlePanel{
+  box-shadow:0 0 0 1px rgba(255,92,118,.24), 0 22px 70px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+body.boss-battle-active #battlePanel::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at center, rgba(255,86,122,0) 34%, rgba(255,86,122,.10) 100%);
+  mix-blend-mode:screen;
+}
+@media (max-width: 768px){
+  .field-cinematic-banner{ width:min(94vw, 680px); padding:16px 14px; }
+  .field-cinematic-kicker{ letter-spacing:.16em; font-size:10px; }
+}

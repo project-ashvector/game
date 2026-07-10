@@ -12,8 +12,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '288';
-  const BUILD_TITLE = 'PHONE JOYSTICK SPEED TUNE';
+  const BUILD_VERSION = '289';
+  const BUILD_TITLE = 'F-001 CINEMATIC OVERHAUL';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -72,6 +72,10 @@
   ];
   let radioMode=false;
   let radioTrack='pause';
+  let playerMotion = {active:false, fromX:0, fromY:0, toX:0, toY:0, startedAt:0, duration:150};
+  let fieldSequenceActive = false;
+  let scriptedCamera = null;
+  const fieldFx = { footsteps: [] };
 
   const AudioManager = {
     tracks: {},
@@ -605,7 +609,7 @@
     ctx.fillStyle=g;
     ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
   }
-  function drawDynamicLighting(){
+  function drawDynamicLighting(playerPos=currentPlayerRenderPos()){
     if(state?.settings?.dynamicLighting===false) return;
     const profile=graphicsProfile();
     const stage=currentStageKey();
@@ -622,8 +626,8 @@
     lightingCtx.fillStyle=shade;
     lightingCtx.fillRect(0,0,VIEW_W,VIEW_H);
     lightingCtx.globalCompositeOperation='destination-out';
-    const px=state.player.x*TILE+TILE/2-viewX;
-    const py=state.player.y*TILE+TILE/2-viewY;
+    const px=playerPos.x*TILE+TILE/2-viewX;
+    const py=playerPos.y*TILE+TILE/2-viewY;
     lightCut(lightingCtx,px,py,profile.lightRadius,1);
     const lights=[];
     const startX=Math.max(0,Math.floor(viewX/TILE)-2), endX=Math.min(mapWidth()-1,Math.ceil((viewX+VIEW_W)/TILE)+2);
@@ -660,6 +664,238 @@
       try{ render(); }catch(err){ console.warn('[AV] immersive render loop paused after error',err); worldAnimationLast=now+1000; }
     };
     requestAnimationFrame(loop);
+  }
+
+  function currentPlayerRenderPos(now=performance.now()){
+    if(!state?.player) return {x:0,y:0};
+    if(!playerMotion.active) return {x:Number(state.player.x)||0, y:Number(state.player.y)||0};
+    const duration=Math.max(60, Number(playerMotion.duration)||150);
+    const t=Math.max(0, Math.min(1, (now-(Number(playerMotion.startedAt)||0))/duration));
+    const eased=t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
+    const x=playerMotion.fromX + (playerMotion.toX-playerMotion.fromX)*eased;
+    const y=playerMotion.fromY + (playerMotion.toY-playerMotion.fromY)*eased;
+    if(t>=1){
+      playerMotion.active=false;
+      return {x:Number(playerMotion.toX)||Number(state.player.x)||0, y:Number(playerMotion.toY)||Number(state.player.y)||0};
+    }
+    return {x,y};
+  }
+  function resetPlayerMotion(sync=false){
+    const px=Number(state?.player?.x)||0, py=Number(state?.player?.y)||0;
+    playerMotion={active:false, fromX:px, fromY:py, toX:px, toY:py, startedAt:performance.now(), duration:150};
+    if(sync) playerMotion.startedAt=0;
+  }
+  function startPlayerMotion(toX,toY,{duration=160}={}){
+    const from=currentPlayerRenderPos();
+    playerMotion={active:true, fromX:Number(from.x)||0, fromY:Number(from.y)||0, toX:Number(toX)||0, toY:Number(toY)||0, startedAt:performance.now(), duration:Math.max(80, duration)};
+  }
+  function emitFootstepBurst(tx,ty,dx=0,dy=0,variant='ash'){
+    const baseX=(tx+.5)*TILE, baseY=(ty+1)*TILE-5;
+    const lateral=dx!==0 ? 8 : 5;
+    const dir=dx<0?-1:dx>0?1:0;
+    const sway=dy!==0 ? 7 : 4;
+    const now=performance.now();
+    const colors={
+      ash:['rgba(225,232,240,.44)','rgba(112,255,214,.26)'],
+      ember:['rgba(255,186,92,.40)','rgba(255,98,52,.28)'],
+      rain:['rgba(168,220,255,.34)','rgba(120,180,255,.24)'],
+      shard:['rgba(208,180,255,.40)','rgba(135,92,255,.24)']
+    };
+    const palette=colors[variant] || colors.ash;
+    for(let i=0;i<5;i++){
+      const side=i%2===0?-1:1;
+      fieldFx.footsteps.push({
+        x:baseX + side*(lateral + Math.random()*4) + (dir?0:(Math.random()-.5)*6),
+        y:baseY + (dy?dy*sway:0) + (Math.random()-.5)*3,
+        vx:(Math.random()-.5)*.24 - dx*.12,
+        vy:-.18 - Math.random()*.36 - Math.abs(dy)*.05,
+        born:now,
+        life:420 + Math.random()*180,
+        size:2.5 + Math.random()*3.5,
+        color:palette[i%palette.length]
+      });
+    }
+    if(fieldFx.footsteps.length>100) fieldFx.footsteps.splice(0, fieldFx.footsteps.length-100);
+  }
+  function drawFootstepFx(now=performance.now()){
+    if(!fieldFx.footsteps.length) return;
+    const remaining=[];
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    for(const p of fieldFx.footsteps){
+      const age=now-(p.born||0);
+      const life=Math.max(180, p.life||500);
+      if(age>=life) continue;
+      const t=age/life;
+      p.x += Number(p.vx)||0;
+      p.y += Number(p.vy)||0;
+      const alpha=(1-t)*.95;
+      ctx.globalAlpha=Math.max(0, alpha);
+      ctx.fillStyle=p.color||'rgba(255,255,255,.32)';
+      ctx.beginPath();
+      ctx.ellipse(p.x,p.y,Math.max(.8,p.size*(1+t*.6)),Math.max(.5,p.size*.55*(1+t*.4)),0,0,Math.PI*2);
+      ctx.fill();
+      remaining.push(p);
+    }
+    ctx.restore();
+    fieldFx.footsteps=remaining;
+  }
+  function scriptedCameraTarget(){
+    if(!scriptedCamera?.active) return null;
+    if(performance.now() >= (scriptedCamera.until||0)){ scriptedCamera.active=false; return null; }
+    return scriptedCamera;
+  }
+  function beginScriptedCameraFocus(tx,ty,{duration=1600}={}){
+    scriptedCamera={active:true, tx:Number(tx)||0, ty:Number(ty)||0, until:performance.now()+Math.max(400,duration)};
+  }
+  function ensureFieldCinematicOverlay(){
+    let overlay=$('fieldCinematicOverlay');
+    if(overlay) return overlay;
+    overlay=document.createElement('div');
+    overlay.id='fieldCinematicOverlay';
+    overlay.className='field-cinematic-overlay hidden';
+    overlay.innerHTML=`<div class="field-cinematic-banner"><div class="field-cinematic-kicker" id="fieldCinematicKicker"></div><h2 id="fieldCinematicTitle"></h2><p id="fieldCinematicCopy"></p></div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+  function playFieldCinematicCard({kicker='',title='',copy='',duration=1900,onDone=null,shake=.28,target=null}={}){
+    const overlay=ensureFieldCinematicOverlay();
+    const kick=$('fieldCinematicKicker'), head=$('fieldCinematicTitle'), body=$('fieldCinematicCopy');
+    if(kick) kick.textContent=kicker;
+    if(head) head.textContent=title;
+    if(body) body.textContent=copy;
+    overlay.classList.remove('hidden');
+    fieldSequenceActive=true;
+    if(target && Number.isFinite(target.x) && Number.isFinite(target.y)) beginScriptedCameraFocus(target.x,target.y,{duration});
+    addWorldShake(shake);
+    setTimeout(()=>overlay.classList.add('visible'),20);
+    window.clearTimeout(window._avFieldCardTimer);
+    window._avFieldCardTimer=window.setTimeout(()=>{
+      overlay.classList.remove('visible');
+      setTimeout(()=>{
+        overlay.classList.add('hidden');
+        fieldSequenceActive=false;
+        if(typeof onDone==='function') onDone();
+        try{ render(); }catch(err){}
+      },280);
+    }, Math.max(900,duration));
+  }
+  function maybePlayEncounterCinematic(code,x,y,onDone){
+    if(typeof onDone!=='function') return;
+    const stage=currentStageKey();
+    if(code!=='B' || stage!=='f001'){ onDone(); return; }
+    ensureStoryFlags();
+    const key='f001BossFieldCinematic';
+    if(state.flags?.storySeen?.[key]){ onDone(); return; }
+    state.flags.storySeen[key]=true;
+    const def=getEncounterDef(code,x,y);
+    playFieldCinematicCard({
+      kicker:'F-001 // BOSS SIGNATURE CONFIRMED',
+      title:def.name || 'GRAVE CORE GUARDIAN',
+      copy:'The graveyard wakes up around the core. Brace for first contact.',
+      duration:2100,
+      shake:.34,
+      target:{x,y},
+      onDone
+    });
+  }
+
+  function drawFractureBackdrop(){
+    const stage=currentStageKey();
+    if(stage!=='f001') return;
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
+    const t=performance.now()/1000;
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0);
+    const sky=ctx.createLinearGradient(0,0,0,VIEW_H);
+    sky.addColorStop(0,'rgba(10,12,22,.96)');
+    sky.addColorStop(.48,'rgba(17,14,27,.92)');
+    sky.addColorStop(1,'rgba(13,11,20,.55)');
+    ctx.fillStyle=sky;
+    ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    const moonX=VIEW_W*.78 - viewX*.02;
+    const moonY=88 - viewY*.015 + Math.sin(t*.18)*4;
+    const moon=ctx.createRadialGradient(moonX,moonY,8,moonX,moonY,112);
+    moon.addColorStop(0,'rgba(216,240,255,.20)');
+    moon.addColorStop(.3,'rgba(178,228,255,.12)');
+    moon.addColorStop(1,'rgba(120,130,180,0)');
+    ctx.fillStyle=moon;
+    ctx.beginPath(); ctx.arc(moonX,moonY,118,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(226,244,255,.12)';
+    ctx.beginPath(); ctx.arc(moonX,moonY,36,0,Math.PI*2); ctx.fill();
+    const ridgeY=VIEW_H*.42;
+    ctx.fillStyle='rgba(11,9,18,.96)';
+    ctx.beginPath();
+    ctx.moveTo(0,ridgeY+18);
+    for(let i=0;i<=12;i++){
+      const px=i*(VIEW_W/12);
+      const py=ridgeY + Math.sin(i*.65 + t*.05)*7 + (i%3===0?18:(i%2===0?9:0));
+      ctx.lineTo(px,py);
+    }
+    ctx.lineTo(VIEW_W,VIEW_H*.72);
+    ctx.lineTo(0,VIEW_H*.72);
+    ctx.closePath();
+    ctx.fill();
+    const farShift=(viewX*.05)%160;
+    for(let i=-2;i<8;i++){
+      const baseX=i*160 - farShift;
+      ctx.fillStyle='rgba(23,18,30,.85)';
+      ctx.fillRect(baseX+28,ridgeY+8,40,52);
+      ctx.beginPath();
+      ctx.moveTo(baseX+18,ridgeY+8); ctx.lineTo(baseX+48,ridgeY-12); ctx.lineTo(baseX+78,ridgeY+8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='rgba(49,42,61,.26)';
+      ctx.fillRect(baseX+43,ridgeY+27,9,22);
+      ctx.fillStyle='rgba(18,14,26,.96)';
+      ctx.fillRect(baseX+96,ridgeY+14,8,62);
+      for(let b=0;b<5;b++){
+        const by=ridgeY+10+b*9;
+        ctx.fillRect(baseX+100-(b%2?12:0),by,2,18);
+        ctx.fillRect(baseX+100+(b%2?10:0),by,2,16);
+      }
+    }
+    const fenceShift=(viewX*.12)%72;
+    ctx.strokeStyle='rgba(34,26,42,.74)';
+    ctx.lineWidth=2;
+    for(let x=-72;x<VIEW_W+72;x+=18){
+      const px=x-fenceShift;
+      const baseY=VIEW_H*.62 + Math.sin((px+t*8)*.01)*1.5;
+      ctx.beginPath();
+      ctx.moveTo(px,baseY); ctx.lineTo(px,baseY+34); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px-4,baseY+4); ctx.lineTo(px,baseY-6); ctx.lineTo(px+4,baseY+4); ctx.stroke();
+    }
+    ctx.strokeStyle='rgba(44,35,55,.66)';
+    ctx.beginPath(); ctx.moveTo(0,VIEW_H*.64); ctx.lineTo(VIEW_W,VIEW_H*.64); ctx.moveTo(0,VIEW_H*.69); ctx.lineTo(VIEW_W,VIEW_H*.69); ctx.stroke();
+    ctx.restore();
+  }
+  function drawFractureForeground(){
+    const stage=currentStageKey();
+    if(stage!=='f001') return;
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    const t=performance.now()/1000;
+    ctx.save();
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.globalAlpha=.4;
+    ctx.fillStyle='rgba(12,10,18,.92)';
+    const sway=Math.sin(t*.8)*6;
+    const leftX=-40 - (viewX*.03)%50;
+    const rightX=VIEW_W+40 - (viewX*.025)%45;
+    ctx.beginPath();
+    ctx.moveTo(leftX,VIEW_H); ctx.lineTo(leftX+32,VIEW_H-90+sway); ctx.lineTo(leftX+60,VIEW_H); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(leftX+28,VIEW_H); ctx.lineTo(leftX+72,VIEW_H-126-sway*.5); ctx.lineTo(leftX+98,VIEW_H); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(rightX,VIEW_H); ctx.lineTo(rightX-32,VIEW_H-96-sway); ctx.lineTo(rightX-58,VIEW_H); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(rightX-24,VIEW_H); ctx.lineTo(rightX-74,VIEW_H-136+sway*.4); ctx.lineTo(rightX-102,VIEW_H); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha=.28;
+    ctx.fillStyle='rgba(85,255,214,.14)';
+    for(let i=0;i<3;i++){
+      const fx=((i*VIEW_W*.34)+t*24)% (VIEW_W+180) - 90;
+      const fy=VIEW_H*.78 + Math.sin(t*.6+i)*18;
+      ctx.beginPath(); ctx.ellipse(fx,fy,44,11,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
   }
 
   function applyAudioSettings(){
@@ -3963,6 +4199,7 @@
     repairMissionRoutesForCurrentStage();
     clearStageRespawns(key);
     state.player.x=parsed.px; state.player.y=parsed.py; state.player.facing='down';
+    resetPlayerMotion(true);
     state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp || combatStatBlock().maxHp);
     state.player.ep=Math.min(combatStatBlock().maxEp||state.player.maxEp,state.player.ep || (combatStatBlock().maxEp||state.player.maxEp));
     const seenStories={...(state.flags?.storySeen||{})}; state.flags={terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:seenStories,anomaliesCleared:0,chests:0};
@@ -7780,6 +8017,7 @@
 
   function tryMove(dx,dy, source='keyboard'){
     if(storyActive) return;
+    if(fieldSequenceActive) return;
     if(battle) return;
     if(source==='controller'){
       const now=performance.now();
@@ -7817,8 +8055,11 @@
     if(c==='D'){ if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('boss gates'); renderAll(); return; } handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
     if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); addWorldShake(.12); clampPlayerToMap(); renderAll(); return; }
 
+    const prevX=state.player.x, prevY=state.player.y;
     state.player.x=nx;
     state.player.y=ny;
+    startPlayerMotion(nx,ny,{duration:source==='controller'?170:(state?.settings?.reducedMotion?110:150)});
+    emitFootstepBurst(prevX,prevY,dx,dy, ambientThemeForStage().kind==='ember'?'ember':(ambientThemeForStage().kind==='rain'?'rain':(ambientThemeForStage().kind==='shard'?'shard':'ash')));
     triggerPlayerStepAnimation();
     SfxManager.step();
     state.visited[`${nx},${ny}`]=1;
@@ -7890,7 +8131,7 @@
     ensureStoryFlags();
     addWorldShake(code==='B'?.42:.24);
     if(code==='B' && !state.flags.bossUnlocked){toast('Boss route locked. Clear the required anomalies first.'); return;}
-    const engage=()=>showPreBattleDialog(code,x,y);
+    const engage=()=>maybePlayEncounterCinematic(code,x,y,()=>showPreBattleDialog(code,x,y));
     if(code==='B' && !state.flags.storySeen[stageStoryKey('bossIntro')]){showStoryOnce(stageStoryKey('bossIntro'), engage); return;}
     engage();
   }
@@ -8994,6 +9235,7 @@
     $('battleHero').src=currentOperator().battle;
     if($('battleHeroLabel')) $('battleHeroLabel').textContent=`${currentOperator().code} ${String(currentOperator().displayName||'').toUpperCase()}`;
     $('battleText').textContent='Choose a combat protocol.';
+    document.body.classList.toggle('boss-battle-active', code==='B');
     $('battleVictory')?.classList.add('hidden');
     $('battlePanel')?.classList.remove('battle-shake');
     document.addEventListener('fullscreenchange',()=>{ if(!document.fullscreenElement) document.body.classList.remove('fullscreen-mode'); });
@@ -9218,7 +9460,7 @@
       leaveBattleVictoryMode();
       uiState.mode='game';
       panel.classList.add('hidden');
-      $('battleOverlay').classList.add('hidden');
+      $('battleOverlay').classList.add('hidden'); document.body.classList.remove('boss-battle-active');
       $('app').classList.remove('hidden');
       document.body.classList.add('game-active','fullscreen-mode');
       renderAll();
@@ -9239,7 +9481,7 @@
         battle=null;
         setBattleMobileMode(false);
         panel.classList.add('hidden');
-        $('battleOverlay').classList.add('hidden');
+        $('battleOverlay').classList.add('hidden'); document.body.classList.remove('boss-battle-active');
         return;
       }
       recoverPlayerVitals();
@@ -9250,14 +9492,14 @@
       battle=null;
       setBattleMobileMode(false);
       panel.classList.add('hidden');
-      $('battleOverlay').classList.add('hidden');
+      $('battleOverlay').classList.add('hidden'); document.body.classList.remove('boss-battle-active');
       loadStage(stage.key, {force:true});
       recoverPlayerVitals();
       renderAll();
       save(true);
     };
 
-    if(menu) menu.onclick=()=>{ battle=null; setBattleMobileMode(false); panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); gameStarted=false; showMenu(); };
+    if(menu) menu.onclick=()=>{ battle=null; setBattleMobileMode(false); panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); document.body.classList.remove('boss-battle-active'); gameStarted=false; showMenu(); };
   }
 
   function winBattle(){
@@ -9356,7 +9598,7 @@
     panel.classList.remove('hidden');
     const continueVictory=()=>{
       leaveBattleVictoryMode();
-      battle=null; setBattleMobileMode(false); uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); renderAll(); AudioManager.play(activeMusicForState());
+      battle=null; setBattleMobileMode(false); uiState.mode='game'; panel.classList.add('hidden'); $('battleOverlay').classList.add('hidden'); document.body.classList.remove('boss-battle-active'); renderAll(); AudioManager.play(activeMusicForState());
       if(meta.wasBoss){showStoryOnce(stageStoryKey('bossDefeated')); pulseObjective(currentObjectiveText());}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared===1){showStoryOnce('firstAnomaly');}
       else if(meta.wasAnomaly && state.flags.anomaliesCleared>=requiredAnomaliesForStage()){showStoryOnce('allAnomalies');}
@@ -9422,6 +9664,7 @@
     normalizeLiveMap();
     clampPlayerToMap();
     const profile=graphicsProfile();
+    const playerPos=currentPlayerRenderPos();
     ctx.clearRect(0,0,VIEW_W,VIEW_H);
     const maxCamX=Math.max(0, mapWidth()*TILE - VIEW_W);
     const maxCamY=Math.max(0, mapHeight()*TILE - VIEW_H);
@@ -9430,8 +9673,11 @@
     const look=lookEnabled ? profile.lookAhead : 0;
     const fx=facing==='right'?1:facing==='left'?-1:0;
     const fy=facing==='down'?1:facing==='up'?-1:0;
-    camera.targetX=Math.max(0,Math.min(state.player.x*TILE+TILE/2-VIEW_W/2+fx*look,maxCamX));
-    camera.targetY=Math.max(0,Math.min(state.player.y*TILE+TILE/2-VIEW_H/2+fy*look*.58,maxCamY));
+    const scripted=scriptedCameraTarget();
+    const targetTileX=scripted ? (scripted.tx+.5) : (playerPos.x+.5);
+    const targetTileY=scripted ? (scripted.ty+.5) : (playerPos.y+.5);
+    camera.targetX=Math.max(0,Math.min(targetTileX*TILE-VIEW_W/2+(scripted?0:fx*look),maxCamX));
+    camera.targetY=Math.max(0,Math.min(targetTileY*TILE-VIEW_H/2+(scripted?0:fy*look*.58),maxCamY));
     if(!camera.ready){ camera.x=camera.targetX; camera.y=camera.targetY; camera.ready=true; }
     else { camera.x += (camera.targetX-camera.x)*profile.cameraEase; camera.y += (camera.targetY-camera.y)*profile.cameraEase; }
     camera.trauma=Math.max(0,(camera.trauma||0)-.035);
@@ -9440,6 +9686,7 @@
     const shakeY=shakePower?Math.cos(performance.now()*.093)*shakePower*.72:0;
     camera.viewX=camera.x-shakeX;
     camera.viewY=camera.y-shakeY;
+    drawFractureBackdrop();
     ctx.save(); ctx.translate(-camera.viewX,-camera.viewY);
     const tileStartX=Math.max(0,Math.floor(camera.viewX/TILE)-2);
     const tileEndX=Math.min(mapWidth()-1,Math.ceil((camera.viewX+VIEW_W)/TILE)+2);
@@ -9449,18 +9696,20 @@
     if(state.rogueWarning?.active) drawLockdownSeals();
     drawObjectiveRoute();
     drawCheckpointBeacon();
-    drawMapProps('back');
+    drawMapProps('back', playerPos);
     drawTrainingNodes();
     drawNpcs();
     drawLockdownActors();
     drawLockdownProjectiles();
-    drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
-    drawPlayerLockdownHealthBar();
-    drawMapProps('front');
+    drawFootstepFx();
+    drawPlayerSprite(playerPos.x*TILE, playerPos.y*TILE);
+    drawPlayerLockdownHealthBar(playerPos);
+    drawMapProps('front', playerPos);
     drawObjectiveBeacon();
     ctx.restore();
-    drawDynamicLighting();
-    drawMapAtmosphere();
+    drawDynamicLighting(playerPos);
+    drawMapAtmosphere(playerPos);
+    drawFractureForeground();
     drawLockdownEdgeHue();
   }
 
@@ -9524,13 +9773,13 @@
     ctx.restore();
   }
 
-  function drawPlayerLockdownHealthBar(){
+  function drawPlayerLockdownHealthBar(playerPos=currentPlayerRenderPos()){
     if(!state.rogueEvent?.active) return;
     const compact=lockdownMobileCompact();
     const stats=combatStatBlock();
     const max=Math.max(1,stats.maxHp||state.player.maxHp||60);
     const pct=Math.max(0,Math.min(1,(state.player.hp||0)/max));
-    const x=state.player.x*TILE+TILE/2, y=state.player.y*TILE-10;
+    const x=playerPos.x*TILE+TILE/2, y=playerPos.y*TILE-10;
     ctx.save();
     ctx.fillStyle='rgba(0,0,0,.72)'; ctx.fillRect(x-24,y,48,7);
     ctx.fillStyle=pct>.55?'rgba(55,247,165,.95)':(pct>.25?'rgba(255,227,110,.95)':'rgba(255,48,72,.95)'); ctx.fillRect(x-24,y,48*pct,7);
@@ -9644,7 +9893,7 @@
     ctx.restore();
   }
 
-  function drawMapAtmosphere(){
+  function drawMapAtmosphere(playerPos=currentPlayerRenderPos()){
     // v94: brighter, directional lighting. The map keeps the horror mood, but the playable floor
     // is no longer crushed into black and the player gets a readable light radius.
     const t = Date.now() * 0.00032;
@@ -9670,8 +9919,8 @@
 
     const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
     const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
-    const px = state.player.x*TILE + TILE/2 - viewX;
-    const py = state.player.y*TILE + TILE/2 - viewY;
+    const px = playerPos.x*TILE + TILE/2 - viewX;
+    const py = playerPos.y*TILE + TILE/2 - viewY;
     const light = ctx.createRadialGradient(px, py, 22, px, py, 190);
     // v130: no player-colored glow. Keep a tiny neutral readability lift only.
     light.addColorStop(0,'rgba(255,255,255,.045)');
@@ -9771,18 +10020,18 @@
   }
 
 
-  function drawMapProps(layer='back'){
+  function drawMapProps(layer='back', playerPos=currentPlayerRenderPos()){
     const pack = stageVisualPack();
     const salvage = STAGE_SALVAGE_OBJECTS[currentStageKey()] || [];
     const props = [...mapArt.props, ...((pack && pack.props) || []), ...salvage];
     props.forEach(p=>{
       const tile = tileAt(p.x,p.y);
       if(tile !== '.') return;
-      const inFront = p.y > state.player.y || (p.y===state.player.y && p.x>state.player.x);
+      const inFront = p.y > playerPos.y || (p.y===Math.floor(playerPos.y) && p.x>playerPos.x);
       if(layer==='front' && !inFront) return;
       if(layer!=='front' && inFront) return;
       ctx.save();
-      if(layer==='front' && Math.abs(p.y-state.player.y)<=2) ctx.globalAlpha=.92;
+      if(layer==='front' && Math.abs(p.y-playerPos.y)<=2) ctx.globalAlpha=.92;
       drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true,{shadow:true,depth:true,shadowAlpha:.22});
       ctx.restore();
     });
