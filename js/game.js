@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '284';
-  const BUILD_TITLE = 'COMPACT QUEST HUD PASS';
+  const BUILD_VERSION = '285';
+  const BUILD_TITLE = 'PHONE JOYSTICK UI FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -6269,7 +6269,7 @@
       save(true);
       requestNativeFullscreen();
       try{ pulseObjective(currentObjectiveText()); }catch(err){}
-      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, the mobile joystick, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
   }
@@ -8322,7 +8322,7 @@
       save(true);
       requestNativeFullscreen();
       try{ pulseObjective(currentObjectiveText()); }catch(err){}
-      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, mobile arrows, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
+      try{ showTutorialTip('move-route','Movement + Route Beacon','Move with WASD / arrow keys, the mobile joystick, or a controller. Follow the glowing route line and minimap path to the next objective.','Press N to ping the target. Press E near Jeremie to talk.'); }catch(err){}
     };
     showOpeningStoryRoot(afterIntro);
     try{ renderAll(); }catch(err){ console.error('[AV] render after new game failed but story was already opened:', err); }
@@ -10387,6 +10387,8 @@
   // Keeps the canvas scaled to the phone viewport, adds hold-to-walk touch movement,
   // and exposes the important hotkeys as tap buttons.
   let mobileMoveTimer = null;
+  let mobileJoystickTimer = null;
+  let mobileJoystickDir = null;
   let mobileResizeTimer = null;
   function isPhoneLike(){
     return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
@@ -10410,6 +10412,10 @@
   }
   function stopMobileMove(){
     if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
+    if(mobileJoystickTimer){ clearInterval(mobileJoystickTimer); mobileJoystickTimer=null; }
+    mobileJoystickDir = null;
+    const knob=document.querySelector('#mobileJoystick .mobile-joystick-knob');
+    if(knob) knob.style.transform='translate(-50%,-50%)';
   }
   function bindMobileMoveButtons(){
     document.querySelectorAll('[data-move]').forEach(btn=>{
@@ -10431,6 +10437,55 @@
       btn.addEventListener('click', e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
     });
   }
+  function ensureMobileJoystick(){
+    let joy=$('mobileJoystick');
+    if(!joy){
+      joy=document.createElement('div');
+      joy.id='mobileJoystick';
+      joy.className='mobile-joystick';
+      joy.innerHTML='<div class="mobile-joystick-ring"><span class="mobile-joystick-knob"></span></div><small>MOVE</small>';
+      document.body.appendChild(joy);
+    }
+    if(joy.dataset.bound === '1') return;
+    joy.dataset.bound='1';
+    const ring=joy.querySelector('.mobile-joystick-ring');
+    const knob=joy.querySelector('.mobile-joystick-knob');
+    const setDir=(e)=>{
+      if(!ring) return;
+      const r=ring.getBoundingClientRect();
+      const cx=r.left+r.width/2;
+      const cy=r.top+r.height/2;
+      const x=(e.clientX||0)-cx;
+      const y=(e.clientY||0)-cy;
+      const dist=Math.hypot(x,y);
+      const max=r.width*.34;
+      const nx=dist ? x/dist : 0;
+      const ny=dist ? y/dist : 0;
+      const kx=Math.max(-max,Math.min(max,x));
+      const ky=Math.max(-max,Math.min(max,y));
+      if(knob) knob.style.transform=`translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
+      if(dist < 10){ mobileJoystickDir=null; return; }
+      if(Math.abs(nx) > Math.abs(ny)) mobileJoystickDir = nx > 0 ? 'right' : 'left';
+      else mobileJoystickDir = ny > 0 ? 'down' : 'up';
+      if(!mobileJoystickTimer){
+        moveByName(mobileJoystickDir);
+        mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir) moveByName(mobileJoystickDir); }, 155);
+      }
+    };
+    const start=(e)=>{
+      e.preventDefault(); e.stopPropagation();
+      AudioManager.unlock();
+      stopMobileMove();
+      try{ joy.setPointerCapture && e.pointerId != null && joy.setPointerCapture(e.pointerId); }catch(err){}
+      setDir(e);
+    };
+    const move=(e)=>{ if(!mobileJoystickTimer && !mobileJoystickDir) return; e.preventDefault(); e.stopPropagation(); setDir(e); };
+    const stop=(e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } stopMobileMove(); };
+    joy.addEventListener('pointerdown', start, {passive:false});
+    joy.addEventListener('pointermove', move, {passive:false});
+    ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(evt=>joy.addEventListener(evt, stop, {passive:false}));
+  }
+
   function ensureMobileActionPad(){
     if(document.getElementById('mobileActionPad')) return;
     const pad=document.createElement('div');
@@ -10499,6 +10554,7 @@
   }
   function setupMobilePlayability(){
     bindMobileMoveButtons();
+    ensureMobileJoystick();
     ensureMobileActionPad();
     ensureMobileBattlePad();
     setMobilePlayMode();
