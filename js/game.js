@@ -8,8 +8,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '285';
-  const BUILD_TITLE = 'PHONE JOYSTICK UI FIX';
+  const BUILD_VERSION = '286';
+  const BUILD_TITLE = 'PHONE JOYSTICK SCROLL FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -5941,9 +5941,12 @@
     const tip=document.createElement('div');
     tip.id='tutorialTipOverlay';
     tip.className='avos-crt tutorial-tip-overlay';
-    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:7000;width:min(360px,calc(100vw - 28px));max-height:min(42vh,320px);overflow:auto;background:rgba(5,9,14,.94);border:1px solid rgba(0,217,255,.45);box-shadow:0 0 22px rgba(0,217,255,.16);border-radius:14px;padding:13px;color:#eafcff;font-family:monospace;line-height:1.35;pointer-events:none;opacity:.96;transition:opacity .22s ease, transform .22s ease;';
-    tip.innerHTML=`<div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:16px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div><div style="margin-top:7px;color:#7da8b8;font-size:10px;letter-spacing:.06em;text-transform:uppercase">Auto hides soon</div>`;
+    tip.style.cssText='position:fixed;right:18px;bottom:18px;z-index:7000;width:min(360px,calc(100vw - 28px));max-height:min(42vh,320px);overflow:hidden;background:rgba(5,9,14,.94);border:1px solid rgba(0,217,255,.45);box-shadow:0 0 22px rgba(0,217,255,.16);border-radius:14px;padding:0;color:#eafcff;font-family:monospace;line-height:1.35;pointer-events:auto;opacity:.96;transition:opacity .22s ease, transform .22s ease;touch-action:pan-y;';
+    tip.innerHTML=`<div class="tutorial-tip-scroll"><div style="font-size:11px;color:#70d7ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px">AVOS Tutorial Tip</div><h3 style="margin:0 0 7px;font-size:16px;color:#fff">${safeHtml(title)}</h3><p style="margin:0 0 8px;color:#cfefff">${safeHtml(body)}</p>${extra?`<p style="margin:0 0 10px;color:#96ffdf;font-size:12px">${safeHtml(extra)}</p>`:''}<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="tutorialTipOk" style="cursor:pointer">Got it</button><button id="tutorialTipDisable" style="cursor:pointer">Turn Off Tips</button></div><div style="margin-top:7px;color:#7da8b8;font-size:10px;letter-spacing:.06em;text-transform:uppercase">Auto hides soon</div></div>`;
     document.body.appendChild(tip);
+    tip.addEventListener('pointerdown', e=>e.stopPropagation(), {passive:true});
+    tip.addEventListener('touchstart', e=>e.stopPropagation(), {passive:true});
+    tip.addEventListener('wheel', e=>e.stopPropagation(), {passive:true});
     tip.querySelectorAll('button').forEach(btn=>{ btn.style.pointerEvents='auto'; });
     const closeTip=()=>{ if(document.body.contains(tip)){ tip.style.opacity='0'; tip.style.transform='translateY(8px)'; setTimeout(()=>tip.remove(),220); } };
     $('tutorialTipOk').onclick=closeTip;
@@ -10389,6 +10392,8 @@
   let mobileMoveTimer = null;
   let mobileJoystickTimer = null;
   let mobileJoystickDir = null;
+  let mobileJoystickActive = false;
+  let mobileJoystickPointerId = null;
   let mobileResizeTimer = null;
   function isPhoneLike(){
     return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
@@ -10414,6 +10419,8 @@
     if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
     if(mobileJoystickTimer){ clearInterval(mobileJoystickTimer); mobileJoystickTimer=null; }
     mobileJoystickDir = null;
+    mobileJoystickActive = false;
+    mobileJoystickPointerId = null;
     const knob=document.querySelector('#mobileJoystick .mobile-joystick-knob');
     if(knob) knob.style.transform='translate(-50%,-50%)';
   }
@@ -10458,32 +10465,46 @@
       const x=(e.clientX||0)-cx;
       const y=(e.clientY||0)-cy;
       const dist=Math.hypot(x,y);
-      const max=r.width*.34;
+      const max=r.width*.38;
       const nx=dist ? x/dist : 0;
       const ny=dist ? y/dist : 0;
-      const kx=Math.max(-max,Math.min(max,x));
-      const ky=Math.max(-max,Math.min(max,y));
+      const clamped=Math.min(max, dist || 0);
+      const kx=nx*clamped;
+      const ky=ny*clamped;
       if(knob) knob.style.transform=`translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
-      if(dist < 10){ mobileJoystickDir=null; return; }
-      if(Math.abs(nx) > Math.abs(ny)) mobileJoystickDir = nx > 0 ? 'right' : 'left';
-      else mobileJoystickDir = ny > 0 ? 'down' : 'up';
+      if(dist < 8){ mobileJoystickDir=null; return; }
+      const absX=Math.abs(x), absY=Math.abs(y);
+      if(absX > absY * .72) mobileJoystickDir = x > 0 ? 'right' : 'left';
+      if(absY > absX * .72) mobileJoystickDir = y > 0 ? 'down' : 'up';
       if(!mobileJoystickTimer){
         moveByName(mobileJoystickDir);
-        mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir) moveByName(mobileJoystickDir); }, 155);
+        mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir); }, 118);
       }
     };
     const start=(e)=>{
       e.preventDefault(); e.stopPropagation();
       AudioManager.unlock();
       stopMobileMove();
+      mobileJoystickActive = true;
+      mobileJoystickPointerId = e.pointerId ?? 'touch';
       try{ joy.setPointerCapture && e.pointerId != null && joy.setPointerCapture(e.pointerId); }catch(err){}
       setDir(e);
     };
-    const move=(e)=>{ if(!mobileJoystickTimer && !mobileJoystickDir) return; e.preventDefault(); e.stopPropagation(); setDir(e); };
-    const stop=(e)=>{ if(e){ e.preventDefault(); e.stopPropagation(); } stopMobileMove(); };
+    const move=(e)=>{
+      if(!mobileJoystickActive) return;
+      if(mobileJoystickPointerId !== null && e.pointerId != null && e.pointerId !== mobileJoystickPointerId) return;
+      e.preventDefault(); e.stopPropagation(); setDir(e);
+    };
+    const stop=(e)=>{
+      if(e){
+        if(mobileJoystickPointerId !== null && e.pointerId != null && e.pointerId !== mobileJoystickPointerId) return;
+        e.preventDefault(); e.stopPropagation();
+      }
+      stopMobileMove();
+    };
     joy.addEventListener('pointerdown', start, {passive:false});
     joy.addEventListener('pointermove', move, {passive:false});
-    ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(evt=>joy.addEventListener(evt, stop, {passive:false}));
+    ['pointerup','pointercancel','lostpointercapture','touchend','touchcancel'].forEach(evt=>joy.addEventListener(evt, stop, {passive:false}));
   }
 
   function ensureMobileActionPad(){

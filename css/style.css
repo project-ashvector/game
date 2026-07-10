@@ -4186,7 +4186,7 @@ body.game-paused .mobile-pause-card::before{
 }
 
 
-/* V285: phone gameplay UI polish — scrollable AVOS tips, corrected skill emblems,
+/* V285/V286: phone gameplay UI polish — scrollable AVOS tips, corrected skill emblems,
    right-side action buttons, and a transparent joystick replacing arrow buttons. */
 @media (max-width:900px), (pointer:coarse){
   .tutorial-tip-overlay{
@@ -4349,4 +4349,70 @@ body.game-paused .mobile-pause-card::before{
 @media (max-width:520px) and (orientation:portrait){
   body.game-active .mobile-joystick{left:calc(env(safe-area-inset-left) + 10px)!important;bottom:calc(env(safe-area-inset-bottom) + 12px)!important;transform:scale(.92)!important;transform-origin:bottom left!important;}
   .mobile-action-pad{right:calc(env(safe-area-inset-right) + 8px)!important;bottom:calc(env(safe-area-inset-bottom) + 10px)!important;transform:scale(.90)!important;transform-origin:bottom right!important;}
+}
+
+
+/* V286: stronger phone tutorial scroll + joystick cleanup. */
+@media (max-width:900px), (pointer:coarse){
+  .tutorial-tip-overlay{
+    pointer-events:auto!important;
+    overflow:hidden!important;
+    touch-action:pan-y!important;
+    max-height:min(58svh, 330px)!important;
+    overscroll-behavior:contain!important;
+  }
+  .tutorial-tip-overlay .tutorial-tip-scroll{
+    max-height:inherit!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-y!important;
+    padding:12px 14px 14px!important;
+    overscroll-behavior:contain!important;
+  }
+  .tutorial-tip-overlay .tutorial-tip-scroll p{
+    overflow-wrap:anywhere!important;
+  }
+  body.game-active .mobile-joystick{
+    width:142px!important;
+    height:142px!important;
+    opacity:.86!important;
+    left:calc(env(safe-area-inset-left) + 12px)!important;
+    bottom:calc(env(safe-area-inset-bottom) + 12px)!important;
+  }
+  .mobile-joystick-ring{
+    width:116px!important;
+    height:116px!important;
+    border-width:2px!important;
+    background:radial-gradient(circle,rgba(112,215,255,.12),rgba(0,0,0,.14) 52%,rgba(0,0,0,.04))!important;
+  }
+  .mobile-joystick-ring:before{width:76px!important;height:76px!important;}
+  .mobile-joystick-knob{
+    width:48px!important;
+    height:48px!important;
+    transition:transform .025s linear!important;
+    border-color:rgba(112,215,255,.62)!important;
+  }
+  .mobile-joystick small{display:none!important;}
+}
+@media (max-width:900px) and (orientation:landscape), (pointer:coarse) and (orientation:landscape){
+  .tutorial-tip-overlay{
+    right:max(8px, env(safe-area-inset-right))!important;
+    bottom:calc(env(safe-area-inset-bottom) + 60px)!important;
+    width:min(410px, 46vw)!important;
+    max-height:52svh!important;
+  }
+  .tutorial-tip-overlay .tutorial-tip-scroll{max-height:52svh!important;}
+  body.game-active .mobile-joystick{
+    left:calc(env(safe-area-inset-left) + 10px)!important;
+    bottom:calc(env(safe-area-inset-bottom) + 8px)!important;
+    transform:scale(.86)!important;
+    transform-origin:bottom left!important;
+  }
+  .mobile-action-pad{
+    right:calc(env(safe-area-inset-right) + 8px)!important;
+    bottom:calc(env(safe-area-inset-bottom) + 8px)!important;
+    transform:scale(.92)!important;
+    transform-origin:bottom right!important;
+  }
 }
