@@ -4,12 +4,16 @@
   const ctx = canvas.getContext('2d');
   const mini = $('minimap');
   const mctx = mini.getContext('2d');
+  const lightingCanvas = document.createElement('canvas');
+  lightingCanvas.width = canvas.width;
+  lightingCanvas.height = canvas.height;
+  const lightingCtx = lightingCanvas.getContext('2d');
   const TILE = 42;
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '286';
-  const BUILD_TITLE = 'PHONE JOYSTICK SCROLL FIX';
+  const BUILD_VERSION = '287';
+  const BUILD_TITLE = 'IMMERSIVE WORLD FOUNDATION';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -197,7 +201,7 @@
       const safeTo = Math.max(0, Math.min(1, to));
       const tick = now => {
         const t = Math.min(1, (now - start) / Math.max(1, ms));
-        audio.volume = safeFrom + (safeTo - safeFrom) * t;
+        audio.volume = Math.max(0, Math.min(1, safeFrom + (safeTo - safeFrom) * t));
         if(t < 1) requestAnimationFrame(tick);
         else { audio.volume = safeTo; if(done) done(); }
       };
@@ -460,10 +464,202 @@
     if(typeof state.settings.routeBeacon !== 'boolean') state.settings.routeBeacon = true;
     if(typeof state.settings.objectiveCompass !== 'boolean') state.settings.objectiveCompass = true;
     if(typeof state.settings.minimapRoute !== 'boolean') state.settings.minimapRoute = true;
+    if(!['auto','cinematic','balanced','performance'].includes(state.settings.graphicsQuality)) state.settings.graphicsQuality = 'auto';
+    if(typeof state.settings.dynamicLighting !== 'boolean') state.settings.dynamicLighting = true;
+    if(typeof state.settings.ambientParticles !== 'boolean') state.settings.ambientParticles = true;
+    if(typeof state.settings.cameraLookAhead !== 'boolean') state.settings.cameraLookAhead = true;
     if(typeof state.settings.musicVolume !== 'number') state.settings.musicVolume = 0.58;
     if(typeof state.settings.sfxVolume !== 'number') state.settings.sfxVolume = 0.72;
     if(typeof state.settings.musicMuted !== 'boolean') state.settings.musicMuted = false;
     if(typeof state.settings.sfxMuted !== 'boolean') state.settings.sfxMuted = false;
+  }
+
+  const GRAPHICS_PROFILES = {
+    cinematic:{key:'cinematic',label:'Cinematic',fps:50,particles:74,mistPasses:8,lightRadius:220,darkness:.22,cameraEase:.115,lookAhead:72,terrainDetail:2},
+    balanced:{key:'balanced',label:'Balanced',fps:36,particles:46,mistPasses:5,lightRadius:198,darkness:.19,cameraEase:.145,lookAhead:58,terrainDetail:1},
+    performance:{key:'performance',label:'Performance',fps:24,particles:20,mistPasses:2,lightRadius:176,darkness:.15,cameraEase:.19,lookAhead:42,terrainDetail:0}
+  };
+  function resolvedGraphicsQuality(){
+    const requested=state?.settings?.graphicsQuality || 'auto';
+    if(requested!=='auto' && GRAPHICS_PROFILES[requested]) return requested;
+    const mobile=window.matchMedia?.('(max-width: 900px), (pointer: coarse)')?.matches;
+    const cores=Number(navigator.hardwareConcurrency||4);
+    const memory=Number(navigator.deviceMemory||4);
+    if(mobile || cores<=4 || memory<=3) return 'performance';
+    if(cores>=8 && memory>=6) return 'cinematic';
+    return 'balanced';
+  }
+  let activeGraphicsProfile=GRAPHICS_PROFILES.balanced;
+  function graphicsProfile(){ return activeGraphicsProfile; }
+  function graphicsSettingSummary(){
+    const requested=state?.settings?.graphicsQuality || 'auto';
+    const profile=graphicsProfile();
+    return `${requested==='auto'?'Auto → ':''}${profile.label} // ${profile.fps} FPS field animation // ${profile.particles} particles`;
+  }
+
+  const ambientRuntime={stage:'',count:0,particles:[],startedAt:performance.now()};
+  function seededUnit(seed){
+    const x=Math.sin(seed*12.9898+78.233)*43758.5453;
+    return x-Math.floor(x);
+  }
+  function ambientThemeForStage(stage=currentStageKey()){
+    const themes={
+      f001:{kind:'ash',primary:'rgba(218,225,238,.72)',secondary:'rgba(150,255,210,.70)',windX:-9,windY:15},
+      f002:{kind:'ember',primary:'rgba(255,185,92,.82)',secondary:'rgba(255,92,44,.72)',windX:18,windY:-20},
+      f003:{kind:'spore',primary:'rgba(112,215,255,.78)',secondary:'rgba(255,79,214,.66)',windX:-6,windY:-8},
+      f004:{kind:'rain',primary:'rgba(142,205,255,.58)',secondary:'rgba(92,170,255,.68)',windX:-28,windY:92},
+      f005:{kind:'shard',primary:'rgba(224,190,255,.74)',secondary:'rgba(190,96,255,.72)',windX:12,windY:20},
+      f006:{kind:'spore',primary:'rgba(130,255,226,.72)',secondary:'rgba(0,255,200,.66)',windX:-5,windY:-12},
+      f007:{kind:'ember',primary:'rgba(255,205,118,.88)',secondary:'rgba(255,90,34,.74)',windX:22,windY:-26},
+      f008:{kind:'rain',primary:'rgba(164,224,255,.66)',secondary:'rgba(70,190,255,.68)',windX:-18,windY:104},
+      f009:{kind:'pollen',primary:'rgba(255,226,140,.68)',secondary:'rgba(230,150,55,.68)',windX:9,windY:9},
+      f010:{kind:'shard',primary:'rgba(205,190,255,.74)',secondary:'rgba(125,92,255,.72)',windX:-12,windY:16},
+      f011:{kind:'snow',primary:'rgba(235,252,255,.84)',secondary:'rgba(185,245,255,.72)',windX:-14,windY:24},
+      f012:{kind:'ash',primary:'rgba(255,235,170,.78)',secondary:'rgba(255,196,76,.70)',windX:10,windY:17}
+    };
+    return themes[stage] || themes.f001;
+  }
+  function ensureAmbientParticles(){
+    const profile=graphicsProfile();
+    const stage=currentStageKey();
+    const target=state?.settings?.ambientParticles===false ? 0 : (state?.settings?.reducedMotion ? Math.ceil(profile.particles*.32) : profile.particles);
+    if(ambientRuntime.stage===stage && ambientRuntime.count===target) return;
+    ambientRuntime.stage=stage;
+    ambientRuntime.count=target;
+    ambientRuntime.startedAt=performance.now();
+    ambientRuntime.particles=Array.from({length:target},(_,i)=>({
+      x:seededUnit(i+stage.length*101)*VIEW_W,
+      y:seededUnit(i*3+stage.charCodeAt(1)*17)*VIEW_H,
+      depth:.22+seededUnit(i*5+9)*.92,
+      size:.7+seededUnit(i*7+17)*2.6,
+      speed:.45+seededUnit(i*11+23)*1.1,
+      alpha:.25+seededUnit(i*13+31)*.65,
+      phase:seededUnit(i*17+47)*Math.PI*2
+    }));
+  }
+  function wrapRange(value,size){ return ((value%size)+size)%size; }
+  function drawAmbientParticles(timeSec){
+    if(state?.settings?.ambientParticles===false) return;
+    ensureAmbientParticles();
+    const theme=ambientThemeForStage();
+    const motionScale=state?.settings?.reducedMotion ? .16 : 1;
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
+    ctx.save();
+    ctx.globalCompositeOperation=(theme.kind==='ember'||theme.kind==='spore'||theme.kind==='shard')?'screen':'source-over';
+    for(let i=0;i<ambientRuntime.particles.length;i++){
+      const p=ambientRuntime.particles[i];
+      const spanX=VIEW_W+100, spanY=VIEW_H+100;
+      const x=wrapRange(p.x + theme.windX*timeSec*p.speed*motionScale - viewX*.028*p.depth + Math.sin(timeSec*.7+p.phase)*14*p.depth,spanX)-50;
+      const y=wrapRange(p.y + theme.windY*timeSec*p.speed*motionScale - viewY*.014*p.depth + Math.cos(timeSec*.54+p.phase)*8*p.depth,spanY)-50;
+      const a=Math.max(.05,p.alpha*(.72+.28*Math.sin(timeSec*1.8+p.phase)));
+      ctx.globalAlpha=a;
+      ctx.fillStyle=(i%3===0?theme.secondary:theme.primary);
+      ctx.strokeStyle=ctx.fillStyle;
+      ctx.lineWidth=Math.max(.7,p.size*p.depth);
+      if(theme.kind==='rain'){
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-5*p.depth,y+14*p.depth); ctx.stroke();
+      }else if(theme.kind==='snow'){
+        ctx.beginPath(); ctx.arc(x,y,Math.max(.7,p.size*p.depth),0,Math.PI*2); ctx.fill();
+      }else if(theme.kind==='ember'){
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x-theme.windX*.09*p.depth,y-theme.windY*.09*p.depth); ctx.stroke();
+      }else if(theme.kind==='shard'){
+        ctx.save(); ctx.translate(x,y); ctx.rotate(timeSec*.45+p.phase); ctx.fillRect(-p.size*p.depth,-.7,p.size*2.2*p.depth,1.4); ctx.restore();
+      }else{
+        ctx.beginPath(); ctx.ellipse(x,y,Math.max(.7,p.size*p.depth),Math.max(.45,p.size*.55*p.depth),0,0,Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+  function drawParallaxVeil(timeSec,tint){
+    if(state?.settings?.reducedMotion && graphicsProfile().terrainDetail===0) return;
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    for(let i=0;i<3;i++){
+      const x=wrapRange((i*VIEW_W*.48) - viewX*(.018+i*.008) + timeSec*(4+i*2),VIEW_W+360)-180;
+      const y=34+i*72+Math.sin(timeSec*.18+i)*18;
+      const g=ctx.createRadialGradient(x,y,8,x,y,210+i*42);
+      g.addColorStop(0,tint.beam);
+      g.addColorStop(.5,'rgba(255,255,255,.012)');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.globalAlpha=.5;
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.ellipse(x,y,220+i*36,46+i*9,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function lightCut(ctx2,x,y,radius,strength=1){
+    const g=ctx2.createRadialGradient(x,y,4,x,y,radius);
+    g.addColorStop(0,`rgba(0,0,0,${Math.min(1,strength)})`);
+    g.addColorStop(.58,`rgba(0,0,0,${Math.min(1,strength*.72)})`);
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx2.fillStyle=g;
+    ctx2.fillRect(x-radius,y-radius,radius*2,radius*2);
+  }
+  function drawScreenGlow(x,y,radius,color){
+    const g=ctx.createRadialGradient(x,y,2,x,y,radius);
+    g.addColorStop(0,color);
+    g.addColorStop(.45,color.replace(/([\d.]+)\)$/,'0.08)'));
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g;
+    ctx.fillRect(x-radius,y-radius,radius*2,radius*2);
+  }
+  function drawDynamicLighting(){
+    if(state?.settings?.dynamicLighting===false) return;
+    const profile=graphicsProfile();
+    const stage=currentStageKey();
+    const darknessByStage={f001:.03,f002:-.015,f003:.015,f004:.01,f005:.035,f006:.01,f007:-.02,f008:.025,f009:-.015,f010:.045,f011:.005,f012:.01};
+    const alpha=Math.max(.10,Math.min(.30,profile.darkness+(darknessByStage[stage]||0)));
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
+    lightingCtx.clearRect(0,0,VIEW_W,VIEW_H);
+    lightingCtx.globalCompositeOperation='source-over';
+    const shade=lightingCtx.createLinearGradient(0,0,0,VIEW_H);
+    shade.addColorStop(0,`rgba(2,5,11,${alpha*.82})`);
+    shade.addColorStop(.48,`rgba(1,4,9,${alpha})`);
+    shade.addColorStop(1,`rgba(0,2,6,${Math.min(.45,alpha*1.18)})`);
+    lightingCtx.fillStyle=shade;
+    lightingCtx.fillRect(0,0,VIEW_W,VIEW_H);
+    lightingCtx.globalCompositeOperation='destination-out';
+    const px=state.player.x*TILE+TILE/2-viewX;
+    const py=state.player.y*TILE+TILE/2-viewY;
+    lightCut(lightingCtx,px,py,profile.lightRadius,1);
+    const lights=[];
+    const startX=Math.max(0,Math.floor(viewX/TILE)-2), endX=Math.min(mapWidth()-1,Math.ceil((viewX+VIEW_W)/TILE)+2);
+    const startY=Math.max(0,Math.floor(viewY/TILE)-2), endY=Math.min(mapHeight()-1,Math.ceil((viewY+VIEW_H)/TILE)+2);
+    const defs={S:{r:92,c:'rgba(0,217,255,.24)'},H:{r:72,c:'rgba(93,255,122,.20)'},L:{r:72,c:'rgba(210,168,255,.21)'},R:{r:112,c:'rgba(112,215,255,.26)'},X:{r:118,c:'rgba(255,255,255,.20)'},B:{r:86,c:'rgba(255,48,72,.19)'},E:{r:58,c:'rgba(189,31,45,.13)'},C:{r:52,c:'rgba(224,182,75,.11)'}};
+    for(let ty=startY;ty<=endY;ty++) for(let tx=startX;tx<=endX;tx++){
+      const def=defs[tileAt(tx,ty)]; if(!def) continue;
+      const sx=tx*TILE+TILE/2-viewX, sy=ty*TILE+TILE/2-viewY;
+      lightCut(lightingCtx,sx,sy,def.r,.82);
+      lights.push({x:sx,y:sy,r:def.r,c:def.c});
+    }
+    lightingCtx.globalCompositeOperation='source-over';
+    ctx.drawImage(lightingCanvas,0,0);
+    ctx.save(); ctx.globalCompositeOperation='screen';
+    lights.forEach(l=>drawScreenGlow(l.x,l.y,l.r*.72,l.c));
+    ctx.restore();
+  }
+  function addWorldShake(amount=.18){
+    if(state?.settings?.reducedMotion) return;
+    camera.trauma=Math.max(camera.trauma||0,Math.min(1,amount));
+  }
+  let worldAnimationStarted=false, worldAnimationLast=0;
+  function startWorldAnimationLoop(){
+    if(worldAnimationStarted) return;
+    worldAnimationStarted=true;
+    const loop=(now)=>{
+      requestAnimationFrame(loop);
+      const app=$('app');
+      if(document.hidden || !gameStarted || !app || app.classList.contains('hidden') || uiState?.mode!=='game' || battle || isGameplayPaused()) return;
+      const profile=graphicsProfile();
+      const fps=state?.settings?.reducedMotion ? Math.min(18,profile.fps) : profile.fps;
+      if(now-worldAnimationLast < 1000/Math.max(12,fps)) return;
+      worldAnimationLast=now;
+      try{ render(); }catch(err){ console.warn('[AV] immersive render loop paused after error',err); worldAnimationLast=now+1000; }
+    };
+    requestAnimationFrame(loop);
   }
 
   function applyAudioSettings(){
@@ -2341,6 +2537,28 @@
       ctx.closePath();
       ctx.fill();
       ctx.globalAlpha = 1;
+    }
+    const detail=graphicsProfile().terrainDetail;
+    if(detail>0 && (h1%17)===0){
+      ctx.save();
+      ctx.strokeStyle=s.line || 'rgba(255,255,255,.04)';
+      ctx.globalAlpha=detail>1?.58:.34;
+      ctx.lineWidth=.8;
+      ctx.beginPath();
+      const ox=5+(h2%18), oy=8+(h1%16);
+      ctx.moveTo(x+ox,y+oy);
+      ctx.lineTo(x+ox+7,y+oy+5);
+      ctx.lineTo(x+ox+3,y+oy+12);
+      if(detail>1) ctx.lineTo(x+ox+12,y+oy+18);
+      ctx.stroke();
+      ctx.restore();
+    }
+    if(detail>1 && (h2%19)===0){
+      ctx.fillStyle=s.grit || 'rgba(255,255,255,.05)';
+      ctx.globalAlpha=.42;
+      ctx.fillRect(x+7+(h1%23),y+8+(h2%17),1.4,1.4);
+      ctx.fillRect(x+16+(h2%17),y+24+(h1%9),1,1);
+      ctx.globalAlpha=1;
     }
     // Important tiles keep only a soft pad, no boxed tile border.
     if(c !== '.'){
@@ -5244,7 +5462,7 @@
     try{ playerSpriteRuntime.lastGood=null; primeCurrentPlayerSprites(); }catch(err){}
   }
   let state = newGameState();
-  let battle = null; let camera = {x:0,y:0,targetX:0,targetY:0,ready:false}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
+  let battle = null; let camera = {x:0,y:0,targetX:0,targetY:0,viewX:0,viewY:0,trauma:0,ready:false}; let bootDone=false; let storyActive=false; let pendingStoryAfter=null;
   let battleCommandIndex = 0;
   let preBattleCommandIndex = 0;
   const images = {};
@@ -5298,7 +5516,7 @@
 
   function newGameState(){
     const parsed = parseStageMap('f001');
-    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, rogueNextAt:Date.now()+45000+Math.floor(Math.random()*45000), lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], eventHistory:[{at:Date.now(), stage:'f001', text:'AVOS connection established.'}], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
+    return {mapVersion:MAP_VERSION, currentStage:'f001', activeOperator:ACTIVE_OPERATOR_ID, qaUnlockAllCharacters:false, unlockedOperators:{av001:true}, operatorProgress:{av001:{level:1,xp:0,nextXp:operatorNextXp(1)}}, rogueEvent:null, rogueLastAt:0, rogueNextAt:Date.now()+45000+Math.floor(Math.random()*45000), lockdownPersistentBuffs:{}, lockdownRunHistory:[], stages:{f001:{unlocked:true,complete:false}, f002:{unlocked:false,complete:false}, f003:{unlocked:false,complete:false}, f004:{unlocked:false,complete:false}, f005:{unlocked:false,complete:false}, f006:{unlocked:false,complete:false}, f007:{unlocked:false,complete:false}, f008:{unlocked:false,complete:false}, f009:{unlocked:false,complete:false}, f010:{unlocked:false,complete:false}, f011:{unlocked:false,complete:false}, f012:{unlocked:false,complete:false}}, map:parsed.map, player:{x:parsed.px,y:parsed.py,facing:'down',lastMoveAt:0,level:1,xp:0,nextXp:45,hp:60,maxHp:60,ep:20,maxEp:20,overdrive:0,maxOverdrive:100,atk:10,def:3,credits:0}, inventory:{'Med Patch':2,'Vector Cell':2,'Vector Training Blade':1,'Sewer Guard Vest':1}, equipment:createEmptyEquipment(), operatorSyncRank:0, dropLog:[], bossKills:{}, enemyKills:{}, respawns:{}, resourceNodes:{}, contracts:{}, contractHistory:[], contractCounter:0, anomalyResearch:{}, npcTalks:{}, npcRewards:{}, sideQuests:{}, protocolChallenges:{}, flags:{terminal:false,lore:false,key:false,bossUnlocked:false,bossDefeated:false,chapterComplete:false,chapterRewardsClaimed:false,chapterClearSeen:false,storySeen:{},anomaliesCleared:0,chests:0}, log:['AVOS connection established.'], eventHistory:[{at:Date.now(), stage:'f001', text:'AVOS connection established.'}], visited:{[`${parsed.px},${parsed.py}`]:1}, settings:{crt:true,reducedMotion:false,largeText:false,tutorialTips:true,routeBeacon:true,objectiveCompass:true,minimapRoute:true,graphicsQuality:'auto',dynamicLighting:true,ambientParticles:true,cameraLookAhead:true,musicVolume:0.58,sfxVolume:0.72,musicMuted:false,sfxMuted:false}, skillData:createSkillData(), combatStyle:'attack', upgrades:{blade:0,armor:0,energy:0,medtech:0}, checkpoint:null, qaUnlockAllStages:false, lastSave:Date.now()};
   }
   let imageRenderQueued=false;
   function requestImageRenderRefresh(){
@@ -7581,6 +7799,7 @@
 
     if(!collisionRegion().set.has(`${nx},${ny}`) || isOuterMapEdge(nx,ny)){
       toast('Map boundary reached.');
+      addWorldShake(.12);
       clampPlayerToMap();
       renderAll();
       return;
@@ -7596,7 +7815,7 @@
       return;
     }
     if(c==='D'){ if(lockdownNormalInteractionsLocked()){ lockdownInteractionToast('boss gates'); renderAll(); return; } handleDoor(nx,ny); clampPlayerToMap(); renderAll(); return; }
-    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); clampPlayerToMap(); renderAll(); return; }
+    if(isBlocked(c) || !canStandAt(nx,ny)){ toast('Blocked.'); addWorldShake(.12); clampPlayerToMap(); renderAll(); return; }
 
     state.player.x=nx;
     state.player.y=ny;
@@ -7620,6 +7839,7 @@
       }
       repairMissionRoutesForCurrentStage();
       log('Boss route unlocked. Door security embarrassed itself.');
+      addWorldShake(.24);
       renderAll();
     } else toast('Boss gate locked. Clear the required anomalies or find access.');
   }
@@ -7668,6 +7888,7 @@
   }
   function startEncounterTile(code,x,y){
     ensureStoryFlags();
+    addWorldShake(code==='B'?.42:.24);
     if(code==='B' && !state.flags.bossUnlocked){toast('Boss route locked. Clear the required anomalies first.'); return;}
     const engage=()=>showPreBattleDialog(code,x,y);
     if(code==='B' && !state.flags.storySeen[stageStoryKey('bossIntro')]){showStoryOnce(stageStoryKey('bossIntro'), engage); return;}
@@ -9200,28 +9421,45 @@
   function render(){
     normalizeLiveMap();
     clampPlayerToMap();
+    const profile=graphicsProfile();
     ctx.clearRect(0,0,VIEW_W,VIEW_H);
     const maxCamX=Math.max(0, mapWidth()*TILE - VIEW_W);
     const maxCamY=Math.max(0, mapHeight()*TILE - VIEW_H);
-    camera.targetX=Math.max(0, Math.min(state.player.x*TILE - VIEW_W/2, maxCamX));
-    camera.targetY=Math.max(0, Math.min(state.player.y*TILE - VIEW_H/2, maxCamY));
+    const facing=state.player.facing || 'down';
+    const lookEnabled=state.settings.cameraLookAhead!==false && !state.settings.reducedMotion;
+    const look=lookEnabled ? profile.lookAhead : 0;
+    const fx=facing==='right'?1:facing==='left'?-1:0;
+    const fy=facing==='down'?1:facing==='up'?-1:0;
+    camera.targetX=Math.max(0,Math.min(state.player.x*TILE+TILE/2-VIEW_W/2+fx*look,maxCamX));
+    camera.targetY=Math.max(0,Math.min(state.player.y*TILE+TILE/2-VIEW_H/2+fy*look*.58,maxCamY));
     if(!camera.ready){ camera.x=camera.targetX; camera.y=camera.targetY; camera.ready=true; }
-    else { camera.x += (camera.targetX-camera.x)*0.28; camera.y += (camera.targetY-camera.y)*0.28; }
-    ctx.save(); ctx.translate(-camera.x,-camera.y);
-    for(let y=0;y<state.map.length;y++) for(let x=0;x<state.map[y].length;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
+    else { camera.x += (camera.targetX-camera.x)*profile.cameraEase; camera.y += (camera.targetY-camera.y)*profile.cameraEase; }
+    camera.trauma=Math.max(0,(camera.trauma||0)-.035);
+    const shakePower=(camera.trauma||0)*(camera.trauma||0)*15;
+    const shakeX=shakePower?Math.sin(performance.now()*.071)*shakePower:0;
+    const shakeY=shakePower?Math.cos(performance.now()*.093)*shakePower*.72:0;
+    camera.viewX=camera.x-shakeX;
+    camera.viewY=camera.y-shakeY;
+    ctx.save(); ctx.translate(-camera.viewX,-camera.viewY);
+    const tileStartX=Math.max(0,Math.floor(camera.viewX/TILE)-2);
+    const tileEndX=Math.min(mapWidth()-1,Math.ceil((camera.viewX+VIEW_W)/TILE)+2);
+    const tileStartY=Math.max(0,Math.floor(camera.viewY/TILE)-2);
+    const tileEndY=Math.min(mapHeight()-1,Math.ceil((camera.viewY+VIEW_H)/TILE)+2);
+    for(let y=tileStartY;y<=tileEndY;y++) for(let x=tileStartX;x<=tileEndX;x++){drawTile(state.map[y][x],x*TILE,y*TILE,x,y)}
     if(state.rogueWarning?.active) drawLockdownSeals();
     drawObjectiveRoute();
     drawCheckpointBeacon();
-    drawMapProps();
+    drawMapProps('back');
     drawTrainingNodes();
     drawNpcs();
     drawLockdownActors();
     drawLockdownProjectiles();
-    // player / AV-001 Vyra exploration sprite
     drawPlayerSprite(state.player.x*TILE, state.player.y*TILE);
     drawPlayerLockdownHealthBar();
+    drawMapProps('front');
     drawObjectiveBeacon();
     ctx.restore();
+    drawDynamicLighting();
     drawMapAtmosphere();
     drawLockdownEdgeHue();
   }
@@ -9430,8 +9668,10 @@
     ctx.fillStyle=tint.fog;
     ctx.fillRect(0,0,VIEW_W,VIEW_H);
 
-    const px = state.player.x*TILE + TILE/2 - camera.x;
-    const py = state.player.y*TILE + TILE/2 - camera.y;
+    const viewX=Number.isFinite(camera.viewX)?camera.viewX:camera.x;
+    const viewY=Number.isFinite(camera.viewY)?camera.viewY:camera.y;
+    const px = state.player.x*TILE + TILE/2 - viewX;
+    const py = state.player.y*TILE + TILE/2 - viewY;
     const light = ctx.createRadialGradient(px, py, 22, px, py, 190);
     // v130: no player-colored glow. Keep a tiny neutral readability lift only.
     light.addColorStop(0,'rgba(255,255,255,.045)');
@@ -9445,7 +9685,7 @@
     // weird colored stripes while the camera moved. Replace them with softer drifting
     // fog wisps so the level feels hazy instead of striped.
     ctx.globalCompositeOperation='screen';
-    const mistPasses = 6;
+    const mistPasses = graphicsProfile().mistPasses;
     for(let i=0;i<mistPasses;i++){
       const phase = t * (0.45 + i * 0.035) + i * 1.7;
       const fx = ((Math.sin(phase * 0.72) + 1) * 0.5) * (VIEW_W + 180) - 90;
@@ -9468,6 +9708,8 @@
       ctx.restore();
     }
     ctx.globalAlpha = 1;
+    drawParallaxVeil(t, tint);
+    drawAmbientParticles((performance.now()-ambientRuntime.startedAt)/1000);
 
     // Add a subtle top/bottom haze layer so the scene reads more like fog.
     const haze = ctx.createLinearGradient(0, 0, 0, VIEW_H);
@@ -9529,15 +9771,20 @@
   }
 
 
-  function drawMapProps(){
+  function drawMapProps(layer='back'){
     const pack = stageVisualPack();
     const salvage = STAGE_SALVAGE_OBJECTS[currentStageKey()] || [];
     const props = [...mapArt.props, ...((pack && pack.props) || []), ...salvage];
     props.forEach(p=>{
       const tile = tileAt(p.x,p.y);
-      // Only draw decorative props on open floor so they never cover caches, NPCs, doors, or exits.
       if(tile !== '.') return;
+      const inFront = p.y > state.player.y || (p.y===state.player.y && p.x>state.player.x);
+      if(layer==='front' && !inFront) return;
+      if(layer!=='front' && inFront) return;
+      ctx.save();
+      if(layer==='front' && Math.abs(p.y-state.player.y)<=2) ctx.globalAlpha=.92;
       drawAsset(p.img, p.x*TILE, p.y*TILE, p.w, p.h, true,{shadow:true,depth:true,shadowAlpha:.22});
+      ctx.restore();
     });
   }
 
@@ -9798,7 +10045,7 @@
         mctx.strokeRect(px-1,py-1,sz+2,sz+2);
       }
     });
-    stageTrainingNodes().forEach(n=>{ if(trainingNodeReady(n)){ mctx.fillStyle=TRAINING_NODE_TYPES[n.skill]?.color || '#ffffff'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); } });
+    stageTrainingNodes().forEach(n=>{ if(trainingNodeReady(n)){ mctx.fillStyle=SKILL_COLOR[n.skill] || '#ffffff'; mctx.fillRect(n.x*sx,n.y*sy,Math.ceil(sx*2),Math.ceil(sy*2)); } });
     const navTarget=objectiveTarget();
     ensureSettings();
     const route=state.settings.minimapRoute === false ? [] : routePathToObjective();
@@ -10939,7 +11186,26 @@
   };
 
 
-  function applySettings(){ ensureSettings(); document.body.classList.toggle('no-crt', !state.settings.crt); document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion); document.body.classList.toggle('large-text', !!state.settings.largeText); const tipBox=$('settingTutorialTips'); if(tipBox) tipBox.checked = state.settings.tutorialTips !== false; const rb=$('settingRouteBeacon'); if(rb) rb.checked = state.settings.routeBeacon !== false; const oc=$('settingObjectiveCompass'); if(oc) oc.checked = state.settings.objectiveCompass !== false; const mr=$('settingMinimapRoute'); if(mr) mr.checked = state.settings.minimapRoute !== false; applyAudioSettings(); }
+  function applySettings(){
+    ensureSettings();
+    document.body.classList.toggle('no-crt', !state.settings.crt);
+    document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion);
+    document.body.classList.toggle('large-text', !!state.settings.largeText);
+    const resolvedQuality=resolvedGraphicsQuality();
+    activeGraphicsProfile=GRAPHICS_PROFILES[resolvedQuality] || GRAPHICS_PROFILES.balanced;
+    document.body.dataset.graphicsQuality=resolvedQuality;
+    const tipBox=$('settingTutorialTips'); if(tipBox) tipBox.checked = state.settings.tutorialTips !== false;
+    const rb=$('settingRouteBeacon'); if(rb) rb.checked = state.settings.routeBeacon !== false;
+    const oc=$('settingObjectiveCompass'); if(oc) oc.checked = state.settings.objectiveCompass !== false;
+    const mr=$('settingMinimapRoute'); if(mr) mr.checked = state.settings.minimapRoute !== false;
+    const gq=$('settingGraphicsQuality'); if(gq) gq.value=state.settings.graphicsQuality || 'auto';
+    const dl=$('settingDynamicLighting'); if(dl) dl.checked=state.settings.dynamicLighting !== false;
+    const ap=$('settingAmbientParticles'); if(ap) ap.checked=state.settings.ambientParticles !== false;
+    const cl=$('settingCameraLookAhead'); if(cl) cl.checked=state.settings.cameraLookAhead !== false;
+    const gs=$('graphicsResolvedStatus'); if(gs) gs.textContent=graphicsSettingSummary();
+    ambientRuntime.stage='';
+    applyAudioSettings();
+  }
   let autosaveStarted=false;
   function startAutosave(){
     if(autosaveStarted) return;
@@ -11071,6 +11337,10 @@
     bindMobileMoveButtons(); setupMobilePlayability(); ControllerManager.init();
     canvas.addEventListener('click', handleCanvasNpcClick);
     $('settingCrt').onchange=e=>{state.settings.crt=e.target.checked;applySettings();queueAutosave();}; $('settingMotion').onchange=e=>{state.settings.reducedMotion=e.target.checked;applySettings();queueAutosave();}; $('settingLargeText').onchange=e=>{state.settings.largeText=e.target.checked;applySettings();queueAutosave();}; if($('settingTutorialTips')) $('settingTutorialTips').onchange=e=>{state.settings.tutorialTips=e.target.checked;applySettings();queueAutosave();}; if($('settingRouteBeacon')) $('settingRouteBeacon').onchange=e=>{state.settings.routeBeacon=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingObjectiveCompass')) $('settingObjectiveCompass').onchange=e=>{state.settings.objectiveCompass=e.target.checked;applySettings();renderAll();queueAutosave();}; if($('settingMinimapRoute')) $('settingMinimapRoute').onchange=e=>{state.settings.minimapRoute=e.target.checked;applySettings();renderAll();queueAutosave();};
+    if($('settingGraphicsQuality')) $('settingGraphicsQuality').onchange=e=>{state.settings.graphicsQuality=e.target.value;applySettings();renderAll();queueAutosave();};
+    if($('settingDynamicLighting')) $('settingDynamicLighting').onchange=e=>{state.settings.dynamicLighting=e.target.checked;applySettings();renderAll();queueAutosave();};
+    if($('settingAmbientParticles')) $('settingAmbientParticles').onchange=e=>{state.settings.ambientParticles=e.target.checked;applySettings();renderAll();queueAutosave();};
+    if($('settingCameraLookAhead')) $('settingCameraLookAhead').onchange=e=>{state.settings.cameraLookAhead=e.target.checked;applySettings();renderAll();queueAutosave();};
     document.addEventListener('click', e=>{
       const btn=e.target.closest && e.target.closest('#controlsScanBtn,#controlsFocusBtn,#controlsOpenPlaytestBtn,#controlsOpenPauseBtn');
       if(!btn) return;
@@ -16171,5 +16441,5 @@
   }
   Object.keys(STAGE_DEFS).forEach(addPreviousPortalToStageMap);
 
-  bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave();
+  bind(); applySettings(); applyOperatorVisuals(); boot(); startAutosave(); startWorldAnimationLoop();
 })();
