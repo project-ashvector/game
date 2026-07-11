@@ -18,7 +18,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '298';
+  const BUILD_VERSION = '299';
   const BUILD_TITLE = 'FULLSCREEN LOCKDOWN HUD FIT';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
