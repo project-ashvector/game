@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '294';
-  const BUILD_TITLE = 'LOCKDOWN ESCALATION';
+  const BUILD_VERSION = '295';
+  const BUILD_TITLE = 'LOCKDOWN FIRE RANGE';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -7873,6 +7873,7 @@
     else { bonus.label='Vyra balanced sync'; bonus.damage=2; }
     return bonus;
   }
+  const LOCKDOWN_FIRE_RANGE_TILES = 8;
   const LOCKDOWN_PROJECTILES = [
     {path:'assets/projectiles/ash_bolt.png', style:'gold'},
     {path:'assets/projectiles/rust_spike.png', style:'red'},
@@ -7929,7 +7930,7 @@
       arena:lockdownArenaBounds(state.player.x,state.player.y), tier, operatorBonus:opBonus,
       survivalCount, maxHostiles:hostileCap, allowedHostiles:initialAllowance, enemies:[], projectiles:[], floaters:[],
       projectileCount:Math.max(1,1+(opBonus.projectiles||0)), projectileDamage:Math.max(8,12+(opBonus.damage||0)),
-      projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), pierce:0,
+      projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), fireRange:LOCKDOWN_FIRE_RANGE_TILES, pierce:0,
       nextUpgradeAt:now+5000, nextSpawnAt:now+900, nextShotAt:now+360, spawnDelay:1350,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
       debuffResist:opBonus.debuffResist||0, abilities:{}, abilityStacks:{}, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}, nextOrbitalAt:now+2400
@@ -7979,13 +7980,23 @@
     });
     return true;
   }
-  function nearestLockdownEnemy(e){
-    let best=null, bd=Infinity; const px=state.player.x+.5, py=state.player.y+.5;
-    for(const m of e.enemies||[]){ if(m.hp<=0) continue; const d=Math.hypot(m.x-px,m.y-py); if(d<bd){bd=d; best=m;} }
-    return best;
+  function nearestLockdownEnemyInfo(e){
+    let best=null, distance=Infinity; const px=state.player.x+.5, py=state.player.y+.5;
+    for(const m of e.enemies||[]){
+      if(m.hp<=0) continue;
+      const d=Math.hypot(m.x-px,m.y-py);
+      if(d<distance){ distance=d; best=m; }
+    }
+    return {enemy:best, distance};
   }
+  function nearestLockdownEnemy(e){ return nearestLockdownEnemyInfo(e).enemy; }
   function fireLockdownVolley(e){
-    const target=nearestLockdownEnemy(e); if(!target) return;
+    const targetInfo=nearestLockdownEnemyInfo(e);
+    const target=targetInfo.enemy;
+    const fireRange=Math.max(2,Number(e?.fireRange)||LOCKDOWN_FIRE_RANGE_TILES);
+    e.nearestEnemyDistance=Number.isFinite(targetInfo.distance)?targetInfo.distance:null;
+    e.targetInRange=!!target && targetInfo.distance<=fireRange;
+    if(!e.targetInRange) return false;
     const sx=state.player.x+.5, sy=state.player.y+.5;
     const base=Math.atan2(target.y-sy,target.x-sx); const count=Math.max(1,e.projectileCount||1);
     for(let i=0;i<count;i++){
@@ -8001,6 +8012,7 @@
         e.projectiles.push({x:sx,y:sy,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1600,damage:Math.ceil((e.projectileDamage||12)*(heavy?1.16:1)*(crit?1.75:1)),crit,pierce:(e.pierce||0)+pierceBoost,impactRadius:pulse?1.02:.74,style:crit?'violet':asset.style,assetPath:asset.path,assetIndex:i,kind:i%4,size:pulse?34:(heavy?32:28),trail:[{x:sx,y:sy}],dot:asset.path.includes('flame')||asset.path.includes('toxic')?3:0,burst:asset.path.includes('scrap')||asset.path.includes('cube')});
       }
     }
+    return true;
   }
 
   function ensureLockdownPlayerState(e){
@@ -8077,7 +8089,10 @@
         e.spawnDelay=Math.max(480, Math.floor((1360-pressure*470-(e.threatLevel||1)*11-clearSpeedup)/(diff.spawn||1)));
         e.nextSpawnAt=now+e.spawnDelay;
       }
-      if(now>=e.nextShotAt){ fireLockdownVolley(e); e.nextShotAt=now+Math.max(185,e.fireRate); }
+      if(now>=e.nextShotAt){
+        const fired=fireLockdownVolley(e);
+        e.nextShotAt=now+(fired?Math.max(185,e.fireRate):90);
+      }
       updateLockdownActors(e,dt);
       const left=Math.ceil((e.duration-(now-e.startedAt))/1000);
       if(left<=0){ completeVectorLockdown(); return; }
@@ -8273,8 +8288,10 @@
     if($('lockdownKicker')) $('lockdownKicker').textContent=compact?(e.tier?.name||'LOCKDOWN'):`VECTOR LOCKDOWN // ${e.tier?.name||'SURGE'}`;
     const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000));
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
-    if($('lockdownText')) $('lockdownText').textContent=compact?`${e.operatorBonus?.label||'Auto-fire'} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // Survival ${Number(e.survivalCount||0)+1}. Normal interactions paused. Cap ${e.maxHostiles||100}.`;
-    if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Survivals ${e.survivalCount||0}</span><span>Threat ${e.threatLevel||1}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
+    const fireRange=Math.max(2,Number(e.fireRange)||LOCKDOWN_FIRE_RANGE_TILES);
+    const rangeState=e.targetInRange?'TARGET IN RANGE':'WAITING FOR RANGE';
+    if($('lockdownText')) $('lockdownText').textContent=compact?`${rangeState} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // Auto-fire activates within ${fireRange} tiles. ${rangeState}. Cap ${e.maxHostiles||100}.`;
+    if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Range ${fireRange}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Survivals ${e.survivalCount||0}</span><span>Threat ${e.threatLevel||1}</span><span>Fire Range ${fireRange} tiles</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
     renderLockdownIconStrip(e);
     const hist=(e.upgradeHistory||[]).slice(compact?-4:-9);
     const histHtml=hist.length ? hist.map(h=>`<span style="border-color:${h.type==='debuff'?'rgba(255,48,72,.75)':(h.type==='ability'?'rgba(112,215,255,.62)':'rgba(55,247,165,.6)')};color:${h.type==='debuff'?'#ff8b99':(h.type==='ability'?'#bff6ff':'#baffea')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?' x'+h.stack:''}</span>`).join('') : '<span>First buff/debuff roll incoming...</span>';
