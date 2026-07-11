@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '292';
-  const BUILD_TITLE = 'OPERATOR SPRITE RECOVERY';
+  const BUILD_VERSION = '293';
+  const BUILD_TITLE = 'LOCKDOWN REWARD EXIT FIX';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -7710,16 +7710,32 @@
   }
   function hideLockdownRewardModal(){
     const modal=$('vectorLockdownRewardModal');
-    if(modal){ modal.classList.add('hidden'); modal.innerHTML=''; modal.style.display='none'; }
+    if(modal){
+      modal.classList.add('hidden');
+      modal.innerHTML='';
+      modal.style.display='none';
+      modal.onkeydown=null;
+    }
     document.body.classList.remove('lockdown-reward-open');
     if(state) state.lockdownRewardPopup=null;
   }
   function closeLockdownRewardModal(){
-    state.rogueHudMode=null;
+    if(state){
+      state.rogueHudMode=null;
+      state.lockdownRewardPopup=null;
+      if(state.rogueEvent?.active) state.rogueEvent.active=false;
+    }
     hideLockdownRewardModal();
-    ensureRogueHud().classList.add('hidden');
+    const hud=ensureRogueHud();
+    hud.classList.add('hidden');
+    hud.innerHTML='';
     ensureLockdownBuffDock().classList.add('hidden');
-    renderAll();
+    document.body.classList.remove('vector-lockdown-active','vector-lockdown-warning','lockdown-reward-open');
+    if(gameStarted && !battle && !storyActive) uiState.mode='game';
+    try{ renderAll(); }catch(err){ try{ render(); }catch(innerErr){} }
+    try{ AudioManager.play(activeMusicForState()); }catch(err){}
+    try{ canvas?.focus?.({preventScroll:true}); }catch(err){}
+    queueAutosave();
   }
 
   // v223: Generic field contact reward popup. NPC rewards were easy to miss in
@@ -7766,6 +7782,7 @@
     if(!innerHtml && state?.lockdownRewardPopup?.html) innerHtml=state.lockdownRewardPopup.html;
     if(!innerHtml) return;
     const modal=ensureLockdownRewardModal();
+    const cleanHtml=String(innerHtml).replace(/<button\b[^>]*id=["']lockdownRewardContinueBtn["'][^>]*>[\s\S]*?<\/button>/gi,'');
     document.body.classList.add('lockdown-reward-open');
     modal.classList.remove('hidden');
     modal.style.display='flex';
@@ -7775,18 +7792,24 @@
     modal.style.alignItems='center';
     modal.style.justifyContent='center';
     modal.style.pointerEvents='auto';
-    modal.innerHTML=`<div class="lockdown-reward-backdrop" data-lockdown-reward-stay="1"></div><div class="lockdown-reward-modal-card avos-crt">${innerHtml}</div>`;
-    const bind=()=>{
-      const btn=$('lockdownRewardContinueBtn');
-      if(btn){
-        btn.onclick=closeLockdownRewardModal;
-        btn.setAttribute('data-controller-primary','1');
+    modal.tabIndex=-1;
+    modal.innerHTML=`<div class="lockdown-reward-backdrop" data-lockdown-reward-stay="1"></div><div class="lockdown-reward-modal-card avos-crt">${cleanHtml}<button id="lockdownRewardContinueBtn" data-controller-primary="1" data-controller-select="0">Continue</button></div>`;
+    const btn=modal.querySelector('#lockdownRewardContinueBtn');
+    if(btn){
+      btn.onclick=(event)=>{ event?.preventDefault?.(); event?.stopPropagation?.(); closeLockdownRewardModal(); };
+      btn.addEventListener('touchend',event=>{ event.preventDefault(); event.stopPropagation(); closeLockdownRewardModal(); },{once:true,passive:false});
+    }
+    modal.onkeydown=(event)=>{
+      if(['Enter',' ','Escape'].includes(event.key)){
+        event.preventDefault();
+        event.stopPropagation();
+        closeLockdownRewardModal();
       }
-      try{ ControllerManager?.focusTopMenu?.(modal); }catch(err){}
     };
-    bind();
-    setTimeout(bind,0);
-    setTimeout(bind,120);
+    requestAnimationFrame(()=>{
+      try{ btn?.focus({preventScroll:true}); }catch(err){}
+      try{ ControllerManager?.focusTopMenu?.(modal); }catch(err){}
+    });
   }
   function restoreLockdownRewardModal(){
     if(state?.rogueHudMode==='reward' && state?.lockdownRewardPopup?.html){
@@ -8292,12 +8315,11 @@
     }).join('');
     const healText=e.healed?`<span>Blood Circuit healed ${Math.round(e.healed)} HP</span>`:'';
     state.rogueHudMode='reward';
-    const summaryHtml=`<div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: <b>${e.kills||0}</b>. Damage taken: <b>${e.damageTaken||0}</b> HP.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Kills ${e.kills||0}</span><span>Threat ${e.threatLevel||1}</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Saved Buff Stacks</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div><button id="lockdownRewardContinueBtn">Continue</button>`;
+    const summaryHtml=`<div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: <b>${e.kills||0}</b>. Damage taken: <b>${e.damageTaken||0}</b> HP.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Kills ${e.kills||0}</span><span>Threat ${e.threatLevel||1}</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Saved Buff Stacks</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div>`;
     state.lockdownRewardPopup={html:summaryHtml, createdAt:Date.now(), opXp, playerXp, kills:e.kills||0, rewardRolls};
     const hud=ensureRogueHud();
-    hud.classList.remove('hidden');
-    hud.innerHTML=`<div class="lockdown-card avos-crt lockdown-reward-card">${summaryHtml}</div>`;
-    showLockdownRewardModal(summaryHtml);
+    hud.classList.add('hidden');
+    hud.innerHTML='';
     log(`VECTOR LOCKDOWN CLEARED: ${e.kills||0} kills, +${opXp} operator XP, +${playerXp} player XP, rewards — ${won.join(', ')}.`);
     toast(`Vector Lockdown cleared: +${opXp} Operator XP, +${playerXp} XP.`);
     state.lockdownRunHistory ||= [];
@@ -8306,11 +8328,8 @@
     state.rogueEvent={active:false,lastRewards:won,lastRewardSummary:{opXp,playerXp,rewardCounts,kills:e.kills||0,threat:e.threatLevel||1,abilities:e.abilityStacks||{}},clearedAt:Date.now(),kills:e.kills||0};
     scheduleNextVectorLockdown('completed run');
     pulseObjective(`Lockdown cleared: +${opXp} operator XP // +${playerXp} XP`);
-    setTimeout(()=>showLockdownRewardModal(summaryHtml),0);
-    setTimeout(()=>showLockdownRewardModal(summaryHtml),250);
-    setTimeout(()=>showLockdownRewardModal(summaryHtml),750);
-    renderAll();
     showLockdownRewardModal(summaryHtml);
+    renderAll();
     queueAutosave();
   }
 
