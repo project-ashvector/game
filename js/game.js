@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '296';
-  const BUILD_TITLE = 'LOCKDOWN SINGLE-SHOT RANGE';
+  const BUILD_VERSION = '297';
+  const BUILD_TITLE = 'LOCKDOWN HUD + JOYSTICK REWORK';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -7521,8 +7521,34 @@
     return true;
   }
 
-  // v184: Vector Lockdown now behaves like a short roguelike survival room.
-  function ensureRogueHud(){ let hud=$('vectorLockdownHud'); if(!hud){ hud=document.createElement('div'); hud.id='vectorLockdownHud'; hud.className='vector-lockdown-hud hidden'; document.body.appendChild(hud); } if((state.rogueHudMode==='reward' || state.rogueHudMode==='failed') && hud) return hud; if(!$('lockdownTimer')){ hud.innerHTML='<div class="lockdown-card avos-crt"><div id="lockdownKicker" class="record-kicker">VECTOR LOCKDOWN</div><h2 id="lockdownTimer">60s</h2><p id="lockdownText">Free-roam surge. Auto-fire online.</p><div id="lockdownHpWrap" style="margin:8px 0 10px"><div style="display:flex;justify-content:space-between;font:700 11px monospace;letter-spacing:.06em"><span>OPERATOR HP</span><span id="lockdownHpText">--/--</span></div><div style="height:10px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);border-radius:999px;overflow:hidden"><span id="lockdownHpBar" style="display:block;height:100%;width:100%;background:linear-gradient(90deg,#37f7a5,#ffe36e,#ff3048);transition:width .18s linear"></span></div></div><div id="lockdownRoll" style="display:none;margin:8px 0;padding:8px 10px;border:1px solid rgba(255,255,255,.22);border-radius:10px;background:rgba(0,0,0,.58);font:800 12px monospace;letter-spacing:.08em;text-transform:uppercase"></div><div id="lockdownIconStrip" class="lockdown-icon-strip"></div><div id="lockdownStats" class="lockdown-stats"></div><div id="lockdownUpgrades" class="lockdown-upgrades"></div></div>'; } return hud; }
+  // v297: compact overlay HUD. The event display stays over the game instead of
+  // taking layout space, while every active buff lives in the bottom dock.
+  function ensureRogueHud(){
+    let hud=$('vectorLockdownHud');
+    if(!hud){
+      hud=document.createElement('div');
+      hud.id='vectorLockdownHud';
+      hud.className='vector-lockdown-hud hidden';
+      document.body.appendChild(hud);
+    }
+    if((state.rogueHudMode==='reward' || state.rogueHudMode==='failed') && hud) return hud;
+    if(!$('lockdownTimer')){
+      hud.innerHTML=`<div class="lockdown-card lockdown-compact-card avos-crt">
+        <div class="lockdown-compact-head">
+          <div id="lockdownKicker" class="record-kicker">VECTOR LOCKDOWN</div>
+          <h2 id="lockdownTimer">60s</h2>
+        </div>
+        <p id="lockdownText" class="lockdown-compact-state">WAITING FOR RANGE // SINGLE SHOT</p>
+        <div id="lockdownHpWrap" class="lockdown-compact-hp">
+          <div><span>HP</span><span id="lockdownHpText">--/--</span></div>
+          <div class="lockdown-compact-hp-track"><span id="lockdownHpBar"></span></div>
+        </div>
+        <div id="lockdownStats" class="lockdown-compact-stats"></div>
+        <div id="lockdownRoll" hidden aria-hidden="true"></div>
+      </div>`;
+    }
+    return hud;
+  }
   const ROGUE_UPGRADES = [
     {type:'buff', stackKey:'shots', name:'Split Chamber', desc:'+1 projectile per volley', apply:e=>e.projectileCount = Math.min(24,(e.projectileCount||1)+1)},
     {type:'buff', stackKey:'damage', name:'Ash Rifling', desc:'+18% projectile damage', apply:e=>e.projectileDamage = Math.ceil(e.projectileDamage*1.18)},
@@ -7578,20 +7604,18 @@
     return pool[Math.floor(Math.random()*pool.length)] || ROGUE_UPGRADES[Math.floor(Math.random()*ROGUE_UPGRADES.length)];
   }
   function showLockdownRoll(mod){
+    // v297: the roulette panel was duplicated and covered gameplay. Modifiers now
+    // appear immediately in the bottom buff dock without a second random-roll box.
     const el=$('lockdownRoll');
-    if(!el || !mod) return;
-    el.style.display='block';
-    el.style.borderColor=mod.type==='debuff'?'rgba(255,48,72,.85)':'rgba(55,247,165,.8)';
-    el.style.color=mod.type==='debuff'?'#ff6b7c':'#7fffd4';
-    const pool=ROGUE_UPGRADES.map(u=>u.name);
-    let ticks=0;
-    if(window._avLockdownRollTimer) clearInterval(window._avLockdownRollTimer);
-    window._avLockdownRollTimer=setInterval(()=>{
-      ticks++;
-      const label=ticks<7 ? pool[Math.floor(Math.random()*pool.length)] : mod.name;
-      el.innerHTML=`<div style="opacity:.72;font-size:10px">${ticks<7?'ROLLING MODIFIER':'LOCKED MODIFIER'}</div><div>${safeHtml(label)}</div><div style="opacity:.85;font-size:10px;margin-top:2px">${ticks<7?'???':safeHtml(mod.desc)}</div>`;
-      if(ticks>=7){ clearInterval(window._avLockdownRollTimer); window._avLockdownRollTimer=null; setTimeout(()=>{ if(el) el.style.display='none'; },2200); }
-    },110);
+    if(el){ el.hidden=true; el.style.display='none'; el.textContent=''; }
+    const dock=ensureLockdownBuffDock();
+    if(dock && mod){
+      dock.dataset.lastModifier=mod.name||'';
+      dock.classList.remove('lockdown-dock-pulse');
+      void dock.offsetWidth;
+      dock.classList.add('lockdown-dock-pulse');
+      setTimeout(()=>dock.classList.remove('lockdown-dock-pulse'),420);
+    }
   }
   function applyLockdownModifierToEvent(e, mod, source='roll'){
     if(!e?.active || !mod) return false;
@@ -7901,10 +7925,10 @@
     if($('lockdownKicker')) $('lockdownKicker').textContent='VECTOR WARNING';
     const left=Math.max(0,Math.ceil(((w.endsAt||Date.now())-Date.now())/1000));
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
-    if($('lockdownText')) $('lockdownText').textContent=lockdownMobileCompact()?'Free-roam event incoming':'Free-roam survival incoming. Normal battles/NPCs/items pause during the mini-game.';
-    if($('lockdownStats')) $('lockdownStats').innerHTML='<span>Warning</span><span>No arena lock</span><span>Cap 30</span>';
-    if($('lockdownIconStrip')) $('lockdownIconStrip').innerHTML=''; ensureLockdownBuffDock().classList.add('hidden');
-    if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=`<span>Move anywhere. Auto-fire starts when the surge begins.</span><span>${safeHtml(lockdownPersistentSummary())}</span>`;
+    if($('lockdownText')) $('lockdownText').textContent='SURGE INCOMING';
+    if($('lockdownStats')) $('lockdownStats').innerHTML='<span>FREE ROAM</span><span>AUTO-FIRE</span>';
+    const hpWrap=$('lockdownHpWrap'); if(hpWrap) hpWrap.style.display='none';
+    ensureLockdownBuffDock().classList.add('hidden');
   }
   function tickVectorLockdownWarning(){
     if(isGameplayPaused()){ const w=state.rogueWarning; if(w?.active) w.endsAt=(w.endsAt||Date.now())+300; return; }
@@ -8246,21 +8270,18 @@
   }
   function renderLockdownIconStrip(e){
     const dock=ensureLockdownBuffDock();
-    const hudHost=$('lockdownIconStrip');
     if(!e?.active){
       dock.classList.add('hidden');
       dock.innerHTML='';
-      if(hudHost) hudHost.innerHTML='';
       return;
     }
     dock.classList.remove('hidden');
-    if(hudHost) hudHost.innerHTML='';
     const keys=['shots','damage','rate','velocity','pierce'];
     const abilityOrder=['healOnKill','critChance','chainLightning','thorns','slowAura','orbital','lootBoost'];
     abilityOrder.forEach(k=>{ if((e.abilities?.[k]||0)>0) keys.push(k); });
     const compact=lockdownMobileCompact();
-    const slice=compact ? 9 : 12;
-    dock.innerHTML=keys.slice(0,slice).map(key=>{
+    const coreLimit=compact ? 8 : 10;
+    const coreHtml=keys.slice(0,coreLimit).map(key=>{
       const meta=LOCKDOWN_ICON_DEFS[key]||{abbr:key.slice(0,3).toUpperCase(),color:'#bff6ff',label:key};
       const val=formatLockdownIconValue(key,e);
       const stack=e.abilityStacks?.[key] || (['shots','damage','rate','velocity','pierce'].includes(key) ? 0 : Math.floor(e.abilities?.[key]||0));
@@ -8269,6 +8290,9 @@
       const textFallback=`<b style="${meta.icon?'display:none':''}">${safeHtml(meta.abbr)}</b>`;
       return `<div class="lockdown-icon-chip big" title="${safeHtml(meta.label)} ${safeHtml(val)}" style="--chip:${meta.color}">${iconHtml}${textFallback}${stackBadge}<small>${safeHtml(val)}</small></div>`;
     }).join('');
+    const recent=(e.upgradeHistory||[]).slice(compact?-3:-5).reverse();
+    const historyHtml=recent.length ? `<div class="lockdown-bottom-modifiers">${recent.map(h=>`<span class="${h.type==='debuff'?'debuff':(h.type==='ability'?'ability':'buff')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?` x${h.stack}`:''}</span>`).join('')}</div>` : '';
+    dock.innerHTML=`<div class="lockdown-bottom-icons">${coreHtml}</div>${historyHtml}`;
   }
 
   function lockdownAbilitySummary(e){
@@ -8292,21 +8316,20 @@
       hud.classList.add('hidden');
       return;
     }
-    updateLockdownHpHud(); const compact=lockdownMobileCompact();
-    if($('lockdownKicker')) $('lockdownKicker').textContent=compact?(e.tier?.name||'LOCKDOWN'):`VECTOR LOCKDOWN // ${e.tier?.name||'SURGE'}`;
+    hud.classList.remove('hidden');
+    const hpWrap=$('lockdownHpWrap'); if(hpWrap) hpWrap.style.display='block';
+    updateLockdownHpHud();
+    if($('lockdownKicker')) $('lockdownKicker').textContent=e.tier?.name||'VECTOR LOCKDOWN';
     const left=Math.max(0,Math.ceil((e.duration-(Date.now()-e.startedAt))/1000));
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     const fireRange=Math.max(2,Number(e.fireRange)||LOCKDOWN_FIRE_RANGE_TILES);
     const rangeState=e.targetInRange?'TARGET IN RANGE':'WAITING FOR RANGE';
-    const shotState=(e.projectileCount||1)<=1?'SINGLE SHOT':'UPGRADED VOLLEY';
-    if($('lockdownText')) $('lockdownText').textContent=compact?`${rangeState} // ${shotState}`:`FREE ROAM // Auto-fire activates within ${fireRange} tiles. ${rangeState}. ${shotState}. Cap ${e.maxHostiles||100}.`;
-    if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Range ${fireRange}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Survivals ${e.survivalCount||0}</span><span>Threat ${e.threatLevel||1}</span><span>Fire Range ${fireRange} tiles</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
+    const shotState=(e.projectileCount||1)<=1?'SINGLE SHOT':`VOLLEY x${e.projectileCount||1}`;
+    if($('lockdownText')) $('lockdownText').textContent=`${rangeState} // ${shotState}`;
+    if($('lockdownStats')) $('lockdownStats').innerHTML=`<span>THREAT ${e.threatLevel||1}</span><span>KILLS ${e.kills||0}</span><span>HOSTILES ${e.enemies?.length||0}/${e.allowedHostiles||e.maxHostiles||0}</span><span>RANGE ${fireRange}</span>`;
     renderLockdownIconStrip(e);
-    const hist=(e.upgradeHistory||[]).slice(compact?-4:-9);
-    const histHtml=hist.length ? hist.map(h=>`<span style="border-color:${h.type==='debuff'?'rgba(255,48,72,.75)':(h.type==='ability'?'rgba(112,215,255,.62)':'rgba(55,247,165,.6)')};color:${h.type==='debuff'?'#ff8b99':(h.type==='ability'?'#bff6ff':'#baffea')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?' x'+h.stack:''}</span>`).join('') : '<span>First buff/debuff roll incoming...</span>';
-    const abilityHtml=lockdownAbilitySummary(e);
-    if($('lockdownUpgrades')) $('lockdownUpgrades').innerHTML=histHtml + abilityHtml;
   }
+
   function failVectorLockdown(killer=null){
     const e=state.rogueEvent||{};
     if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
@@ -8364,17 +8387,40 @@
     gainXp(playerXp);
     advanceProtocolChallenge('victories',1);
     const rewardCounts=won.reduce((a,n)=>{a[n]=(a[n]||0)+1; return a;},{});
-    const lootHtml=Object.entries(rewardCounts).map(([name,qty])=>`<span>${safeHtml(name)} x${qty}</span>`).join('');
+    const lootHtml=Object.entries(rewardCounts).map(([name,qty])=>`<div class="lockdown-reward-item"><b>x${qty}</b><span>${safeHtml(name)}</span></div>`).join('');
     const abilityRows=Object.entries(e.abilityStacks||{}).filter(([k,v])=>v>0).map(([k,v])=>{
       const last=(e.upgradeHistory||[]).filter(h=>h.stackKey===k).slice(-1)[0];
-      return `<span>${safeHtml(last?.name || k)} x${v}</span>`;
+      return `<span>${safeHtml(last?.name || k)}${v>1?` x${v}`:''}</span>`;
     }).join('');
-    const healText=e.healed?`<span>Blood Circuit healed ${Math.round(e.healed)} HP</span>`:'';
+    const healed=Math.round(e.healed||0);
     const completedSurvivals=lockdownSurvivalCount()+1;
     state.lockdownSurvivalCount=completedSurvivals;
     const nextHostileCap=lockdownHostileCap(completedSurvivals);
     state.rogueHudMode='reward';
-    const summaryHtml=`<div class="record-kicker">VECTOR LOCKDOWN CLEARED</div><h2>REWARD SUMMARY</h2><p>${safeHtml(e.tier?.name||'Lockdown')} survived. Kills: <b>${e.kills||0}</b>. Damage taken: <b>${e.damageTaken||0}</b> HP. The next Lockdown can hold <b>${nextHostileCap}</b> monsters at once.</p><div class="lockdown-stats"><span>Operator XP +${opXp}</span><span>Player XP +${playerXp}</span><span>Kills ${e.kills||0}</span><span>Threat ${e.threatLevel||1}</span><span>Survivals ${completedSurvivals}</span><span>Next Cap ${nextHostileCap} (+25)</span><span>Reward Rolls ${rewardRolls}</span><span>End Heal +${healBonus} HP</span>${healText}</div><h3>Recovered Items</h3><div class="lockdown-upgrades lockdown-reward-loot">${lootHtml || '<span>No items recovered</span>'}</div><h3>Saved Buff Stacks</h3><div class="lockdown-upgrades lockdown-reward-loot">${abilityRows || '<span>No ability stacks this run</span>'}</div><button id="lockdownRewardContinueBtn">Continue</button>`;
+    const summaryHtml=`<div class="lockdown-reward-summary">
+      <header>
+        <div class="record-kicker">VECTOR LOCKDOWN CLEARED</div>
+        <h2>Rewards Secured</h2>
+        <p>${safeHtml(e.tier?.name||'Lockdown')} survived. The next surge can hold ${nextHostileCap} monsters at once.</p>
+      </header>
+      <div class="lockdown-reward-summary-grid">
+        <div><b>${e.kills||0}</b><span>Kills</span></div>
+        <div><b>${e.damageTaken||0}</b><span>Damage Taken</span></div>
+        <div><b>+${opXp}</b><span>Operator XP</span></div>
+        <div><b>+${playerXp}</b><span>Player XP</span></div>
+        <div><b>+${healBonus}</b><span>End Heal${healed?` / ${healed} Kill Heal`:''}</span></div>
+        <div><b>${nextHostileCap}</b><span>Next Monster Cap</span></div>
+      </div>
+      <section class="lockdown-reward-section">
+        <h3>Recovered Items</h3>
+        <div class="lockdown-reward-items">${lootHtml || '<div class="lockdown-reward-empty">No items recovered</div>'}</div>
+      </section>
+      <section class="lockdown-reward-section lockdown-reward-buffs">
+        <h3>Saved Buffs</h3>
+        <div>${abilityRows || '<span>None saved this run</span>'}</div>
+      </section>
+      <button id="lockdownRewardContinueBtn" type="button">Continue</button>
+    </div>`;
     state.lockdownRewardPopup={html:summaryHtml, createdAt:Date.now(), opXp, playerXp, kills:e.kills||0, rewardRolls};
     const hud=ensureRogueHud();
     hud.classList.add('hidden');
@@ -11334,11 +11380,12 @@
   let mobileJoystickDir = null;
   let mobileJoystickActive = false;
   let mobileJoystickPointerId = null;
-  // v288: phone joystick tuning. Keyboard/controller movement stays unchanged, but
-  // touch joystick repeat is slowed so the player does not fly across the map.
-  const MOBILE_JOYSTICK_REPEAT_MS = 190;
-  const MOBILE_JOYSTICK_FIRST_STEP_DELAY_MS = 95;
-  let mobileJoystickFirstStepTimer = null;
+  let mobileJoystickLoopId = null;
+  let mobileJoystickLastStepAt = 0;
+  let mobileJoystickMagnitude = 0;
+  // v297: analog-feeling touch cadence. Full deflection matches normal held-key speed.
+  const MOBILE_JOYSTICK_REPEAT_MS = 138;
+  const MOBILE_JOYSTICK_DEADZONE = .18;
   let mobileResizeTimer = null;
   function isPhoneLike(){
     return window.matchMedia && window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
@@ -11363,13 +11410,16 @@
   function stopMobileMove(){
     if(mobileMoveTimer){ clearInterval(mobileMoveTimer); mobileMoveTimer=null; }
     if(mobileJoystickTimer){ clearInterval(mobileJoystickTimer); mobileJoystickTimer=null; }
-    if(mobileJoystickFirstStepTimer){ clearTimeout(mobileJoystickFirstStepTimer); mobileJoystickFirstStepTimer=null; }
-    mobileJoystickDir = null;
-    mobileJoystickActive = false;
-    mobileJoystickPointerId = null;
-    const knob=document.querySelector('#mobileJoystick .mobile-joystick-knob');
-    if(knob) knob.style.transform='translate(-50%,-50%)';
+    if(mobileJoystickLoopId!==null){ cancelAnimationFrame(mobileJoystickLoopId); mobileJoystickLoopId=null; }
+    mobileJoystickDir=null;
+    mobileJoystickActive=false;
+    mobileJoystickPointerId=null;
+    mobileJoystickMagnitude=0;
+    mobileJoystickLastStepAt=0;
+    const joy=$('mobileJoystick');
+    if(joy){ joy.style.setProperty('--joy-x','0px'); joy.style.setProperty('--joy-y','0px'); joy.classList.remove('active'); }
   }
+
   function bindMobileMoveButtons(){
     document.querySelectorAll('[data-move]').forEach(btn=>{
       if(btn.dataset.mobileBound === '1') return;
@@ -11402,59 +11452,71 @@
     if(joy.dataset.bound === '1') return;
     joy.dataset.bound='1';
     const ring=joy.querySelector('.mobile-joystick-ring');
-    const knob=joy.querySelector('.mobile-joystick-knob');
+
+    const joystickStepLoop=(now)=>{
+      mobileJoystickLoopId=null;
+      if(!mobileJoystickActive) return;
+      if(mobileJoystickDir && mobileJoystickMagnitude>=MOBILE_JOYSTICK_DEADZONE){
+        const stepMs=Math.round(190-(Math.min(1,mobileJoystickMagnitude)*52));
+        if(now-mobileJoystickLastStepAt>=stepMs){
+          mobileJoystickLastStepAt=now;
+          moveByName(mobileJoystickDir);
+        }
+      }
+      mobileJoystickLoopId=requestAnimationFrame(joystickStepLoop);
+    };
+    const ensureLoop=()=>{ if(mobileJoystickLoopId===null) mobileJoystickLoopId=requestAnimationFrame(joystickStepLoop); };
+
     const setDir=(e)=>{
       if(!ring) return;
       const r=ring.getBoundingClientRect();
       const cx=r.left+r.width/2;
       const cy=r.top+r.height/2;
-      const x=(e.clientX||0)-cx;
-      const y=(e.clientY||0)-cy;
+      const x=(Number(e.clientX)||0)-cx;
+      const y=(Number(e.clientY)||0)-cy;
       const dist=Math.hypot(x,y);
-      const max=r.width*.38;
-      const nx=dist ? x/dist : 0;
-      const ny=dist ? y/dist : 0;
-      const clamped=Math.min(max, dist || 0);
-      const kx=nx*clamped;
-      const ky=ny*clamped;
-      if(knob) knob.style.transform=`translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
-      if(dist < 8){ mobileJoystickDir=null; return; }
-      const absX=Math.abs(x), absY=Math.abs(y);
-      if(absX > absY * .72) mobileJoystickDir = x > 0 ? 'right' : 'left';
-      if(absY > absX * .72) mobileJoystickDir = y > 0 ? 'down' : 'up';
-      if(!mobileJoystickTimer && !mobileJoystickFirstStepTimer){
-        mobileJoystickFirstStepTimer=setTimeout(()=>{
-          mobileJoystickFirstStepTimer=null;
-          if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir);
-          mobileJoystickTimer=setInterval(()=>{ if(mobileJoystickDir && mobileJoystickActive) moveByName(mobileJoystickDir); }, MOBILE_JOYSTICK_REPEAT_MS);
-        }, MOBILE_JOYSTICK_FIRST_STEP_DELAY_MS);
-      }
+      const max=Math.max(24,r.width*.39);
+      const normalized=Math.min(1,dist/max);
+      mobileJoystickMagnitude=normalized;
+      const scale=dist ? Math.min(max,dist)/dist : 0;
+      const kx=x*scale, ky=y*scale;
+      joy.style.setProperty('--joy-x',`${kx.toFixed(2)}px`);
+      joy.style.setProperty('--joy-y',`${ky.toFixed(2)}px`);
+      if(normalized<MOBILE_JOYSTICK_DEADZONE){ mobileJoystickDir=null; return; }
+      if(Math.abs(x)>=Math.abs(y)) mobileJoystickDir=x>=0?'right':'left';
+      else mobileJoystickDir=y>=0?'down':'up';
     };
     const start=(e)=>{
       e.preventDefault(); e.stopPropagation();
       AudioManager.unlock();
       stopMobileMove();
-      mobileJoystickActive = true;
-      mobileJoystickPointerId = e.pointerId ?? 'touch';
+      mobileJoystickActive=true;
+      mobileJoystickPointerId=e.pointerId ?? 'touch';
+      joy.classList.add('active');
       try{ joy.setPointerCapture && e.pointerId != null && joy.setPointerCapture(e.pointerId); }catch(err){}
       setDir(e);
+      mobileJoystickLastStepAt=performance.now()-MOBILE_JOYSTICK_REPEAT_MS;
+      ensureLoop();
     };
     const move=(e)=>{
       if(!mobileJoystickActive) return;
-      if(mobileJoystickPointerId !== null && e.pointerId != null && e.pointerId !== mobileJoystickPointerId) return;
-      e.preventDefault(); e.stopPropagation(); setDir(e);
+      if(mobileJoystickPointerId!==null && e.pointerId!=null && e.pointerId!==mobileJoystickPointerId) return;
+      e.preventDefault(); e.stopPropagation();
+      setDir(e);
+      ensureLoop();
     };
     const stop=(e)=>{
       if(e){
-        if(mobileJoystickPointerId !== null && e.pointerId != null && e.pointerId !== mobileJoystickPointerId) return;
+        if(mobileJoystickPointerId!==null && e.pointerId!=null && e.pointerId!==mobileJoystickPointerId) return;
         e.preventDefault(); e.stopPropagation();
       }
       stopMobileMove();
     };
-    joy.addEventListener('pointerdown', start, {passive:false});
-    joy.addEventListener('pointermove', move, {passive:false});
-    ['pointerup','pointercancel','lostpointercapture','touchend','touchcancel'].forEach(evt=>joy.addEventListener(evt, stop, {passive:false}));
+    joy.addEventListener('pointerdown',start,{passive:false});
+    joy.addEventListener('pointermove',move,{passive:false});
+    ['pointerup','pointercancel','lostpointercapture'].forEach(evt=>joy.addEventListener(evt,stop,{passive:false}));
   }
+
 
   function ensureMobileActionPad(){
     if(document.getElementById('mobileActionPad')) return;
