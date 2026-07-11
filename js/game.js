@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '295';
-  const BUILD_TITLE = 'LOCKDOWN FIRE RANGE';
+  const BUILD_VERSION = '296';
+  const BUILD_TITLE = 'LOCKDOWN SINGLE-SHOT RANGE';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -7597,7 +7597,10 @@
     if(!e?.active || !mod) return false;
     e.abilities ||= {}; e.abilityStacks ||= {};
     const stackKey = mod.stackKey || mod.name;
+    const shotsBefore=Math.max(1,Number(e.projectileCount)||1);
     mod.apply(e);
+    const shotsAfter=Math.max(1,Number(e.projectileCount)||1);
+    if(source!=='persistent' && shotsAfter>shotsBefore) e.shotUpgradesEarned=(e.shotUpgradesEarned||0)+(shotsAfter-shotsBefore);
     e.upgradeHistory ||= [];
     e.abilityStacks[stackKey] = (e.abilityStacks[stackKey] || 0) + 1;
     e.upgradeHistory.push({name:mod.name,type:mod.type,desc:mod.desc,stack:e.abilityStacks[stackKey],stackKey,source,at:Date.now()});
@@ -7865,7 +7868,7 @@
   function lockdownOperatorBonus(){
     const id=currentOperatorId();
     const bonus={label:'Auto-fire online'};
-    if(id==='vexa'){ bonus.label='Vexa +1 shot'; bonus.projectiles=1; bonus.speed=.6; }
+    if(id==='vexa'){ bonus.label='Vexa velocity tuning'; bonus.speed=.6; }
     else if(id==='knox'){ bonus.label='Knox armor'; bonus.hp=18; bonus.damageTaken=.82; }
     else if(id==='rivet'){ bonus.label='Rivet tuning'; bonus.damage=4; bonus.fireRate=.9; }
     else if(id==='moxie'){ bonus.label='Moxie med surge'; bonus.hp=24; bonus.debuffResist=.08; }
@@ -7929,17 +7932,22 @@
       active:true, freeRoam:true, startedAt:now, lastFrameAt:now, duration:60000, difficulty,
       arena:lockdownArenaBounds(state.player.x,state.player.y), tier, operatorBonus:opBonus,
       survivalCount, maxHostiles:hostileCap, allowedHostiles:initialAllowance, enemies:[], projectiles:[], floaters:[],
-      projectileCount:Math.max(1,1+(opBonus.projectiles||0)), projectileDamage:Math.max(8,12+(opBonus.damage||0)),
+      projectileCount:1, projectileDamage:Math.max(8,12+(opBonus.damage||0)),
       projectileSpeed:8.2+(opBonus.speed||0), fireRate:Math.floor(560*(opBonus.fireRate||1)), fireRange:LOCKDOWN_FIRE_RANGE_TILES, pierce:0,
       nextUpgradeAt:now+5000, nextSpawnAt:now+900, nextShotAt:now+360, spawnDelay:1350,
       kills:0, rewards:0, damageTaken:0, playerMaxHp:maxHp, contactDamageMult:(opBonus.damageTaken||1)*(tier.damage||1),
       debuffResist:opBonus.debuffResist||0, abilities:{}, abilityStacks:{}, upgradeHistory:[], threatLevel:1, playerAnchor:{x:state.player.x,y:state.player.y}, nextOrbitalAt:now+2400
     };
     applyPersistentLockdownBuffs(state.rogueEvent);
+    // v296: every Lockdown begins as true single-shot. Operator bonuses and saved
+    // projectile stacks cannot preload extra rounds; only upgrades earned after the
+    // current run begins may increase projectileCount.
+    state.rogueEvent.projectileCount=1;
+    state.rogueEvent.shotUpgradesEarned=0;
     const openingWave=Math.min(state.rogueEvent.allowedHostiles||6,6+Math.min(4,Math.floor(survivalCount/2)));
     for(let i=0;i<Math.max(4,openingWave);i++) spawnLockdownEnemy(state.rogueEvent);
-    log(`VECTOR LOCKDOWN STARTED: survival ${survivalCount+1} // simultaneous hostile cap ${hostileCap}. Normal map interactions are paused.`);
-    pulseObjective(`VECTOR LOCKDOWN: survive 60 seconds. Hostile cap ${hostileCap}. Keep moving.`);
+    log(`VECTOR LOCKDOWN STARTED: survival ${survivalCount+1} // simultaneous hostile cap ${hostileCap} // single-shot until projectile upgrades. Normal map interactions are paused.`);
+    pulseObjective(`VECTOR LOCKDOWN: survive 60 seconds. Fire activates inside ${LOCKDOWN_FIRE_RANGE_TILES} tiles. Single-shot until upgraded.`);
     ensureRogueHud().classList.remove('hidden');
     updateVectorLockdownHud();
     if(window._avLockdownTimer) clearInterval(window._avLockdownTimer);
@@ -8290,7 +8298,8 @@
     if($('lockdownTimer')) $('lockdownTimer').textContent=`${left}s`;
     const fireRange=Math.max(2,Number(e.fireRange)||LOCKDOWN_FIRE_RANGE_TILES);
     const rangeState=e.targetInRange?'TARGET IN RANGE':'WAITING FOR RANGE';
-    if($('lockdownText')) $('lockdownText').textContent=compact?`${rangeState} // ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}`:`FREE ROAM // Auto-fire activates within ${fireRange} tiles. ${rangeState}. Cap ${e.maxHostiles||100}.`;
+    const shotState=(e.projectileCount||1)<=1?'SINGLE SHOT':'UPGRADED VOLLEY';
+    if($('lockdownText')) $('lockdownText').textContent=compact?`${rangeState} // ${shotState}`:`FREE ROAM // Auto-fire activates within ${fireRange} tiles. ${rangeState}. ${shotState}. Cap ${e.maxHostiles||100}.`;
     if($('lockdownStats')) $('lockdownStats').innerHTML=compact?`<span>Threat ${e.threatLevel||1}</span><span>Wave ${e.enemies.length}/${e.allowedHostiles||100}</span><span>Range ${fireRange}</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Kills ${e.kills}</span>`:`<span>Tier ${safeHtml(e.tier?.name||'Minor')}</span><span>Survivals ${e.survivalCount||0}</span><span>Threat ${e.threatLevel||1}</span><span>Fire Range ${fireRange} tiles</span><span>Shots x${e.projectileCount}</span><span>DMG ${e.projectileDamage}</span><span>Rate ${Math.round(1000/e.fireRate*10)/10}/s</span><span>Kills ${e.kills}</span><span>Hostiles ${e.enemies.length}/${e.allowedHostiles||e.maxHostiles||100}</span><span>Cap ${e.maxHostiles||100}</span>`;
     renderLockdownIconStrip(e);
     const hist=(e.upgradeHistory||[]).slice(compact?-4:-9);
