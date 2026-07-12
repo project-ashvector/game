@@ -18,8 +18,8 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '301';
-  const BUILD_TITLE = 'FULLSCREEN LOCKDOWN HUD FIT';
+  const BUILD_VERSION = '302';
+  const BUILD_TITLE = 'COMBAT AND BOSS MILESTONE';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
     `Version ${BUILD_VERSION} // ${BUILD_TITLE}`,
@@ -3441,7 +3441,8 @@
     corrosion: {label:'Corrosion', icon:'☣', tick:'corrodes', color:'toxic'},
     poison: {label:'Poison', icon:'☠', tick:'poison burns', color:'toxic'},
     burn: {label:'Burn', icon:'🔥', tick:'burns', color:'fire'},
-    shock: {label:'Shock', icon:'⚡', tick:'short-circuits', color:'shock'}
+    shock: {label:'Shock', icon:'⚡', tick:'short-circuits', color:'shock'},
+    frost: {label:'Frostbite', icon:'❄', tick:'freezes', color:'frost'}
   };
 
   function ensureBattleStatus(){
@@ -3492,12 +3493,20 @@
   }
   function enemyStatusForStage(){
     const key=currentStageKey();
+    const phaseStatus=(battle?.code==='B' && typeof bossPhaseDef==='function') ? bossPhaseDef()?.status : null;
+    if(phaseStatus) return phaseStatus;
     if(key==='f001') return {key:'poison', chance:battle?.code==='B'?0.32:0.20, turns:2, potency:3, text:'grave rot'};
     if(key==='f002') return {key:'burn', chance:battle?.code==='B'?0.34:0.22, turns:2, potency:4, text:'ash burn'};
     if(key==='f003') return {key:'shock', chance:battle?.code==='B'?0.38:0.24, turns:2, potency:4, text:'dead-frequency shock'};
     if(key==='f004') return {key:'corrosion', chance:battle?.code==='B'?0.40:0.26, turns:2, potency:5, text:'rail corrosion'};
     if(key==='f005') return {key:'burn', chance:battle?.code==='B'?0.42:0.28, turns:2, potency:5, text:'prism burn'};
     if(key==='f006') return {key:'shock', chance:battle?.code==='B'?0.45:0.30, turns:3, potency:5, text:'vector overload'};
+    if(key==='f007') return {key:'burn', chance:battle?.code==='B'?0.43:0.27, turns:2, potency:5, text:'cinder burn'};
+    if(key==='f008') return {key:'shock', chance:battle?.code==='B'?0.44:0.28, turns:2, potency:5, text:'flooded circuit shock'};
+    if(key==='f009') return {key:'corrosion', chance:battle?.code==='B'?0.46:0.29, turns:3, potency:5, text:'rust bloom corrosion'};
+    if(key==='f010') return {key:'shock', chance:battle?.code==='B'?0.48:0.30, turns:2, potency:6, text:'null-field shock'};
+    if(key==='f011') return {key:'frost', chance:battle?.code==='B'?0.50:0.31, turns:2, potency:6, text:'cryo frostbite'};
+    if(key==='f012') return {key:'burn', chance:battle?.code==='B'?0.52:0.32, turns:3, potency:6, text:'ash crown burn'};
     return {key:'poison', chance:0.18, turns:2, potency:3, text:'fracture sickness'};
   }
   function applyEnemyStatusAfterHit(dmg,dodged){
@@ -3530,13 +3539,18 @@
   function overdriveReady(){ ensureOverdrive(); return (state.player.overdrive || 0) >= (state.player.maxOverdrive || 100); }
   function overdrivePct(){ ensureOverdrive(); return Math.max(0, Math.min(100, Math.floor(100 * (state.player.overdrive || 0) / (state.player.maxOverdrive || 100)))); }
   function useOverdriveBattle(){
-    if(!battle || battle.turn !== 'player') return;
+    if(!battle || battle.turn !== 'player' || battle.inputLocked) return;
     ensureBattleStatus(); ensureOverdrive();
     if(!overdriveReady()){ toast(`Overdrive ${state.player.overdrive}/${state.player.maxOverdrive}`); return; }
     const stats = combatStatBlock();
     const skill = skillLevel('attack') + skillLevel('strength') + skillLevel('magic');
-    const dmg = Math.max(35, 32 + stats.atk + stats.strBonus + Math.floor(skill / 4) + gearPower() % 18);
+    const rawDmg = Math.max(35, 32 + stats.atk + stats.strBonus + Math.floor(skill / 4) + gearPower() % 18);
+    const adjusted=adjustDamageAgainstBoss(rawDmg,{name:'Null Vector Execution',status:'shock'},{overdrive:true,crit:true});
+    const dmg=adjusted.damage;
+    battle.inputLocked=true;
+    consumeBossCommandLock();
     state.player.overdrive = 0;
+    playBattleActionFx('hero',{name:'Null Vector Execution',status:'shock'},{kind:'overdrive',crit:true});
     SfxManager.slash();
     setTimeout(()=>SfxManager.slash(), 110);
     setTimeout(()=>SfxManager.slash(), 220);
@@ -3551,10 +3565,11 @@
     grantStyleXp('attack', 14);
     grantStyleXp('strength', 14);
     grantStyleXp('magic', 10);
-    renderBattle();
-    if(battle.enemy.hp<=0){ setTimeout(winBattle,420); return; }
+    maybeAdvanceBossPhase();
     battle.turn='enemy';
-    setTimeout(enemyTurn, 900);
+    renderBattle();
+    if(battle.enemy.hp<=0){ setTimeout(winBattle,560); return; }
+    setTimeout(enemyTurn, 980);
   }
 
   // v80: Anomaly Research turns repeated kills into long-term collection progress.
@@ -4436,6 +4451,29 @@
     document.body.dataset.stage=def.key; ensureMobileActionPad(); setMobilePlayMode(); renderAll(); unlockRadioTrack(musicKeyForStage(key)); AudioManager.play(activeMusicForState()); pulseObjective(currentObjectiveText()); if(key !== 'f001') setTimeout(()=>showStoryOnce(key+'Intro'), 260);
     return true;
   }
+  function qaStartBossBattle(key=currentStageKey()){
+    const stageKey=STAGE_DEFS[key]?key:currentStageKey();
+    state.flags ||= {};
+    state.flags.storySeen ||= {};
+    state.flags.storySeen[`${stageKey}Intro`]=true;
+    const req=STAGE_DEFS[stageKey]?.levelReq||1;
+    if((state.player?.level||1)<req) qaSetPlayerLevel(req);
+    if(currentStageKey()!==stageKey) loadStage(stageKey,{force:true});
+    state.flags.bossUnlocked=true;
+    const caps=combatStatBlock(); state.player.hp=caps.maxHp; state.player.ep=caps.maxEp||state.player.maxEp;
+    const bossTile=nearestTile('B');
+    if(!bossTile){ toast('No boss tile found on this fracture.'); return false; }
+    startBattle('B',bossTile.x,bossTile.y);
+    return true;
+  }
+  function qaSetBossPhaseTest(ratio=.30){
+    if(!battle || battle.code!=='B') return false;
+    battle.enemy.hp=Math.max(1,Math.floor(battle.enemy.maxHp*Math.max(.01,Math.min(.99,Number(ratio)||.3))));
+    maybeAdvanceBossPhase();
+    renderBattle();
+    return true;
+  }
+
   function qaLoadStage(key){
     ensureProgression();
     const def=stageDef(key);
@@ -8633,7 +8671,10 @@
     if(battle.guard) return {title:'Guarded Hit', text:`Enemy likely attacks for ~${dmg.guarded} HP after Guard. ${statusChance}% ${status.text} status chance if hit connects.`};
     if(enemyStatusText) return {title:'Enemy Afflicted', text:`Enemy has ${enemyStatusText}. Expected attack ~${dmg.raw} HP plus ${statusChance}% ${status.text} chance.`};
     if(playerStatusText) return {title:'Status Warning', text:`Vyra has ${playerStatusText}. Enemy hit estimate ~${dmg.raw} HP.`};
-    if(battle.code==='B') return {title:'Boss Intent', text:`Heavy attack expected: ~${dmg.low}-${dmg.high} HP. ${statusChance}% ${status.text} status chance.`};
+    if(battle.code==='B'){
+      const phase=bossPhaseDef();
+      return {title:`Phase ${romanPhase(battle.bossState?.phase||1)} // ${phase?.name||'Boss Intent'}`, text:`${phase?.desc||'Heavy attack incoming.'} Base hit ~${dmg.low}-${dmg.high} HP. ${statusChance}% ${status.text} chance.`};
+    }
     return {title:'Enemy Intent', text:`Basic attack expected: ~${dmg.low}-${dmg.high} HP. ${statusChance}% ${status.text} status chance.`};
   }
   function showPreBattleDialog(code,x,y){
@@ -8660,7 +8701,8 @@
     const scan=encounterThreatScan(def, code);
     const expectedHit=Math.max(1, def.atk - s.def + 2 - combatModifiers().damageReduction - s.block);
     const status=enemyStatusForStage();
-    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Expected Hit</b><span>~${expectedHit} HP // ${Math.round((status.chance||0)*100)}% ${safeHtml(status.text)}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Threat Scan</b><span>${scan.level} // ${safeHtml(scan.text)}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(status.text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>`;
+    const bossIntel=code==='B' ? bossProtocolForStage(stage.key) : null;
+    $('preBattleStats').innerHTML=`<div><b>Enemy HP</b><span>${def.hp}</span></div><div><b>Enemy ATK</b><span>${def.atk}</span></div><div><b>Expected Hit</b><span>~${expectedHit} HP // ${Math.round((status.chance||0)*100)}% ${safeHtml(status.text)}</span></div><div><b>Reward XP</b><span>${def.xp}</span></div><div><b>Threat Scan</b><span>${scan.level} // ${safeHtml(scan.text)}</span></div><div><b>Research</b><span>Rank ${research.rank} // ${research.text}</span></div><div><b>Vyra</b><span>Lv ${state.player.level} // HP ${state.player.hp}/${s.maxHp}</span></div><div><b>Focus</b><span>${skillList[state.combatStyle].name} Lv ${skillLevel(state.combatStyle)}</span></div><div><b>Gear Power</b><span>${gearPower()}</span></div><div><b>Hazard</b><span>${safeHtml(status.text)} status chance</span></div><div><b>Stage Req</b><span>Player Lv ${stage.levelReq}</span></div>${bossIntel?`<div><b>Boss Protocol</b><span>${safeHtml(bossIntel.title)} // 3 combat phases</span></div>`:''}`;
     $('preBattleStart').onclick=()=>{overlay.classList.add('hidden'); overlay.style.display=''; startBattle(code,x,y);};
     uiState.mode='overlay'; overlay.classList.remove('hidden'); overlay.style.display='grid'; AudioManager.play('pause');
     preBattleCommandIndex = 0;
@@ -9681,6 +9723,237 @@
     showTutorialTip('stage-clear','Stage Clear + Next Fracture','After clearing a level, use Start Next Fracture or the Fracture Index to move forward. The Story Archive will keep unlocked scenes for replay.','QA tools can also jump levels from the Playtest Console.');
   }
 
+  // V302: combat presentation, boss phases, and battle input stabilization.
+  const BOSS_PROTOCOLS = {
+    f001:{title:'GRAVE BELL PROTOCOL', phases:[
+      {at:1.01,name:'Grave Bell',desc:'Steady grave-rot pressure.'},
+      {at:.66,name:'Grave Ward',desc:'Bone wards absorb damage and repair the core.',armor:2,heal:2},
+      {at:.33,name:'Death Choir',desc:'The buried amplify every strike.',armor:3,heal:4,attackMult:1.24,status:{key:'poison',chance:.55,turns:3,potency:4,text:'grave rot'}}
+    ]},
+    f002:{title:'BROOD MOTHER PROTOCOL', phases:[
+      {at:1.01,name:'Nest Guard',desc:'The brood circles its queen.'},
+      {at:.66,name:'Venom Brood',desc:'Venom pressure rises with every hit.',attackMult:1.10,status:{key:'poison',chance:.55,turns:3,potency:5,text:'brood venom'}},
+      {at:.33,name:'Mother Frenzy',desc:'The queen attacks twice when the swarm closes.',attackMult:1.27,extraStrikeChance:.25,status:{key:'poison',chance:.62,turns:3,potency:6,text:'brood venom'}}
+    ]},
+    f003:{title:'DEAD FREQUENCY PROTOCOL', phases:[
+      {at:1.01,name:'Signal Body',desc:'The shade occupies one stable frequency.'},
+      {at:.66,name:'Echo Split',desc:'False copies create an evasion window.',dodge:.16},
+      {at:.33,name:'Dead Frequency',desc:'The true body flickers between violent echoes.',dodge:.28,attackMult:1.16,status:{key:'shock',chance:.58,turns:2,potency:6,text:'dead-frequency shock'}}
+    ]},
+    f004:{title:'LIVE RAIL PROTOCOL', phases:[
+      {at:1.01,name:'Idle Current',desc:'Transit power is unstable but contained.'},
+      {at:.66,name:'Live Rail',desc:'Every second turn carries a voltage surge.',surgeEvery:2,surgeBonus:5,status:{key:'shock',chance:.48,turns:2,potency:5,text:'rail shock'}},
+      {at:.33,name:'Terminal Velocity',desc:'The entire rail line discharges at once.',attackMult:1.20,surgeEvery:2,surgeBonus:9,extraStrikeChance:.18}
+    ]},
+    f005:{title:'PRISM WOUND PROTOCOL', phases:[
+      {at:1.01,name:'Clear Spectrum',desc:'The prism shell is stable.'},
+      {at:.66,name:'Violet Shell',desc:'Most attacks are resisted. Shock cracks the shell.',armor:3,damageTaken:.82,weakStatus:'shock'},
+      {at:.33,name:'Crimson Inversion',desc:'The shell inverts. Burn damage destabilizes it.',armor:2,damageTaken:.78,weakStatus:'burn',attackMult:1.18}
+    ]},
+    f006:{title:'VECTOR CORE PROTOCOL', phases:[
+      {at:1.01,name:'Core Sync',desc:'The spire tracks the operator.'},
+      {at:.66,name:'Core Siphon',desc:'Energy is drained and converted into repairs.',epDrain:3,heal:2},
+      {at:.33,name:'Vector Collapse',desc:'The core consumes EP and Overdrive to fuel heavy attacks.',epDrain:5,overdriveDrain:8,attackMult:1.27}
+    ]},
+    f007:{title:'CINDER ENGINE PROTOCOL', phases:[
+      {at:1.01,name:'Low Flame',desc:'The furnace is still warming.'},
+      {at:.66,name:'Cinder Feed',desc:'Damage rises as the engine consumes ash.',attackMult:1.18,status:{key:'burn',chance:.48,turns:2,potency:6,text:'cinder burn'}},
+      {at:.33,name:'Ash Frenzy',desc:'The furnace attacks with uncontrolled heat.',attackMult:1.38,extraStrikeChance:.20,status:{key:'burn',chance:.58,turns:3,potency:6,text:'cinder burn'}}
+    ]},
+    f008:{title:'FLOOD GATE PROTOCOL', phases:[
+      {at:1.01,name:'Pressure Seal',desc:'Water pressure remains below critical.'},
+      {at:.66,name:'Flood Gate',desc:'Armor is weakened by conductive water.',armorBreak:2,status:{key:'shock',chance:.48,turns:2,potency:6,text:'flooded circuit shock'}},
+      {at:.33,name:'Drowning Pulse',desc:'The vault strips armor and drains energy.',armorBreak:4,epDrain:3,attackMult:1.18}
+    ]},
+    f009:{title:'RUST BLOOM PROTOCOL', phases:[
+      {at:1.01,name:'Dormant Orchard',desc:'The rust growth is feeding slowly.'},
+      {at:.66,name:'Rust Bloom',desc:'Corrosion cuts through defensive plating.',armor:2,armorBreak:3,status:{key:'corrosion',chance:.52,turns:3,potency:6,text:'rust bloom corrosion'}},
+      {at:.33,name:'Harvest Rot',desc:'The orchard heals from every spreading bloom.',armorBreak:5,heal:5,damageTaken:.90}
+    ]},
+    f010:{title:'BLACKSITE NULL PROTOCOL', phases:[
+      {at:1.01,name:'Observation Mode',desc:'The blacksite records every protocol.'},
+      {at:.66,name:'Null Window',desc:'One operator protocol is disabled each turn.',armor:2,commandLock:true},
+      {at:.33,name:'Blacksite Silence',desc:'Null fields suppress energy and distort targeting.',commandLock:true,epDrain:4,dodge:.12,attackMult:1.20}
+    ]},
+    f011:{title:'CRYO BASILICA PROTOCOL', phases:[
+      {at:1.01,name:'Cold Wake',desc:'The basilica temperature is falling.'},
+      {at:.66,name:'Cryo Seal',desc:'Frost drains energy and Overdrive.',epDrain:2,overdriveDrain:6,status:{key:'frost',chance:.50,turns:2,potency:6,text:'cryo frostbite'}},
+      {at:.33,name:'Absolute Zero',desc:'The core freezes resources behind a hardened shell.',armor:3,epDrain:4,overdriveDrain:12,attackMult:1.22,status:{key:'frost',chance:.60,turns:3,potency:7,text:'cryo frostbite'}}
+    ]},
+    f012:{title:'ASH CROWN PROTOCOL', phases:[
+      {at:1.01,name:'Crown Dormant',desc:'The throne measures the operator.'},
+      {at:.66,name:'Crown Ascendant',desc:'The crown hardens and feeds on the fracture.',armor:3,heal:2,attackMult:1.18},
+      {at:.33,name:'Ash Sovereign',desc:'The crown combines armor, healing, fire, and double strikes.',armor:5,heal:4,attackMult:1.36,extraStrikeChance:.35,status:{key:'burn',chance:.58,turns:3,potency:7,text:'ash crown burn'}}
+    ]}
+  };
+  const BATTLE_PROJECTILE_BY_STATUS={
+    bleed:'assets/projectiles/blood_spark.png',
+    corrosion:'assets/projectiles/rust_spike.png',
+    poison:'assets/projectiles/toxic_splinter.png',
+    burn:'assets/projectiles/ember_round.png',
+    shock:'assets/projectiles/static_needle.png',
+    frost:'assets/projectiles/vector_pulse.png'
+  };
+  const BOSS_PROJECTILES={
+    f001:'assets/projectiles/grave_flame.png',f002:'assets/projectiles/toxic_splinter.png',f003:'assets/projectiles/echo_pellet.png',
+    f004:'assets/projectiles/static_needle.png',f005:'assets/projectiles/plasma_cube.png',f006:'assets/projectiles/vector_core.png',
+    f007:'assets/projectiles/ember_round.png',f008:'assets/projectiles/vector_pulse.png',f009:'assets/projectiles/rust_spike.png',
+    f010:'assets/projectiles/corrupted_shard.png',f011:'assets/projectiles/vector_pulse.png',f012:'assets/projectiles/ash_bolt.png'
+  };
+  function bossProtocolForStage(key=currentStageKey()){ return BOSS_PROTOCOLS[key] || BOSS_PROTOCOLS.f001; }
+  function bossPhaseDef(){
+    if(!battle || battle.code!=='B') return null;
+    const profile=bossProtocolForStage(battle.bossState?.stage || currentStageKey());
+    return profile.phases[Math.max(0,(battle.bossState?.phase||1)-1)] || profile.phases[0];
+  }
+  function romanPhase(n=1){ return ['I','II','III','IV'][Math.max(0,Math.min(3,n-1))] || String(n); }
+  function bossPhaseMeterHtml(){
+    if(!battle || battle.code!=='B') return '';
+    const profile=bossProtocolForStage(battle.bossState?.stage || currentStageKey());
+    const phase=bossPhaseDef();
+    const n=battle.bossState?.phase||1;
+    const dots=profile.phases.map((_,i)=>`<i class="${i<n?'active':''}"></i>`).join('');
+    const lock=battle.commandLockIndex!=null ? ` // ${safeHtml(activeBattleMoves()[battle.commandLockIndex]?.name||'Protocol')} NULL-LOCKED` : '';
+    return `<div class="battle-meter boss-protocol-meter"><div><b>PHASE ${romanPhase(n)} // ${safeHtml(phase?.name||profile.title)}</b><span>${safeHtml(phase?.desc||'Boss protocol active.')}${lock}</span></div><div class="boss-phase-dots">${dots}</div></div>`;
+  }
+  function ensureBattleFxLayer(){
+    let layer=$('battleFxLayer');
+    if(layer) return layer;
+    const stage=document.querySelector('#battleOverlay .battle-stage');
+    if(!stage) return null;
+    layer=document.createElement('div'); layer.id='battleFxLayer'; layer.className='battle-fx-layer'; stage.appendChild(layer); return layer;
+  }
+  function showBattlePhaseBanner(title,copy='',tone='boss',duration=1250){
+    let banner=$('battlePhaseBanner');
+    if(!banner){
+      banner=document.createElement('div'); banner.id='battlePhaseBanner'; banner.className='battle-phase-banner hidden';
+      $('battlePanel')?.appendChild(banner);
+    }
+    banner.className=`battle-phase-banner ${tone}`;
+    banner.innerHTML=`<small>${safeHtml(title)}</small><b>${safeHtml(copy)}</b>`;
+    banner.classList.remove('hidden');
+    requestAnimationFrame(()=>banner.classList.add('visible'));
+    clearTimeout(window._avBattlePhaseTimer);
+    window._avBattlePhaseTimer=setTimeout(()=>{ banner.classList.remove('visible'); setTimeout(()=>banner.classList.add('hidden'),220); },Math.max(700,duration));
+  }
+  function battleProjectileFor(attacker,move={}){
+    if(attacker==='enemy') return battle?.code==='B' ? (BOSS_PROJECTILES[currentStageKey()]||'assets/projectiles/corrupted_shard.png') : 'assets/projectiles/rust_spike.png';
+    return BATTLE_PROJECTILE_BY_STATUS[move.status] || (/shot|spark|arc|burst|rocket|mine|needle/i.test(move.name||'')?'assets/projectiles/vector_pulse.png':'assets/projectiles/ash_disc.png');
+  }
+  function battleMoveKind(move={}){
+    if(move.heal) return 'heal';
+    if(move.special==='guard') return 'guard';
+    if(/shot|spark|arc|burst|rocket|mine|needle|pulse/i.test(move.name||'')) return 'projectile';
+    return 'slash';
+  }
+  function spawnBattleImpact(target='enemy',type='hit'){
+    const layer=ensureBattleFxLayer(); if(!layer) return;
+    const impact=document.createElement('div');
+    impact.className=`battle-fx-impact target-${target} ${type}`;
+    impact.innerHTML='<i></i><i></i><i></i>';
+    layer.appendChild(impact);
+    setTimeout(()=>impact.remove(),520);
+  }
+  function playBattleActionFx(attacker='hero',move={},opts={}){
+    const layer=ensureBattleFxLayer(); if(!layer) return;
+    const target=attacker==='hero'?'enemy':'hero';
+    const kind=opts.kind||battleMoveKind(move);
+    const sourceWrap=document.querySelector(attacker==='hero'?'#battleOverlay .hero-side':'#battleOverlay .enemy-side');
+    if(sourceWrap){
+      sourceWrap.classList.remove('battle-action-lunge','battle-action-recoil'); void sourceWrap.offsetWidth;
+      sourceWrap.classList.add('battle-action-lunge'); setTimeout(()=>sourceWrap.classList.remove('battle-action-lunge'),440);
+    }
+    if(kind==='heal' || kind==='guard'){
+      const aura=document.createElement('div'); aura.className=`battle-fx-aura target-${attacker} ${kind}`; layer.appendChild(aura); setTimeout(()=>aura.remove(),650);
+      return;
+    }
+    if(kind==='overdrive'){
+      $('battlePanel')?.classList.add('battle-overdrive-flash');
+      setTimeout(()=>$('battlePanel')?.classList.remove('battle-overdrive-flash'),620);
+      for(let i=0;i<3;i++) setTimeout(()=>{
+        const slash=document.createElement('div'); slash.className=`battle-fx-slash target-${target} overdrive slash-${i}`; layer.appendChild(slash); setTimeout(()=>slash.remove(),520);
+      },i*90);
+      setTimeout(()=>spawnBattleImpact(target,'crit'),240);
+      return;
+    }
+    if(kind==='slash'){
+      const slash=document.createElement('div'); slash.className=`battle-fx-slash target-${target} ${opts.crit?'crit':''}`; layer.appendChild(slash); setTimeout(()=>slash.remove(),520);
+      setTimeout(()=>spawnBattleImpact(target,opts.crit?'crit':'hit'),150);
+      return;
+    }
+    const img=document.createElement('img');
+    img.className=`battle-fx-projectile ${attacker}-to-${target}`;
+    img.src=battleProjectileFor(attacker,move);
+    img.alt=''; layer.appendChild(img);
+    setTimeout(()=>spawnBattleImpact(target,opts.crit?'crit':'hit'),260);
+    setTimeout(()=>img.remove(),600);
+  }
+  function playBattleDefeatFx(){
+    const enemy=$('battleEnemy'); if(enemy){ enemy.classList.add('battle-defeated'); }
+    const panel=$('battlePanel'); if(panel){ panel.classList.add('battle-victory-flash'); setTimeout(()=>panel.classList.remove('battle-victory-flash'),700); }
+    spawnBattleImpact('enemy','crit');
+  }
+  function initializeBossProtocol(){
+    if(!battle || battle.code!=='B') return;
+    const profile=bossProtocolForStage(currentStageKey());
+    battle.bossState={stage:currentStageKey(),phase:1,turn:0,profileTitle:profile.title};
+    battle.commandLockIndex=null;
+  }
+  function maybeAdvanceBossPhase(){
+    if(!battle || battle.code!=='B' || battle.enemy.hp<=0) return false;
+    const profile=bossProtocolForStage(battle.bossState?.stage || currentStageKey());
+    const ratio=battle.enemy.hp/Math.max(1,battle.enemy.maxHp);
+    let target=1;
+    profile.phases.forEach((phase,i)=>{ if(ratio<=phase.at) target=i+1; });
+    if(target<=(battle.bossState?.phase||1)) return false;
+    battle.bossState.phase=target;
+    const phase=profile.phases[target-1];
+    showBattlePhaseBanner(`${profile.title} // PHASE ${romanPhase(target)}`,`${phase.name}: ${phase.desc}`,'phase',1450);
+    shakeBattle(520);
+    const enemy=$('battleEnemy'); if(enemy){ enemy.classList.add('boss-phase-shift'); setTimeout(()=>enemy.classList.remove('boss-phase-shift'),850); }
+    return true;
+  }
+  function adjustDamageAgainstBoss(raw,move={},opts={}){
+    if(!battle || battle.code!=='B') return {damage:Math.max(1,Math.floor(raw)),dodged:false,note:''};
+    const phase=bossPhaseDef()||{};
+    if(!opts.overdrive && phase.dodge && Math.random()<phase.dodge){ return {damage:0,dodged:true,note:`${phase.name} phased out of the strike.`}; }
+    let mult=Number(phase.damageTaken||1);
+    let note='';
+    if(phase.weakStatus){
+      if(move.status===phase.weakStatus){ mult*=1.34; note=` ${STATUS_DEFS[phase.weakStatus]?.label||phase.weakStatus} cracked the phase shell.`; }
+      else if(move.status){ mult*=.80; note=' The prism resisted that damage type.'; }
+    }
+    let damage=Math.max(1,Math.floor(raw*mult)-Math.max(0,Number(phase.armor||0)));
+    return {damage,dodged:false,note};
+  }
+  function bossEnemyActionSetup(){
+    if(!battle || battle.code!=='B') return {mult:1,flat:0,note:'',extraStrikeChance:0,armorBreak:0};
+    const bs=battle.bossState||{}; bs.turn=(bs.turn||0)+1; battle.bossState=bs;
+    const phase=bossPhaseDef()||{};
+    const notes=[];
+    if(phase.heal && battle.enemy.hp>0 && battle.enemy.hp<battle.enemy.maxHp){
+      const healed=Math.min(Number(phase.heal)||0,battle.enemy.maxHp-battle.enemy.hp); battle.enemy.hp+=healed; if(healed) notes.push(`core +${healed} HP`);
+    }
+    if(phase.epDrain){ const before=state.player.ep||0; state.player.ep=Math.max(0,before-phase.epDrain); const lost=before-state.player.ep; if(lost) notes.push(`-${lost} EP`); }
+    if(phase.overdriveDrain){ ensureOverdrive(); const before=state.player.overdrive||0; state.player.overdrive=Math.max(0,before-phase.overdriveDrain); const lost=before-state.player.overdrive; if(lost) notes.push(`-${lost} Overdrive`); }
+    const surge=phase.surgeEvery && bs.turn%phase.surgeEvery===0 ? Number(phase.surgeBonus||0) : 0;
+    if(surge) notes.push(`surge +${surge}`);
+    return {mult:Number(phase.attackMult||1),flat:surge,note:notes.join(' // '),extraStrikeChance:Number(phase.extraStrikeChance||0),armorBreak:Number(phase.armorBreak||0)};
+  }
+  function applyBossTurnAftermath(){
+    if(!battle || battle.code!=='B') return '';
+    const phase=bossPhaseDef()||{};
+    if(phase.commandLock){
+      const moves=activeBattleMoves();
+      const candidates=moves.map((_,i)=>i).filter(i=>i!==battle.commandLockIndex);
+      battle.commandLockIndex=candidates[Math.floor(Math.random()*Math.max(1,candidates.length))] ?? 0;
+      return `${moves[battle.commandLockIndex]?.name||'Protocol'} was null-locked.`;
+    }
+    battle.commandLockIndex=null;
+    return '';
+  }
+  function consumeBossCommandLock(){ if(battle) battle.commandLockIndex=null; }
+
   function startBattle(code,x,y){
     const def=JSON.parse(JSON.stringify(getEncounterDef(code,x,y)));
     const stage=stageDef();
@@ -9689,7 +9962,8 @@
     const loc=document.querySelector('.battle-location'); if(loc) loc.textContent=`${stage.id} // ${stage.title.toUpperCase()}`;
     const scale = Math.max(1, stage.levelReq);
     if(stage.key !== 'f001'){ def.hp = Math.floor(def.hp * (1 + scale*0.18)); def.maxHp = def.hp; def.atk = Math.floor(def.atk * (1 + scale*0.10)); def.xp = Math.floor(def.xp * (1 + scale*0.35)); def.credits = Math.floor(def.credits * (1 + scale*0.25)); }
-    battle={code,x,y,enemy:def,turn:'player',guard:false,enemyStatus:{},playerStatus:{},evadeNext:false};
+    battle={code,x,y,enemy:def,turn:code==='B'?'intro':'player',guard:false,enemyStatus:{},playerStatus:{},evadeNext:false,inputLocked:code==='B'};
+    initializeBossProtocol();
     battleCommandIndex = 0;
     uiState.mode='combat'; unlockRadioTrack(code==='B'?'boss':'battle'); AudioManager.play(code==='B'?'boss':'battle');
     $('battleTitle').textContent=`${def.id || 'AN'} // ${def.name}`;
@@ -9710,6 +9984,11 @@
     const enemyImg=$('battleEnemy'), heroImg=$('battleHero');
     [enemyImg, heroImg].forEach(img=>{ if(img){ img.style.display='block'; img.style.visibility='visible'; img.style.opacity='1'; } });
     renderBattle();
+    if(code==='B'){
+      const profile=bossProtocolForStage(stage.key);
+      setTimeout(()=>showBattlePhaseBanner(profile.title,`PHASE I // ${profile.phases[0].name}: ${profile.phases[0].desc}`,'boss',1500),120);
+      setTimeout(()=>{ if(battle && battle.code==='B' && battle.turn==='intro'){ battle.turn='player'; battle.inputLocked=false; renderBattle(); } },900);
+    }
     showTutorialTip('battle-basics','Battle Basics','Use the four main attack buttons to deal damage. Save EP for healing or stronger protocols, and use Guard when HP gets low.','Controller face buttons map to the four attacks. LT/L2 uses Vector Cell, RB/R1 guards, RT/R2 uses Overdrive.');
   }
   function renderBattle(){
@@ -9727,7 +10006,7 @@
       <div class="battle-meter ep-meter"><div><b>Overdrive</b><span>${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}${overdriveReady()?' // READY':''}</span></div><div class="bar big ep"><span style="width:${overdrivePct()}%"></span></div></div>
       <div class="battle-meter focus-meter"><b>Focus</b><span>${skillList[mod.focus].name} Lv. ${mod.level} // Gear ${gearPower()}</span></div>
       <div class="battle-meter scanner-meter"><b>AVOS Scanner</b><span>${safeHtml(battleTacticalAdvice().title)} // ${safeHtml(battleTacticalAdvice().text)}</span></div>
-      <div class="battle-meter scanner-meter"><b>Enemy Intent</b><span>${safeHtml(enemyIntentPreview().title)} // ${safeHtml(enemyIntentPreview().text)}</span></div>`;
+      <div class="battle-meter scanner-meter"><b>Enemy Intent</b><span>${safeHtml(enemyIntentPreview().title)} // ${safeHtml(enemyIntentPreview().text)}</span></div>${bossPhaseMeterHtml()}`;
     $('attackButtons').innerHTML='';
     const labels=safeControllerLabels();
     // v94: four main battle attacks map to the four face buttons (Xbox A/B/X/Y, PS Cross/Circle/Square/Triangle, Switch B/A/Y/X).
@@ -9743,12 +10022,13 @@
     };
     activeBattleMoves().forEach((a,i)=>{
       const cost=Math.max(0,a.ep-mod.epDiscount);
-      addCommandButton('', controllerDirect[i], a.name, `${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}`, state.player.ep<cost || battle.turn!=='player', ()=>playerAttack(i));
+      const nullLocked=battle.code==='B' && battle.commandLockIndex===i;
+      addCommandButton(nullLocked?'boss-command-locked':'', controllerDirect[i], a.name, nullLocked?'NULL LOCKED':`${cost?cost+' EP':'Free'} // ${a.heal?'Recovery':'Strike'}`, state.player.ep<cost || battle.turn!=='player' || battle.inputLocked || nullLocked, ()=>playerAttack(i));
     });
     const cellQty=state.inventory['Vector Cell']||0;
-    addCommandButton('battle-item-button', 'LT/L2/ZL', 'Use Vector Cell', `${cellQty} owned // Restore EP`, !cellQty || state.player.ep>=epMax || battle.turn!=='player', useVectorCellBattle);
-    addCommandButton('battle-guard-button', 'RB/R1/R', 'Guard', `block next hit + regain 2 EP`, battle.turn!=='player', guardBattle);
-    addCommandButton('battle-overdrive-button', 'RT/R2/ZR', 'Null Vector Execution', `Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}`, battle.turn!=='player' || !overdriveReady(), useOverdriveBattle);
+    addCommandButton('battle-item-button', 'LT/L2/ZL', 'Use Vector Cell', `${cellQty} owned // Restore EP`, !cellQty || state.player.ep>=epMax || battle.turn!=='player' || battle.inputLocked, useVectorCellBattle);
+    addCommandButton('battle-guard-button', 'RB/R1/R', 'Guard', `block next hit + regain 2 EP`, battle.turn!=='player' || battle.inputLocked, guardBattle);
+    addCommandButton('battle-overdrive-button', 'RT/R2/ZR', 'Null Vector Execution', `Overdrive ${state.player.overdrive || 0}/${state.player.maxOverdrive || 100}`, battle.turn!=='player' || battle.inputLocked || !overdriveReady(), useOverdriveBattle);
     const hint=document.createElement('div');
     hint.id='battleControllerHint';
     hint.className='battle-controller-hint';
@@ -9778,7 +10058,7 @@
   }
   function moveBattleCommand(dx=0,dy=0){
     const buttons=battleCommandButtons();
-    if(!buttons.length || !battle || battle.turn!=='player') return;
+    if(!buttons.length || !battle || battle.turn!=='player' || battle.inputLocked) return;
     const cols=2;
     let next=battleCommandIndex;
     if(dx) next += dx;
@@ -9794,7 +10074,7 @@
   function selectBattleCommand(){
     const buttons=battleCommandButtons();
     const btn=buttons[battleCommandIndex];
-    if(!btn) return;
+    if(!btn || battle?.inputLocked) return;
     if(btn.disabled){ toast('That combat protocol is unavailable.'); updateBattleCommandFocus(); return; }
     btn.click();
   }
@@ -9803,11 +10083,15 @@
     if(buttons[index]){ battleCommandIndex=index; updateBattleCommandFocus(); selectBattleCommand(); }
   }
   function playerAttack(i){
-    if(!battle||battle.turn!=='player')return;
+    if(!battle||battle.turn!=='player'||battle.inputLocked)return;
     const a=activeBattleMoves()[i]; const mod=combatModifiers(); const cost=Math.max(0,a.ep-mod.epDiscount);
     if(state.player.ep<cost){toast('Not enough EP.');return;}
+    if(battle.code==='B' && battle.commandLockIndex===i){ toast('That protocol is null-locked this turn.'); return; }
+    battle.inputLocked=true;
+    consumeBossCommandLock();
     state.player.ep-=cost;
     if(a.heal){
+      playBattleActionFx('hero',a,{kind:'heal'});
       const heal = 18+Math.floor(mod.level/4);
       state.player.hp=Math.min(combatStatBlock().maxHp,state.player.hp+heal);
       const cleansed = cleansePlayerStatuses();
@@ -9817,52 +10101,73 @@
       grantStyleXp(mod.focus, 3);
     } else {
       SfxManager.slash();
-      const stats=combatStatBlock(); let crit=Math.random()<(stats.crit+mod.critBonus); let dmg=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
-      battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
+      const stats=combatStatBlock(); const crit=Math.random()<(stats.crit+mod.critBonus);
+      const raw=Math.max(1,a.dmg+stats.atk+stats.strBonus-3+mod.damageBonus+(crit?8+Math.floor(mod.level/5):0));
+      const adjusted=adjustDamageAgainstBoss(raw,a,{crit});
+      playBattleActionFx('hero',a,{crit});
       let specialText='';
       if(a.special==='evade'){ battle.evadeNext=true; specialText=' Evade primed.'; }
       if(a.special==='guard'){ battle.guard=true; specialText=' Guard primed.'; }
       if(a.special==='loot' && Math.random()<0.22){ addCredits(2); specialText=' +2 scavenged credits.'; }
-      const statusNote = a.status ? addBattleStatus('enemy', a.status, 2, Math.max(2, Math.floor(dmg/8))) : applyPlayerStatusFromAttack(i,dmg);
-      $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.${statusNote?' '+statusNote:''}${specialText}`;
-      showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
-      flashCombatant('battleEnemy');
-      shakeBattle(crit ? 420 : 260);
-      chargeOverdrive(8 + (crit ? 5 : 0), 'attack');
-      grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3))); grantStyleXp('health', Math.max(1, Math.floor(dmg/5)));
+      if(adjusted.dodged){
+        $('battleText').textContent=`${adjusted.note}${specialText}`;
+        showDamage('enemy','PHASED','dodge');
+        const enemy=$('battleEnemy'); if(enemy){ enemy.classList.add('battle-phase-dodge'); setTimeout(()=>enemy.classList.remove('battle-phase-dodge'),500); }
+      }else{
+        const dmg=adjusted.damage;
+        battle.enemy.hp=Math.max(0,battle.enemy.hp-dmg);
+        const statusNote = a.status ? addBattleStatus('enemy', a.status, 2, Math.max(2, Math.floor(dmg/8))) : applyPlayerStatusFromAttack(i,dmg);
+        $('battleText').textContent=`${a.text} ${crit?'CRITICAL ':''}-${dmg} HP. ${skillList[mod.focus].name} +${Math.max(3,Math.floor(dmg/3))} XP.${statusNote?' '+statusNote:''}${adjusted.note||''}${specialText}`;
+        showDamage('enemy', `${crit?'CRIT ':''}-${dmg}`, crit?'crit':'hit');
+        flashCombatant('battleEnemy');
+        shakeBattle(crit ? 420 : 260);
+        chargeOverdrive(8 + (crit ? 5 : 0), 'attack');
+        grantStyleXp(mod.focus, Math.max(3,Math.floor(dmg/3))); grantStyleXp('health', Math.max(1, Math.floor(dmg/5)));
+        maybeAdvanceBossPhase();
+      }
     }
+    battle.turn='enemy';
     renderBattle();
-    if(battle.enemy.hp<=0){setTimeout(winBattle,420);} else {battle.turn='enemy'; setTimeout(enemyTurn,760);}
+    if(battle.enemy.hp<=0){setTimeout(winBattle,520);} else {setTimeout(enemyTurn,820);}
   }
   function guardBattle(){
-    if(!battle || battle.turn!=='player') return;
+    if(!battle || battle.turn!=='player' || battle.inputLocked) return;
+    battle.inputLocked=true;
+    consumeBossCommandLock();
     const epMax = combatStatBlock().maxEp || state.player.maxEp;
     battle.guard = true;
     state.player.ep = Math.min(epMax, state.player.ep + 2);
-    $('battleText').textContent = 'Vyra braces behind a Vector Guard. Next incoming hit is reduced.';
+    $('battleText').textContent = `${currentOperator().displayName} braces behind a Vector Guard. Next incoming hit is reduced.`;
+    playBattleActionFx('hero',{special:'guard'},{kind:'guard'});
     showDamage('hero', 'GUARD', 'dodge');
     chargeOverdrive(12, 'guard');
     grantStyleXp('defense', 5);
     battle.turn='enemy';
     renderBattle();
-    setTimeout(enemyTurn, 680);
+    setTimeout(enemyTurn, 720);
   }
   function enemyTurn(){
     if(!battle)return;
+    battle.inputLocked=true;
     ensureBattleStatus();
     const enemyTicks = tickBattleStatus('enemy');
     if(enemyTicks.length){
       $('battleText').textContent = enemyTicks.join(' ');
       showDamage('enemy', 'STATUS', 'hit');
       renderBattle();
-      if(battle.enemy.hp<=0){ setTimeout(winBattle,420); return; }
+      maybeAdvanceBossPhase();
+      if(battle.enemy.hp<=0){ setTimeout(winBattle,480); return; }
     }
     const mod=combatModifiers();
+    const bossAction=bossEnemyActionSetup();
     let dodge = battle.evadeNext || Math.random()<(0.08+mod.dodgeBonus);
     const evadedByDash = !!battle.evadeNext;
     battle.evadeNext = false;
+    const hazard=enemyStatusForStage();
+    playBattleActionFx('enemy',{name:battle.enemy.name,status:hazard.key},{kind:'projectile'});
     SfxManager.enemyAttack(battle.code === 'B', dodge);
-    const stats=combatStatBlock(); let dmg = dodge?0:Math.max(1,battle.enemy.atk-stats.def+Math.floor(Math.random()*5)-mod.damageReduction-stats.block);
+    const stats=combatStatBlock();
+    let dmg = dodge?0:Math.max(1,Math.floor((battle.enemy.atk-stats.def+bossAction.armorBreak+Math.floor(Math.random()*5)-mod.damageReduction-stats.block)*bossAction.mult)+bossAction.flat);
     let guardText = '';
     if(battle.guard && dmg>0){
       const blocked = Math.max(1, Math.ceil(dmg * 0.5));
@@ -9873,19 +10178,28 @@
     } else {
       battle.guard = false;
     }
-    if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg);
+    let extraDamage=0;
+    if(!dodge && dmg>0 && bossAction.extraStrikeChance && Math.random()<bossAction.extraStrikeChance){ extraDamage=Math.max(1,Math.floor(dmg*.45)); }
+    if(dmg) state.player.hp=Math.max(0,state.player.hp-dmg-extraDamage);
     const enemyStatusNote = applyEnemyStatusAfterHit(dmg,dodge);
     const playerTicks = tickBattleStatus('player');
     const tickText = playerTicks.length ? ' ' + playerTicks.join(' ') : '';
-    $('battleText').textContent = dodge ? (evadedByDash ? 'Phantom Dash avoided the incoming hit.' : 'Vyra dodged. The anomaly looked personally offended.') : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}.${enemyStatusNote?' '+enemyStatusNote:''}${tickText}`;
-    if(dmg){ showDamage('hero', `-${dmg}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?320:220); chargeOverdrive(Math.min(18, 6 + Math.floor(dmg/3)), 'damage taken'); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3))); }
-    else { chargeOverdrive(6, 'dodge'); showDamage('hero', evadedByDash ? 'PHANTOM' : 'DODGE', 'dodge'); }
+    const bossNote=bossAction.note?` // ${bossAction.note}`:'';
+    const extraText=extraDamage?` // EXTRA STRIKE -${extraDamage} HP`:'';
+    $('battleText').textContent = dodge ? (evadedByDash ? 'Phantom Dash avoided the incoming hit.' : `${currentOperator().displayName} dodged. The anomaly looked personally offended.`) : `${battle.enemy.name} attacks. -${dmg} HP${mod.damageReduction?` (${mod.damageReduction} blocked)`:''}${guardText}${extraText}${bossNote}.${enemyStatusNote?' '+enemyStatusNote:''}${tickText}`;
+    if(dmg){
+      showDamage('hero', `-${dmg+extraDamage}`, 'hit'); flashCombatant('battleHero'); shakeBattle(battle.code==='B'?360:220);
+      if(extraDamage) setTimeout(()=>{ playBattleActionFx('enemy',{status:hazard.key},{kind:'projectile'}); showDamage('hero',`-${extraDamage}`,'crit'); },160);
+      chargeOverdrive(Math.min(18, 6 + Math.floor((dmg+extraDamage)/3)), 'damage taken'); grantStyleXp('defense', Math.max(1, Math.floor(dmg/2))); grantStyleXp('health', Math.max(1, Math.floor(dmg/3)));
+    } else { chargeOverdrive(6, 'dodge'); showDamage('hero', evadedByDash ? 'PHANTOM' : 'DODGE', 'dodge'); }
     if(playerTicks.length) showDamage('hero', 'STATUS', 'hit');
     if(state.player.hp<=0){
       handlePlayerDeath();
       return;
     }
-    battle.turn='player'; renderBattle(); renderUI();
+    const aftermath=applyBossTurnAftermath();
+    if(aftermath) $('battleText').textContent += ` ${aftermath}`;
+    battle.turn='player'; battle.inputLocked=false; renderBattle(); renderUI();
   }
 
   function handlePlayerDeath(){
@@ -9967,7 +10281,9 @@
   }
 
   function winBattle(){
-    if(!battle) return;
+    if(!battle || battle.turn==='victory') return;
+    battle.turn='victory'; battle.inputLocked=true;
+    playBattleDefeatFx();
     SfxManager.battleWin();
     const e=battle.enemy;
     const loot=[...e.loot];
@@ -10000,7 +10316,7 @@
     const xpGain = Math.floor(e.xp * (1 + (combatStatBlock().xpBonus||0)));
     gainXp(xpGain); gainOperatorXp(Math.max(8, Math.floor(xpGain * 0.75))); grantStyleXp(state.combatStyle || 'attack', xpGain); addCredits(e.credits); e.loot.forEach(item=>addItem(item,1));
     log(`Victory: ${e.name}. +${xpGain} Sync, +${e.credits} credits, loot recovered.`);
-    showVictoryPanel(e, loot, {wasBoss, wasAnomaly}); queueAutosave();
+    setTimeout(()=>showVictoryPanel(e, loot, {wasBoss, wasAnomaly}),520); queueAutosave();
   }
 
   function showDamage(side, text, type='hit'){
@@ -10110,14 +10426,17 @@
     return gained;
   }
   function useVectorCellBattle(){
-    if(!battle || battle.turn!=='player') return;
+    if(!battle || battle.turn!=='player' || battle.inputLocked) return;
     const gained=useVectorCell('battle');
     if(!gained) return;
-    $('battleText').textContent=`Vyra burns a Vector Cell. +${gained} EP restored.`;
+    battle.inputLocked=true;
+    consumeBossCommandLock();
+    $('battleText').textContent=`${currentOperator().displayName} burns a Vector Cell. +${gained} EP restored.`;
+    playBattleActionFx('hero',{heal:true},{kind:'heal'});
     showDamage('hero', `+${gained} EP`, 'heal');
     battle.turn='enemy';
     renderBattle();
-    setTimeout(enemyTurn,760);
+    setTimeout(enemyTurn,800);
   }
   function consumableButtonHtml(name){
     if(name==='Med Patch') return '<button onclick="window.AV.useMedPatch()">Use HP</button>';
@@ -12172,7 +12491,7 @@
     window.addEventListener('orientationchange', ()=>setTimeout(syncPhoneOverlayClass, 120), {passive:true});
   }catch(err){}
 
-  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, renderNpcContactCodexPanel, pingNpcContact, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, buyCharacterNow, setCharacterRosterFilter, setCharacterRosterSearch, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
+  window.AV={useMedPatch, useVectorCell, useVectorCellBattle, useOverdriveBattle, openOverlay, startGame, newGameRootStart, showOpeningStoryRoot, showMenu, closeOverlays, routeMainMenuAction, renderAll, save, load, continueSavedGame, hasSaveData, AudioManager, setupMobilePlayability, showStory, forceStoryDialogHard, showChapterClearPanel, buyUpgrade, restoreCheckpoint, loadStage, qaLoadStage, qaStartBossBattle, qaSetBossPhaseTest, qaUnlockAllStages, qaUnlockAllCharacters, qaGrantAllCharacterShards, qaSetPlayerLevel, ControllerManager, processRespawns, processTrainingNodeRespawns, collectTrainingNode, bankInventoryHtml, collisionRegion, canStandAt, clampPlayerToMap, repairMissionRoutesForCurrentStage, researchSummary, equipItem, unequipSlot, buyShopItem, craftRecipe, syncVyra, claimContract, rerollContract, interactNearbyNpc, talkToNpc, claimJeremieQuest, sideQuestStatusText, npcRouteBoardHtml, playerGuideBoardHtml, onboardingChecklistBoardHtml, resetTutorialTips, objectiveTarget, showObjectivePing, saveToSlot, loadFromSlot, deleteSaveSlot, exportSaveCode, importSaveCode, importSaveCodeFromText, renderSaveHub, renderArchiveSafetyPanel, renderControlsHelpPanel, renderEventJournalPanel, renderNpcContactCodexPanel, pingNpcContact, backupEmergencySave, restoreEmergencySave, verifySaveHealth, resetActiveArchiveSafely, renderAudioMixer, setAudioSetting, testSfxSetting, testMusicSetting, claimProtocolChallenge, resetProtocolChallenges, renderProtocolChallengeBoard, renderRouteIntelBoard, stageRewardPreviewBoardHtml, bossIntelBoardHtml, routePrepBoardHtml, portalGuideBoardHtml, routeRecordsBoardHtml, renderRouteRecordsPanel, setActiveOperator, playAsOperator, currentOperator, unlockOperator, selectOperator, renderCharacterMenuDb, showCharacterFile, characterCardClick, buyCharacterNow, setCharacterRosterFilter, setCharacterRosterSearch, startVectorLockdown, maybeTriggerVectorLockdown, completeVectorLockdown, qaStartLockdownNow, qaApplyLockdownBuff, renderQaLockdownBuffBoard, showMobilePauseMenu, hideMobilePauseMenu, isGameplayPaused, setGameplayPaused, operatorStatBonus, activeOperatorProgress};
   // v48: expose bulletproof direct menu helpers for GitHub Pages testing.
   window.AV_MENU={
     start:()=>newGameRootStart(),

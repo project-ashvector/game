@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>Project: ASH VECTOR - v301 Developer Build</title>
+  <title>Project: ASH VECTOR - v302 Developer Build</title>
   <link rel="icon" type="image/png" href="assets/logos/favicon.png" />
   <link rel="preload" as="video" href="assets/video/intro.mp4?v=253" type="video/mp4" fetchpriority="high" />
-  <link rel="stylesheet" href="css/style.css?v=301" />
+  <link rel="stylesheet" href="css/style.css?v=302" />
 
   <style>
     #bootScreen.intro-video-playing #introVideoGate,
@@ -490,10 +490,12 @@ assets/items/operator_shard_vyra.png</code></section></div></div></div>
         <div class="battle-location">F-001 // LOCKDOWN POLISH MEGA PASS</div>
       </div>
       <div class="battle-stage">
+        <div id="battleFxLayer" class="battle-fx-layer"></div>
         <div class="combatant hero-side"><img id="battleHero" class="battle-sprite hero" src="assets/operators/av001/battle.png" alt="active operator"><span id="battleHeroLabel" class="combatant-name">AV-001 VYRA</span></div>
         <div id="damageLayer" class="damage-layer"></div>
         <div class="combatant enemy-side"><img id="battleEnemy" class="battle-sprite enemy" src="" alt="enemy"><span id="battleEnemyLabel" class="combatant-name">ANOMALY</span></div>
       </div>
+      <div id="battlePhaseBanner" class="battle-phase-banner hidden" aria-live="polite"></div>
       <div class="battle-ui">
         <section class="battle-status-panel">
           <div id="battleHp" class="battle-bars"></div>
@@ -507,6 +509,6 @@ assets/items/operator_shard_vyra.png</code></section></div></div></div>
       <div id="battleVictory" class="battle-victory hidden"></div>
     </div>
   </div>
-  <script src="js/game.js?v=301"></script>
+  <script src="js/game.js?v=302"></script>
 </body>
 </html>
