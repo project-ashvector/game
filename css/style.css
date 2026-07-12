@@ -4965,3 +4965,65 @@ body.vector-lockdown-warning .game-card:after{
   .vector-lockdown-hud{width:142px !important;}
   .vector-lockdown-hud h2{font-size:clamp(18px, 6vw, 24px) !important;}
 }
+
+
+/* V300: minimal lockdown timer */
+.vector-lockdown-hud{
+  width:min(112px, calc(100vw - 12px)) !important;
+  top:max(8px, calc(env(safe-area-inset-top, 0px) + 6px)) !important;
+  right:max(6px, env(safe-area-inset-right, 0px)) !important;
+}
+.vector-lockdown-hud .lockdown-card{
+  padding:6px 6px 5px !important;
+  border-radius:12px !important;
+  background:rgba(4,8,16,.08) !important;
+  backdrop-filter:blur(2px) !important;
+  -webkit-backdrop-filter:blur(2px) !important;
+  box-shadow:0 0 10px rgba(255,48,72,.10) !important;
+  grid-template-columns:1fr !important;
+  grid-template-areas:
+    "time"
+    "stats" !important;
+  row-gap:2px !important;
+  border-width:1px !important;
+}
+.vector-lockdown-hud .record-kicker,
+.vector-lockdown-hud p,
+.vector-lockdown-hud #lockdownHpWrap{
+  display:none !important;
+}
+.vector-lockdown-hud h2{
+  margin:0 !important;
+  font-size:clamp(18px, 5vw, 28px) !important;
+  line-height:.9 !important;
+  letter-spacing:0 !important;
+  text-align:right !important;
+}
+.vector-lockdown-hud .lockdown-stats{
+  margin:0 !important;
+  gap:0 !important;
+  grid-template-columns:1fr !important;
+  justify-items:end !important;
+}
+.vector-lockdown-hud .lockdown-stats span{
+  padding:0 !important;
+  border:none !important;
+  background:transparent !important;
+  border-radius:0 !important;
+  font-size:12px !important;
+  line-height:1 !important;
+  color:#f7fbff !important;
+  min-height:auto !important;
+}
+.vector-lockdown-hud .lockdown-stats span::before{
+  content:'✦ ';
+  color:rgba(255,255,255,.75);
+  font-size:10px;
+}
+@media (max-width: 900px), (pointer: coarse){
+  .vector-lockdown-hud{width:96px !important; top:max(6px, calc(env(safe-area-inset-top, 0px) + 4px)) !important; right:max(5px, env(safe-area-inset-right,0px)) !important;}
+  .vector-lockdown-hud .lockdown-card{padding:5px 5px 4px !important; border-radius:10px !important;}
+  .vector-lockdown-hud h2{font-size:clamp(16px, 7vw, 24px) !important;}
+  .vector-lockdown-hud .lockdown-stats span{font-size:10px !important;}
+  .vector-lockdown-hud .lockdown-stats span::before{font-size:8px;}
+}

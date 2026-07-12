@@ -18,7 +18,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '299';
+  const BUILD_VERSION = '300';
   const BUILD_TITLE = 'FULLSCREEN LOCKDOWN HUD FIT';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -8326,7 +8326,7 @@
     const rangeState=e.targetInRange?'TARGET IN RANGE':'WAITING FOR RANGE';
     const shotState=(e.projectileCount||1)<=1?'SINGLE SHOT':`VOLLEY x${e.projectileCount||1}`;
     if($('lockdownText')) $('lockdownText').textContent=`${rangeState} // ${shotState}`;
-    if($('lockdownStats')) $('lockdownStats').innerHTML=`<span>THREAT ${e.threatLevel||1}</span><span>KILLS ${e.kills||0}</span><span>HOSTILES ${e.enemies?.length||0}/${e.allowedHostiles||e.maxHostiles||0}</span><span>RANGE ${fireRange}</span>`;
+    if($('lockdownStats')) $('lockdownStats').innerHTML=`<span class="kills-only">${e.kills||0}</span>`;
     renderLockdownIconStrip(e);
   }
 
