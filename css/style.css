@@ -5027,3 +5027,22 @@ body.vector-lockdown-warning .game-card:after{
   .vector-lockdown-hud .lockdown-stats span{font-size:10px !important;}
   .vector-lockdown-hud .lockdown-stats span::before{font-size:8px;}
 }
+
+
+/* V301: stable Lockdown buff dock and desktop-only menu clearance */
+.lockdown-buff-dock,
+.lockdown-bottom-icons,
+.lockdown-icon-chip{
+  animation:none !important;
+  transition:none !important;
+}
+.lockdown-buff-dock img{
+  opacity:1 !important;
+  visibility:visible !important;
+}
+@media (min-width:901px) and (pointer:fine){
+  body.vector-lockdown-active .lockdown-buff-dock,
+  body.vector-lockdown-warning .lockdown-buff-dock{
+    bottom:82px !important;
+  }
+}

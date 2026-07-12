@@ -18,7 +18,7 @@
   const MAP_ENTITY_W = 44;
   const MAP_ENTITY_H = 56;
   const VIEW_W = canvas.width, VIEW_H = canvas.height;
-  const BUILD_VERSION = '300';
+  const BUILD_VERSION = '301';
   const BUILD_TITLE = 'FULLSCREEN LOCKDOWN HUD FIT';
   const bootLines = [
     'ASH VECTOR OPERATING SYSTEM',
@@ -8273,6 +8273,7 @@
     if(!e?.active){
       dock.classList.add('hidden');
       dock.innerHTML='';
+      delete dock.dataset.renderKey;
       return;
     }
     dock.classList.remove('hidden');
@@ -8292,7 +8293,16 @@
     }).join('');
     const recent=(e.upgradeHistory||[]).slice(compact?-3:-5).reverse();
     const historyHtml=recent.length ? `<div class="lockdown-bottom-modifiers">${recent.map(h=>`<span class="${h.type==='debuff'?'debuff':(h.type==='ability'?'ability':'buff')}">${h.type==='debuff'?'⚠':(h.type==='ability'?'◆':'✓')} ${safeHtml(h.name)}${h.stack>1?` x${h.stack}`:''}</span>`).join('')}</div>` : '';
-    dock.innerHTML=`<div class="lockdown-bottom-icons">${coreHtml}</div>${historyHtml}`;
+    const nextHtml=`<div class="lockdown-bottom-icons">${coreHtml}</div>${historyHtml}`;
+    const renderKey=[
+      compact?'mobile':'desktop',
+      ...keys.slice(0,coreLimit).map(key=>`${key}:${formatLockdownIconValue(key,e)}:${e.abilityStacks?.[key]||0}`),
+      ...recent.map(h=>`${h.type}:${h.name}:${h.stack||1}`)
+    ].join('|');
+    if(dock.dataset.renderKey!==renderKey){
+      dock.dataset.renderKey=renderKey;
+      dock.innerHTML=nextHtml;
+    }
   }
 
   function lockdownAbilitySummary(e){
